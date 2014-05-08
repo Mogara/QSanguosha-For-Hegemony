@@ -2143,7 +2143,7 @@ bool Room::processRequestPreshow(ServerPlayer *player, const QSanProtocol::QSanG
 void Room::processClientPacket(const QString &request) {
     QSanGeneralPacket packet;
     //@todo: remove this thing after the new protocol is fully deployed
-    if (packet.parse(request.toAscii().constData())) {
+    if (packet.parse(request.toUtf8().constData())) {
         ServerPlayer *player = qobject_cast<ServerPlayer *>(sender());
         if (packet.getPacketType() == S_TYPE_REPLY) {
             if (player == NULL) return;
@@ -2518,7 +2518,7 @@ void Room::speakCommand(ServerPlayer *player, const QString &arg) {
                                }
     bool broadcast = true;
     if (player && Config.EnableCheat) {
-        QString sentence = QString::fromUtf8(QByteArray::fromBase64(arg.toAscii()));
+        QString sentence = QString::fromUtf8(QByteArray::fromBase64(arg.toUtf8()));
         if (sentence == ".BroadcastRoles") {
             _NO_BROADCAST_SPEAKING
             foreach (ServerPlayer *p, m_alivePlayers)

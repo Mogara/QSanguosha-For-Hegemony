@@ -262,8 +262,8 @@ QString LuaAI::askForUseCard(const QString &pattern, const QString &prompt, cons
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
-    lua_pushstring(L, pattern.toAscii());
-    lua_pushstring(L, prompt.toAscii());
+    lua_pushstring(L, pattern.toUtf8());
+    lua_pushstring(L, prompt.toUtf8());
     lua_pushinteger(L, method);
 
     int error = lua_pcall(L, 4, 1, 0);
@@ -283,7 +283,7 @@ QList<int> LuaAI::askForDiscard(const QString &reason, int discard_num, int min_
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
-    lua_pushstring(L, reason.toAscii());
+    lua_pushstring(L, reason.toUtf8());
     lua_pushinteger(L, discard_num);
     lua_pushinteger(L, min_num);
     lua_pushboolean(L, optional);
@@ -327,7 +327,7 @@ int LuaAI::askForAG(const QList<int> &card_ids, bool refusable, const QString &r
     pushCallback(L, __FUNCTION__);
     pushQIntList(L, card_ids);
     lua_pushboolean(L, refusable);
-    lua_pushstring(L, reason.toAscii());
+    lua_pushstring(L, reason.toUtf8());
 
     int error = lua_pcall(L, 4, 1, 0);
     if (error) {

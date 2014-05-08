@@ -224,6 +224,7 @@ macx{
 
 
 LIBS += -L.
+LIBS += -L"$$_PRO_FILE_PWD_/lib"
 
 CONFIG(audio){
     DEFINES += AUDIO_SUPPORT
@@ -319,7 +320,7 @@ OTHER_FILES += \
     acknowledgement/back.png
 
 symbian: LIBS += -lfreetype
-else:unix|win32: LIBS += -L$$PWD/lib/ -lfreetype
+else:unix|win32: LIBS += -L$$PWD/lib/ -lfreetype253
 
 INCLUDEPATH += $$PWD/include/freetype
 DEPENDPATH += $$PWD/include/freetype

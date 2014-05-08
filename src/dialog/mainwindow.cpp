@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
     scene = NULL;
 
     connection_dialog = new ConnectionDialog(this);
-    connect(ui->actionStart_Game, SIGNAL(triggered()), connection_dialog, SLOT(exec()));
+	connect(ui->actionStart_Game, SIGNAL(triggered()), connection_dialog, SLOT(exec()));
     connect(connection_dialog, SIGNAL(accepted()), this, SLOT(startConnection()));
 
     config_dialog = new ConfigDialog(this);
@@ -105,7 +105,7 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(view);
     restoreFromConfig();
 
-    BackLoader::preload();
+	BackLoader::preload();
     gotoScene(start_scene);
 
     addAction(ui->actionShow_Hide_Menu);
@@ -221,7 +221,7 @@ void MainWindow::startConnection() {
 }
 
 void MainWindow::on_actionReplay_triggered() {
-    QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+	QString location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
     QString last_dir = Config.value("LastReplayDir").toString();
     if (!last_dir.isEmpty())
         location = last_dir;
@@ -632,7 +632,7 @@ void MainWindow::on_actionReplay_file_convert_triggered() {
 }
 
 void MainWindow::on_actionRecord_analysis_triggered() {
-    QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+	QString location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
     QString filename = QFileDialog::getOpenFileName(this,
                                                     tr("Load replay record"),
                                                     location,

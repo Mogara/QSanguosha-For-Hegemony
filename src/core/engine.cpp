@@ -437,8 +437,7 @@ const Card *Engine::getEngineCard(int cardId) const{
     if (cardId == Card::S_UNKNOWN_CARD_ID)
         return NULL;
     else if (cardId < 0 || cardId >= cards.length()) {
-        Q_ASSERT(FALSE);
-        return NULL;
+		return NULL;
     } else {
         Q_ASSERT(cards[cardId] != NULL);
         return cards[cardId];
@@ -710,7 +709,7 @@ QStringList Engine::getRoleList(const QString &mode) const{
     QStringList role_list;
     for (int i = 0; roles[i] != '\0'; i++) {
         QString role;
-        switch(roles[i].toAscii()) {
+		switch(roles[i].toLatin1()) {
         case 'Z': role = "lord"; break;
         case 'C': role = "loyalist"; break;
         case 'N': role = "renegade"; break;

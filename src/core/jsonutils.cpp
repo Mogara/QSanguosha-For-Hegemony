@@ -2,22 +2,22 @@
 
 Json::Value QSanProtocol::Utils::toJsonArray(const QString &s1, const QString &s2) {
     Json::Value val(Json::arrayValue);
-    val[0] = s1.toAscii().constData();
-    val[1] = s2.toAscii().constData();
+    val[0] = s1.toUtf8().constData();
+    val[1] = s2.toUtf8().constData();
     return val;
 }
 
 Json::Value QSanProtocol::Utils::toJsonArray(const QString &s1, const QString &s2, const QString &s3) {
     Json::Value val(Json::arrayValue);
-    val[0] = s1.toAscii().constData();
-    val[1] = s2.toAscii().constData();
-    val[2] = s3.toAscii().constData();
+    val[0] = s1.toUtf8().constData();
+    val[1] = s2.toUtf8().constData();
+    val[2] = s3.toUtf8().constData();
     return val;
 }
 
 Json::Value QSanProtocol::Utils::toJsonArray(const QString &s1, const Json::Value &s2) {
     Json::Value val(Json::arrayValue);
-    val[0] = s1.toAscii().constData();
+    val[0] = s1.toUtf8().constData();
     val[1] = s2;
     return val;
 }

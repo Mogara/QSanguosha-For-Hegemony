@@ -193,7 +193,7 @@ void MimePart::prepare()
     switch (cEncoding)
     {
     case _7Bit:
-        mimeString.append(QString(content).toLatin1());
+        mimeString.append(QString(content).toUtf8());
         break;
     case _8Bit:
         mimeString.append(content);

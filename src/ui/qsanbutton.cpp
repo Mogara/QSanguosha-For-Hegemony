@@ -33,7 +33,7 @@ QSanButton::QSanButton(QGraphicsItem *parent)
     _m_mouseEntered(false)
 {
     setSize(QSize(0, 0));
-    setAcceptsHoverEvents(true);
+	setAcceptHoverEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
@@ -48,7 +48,7 @@ QSanButton::QSanButton(const QString &groupName, const QString &buttonName, QGra
     }
     setSize(_m_bgPixmap[0].size());
 
-    setAcceptsHoverEvents(true);
+	setAcceptHoverEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 

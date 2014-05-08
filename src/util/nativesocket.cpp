@@ -98,10 +98,10 @@ void NativeClientSocket::disconnectFromHost() {
 }
 
 void NativeClientSocket::send(const QString &message) {
-    socket->write(message.toAscii());
+    socket->write(message.toUtf8());
     socket->write("\n");
 #ifndef QT_NO_DEBUG
-    printf(": %s\n", message.toAscii().constData());
+    printf(": %s\n", message.toUtf8().constData());
 #endif
     socket->flush();
 }

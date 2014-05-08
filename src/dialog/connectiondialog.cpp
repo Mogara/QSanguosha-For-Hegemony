@@ -38,19 +38,18 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
 {
     ui->setupUi(this);
 
-    ui->nameLineEdit->setText(Config.UserName.left(8));
+	ui->nameLineEdit->setText(Config.UserName.left(8));
 
-    ui->hostComboBox->addItems(Config.HistoryIPs);
+	ui->hostComboBox->addItems(Config.HistoryIPs);
     ui->hostComboBox->lineEdit()->setText(Config.HostAddress);
 
-    ui->connectButton->setFocus();
+	ui->connectButton->setFocus();
 
-    ui->avatarPixmap->setPixmap(G_ROOM_SKIN.getGeneralPixmap(Config.UserAvatar,
-                                QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
+	ui->avatarPixmap->setPixmap(G_ROOM_SKIN.getGeneralPixmap(Config.UserAvatar, QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
 
-    hideAvatarList();
+	hideAvatarList();
 
-    ui->reconnectionCheckBox->setChecked(Config.value("EnableReconnection", false).toBool());
+	ui->reconnectionCheckBox->setChecked(Config.value("EnableReconnection", false).toBool());
 
     setFixedHeight(height());
     setFixedWidth(ShrinkWidth);

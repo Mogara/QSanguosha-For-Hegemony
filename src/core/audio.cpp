@@ -14,7 +14,7 @@ static FMOD_CHANNEL *BGMChannel;
 class Sound {
 public:
     Sound(const QString &filename): sound(NULL), channel(NULL) {
-        FMOD_System_CreateSound(System, filename.toAscii(), FMOD_DEFAULT, NULL, &sound);
+        FMOD_System_CreateSound(System, filename.toUtf8(), FMOD_DEFAULT, NULL, &sound);
     }
 
     ~Sound() {
