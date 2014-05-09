@@ -225,6 +225,13 @@ macx{
 
 LIBS += -L.
 LIBS += -L"$$_PRO_FILE_PWD_/lib"
+win32{
+    !contains(QMAKE_HOST.arch, x86_64) {
+        LIBS += -L"$$_PRO_FILE_PWD_/lib/win32"
+    } else {
+        LIBS += -L"$$_PRO_FILE_PWD_/lib/win64"
+    }
+}
 
 CONFIG(audio){
     DEFINES += AUDIO_SUPPORT
