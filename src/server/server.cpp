@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "engine.h"
 #include "scenario.h"
+#include "socket.h"
 
 #include <QApplication>
 
@@ -80,13 +81,19 @@ Room *Server::createNewRoom() {
 void Server::processNewConnection(ClientSocket *socket) {
     QString address = socket->peerAddress();
     if (Config.ForbidSIMC) {
-        if (addresses.contains(address)) {
-            addresses.append(address);
+        QMultiHash<QString, ClientSocket *>::iterator i = addresses.find(address);
+        if (i != addresses.end()) {
+            while (i != addresses.end()) {
+                i.value()->send("");
+                ++i;
+            }
+
+            addresses.insert(address, socket);
             socket->disconnectFromHost();
             emit server_message(tr("Forbid the connection of address %1").arg(address));
             return;
         } else {
-            addresses.append(address);
+            addresses.insert(address, socket);
         }
     }
 
@@ -174,7 +181,7 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
 void Server::cleanup() {
     ClientSocket *socket = qobject_cast<ClientSocket *>(sender());
     if (Config.ForbidSIMC)
-        addresses.removeOne(socket->peerAddress());
+        addresses.remove(socket->peerAddress(), socket);
 
     socket->deleteLater();
 }
