@@ -751,12 +751,11 @@ public:
 
         if (caiwenji != NULL){
             caiwenji->tag["beige_data"] = data;
-            bool invoke = room->askForDiscard(caiwenji, objectName(), 1, 1, true, true, "@beige");
+            bool invoke = room->askForDiscard(caiwenji, objectName(), 1, 1, true, true, "@beige", true);
             caiwenji->tag.remove("beige_data");
 
             if (invoke){
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, caiwenji->objectName(), data.value<DamageStruct>().to->objectName());
-                room->notifySkillInvoked(caiwenji, objectName());
                 room->broadcastSkillInvoke(objectName(), caiwenji);
                 return true;
             }
@@ -1397,16 +1396,16 @@ public:
     }
 
     void doHuoshui(Room *room, ServerPlayer *zoushi, bool set) const{
-        if (set && zoushi->tag["huoshui"].toBool() == false){
-            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi)){
+        if (set && !zoushi->tag["huoshui"].toBool()) {
+            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi))
                 room->setPlayerDisableShow(p, "hd", "huoshui");
-            }
+
             zoushi->tag["huoshui"] = true;
         }
-        else if (!set && zoushi->tag["huoshui"].toBool() == true) {
-            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi)){
+        else if (!set && zoushi->tag["huoshui"].toBool()) {
+            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi))
                 room->removePlayerDisableShow(p, "huoshui");
-            }
+
             zoushi->tag["huoshui"] = false;
         }
     }
