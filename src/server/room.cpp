@@ -2566,8 +2566,7 @@ void Room::chooseGenerals() {
             QStringList default_generals = _chooseDefaultGenerals(player);
             _setPlayerGeneral(player, default_generals.first(), true);
             _setPlayerGeneral(player, default_generals.last(), false);
-        }
-        else {
+        } else {
             QStringList generals = generalName.toString().split("+");
             if (generals.length() != 2 || !_setPlayerGeneral(player, generals.first(), true)
                 || !_setPlayerGeneral(player, generals.last(), false)) {
@@ -5390,8 +5389,7 @@ ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerP
         choice = ai->askForPlayerChosen(targets, skillName);
         if (choice && notify_skill)
             thread->delay();
-    }
-    else {
+    } else {
         JsonArray req;
         JsonArray req_targets;
         foreach(ServerPlayer *target, targets)
@@ -5456,8 +5454,8 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, c
     if (ai != NULL && single_result && !skill_name.isEmpty()) {
         QString general = ai->askForChoice(skill_name, generals.join("+"), data);
         thread->delay();
-    }
-    else if (player->isOnline()) {
+        return general;
+    } else if (player->isOnline()) {
         JsonArray options;
         options << JsonUtils::toJsonArray(generals);
         options << single_result;
