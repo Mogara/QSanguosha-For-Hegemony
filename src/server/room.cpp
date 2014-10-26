@@ -3550,7 +3550,7 @@ void Room::drawCards(QList<ServerPlayer *> players, QList<int> n_list, const QSt
     moveCardsAtomic(moves, false);
 }
 
-void Room::throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower) {
+void Room::throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower, const QString &skill_name) {
     CardMoveReason reason;
     if (thrower == NULL) {
         reason.m_reason = CardMoveReason::S_REASON_THROW;
@@ -3561,10 +3561,10 @@ void Room::throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower)
         reason.m_playerId = thrower->objectName();
     }
     reason.m_skillName = card->getSkillName();
-    throwCard(card, reason, who, thrower);
+    throwCard(card, reason, who, thrower, skill_name);
 }
 
-void Room::throwCard(const Card *card, const CardMoveReason &reason, ServerPlayer *who, ServerPlayer *thrower) {
+void Room::throwCard(const Card *card, const CardMoveReason &reason, ServerPlayer *who, ServerPlayer *thrower, const QString &skill_name) {
     if (card == NULL)
         return;
 
@@ -3577,7 +3577,12 @@ void Room::throwCard(const Card *card, const CardMoveReason &reason, ServerPlaye
     LogMessage log;
     if (who) {
         if (thrower == NULL) {
-            log.type = "$DiscardCard";
+            if (skill_name.isEmpty())
+                log.type = "$DiscardCard";
+            else {
+                log.type = "$DiscardCardWithSkill";
+                log.arg = skill_name;
+            }
             log.from = who;
         } else {
             log.type = "$DiscardCardByOther";
@@ -3614,8 +3619,8 @@ void Room::throwCard(const Card *card, const CardMoveReason &reason, ServerPlaye
     }
 }
 
-void Room::throwCard(int card_id, ServerPlayer *who, ServerPlayer *thrower) {
-    throwCard(Sanguosha->getCard(card_id), who, thrower);
+void Room::throwCard(int card_id, ServerPlayer *who, ServerPlayer *thrower, const QString &skill_name) {
+    throwCard(Sanguosha->getCard(card_id), who, thrower, skill_name);
 }
 
 RoomThread *Room::getThread() const{
@@ -4832,8 +4837,7 @@ QString Room::askForKingdom(ServerPlayer *player) {
     return "wei";
 }
 
-bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discard_num, int min_num,
-    bool optional, bool include_equip, const QString &prompt) {
+bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discard_num, int min_num, bool optional, bool include_equip, const QString &prompt, bool notify_skill) {
     if (!player->isAlive())
         return false;
     tryPause();
@@ -4937,11 +4941,13 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
 
     DummyCard dummy_card(to_discard);
     if (reason == "gamerule") {
-        CardMoveReason reason(CardMoveReason::S_REASON_RULEDISCARD, player->objectName(), QString(), dummy_card.getSkillName(), QString());
-        throwCard(&dummy_card, reason, player);
+        CardMoveReason move_reason(CardMoveReason::S_REASON_RULEDISCARD, player->objectName(), QString(), dummy_card.getSkillName(), QString());
+        throwCard(&dummy_card, move_reason, player);
     } else {
-        CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName(), QString(), dummy_card.getSkillName(), QString());
-        throwCard(&dummy_card, reason, player);
+        CardMoveReason move_reason(CardMoveReason::S_REASON_THROW, player->objectName(), QString(), dummy_card.getSkillName(), QString());
+        if (notify_skill)
+            notifySkillInvoked(player, reason);
+        throwCard(&dummy_card, move_reason, player, NULL, notify_skill ? reason : QString());
     }
 
     QVariant data;
