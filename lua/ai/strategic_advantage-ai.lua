@@ -37,7 +37,7 @@ sgs.ai_skill_use_func.TransferCard = function(transferCard, use, self)
 	local friends, friends_other = {}, {}
 	local targets = sgs.PlayerList()
 	for _, friend in ipairs(self.friends_noself) do
-		if transferCard:targetFilter(targets, friend, self.player) and not self:needKongcheng(friend, true) and friend:hasShownOneGeneral() then
+		if transferCard:targetFilter(targets, friend, self.player) and not self:needKongcheng(friend, true) then
 			if friend:hasShownOneGeneral() then
 				table.insert(friends, friend)
 			else
@@ -49,8 +49,8 @@ sgs.ai_skill_use_func.TransferCard = function(transferCard, use, self)
 
 	local cards = {}
 	local oneJink = self.player:hasSkill("kongcheng")
-	for _, c in sgs.qlist(self.player:getHandcards()) do
-		if c:isTransferable() and (not isCard("Peach", c, self.player) or #friends == 0) then
+	for _, c in sgs.qlist(self.player:getCards("he")) do
+		if c:isTransferable() and (not isCard("Peach", c, self.player) or #friends > 0) then
 			if not oneJink and isCard("Jink", c, self.player) then
 				oneJink = true
 				continue
@@ -62,7 +62,7 @@ sgs.ai_skill_use_func.TransferCard = function(transferCard, use, self)
 
 	self:sortByUseValue(cards)
 	if #friends > 0 then
-		local card, target = self:getCardNeedPlayer(cards, friends)
+		local card, target = self:getCardNeedPlayer(cards, friends, "transfer")
 		if card and target then
 			use.card = sgs.Card_Parse("@TransferCard=" .. card:getEffectiveId())
 			if use.to then use.to:append(target) end
@@ -72,7 +72,7 @@ sgs.ai_skill_use_func.TransferCard = function(transferCard, use, self)
 
 	if #friends_other == 0 then return end
 
-	local card, target = self:getCardNeedPlayer(cards, friends_other)
+	local card, target = self:getCardNeedPlayer(cards, friends_other, "transfer")
 	if card and target then
 		use.card = sgs.Card_Parse("@TransferCard=" .. card:getEffectiveId())
 		if use.to then use.to:append(target) end

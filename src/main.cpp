@@ -28,6 +28,7 @@
 #include <QTranslator>
 #include <QDateTime>
 #include <QSplashScreen>
+#include <QMessageBox>
 
 #include "server.h"
 #include "settings.h"
@@ -70,8 +71,6 @@ static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINT
 int main(int argc, char *argv[]) {
     bool noGui = argc > 1 && strcmp(argv[1], "-server") == 0;
 
-
-
     if (noGui)
         new QCoreApplication(argc, argv);
     else
@@ -81,16 +80,18 @@ int main(int argc, char *argv[]) {
 #define showSplashMessage(message)
 #define SPLASH_DISABLED
 #else
-    QPixmap raraLogo("image/system/developers/logo.png");
-    QSplashScreen splash(raraLogo);
-    const int alignment = Qt::AlignBottom | Qt::AlignHCenter;
+    QSplashScreen *splash = NULL;
     if (!noGui) {
-        splash.show();
+        QPixmap raraLogo("image/system/developers/logo.png");
+        splash = new QSplashScreen(raraLogo);
+        splash->show();
         qApp->processEvents();
     }
 #define showSplashMessage(message) \
-    if (!noGui) {\
-        splash.showMessage(message, alignment, Qt::cyan);\
+    if (splash == NULL) {\
+        puts(message.toUtf8().constData());\
+    } else {\
+        splash->showMessage(message, Qt::AlignBottom | Qt::AlignHCenter, Qt::cyan);\
         qApp->processEvents();\
     }
 #endif
@@ -99,8 +100,6 @@ int main(int argc, char *argv[]) {
     showSplashMessage(QSplashScreen::tr("Loading BreakPad..."));
     ExceptionHandler eh(L"./dmp", NULL, callback, NULL, ExceptionHandler::HANDLER_ALL);
 #endif
-
-
 
 #if defined(Q_OS_MAC) && defined(QT_NO_DEBUG)
     showSplashMessage(QSplashScreen::tr("Setting game path..."));
@@ -155,7 +154,8 @@ int main(int argc, char *argv[]) {
 
     showSplashMessage(QSplashScreen::tr("Loading user's configurations..."));
     Config.init();
-    qApp->setFont(Config.AppFont);
+    if (!noGui)
+        qApp->setFont(Config.AppFont);
 
     if (qApp->arguments().contains("-server")) {
         Server *server = new Server(qApp);
@@ -191,7 +191,8 @@ int main(int argc, char *argv[]) {
     showSplashMessage(QSplashScreen::tr("Initializing audio module..."));
     Audio::init();
 #else
-    QMessageBox::warning(this, QMessageBox::tr("Warning"), QMessageBox::tr("Audio support is disabled when compiled"));
+    if (!noGui)
+        QMessageBox::warning(NULL, QMessageBox::tr("Warning"), QMessageBox::tr("Audio support is disabled when compiled"));
 #endif
 
     showSplashMessage(QSplashScreen::tr("Loading main window..."));
@@ -200,7 +201,10 @@ int main(int argc, char *argv[]) {
     Sanguosha->setParent(&main_window);
     main_window.show();
 #ifndef SPLASH_DISABLED
-    splash.finish(&main_window);
+    if (splash != NULL) {
+        splash->finish(&main_window);
+        delete splash;
+    }
 #endif
 
     foreach(QString arg, qApp->arguments()) {
