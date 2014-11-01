@@ -641,7 +641,7 @@ function SmartAI:useCardImperialOrder(card, use)
 	if not card:isAvailable(self.player) then return end
 	use.card = card
 end
-sgs.ai_use_value.ImperialOrder = 2.9
+sgs.ai_use_value.ImperialOrder = 0
 sgs.ai_use_priority.ImperialOrder = 8.9
 sgs.ai_keep_value.ImperialOrder = 0
 
@@ -789,8 +789,8 @@ local wooden_ox_skill = {}
 wooden_ox_skill.name = "WoodenOx"
 table.insert(sgs.ai_skills, wooden_ox_skill)
 wooden_ox_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("WoodenOxCard") or self.player:isKongcheng() or not self.player:hasTreasure("WoodenOx") then return end
 	self.wooden_ox_assist = nil
+	if self.player:hasUsed("WoodenOxCard") or self.player:isKongcheng() or not self.player:hasTreasure("WoodenOx") then return end
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByUseValue(cards, true)
 	local card, friend = self:getCardNeedPlayer(cards)

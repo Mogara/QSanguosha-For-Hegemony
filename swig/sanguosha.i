@@ -373,6 +373,7 @@ class ServerPlayer: public Player {
 public:
     explicit ServerPlayer(Room *room);
 
+    QString objectName() const;
     void kick();
     void unicast(const char *message);
     void drawCard(const Card *card);
@@ -1454,7 +1455,6 @@ public:
         const char *pileName, const CardMoveReason &reason, bool forceMoveVisible = false);
     void moveCardsAtomic(QList<CardsMoveStruct> cards_move, bool forceMoveVisible);
     void moveCardsAtomic(CardsMoveStruct cards_move, bool forceMoveVisible);
-    void moveCardsToEndOfDrawpile(QList<int> card_ids);
     void moveCards(CardsMoveStruct cards_move, bool forceMoveVisible, bool ignoreChanges = true);
     void moveCards(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible, bool ignoreChanges = true);
 
