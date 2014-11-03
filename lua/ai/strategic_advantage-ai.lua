@@ -818,6 +818,13 @@ sgs.ai_playerchosen_intention.WoodenOx = -10
 sgs.ai_use_priority.WoodenOxCard = 0
 
 --Blade
-function sgs.ai_weapon_value.Blade(self, enemy)
-	if not enemy then return math.min(self:getCardsNum("Slash"), 3) end
+function sgs.ai_weapon_value.Blade(self, enemy, player)
+	if not enemy then
+		return 0
+	else
+		local v = 0
+		if not enemy:hasShownGeneral1() then v = v + 1 end
+		if not enemy:hasShownGeneral2() then v = v + 1 end
+		return v
+	end
 end
