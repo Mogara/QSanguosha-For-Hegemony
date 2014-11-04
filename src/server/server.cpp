@@ -81,19 +81,12 @@ Room *Server::createNewRoom() {
 void Server::processNewConnection(ClientSocket *socket) {
     QString address = socket->peerAddress();
     if (Config.ForbidSIMC) {
-        QMultiHash<QString, ClientSocket *>::iterator i = addresses.find(address);
-        if (i != addresses.end()) {
-            while (i != addresses.end()) {
-                i.value()->send("");
-                ++i;
-            }
-
-            addresses.insert(address, socket);
+        if (addresses.contains(address)) {
             socket->disconnectFromHost();
             emit server_message(tr("Forbid the connection of address %1").arg(address));
             return;
         } else {
-            addresses.insert(address, socket);
+            addresses.append(address);
         }
     }
 
@@ -181,8 +174,7 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
 void Server::cleanup() {
     ClientSocket *socket = qobject_cast<ClientSocket *>(sender());
     if (Config.ForbidSIMC)
-        addresses.remove(socket->peerAddress(), socket);
-
+        addresses.removeOne(socket->peerAddress());
     socket->deleteLater();
 }
 
