@@ -392,7 +392,7 @@ function sgs.ai_cardneed.luoyi(to, card, self)
 
 	self:sort(self.enemies, "defenseSlash")
 	for _, enemy in ipairs(self.enemies) do
-		if to:canSlash(enemy) and not self:slashProhibit(slash ,enemy) and self:slashIsEffective(slash, enemy) and sgs.getDefenseSlash(enemy) <= 2 then
+		if to:canSlash(enemy) and not self:slashProhibit(slash ,enemy) and self:slashIsEffective(slash, enemy) and sgs.getDefenseSlash(enemy, self) <= 2 then
 			target = enemy
 			break
 		end
@@ -1191,7 +1191,11 @@ function SmartAI:toTurnOver(player, n, reason) -- @todo: param of toTurnOver
 			return false
 		end
 	end
-	if n > 1 and player:hasShownSkill("jijiu") then return false end
+	if n > 1 then 
+		if ( player:getPhase() ~= sgs.Player_NotActive and (player:hasShownSkills(sgs.Active_cardneed_skill) or player:hasWeapon("Crossbow")) ) 
+		or ( player:getPhase() == sgs.Player_NotActive and player:hasShownSkills(sgs.notActive_cardneed_skill) ) then
+		return false end
+	end
 	if player:hasShownSkill("jushou") and player:getPhase() <= sgs.Player_Finish then return false end
 	if not player:faceUp() then return false end
 	return true

@@ -389,7 +389,7 @@ sgs.ai_skill_invoke.yingzi = function(self, data)
 					target = p
 				end
 			end
-			if target and self:isFriend(target) then return true end
+			if target and not self:isFriend(target) and num + count > 6 then return false
 		end
 	end
 	return true
@@ -729,7 +729,7 @@ sgs.ai_skill_use["@@liuli"] = function(self, prompt, method)
 							local ret = doLiuli(player)
 							if ret ~= "." then liuli[3] = ret end
 						elseif not self:hasHeavySlashDamage(source, slash, player) then
-							if self:getDamagedEffects(player, source, true) or self:needToLoseHp(player, source, true) then
+							if self:getDamagedEffects(player, source, true) or self:needToLoseHp(player, source, true, true) then
 								local ret = doLiuli(player)
 								if ret ~= "." then liuli[4] = ret end
 							end
@@ -804,7 +804,7 @@ function SmartAI:getWoundedFriend(maleOnly)
 
 	local cmp = function (a ,b)
 		if getCmpHp(a) == getCmpHp(b) then
-			return sgs.getDefenseSlash(a) < sgs.getDefenseSlash(b)
+			return sgs.getDefenseSlash(a, self) < sgs.getDefenseSlash(b, self)
 		else
 			return getCmpHp(a) < getCmpHp(b)
 		end
@@ -1449,6 +1449,9 @@ sgs.ai_skill_invoke.haoshi = function(self, data)
 				extra = extra + n
 			end
 		end
+	end
+	if self.player:hasTreasure("JadeSeal") then
+		extra = extra + 1
 	end
 	if self.player:getHandcardNum() + extra <= 1 then return true end
 	if not self:willShowForDefence() and not self:willShowForAttack() then return false end
