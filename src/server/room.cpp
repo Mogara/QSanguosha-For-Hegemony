@@ -5905,13 +5905,15 @@ void Room::sortByActionOrder(QList<ServerPlayer *> &players) {
         qSort(players.begin(), players.end(), ServerPlayer::CompareByActionOrder);
 }
 
-void Room::cancelTarget(CardUseStruct &use, const QString &name) {
+void Room::cancelTarget(CardUseStruct &use, const QString &name)
+{
     if (use.to.isEmpty())
         return;
     cancelTarget(use, use.to.first()->getRoom()->findPlayer(name)); // use.from can be NULL, but use.to must not have a value that is NULL
 }
 
-void Room::cancelTarget(CardUseStruct &use, ServerPlayer *player) {
+void Room::cancelTarget(CardUseStruct &use, ServerPlayer *player)
+{
     if (player == NULL)
         return;
 
@@ -5920,8 +5922,7 @@ void Room::cancelTarget(CardUseStruct &use, ServerPlayer *player) {
     if (use.from) {
         log.type = "$CancelTarget";
         log.from = use.from;
-    }
-    else {
+    } else {
         log.type = "$CancelTargetNoUser";
     }
     log.to << player;
@@ -5932,17 +5933,6 @@ void Room::cancelTarget(CardUseStruct &use, ServerPlayer *player) {
 
     use.to.removeOne(player);
 
-    if (use.card != NULL && use.card->isKindOf("Slash")) {
-        player->removeQinggangTag(use.card);
-
-        QStringList blade_use = player->property("blade_use").toStringList();
-
-        if (blade_use.contains(use.card->toString())) {
-            blade_use.removeOne(use.card->toString());
-            room->setPlayerProperty(player, "blade_use", blade_use);
-
-            if (blade_use.isEmpty())
-                room->removePlayerDisableShow(player, "Blade");
-        }
-    }
+    if (use.card != NULL && use.card->isKindOf("Slash"))
+        player->slashSettlementFinished(use.card);
 }

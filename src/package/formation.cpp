@@ -881,16 +881,13 @@ public:
             }
         } else if (triggerEvent == TargetConfirming) {
             CardUseStruct use = data.value<CardUseStruct>();
-
             room->cancelTarget(use, use.to.first()); // Room::cancelTarget(use, player);
-
             data = QVariant::fromValue(use);
         }
 
         return false;
     }
 };
-
 
 class Zhendu : public TriggerSkill {
 public:
