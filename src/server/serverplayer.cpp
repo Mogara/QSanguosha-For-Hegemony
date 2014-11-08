@@ -1907,7 +1907,8 @@ QStringList ServerPlayer::getBigKingdoms(const QString &reason, MaxCardsType::Ma
     return big_kingdoms;
 }
 
-void ServerPlayer::changeToLord() {
+void ServerPlayer::changeToLord()
+{
     foreach(QString skill_name, head_skills.keys()) {
         Player::loseSkill(skill_name);
         JsonArray arg_loseskill;
@@ -1964,7 +1965,21 @@ void ServerPlayer::changeToLord() {
             room->doNotify(this, S_COMMAND_SET_MARK, arg);
         }
     }
+}
 
+void ServerPlayer::slashSettlementFinished(const Card *slash)
+{
+    removeQinggangTag(slash);
+
+    QStringList blade_use = property("blade_use").toStringList();
+
+    if (blade_use.contains(slash->toString())) {
+        blade_use.removeOne(slash->toString());
+        room->setPlayerProperty(this, "blade_use", blade_use);
+
+        if (blade_use.isEmpty())
+            room->removePlayerDisableShow(this, "Blade");
+    }
 }
 
 #ifndef QT_NO_DEBUG

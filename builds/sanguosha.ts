@@ -3597,28 +3597,28 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>Server</name>
     <message>
-        <location filename="../src/server/server.cpp" line="93"/>
-        <location filename="../src/server/server.cpp" line="102"/>
+        <location filename="../src/server/server.cpp" line="86"/>
+        <location filename="../src/server/server.cpp" line="95"/>
         <source>Forbid the connection of address %1</source>
         <translation>禁止了地址 %1 的连接</translation>
     </message>
     <message>
-        <location filename="../src/server/server.cpp" line="111"/>
+        <location filename="../src/server/server.cpp" line="104"/>
         <source>%1 connected</source>
         <translation>%1 已连接</translation>
     </message>
     <message>
-        <location filename="../src/server/server.cpp" line="122"/>
+        <location filename="../src/server/server.cpp" line="115"/>
         <source>Invalid message %1 from %2</source>
         <translation>来自%2的无效消息%1</translation>
     </message>
     <message>
-        <location filename="../src/server/server.cpp" line="131"/>
+        <location filename="../src/server/server.cpp" line="124"/>
         <source>Packet %1 from an unknown source %2</source>
         <translation>来自未知来源%2的数据包%1</translation>
     </message>
     <message>
-        <location filename="../src/server/server.cpp" line="147"/>
+        <location filename="../src/server/server.cpp" line="140"/>
         <source>Invalid signup string: %1</source>
         <translation>无效的登录字符串: %1</translation>
     </message>

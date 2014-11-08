@@ -483,6 +483,8 @@ public:
     void summonFriends(const HegemonyMode::ArrayType type);
 
     virtual QStringList getBigKingdoms(const char *reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const;
+
+    void slashSettlementFinished(const Card *slash);
 };
 
 %extend ServerPlayer {

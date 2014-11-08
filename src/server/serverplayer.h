@@ -197,6 +197,9 @@ public:
 
     virtual QStringList getBigKingdoms(const QString &reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const;
 
+    // remove QinggangTag and BladeDisableShow
+    void slashSettlementFinished(const Card *slash);
+
     bool event_received;
 
     void changeToLord();

@@ -346,6 +346,7 @@ public:
             if (p->hasFlag("LiuliTarget")) {
                 p->setFlags("-LiuliTarget");
                 use.to.removeOne(daqiao);
+                daqiao->slashSettlementFinished(use.card);
                 use.to.append(p);
                 room->sortByActionOrder(use.to);
                 data = QVariant::fromValue(use);
