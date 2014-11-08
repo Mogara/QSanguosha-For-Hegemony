@@ -368,7 +368,7 @@ lianhuan_skill.getTurnUseCard = function(self)
 	end
 
 	for _, acard in ipairs(cards) do
-		if acard:getSuit() == sgs.Card_Club then
+		if acard:getSuit() == sgs.Card_Club and not (self.player:hasSkill("jizhi") and acard:isKindOf("IronChain"))then
 			local shouldUse = true
 			if self:getUseValue(acard) > sgs.ai_use_value.IronChain and acard:getTypeId() == sgs.Card_TypeTrick then
 				local dummy_use = { isDummy = true }
@@ -425,9 +425,13 @@ huoji_skill.getTurnUseCard = function(self)
 	local card
 
 	self:sortByUseValue(cards, true)
-
+	
 	for _,acard in ipairs(cards) do
-		if acard:isRed() and not isCard("Peach", acard, self.player) and (self:getDynamicUsePriority(acard) < sgs.ai_use_value.FireAttack or self:getOverflow() > 0) then
+		local fireValue = sgs.ai_use_value.FireAttack
+		if self.player:hasSkill("jizhi") and acard:isKindOf("TrickCard") then 
+			fireValue = fireValue - 4
+		end 	
+		if acard:isRed() and not isCard("Peach", acard, self.player) and (self:getDynamicUsePriority(acard) < fireValue or self:getOverflow() > 0) then
 			if acard:isKindOf("Slash") and self:getCardsNum("Slash") == 1 then
 				local keep
 				local dummy_use = { isDummy = true , to = sgs.SPlayerList() }
@@ -477,7 +481,7 @@ sgs.ai_view_as.kanpo = function(card, player, card_place)
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
 	if card_place == sgs.Player_PlaceHand then
-		if card:isBlack() and not card:isKindOf("HegNullification") then
+		if card:isBlack() and not card:isKindOf("HegNullification") and not (player:hasSkill("jizhi") and card:isKindOf("Nullification")) then
 			return ("nullification:kanpo[%s:%s]=%d%s"):format(suit, number, card_id, "&kanpo")
 		end
 	end
