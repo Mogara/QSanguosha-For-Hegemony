@@ -117,7 +117,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->askForSkillInvoke(objectName())){
+        if (player->askForSkillInvoke(this)){
             if (player->getHandcardNum() > player->getMaxCards()) {
                 room->broadcastSkillInvoke(objectName(), player);
             }
@@ -163,7 +163,7 @@ Yingzi::Yingzi() : DrawCardsSkill("yingzi") {
 }
 
 bool Yingzi::cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-    if (player->askForSkillInvoke(objectName())){
+    if (player->askForSkillInvoke(this)){
         room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1, player);
         return true;
     }
@@ -376,7 +376,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        bool invoke = player->hasShownSkill(this) ? true : room->askForSkillInvoke(player, objectName());
+        bool invoke = player->hasShownSkill(this) ? true : player->askForSkillInvoke(this);
         if (invoke){
             room->broadcastSkillInvoke(objectName(), player);
             return true;
@@ -480,7 +480,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *sunshangxiang, QVariant &, ServerPlayer *) const{
-        if (room->askForSkillInvoke(sunshangxiang, objectName())){
+        if (sunshangxiang->askForSkillInvoke(this)){
             room->broadcastSkillInvoke(objectName(), sunshangxiang);
             return true;
         }
@@ -701,7 +701,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        return player->askForSkillInvoke(objectName(), data);
+        return player->askForSkillInvoke(this, data);
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *xiaoqiao, QVariant &data, ServerPlayer *) const {
@@ -931,7 +931,7 @@ public:
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &data, ServerPlayer *) const{
         if (triggerEvent == AskForPeachesDone)
             return true;
-        if (room->askForSkillInvoke(zhoutai, objectName(), data)) {
+        if (zhoutai->askForSkillInvoke(this, data)) {
             room->broadcastSkillInvoke(objectName(), zhoutai);
             const QList<int> &buqu = zhoutai->getPile("buqu");
             int need = 1 - zhoutai->getHp(); // the buqu cards that should be turned over
@@ -1041,8 +1041,8 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->askForSkillInvoke("haoshi")){
-            room->broadcastSkillInvoke("haoshi", player);
+        if (player->askForSkillInvoke(this)){
+            room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
         return false;
@@ -1340,7 +1340,7 @@ public:
         QList<int> cards = cardsToGet + cardsOther;
         erzhang->tag.remove("GuzhengToGet");
         erzhang->tag.remove("GuzhengOther");
-        if (erzhang->askForSkillInvoke(objectName(), cards.length())) {
+        if (erzhang->askForSkillInvoke(this, cards.length())) {
             room->broadcastSkillInvoke(objectName(), erzhang);
             room->fillAG(cards, erzhang, cardsOther);
 
