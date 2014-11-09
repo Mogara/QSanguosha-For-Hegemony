@@ -376,9 +376,10 @@ void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason) {
 
     thread->trigger(GameOverJudge, this, victim, data);
 
-    foreach(ServerPlayer *p, players_with_victim)
+    foreach(ServerPlayer *p, players_with_victim) {
         if (p->isAlive() || p == victim)
             thread->trigger(Death, this, p, data);
+    }
 
     doNotify(victim, S_COMMAND_SET_DASHBOARD_SHADOW, victim->objectName());
 
@@ -3626,7 +3627,6 @@ void Room::throwCard(const Card *card, const CardMoveReason &reason, ServerPlaye
     log.card_str = IntList2StringList(to_discard).join("+");
     sendLog(log);
 
-    QList<CardsMoveStruct> moves;
     if (who) { // player's card cannot enter discard_pile directly
         CardsMoveStruct move(to_discard, who, NULL, Player::PlaceUnknown, Player::PlaceTable, reason);
         moveCardsAtomic(move, true);
