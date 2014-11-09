@@ -1676,7 +1676,6 @@ function SmartAI:useCardDuel(duel, use)
 			if use.to then
 				if i == 1 then
 					use.to:append(targets[i])
-					if not use.isDummy then self:speak("duel", self.player:isFemale()) end
 				end
 				if not setFlag and self.player:getPhase() == sgs.Player_Play and self:isEnemy(targets[i]) then
 					self.player:setFlags("duelTo" .. targets[i]:objectName())
@@ -1728,9 +1727,6 @@ end
 
 function SmartAI:useCardExNihilo(card, use)
 	use.card = card
-	if not use.isDummy then
-		self:speak("lucky")
-	end
 end
 
 sgs.ai_card_intention.ExNihilo = -80
@@ -1872,7 +1868,6 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
 				use.to:append(player)
 				if not use.isDummy then
 					sgs.Sanguosha:getCard(cardid):setFlags("AIGlobal_SDCardChosen_" .. name)
-					if use.to:length() == 1 then self:speak("hostile", self.player:isFemale()) end
 				end
 			end
 			if #targets == targets_num then return true end
@@ -2379,7 +2374,6 @@ sgs.ai_skill_cardask["collateral-slash"] = function(self, data, pattern, target2
 			if self:needToLoseHp(target2, self.player) then return slash:toString() end
 		end
 	end
-	self:speak("collateral", self.player:isFemale())
 	return "."
 end
 
@@ -2823,10 +2817,10 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 	end
 
 	if analeptic then
-		local slashs = self:getCards("Slash")
+		local slashes = self:getCards("Slash")
 		for _, enemy in ipairs(self.enemies) do
 			local hit_num = 0
-			for _, slash in ipairs(slashs) do
+			for _, slash in ipairs(slashes) do
 				if self:slashIsEffective(slash, enemy) and self.player:canSlash(enemy, slash) and self:slashIsAvailable() then
 					hit_num = hit_num + 1
 					if getCardsNum("Jink", enemy, self.player) < 1

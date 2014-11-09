@@ -498,7 +498,7 @@ sgs.ai_view_as.qingguo = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	if card:isBlack() and card_place == sgs.Player_PlaceHand then
+	if card:isBlack() and (card_place == sgs.Player_PlaceHand or player:getPile("wooden_ox"):contains(card_id)) then
 		return ("jink:qingguo[%s:%s]=%d&qingguo"):format(suit, number, card_id)
 	end
 end
@@ -1005,6 +1005,7 @@ local qiangxi_skill = {}
 qiangxi_skill.name = "qiangxi"
 table.insert(sgs.ai_skills, qiangxi_skill)
 qiangxi_skill.getTurnUseCard = function(self)
+	if not self:willShowForAttack() then return end
 	if not self.player:hasUsed("QiangxiCard") then
 		return sgs.Card_Parse("@QiangxiCard=.&qiangxi")
 	end
@@ -1229,6 +1230,14 @@ sgs.ai_skill_playerchosen.fangzhu = function(self, targets)
 			if not target then
 				for _, enemy in ipairs(self.enemies) do
 					if self:toTurnOver(enemy, n, "fangzhu") then
+						target = enemy
+						break
+					end
+				end
+			end
+			if not target then
+				for _, enemy in ipairs(self.enemies) do
+					if enemy:getPhase() == sgs.Player_NotActive then
 						target = enemy
 						break
 					end

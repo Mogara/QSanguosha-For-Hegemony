@@ -252,7 +252,9 @@ end
 
 sgs.ai_skill_cardask["@tiaoxin-slash"] = function(self, data, pattern, target)
 	if target then
-		for _, slash in ipairs(self:getCards("Slash")) do
+		local cards = self:getCards("Slash")
+		self:sortByUseValue(cards)
+		for _, slash in ipairs(cards) do
 			if self:isFriend(target) and self:slashIsEffective(slash, target) then
 				if self:needLeiji(target, self.player) then return slash:toString() end
 				if self:getDamagedEffects(target, self.player) then return slash:toString() end
@@ -263,7 +265,7 @@ sgs.ai_skill_cardask["@tiaoxin-slash"] = function(self, data, pattern, target)
 					return slash:toString()
 			end
 		end
-		for _, slash in ipairs(self:getCards("Slash")) do
+		for _, slash in ipairs(cards) do
 			if not self:isFriend(target) then
 				if not self:needLeiji(target, self.player) and not self:getDamagedEffects(target, self.player, true) then return slash:toString() end
 				if not self:slashIsEffective(slash, target) then return slash:toString() end
@@ -320,7 +322,12 @@ sgs.ai_use_value.ShangyiCard = 4
 sgs.ai_use_priority.ShangyiCard = 9
 sgs.ai_card_intention.ShangyiCard = 50
 
-sgs.ai_skill_invoke.yicheng = true
+sgs.ai_skill_invoke.yicheng = function(self, data)
+	if not self:willShowForDefence() then
+		return false
+	end
+	return true
+end
 
 sgs.ai_skill_discard.yicheng = function(self, discard_num, min_num, optional, include_equip)
 	if self.player:hasSkill("hongyan") then
