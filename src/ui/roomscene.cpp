@@ -2968,9 +2968,9 @@ void RoomScene::onGameOver() {
                 break;
             }
         }
-    }
-    else
+    } else {
         win_effect = "lose";
+    }
 
     Sanguosha->playSystemAudioEffect(win_effect);
 #endif
@@ -3025,25 +3025,28 @@ void RoomScene::onGameOver() {
 void RoomScene::addRestartButton(QDialog *dialog) {
     dialog->resize(main_window->width() / 2, dialog->height());
 
-    QPushButton *restart_button;
-    restart_button = new QPushButton(tr("Restart Game"));
-    QPushButton *return_button = new QPushButton(tr("Return to main menu"));
-    QHBoxLayout *hlayout = new QHBoxLayout;
-    hlayout->addStretch();
-    hlayout->addWidget(restart_button);
+    QPushButton *restartButton = new QPushButton(tr("Restart Game"));
+    QPushButton *returnButton = new QPushButton(tr("Return to main menu"));
+    QPushButton *saveButton = new QPushButton(tr("Save record"));
+    QPushButton *closeButton = new QPushButton(tr("Close"));
 
-    QPushButton *save_button = new QPushButton(tr("Save record"));
-    hlayout->addWidget(save_button);
-    hlayout->addWidget(return_button);
+    QHBoxLayout *hLayout = new QHBoxLayout;
+    hLayout->addStretch();
+    hLayout->addWidget(restartButton);
+
+    hLayout->addWidget(saveButton);
+    hLayout->addWidget(returnButton);
+    hLayout->addWidget(closeButton);
 
     QVBoxLayout *layout = qobject_cast<QVBoxLayout *>(dialog->layout());
-    if (layout) layout->addLayout(hlayout);
+    if (layout) layout->addLayout(hLayout);
 
-    connect(restart_button, SIGNAL(clicked()), dialog, SLOT(accept()));
-    connect(return_button, SIGNAL(clicked()), dialog, SLOT(accept()));
-    connect(save_button, SIGNAL(clicked()), this, SLOT(saveReplayRecord()));
+    connect(restartButton, SIGNAL(clicked()), dialog, SLOT(accept()));
+    connect(returnButton, SIGNAL(clicked()), dialog, SLOT(accept()));
+    connect(saveButton, SIGNAL(clicked()), this, SLOT(saveReplayRecord()));
     connect(dialog, SIGNAL(accepted()), this, SIGNAL(restart()));
-    connect(return_button, SIGNAL(clicked()), this, SIGNAL(return_to_start()));
+    connect(returnButton, SIGNAL(clicked()), this, SIGNAL(return_to_start()));
+    connect(closeButton, SIGNAL(clicked()), dialog, SLOT(reject()));
 }
 
 void RoomScene::saveReplayRecord(const bool auto_save, const bool network_only) {
