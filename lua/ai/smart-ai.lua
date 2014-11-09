@@ -4470,6 +4470,9 @@ function SmartAI:needToLoseHp(to, from, isSlash, passive, recover)
 		if need_jieyin then n = math.min(n, to:getMaxHp() - 1) end
 	end
 	if recover then return to:getHp() >= n end
+	
+	if self.player:hasSkills("hengzheng|yinghun|zaiqi") and not self.player:isWounded() then return true end
+	
 	return to:getHp() > n
 end
 
@@ -5068,7 +5071,7 @@ function SmartAI:willShowForAttack()
 			return false
 		end
 	end
-	return true
+	return math.random() < 0.5+(shown/10) or true
 end
 
 function SmartAI:willShowForDefence()
@@ -5094,7 +5097,7 @@ function SmartAI:willShowForDefence()
 			return false
 		end
 	end
-	return true
+	return math.random() < 0.5+(shown/10) or true
 end
 
 function sgs.getReward(player)
