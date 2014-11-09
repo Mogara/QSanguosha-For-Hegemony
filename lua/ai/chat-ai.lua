@@ -93,7 +93,7 @@ sgs.ai_chat_func[sgs.SlashEffected].blindness = function(self, player, data)
 
 	local index = 1 + (os.time() % #chat)
 
-	if os.time() % 10 <= 3 and not effect.to:isLord() then
+	if os.time() % 10 <= 3 and not effect.to:isLord() and math.random() < 0.9 then
 		effect.to:speak(chat[index])
 	end
 end
@@ -321,6 +321,66 @@ sgs.ai_chat_func[sgs.CardFinished].duoshi = function(self, player, data)
 				if p:hasSkill("xiaoji") then
 					table.insert(chat, "继续继续")
 				end
+				p:speak(chat[math.random(1, #chat)])
+				return
+			end
+		end
+	end
+end
+
+sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
+	local name1 =  sgs.Sanguosha:translate(self.player:getGeneralName())
+	local name2 =  sgs.Sanguosha:translate(self.player:getGeneral2Name())
+	local kingdom = sgs.Sanguosha:translate(self.player:getKingdom()) 
+	local chat = {
+		"这种将都亮？",
+		"我还当你多牛的将呢。。"
+	}
+	local notshown, shown= 0, 0
+	for _,p in sgs.qlist(self.room:getAlivePlayers()) do
+		if  not p:hasShownOneGeneral() then
+			notshown = notshown + 1
+		end
+		if p:hasShownOneGeneral() then
+			shown = shown + 1
+		end
+	end
+	if shown == 1 then
+		table.insert(chat,"首亮一时爽，全家火葬场")
+		table.insert(chat,"你们懂不懂，渣将首亮防袁绍")
+	end
+	if notshown < 3 then 
+		table.insert(chat,"终于亮了")
+	end	
+	if not self.player:hasShownAllGenerals() then 
+		table.insert(chat,self.player:screenName() .."原来是"..kingdom)
+		table.insert(chat,"看来这是大"..kingdom.."的节奏")		
+	elseif self.player:hasShownAllGenerals() then 
+		table.insert(chat, "我就说".. self.player:screenName() .."是"..name1..name2.."吧")
+		table.insert(chat,"卧槽,"..name1..name2.."!")			
+	end
+	for _, p in ipairs(sgs.robot) do
+		if p:objectName() ~= self.player:objectName() and math.random() < 0.2 then
+			p:speak(chat[math.random(1, #chat)])
+			return
+		end
+	end
+end
+
+sgs.ai_chat_func[sgs.DamageCaused].attackAnjiang = function(self, player, data)
+	local damage = data:toDamage()
+	local chat = {
+			"看看局势再说",
+			"都不亮吗？",
+			"不亮就打到亮",
+			"你不亮，我也不亮"
+			}
+	if damage and not damage.to:hasShownOneGeneral() then
+		if damage.to:getMaxHp() == 3 then 
+			table.insert(chat, "3血不卖不是魏")
+		end
+		for _, p in ipairs(sgs.robot) do
+			if p:objectName() ~= damage.to:objectName() and math.random() < 0.2 then
 				p:speak(chat[math.random(1, #chat)])
 				return
 			end
