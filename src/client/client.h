@@ -241,6 +241,8 @@ public slots:
     void onPlayerChoosePlayer(const Player *player);
     void onPlayerChooseTriggerOrder(const QString &choice);
     void onPlayerChangeSkin(int skin_id, bool is_head = true);
+    void onPlayerChooseSuit();
+    void onPlayerChooseKingdom();
     void preshow(const QString &skill_name, const bool isPreshowed);
     void trust();
     void addRobot();
@@ -288,8 +290,6 @@ private slots:
     bool processServerRequest(const QSanProtocol::Packet &packet);
     void processObsoleteServerPacket(const QString &cmd);
     void notifyRoleChange(const QString &new_role);
-    void onPlayerChooseSuit();
-    void onPlayerChooseKingdom();
     void alertFocus();
     //void onPlayerChooseOrder();
 
