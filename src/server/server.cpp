@@ -43,8 +43,8 @@ Server::Server(QObject *parent)
 
     current = NULL;
 
-    connect(server, SIGNAL(new_connection(ClientSocket *)), this, SLOT(processNewConnection(ClientSocket *)));
-    connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(deleteLater()));
+    connect(server, &NativeServerSocket::new_connection, this, &Server::processNewConnection);
+    connect(qApp, &QApplication::aboutToQuit, this, &Server::deleteLater);
 }
 
 void Server::broadcastSystemMessage(const QString &msg) {
@@ -72,8 +72,8 @@ Room *Server::createNewRoom() {
     current = new_room;
     rooms.insert(current);
 
-    connect(current, SIGNAL(room_message(QString)), this, SIGNAL(server_message(QString)));
-    connect(current, SIGNAL(game_over(QString)), this, SLOT(gameOver()));
+    connect(current, &Room::room_message, this, &Server::server_message);
+    connect(current, &Room::game_over, this, &Server::gameOver);
 
     return current;
 }
@@ -96,14 +96,14 @@ void Server::processNewConnection(ClientSocket *socket) {
         return;
     }
 
-    connect(socket, SIGNAL(disconnected()), this, SLOT(cleanup()));
+    connect(socket, &ClientSocket::disconnected, this, &Server::cleanup);
 
     notifyClient(socket, S_COMMAND_CHECK_VERSION, Sanguosha->getVersion());
     notifyClient(socket, S_COMMAND_SETUP, Sanguosha->getSetupString());
 
     emit server_message(tr("%1 connected").arg(socket->peerName()));
 
-    connect(socket, SIGNAL(message_got(QByteArray)), this, SLOT(processRequest(QByteArray)));
+    connect(socket, &ClientSocket::message_got, this, &Server::processRequest);
 }
 
 void Server::processRequest(const QByteArray &request)
@@ -134,7 +134,7 @@ void Server::notifyClient(ClientSocket *socket, CommandType command, const QVari
 
 void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
 {
-    socket->disconnect(this, SLOT(processRequest(QByteArray)));
+    disconnect(socket, &ClientSocket::message_got, this, &Server::processRequest);
 
     if (signup.getCommandType() != S_COMMAND_SIGNUP) {
         emit server_message(tr("Invalid signup string: %1").arg(signup.toString()));

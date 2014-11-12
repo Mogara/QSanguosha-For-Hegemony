@@ -104,7 +104,7 @@ private:
     void fillComboBox(QComboBox *ComboBox);
 
 private slots:
-    void disableSource();
+    void disableSource(const QString &currentNature);
 };
 
 class ReplayerControlBar : public QGraphicsObject{
@@ -168,7 +168,7 @@ public slots:
     void chooseKingdom(const QStringList &kingdoms);
     void chooseOption(const QString &skillName, const QStringList &options);
     //void chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand reason);
-    void chooseRole(const QString &scheme, const QStringList &roles);
+    //void chooseRole(const QString &scheme, const QStringList &roles);
     //void chooseDirection();
     void chooseTriggerOrder(const QString &reason, const QStringList &options, const bool optional);
 
@@ -183,12 +183,14 @@ public slots:
     void setDashboardShadow(const QString &who);
     void showServerInformation();
     void surrender();
-    void saveReplayRecord(const bool auto_save = false, const bool network_only = false);
+    void saveReplayRecord();
+    void saveReplayRecord(const bool auto_save, const bool network_only = false);
     void makeDamage();
     void makeKilling();
     void makeReviving();
     void doScript();
     void viewGenerals(const QString &reason, const QStringList &names);
+    void viewDistance();
 
     void handleGameEvent(const QVariant &args);
 
@@ -201,6 +203,10 @@ public slots:
     inline QPointF tableCenterPos() { return m_tableCenterPos; }
 
     void doGongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
+
+    void onTransferButtonActivated();
+    void onSkillDeactivated();
+    void trust();
 
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -370,8 +376,6 @@ private slots:
     void acquireSkill(const ClientPlayer *player, const QString &skill_name, const bool &head = true);
     void updateSelectedTargets();
     void onSkillActivated();
-    void onTransferButtonActivated();
-    void onSkillDeactivated();
     void startInXs();
     void hideAvatars();
     void changeHp(const QString &who, int delta, DamageStruct::Nature nature, bool losthp);
@@ -390,7 +394,6 @@ private slots:
     void removeLightBox();
 
     void showCard(const QString &player_name, int card_id);
-    void viewDistance();
 
     void speak();
 
@@ -423,7 +426,6 @@ private slots:
     //void revealGeneral(bool self, const QString &general);
 
     //void skillStateChange(const QString &skill_name);
-    void trust();
 
 signals:
     void restart();

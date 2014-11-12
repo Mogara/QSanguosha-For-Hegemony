@@ -151,16 +151,16 @@ MainWindow::MainWindow(QWidget *parent)
     fetchUpdateInformation();
 
     connection_dialog = new ConnectionDialog(this);
-    connect(ui->actionStart_Game, SIGNAL(triggered()), connection_dialog, SLOT(exec()));
-    connect(connection_dialog, SIGNAL(accepted()), this, SLOT(startConnection()));
+    connect(ui->actionStart_Game, &QAction::triggered, connection_dialog, &ConnectionDialog::exec);
+    connect(connection_dialog, &ConnectionDialog::accepted, this, &MainWindow::startConnection);
 
     config_dialog = new ConfigDialog(this);
-    connect(ui->actionConfigure, SIGNAL(triggered()), config_dialog, SLOT(show()));
-    connect(config_dialog, SIGNAL(bg_changed()), this, SLOT(changeBackground()));
-    connect(config_dialog, SIGNAL(tableBg_changed()), this, SLOT(changeBackground()));
+    connect(ui->actionConfigure, &QAction::triggered, config_dialog, &ConfigDialog::show);
+    connect(config_dialog, &ConfigDialog::bg_changed, this, &MainWindow::changeBackground);
+    connect(config_dialog, &ConfigDialog::tableBg_changed, this, &MainWindow::changeBackground);
 
-    connect(ui->actionAbout_Qt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-    connect(ui->actionAcknowledgement_2, SIGNAL(triggered()), this, SLOT(on_actionAcknowledgement_triggered()));
+    connect(ui->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);
+    connect(ui->actionAcknowledgement_2, &QAction::triggered, this, &MainWindow::on_actionAcknowledgement_triggered);
 
     StartScene *start_scene = new StartScene(this);
 
@@ -229,13 +229,13 @@ MainWindow::MainWindow(QWidget *parent)
     StyleHelper::getInstance()->setIcon(closeButton, QChar(0xf00d), 15);
 
     minButton->setToolTip(tr("<font color=%1>Minimize</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
-    connect(minButton, SIGNAL(clicked()), this, SLOT(showMinimized()));
+    connect(minButton, &QPushButton::clicked, this, &MainWindow::showMinimized);
     maxButton->setToolTip(tr("<font color=%1>Maximize</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
-    connect(maxButton, SIGNAL(clicked()), this, SLOT(showMaximized()));
+    connect(maxButton, &QPushButton::clicked, this, &MainWindow::showMaximized);
     normalButton->setToolTip(tr("<font color=%1>Restore downward</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
-    connect(normalButton, SIGNAL(clicked()), this, SLOT(showNormal()));
+    connect(normalButton, &QPushButton::clicked, this, &MainWindow::showNormal);
     closeButton->setToolTip(tr("<font color=%1>Close</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(closeButton, &QPushButton::clicked, this, &MainWindow::close);
 
     menuBar()->hide();
 #elif defined(Q_OS_ANDROID)
@@ -469,8 +469,8 @@ void MainWindow::fetchUpdateInformation()
     versionInfomationReply = mgr->get(QNetworkRequest(QUrl(URL1)));
     changeLogReply = mgr->get(QNetworkRequest(QUrl(URL2)));
 
-    connect(versionInfomationReply, SIGNAL(finished()), SLOT(onVersionInfomationGotten()));
-    connect(changeLogReply, SIGNAL(finished()), SLOT(onChangeLogGotten()));
+    connect(versionInfomationReply, &QNetworkReply::finished, this, &MainWindow::onVersionInfomationGotten);
+    connect(changeLogReply, &QNetworkReply::finished, this, &MainWindow::onChangeLogGotten);
 }
 
 void MainWindow::roundCorners()
@@ -588,7 +588,7 @@ void MainWindow::on_actionStart_Server_triggered() {
 #ifdef QT_NO_PROCESS
     ui->actionStart_Game->setEnabled(false);
 #else
-    connect(ui->actionStart_Game, SIGNAL(triggered()), this, SLOT(startGameInAnotherInstance()));
+    connect(ui->actionStart_Game, &QAction::triggered, this, &MainWindow::startGameInAnotherInstance);
 #endif
     StartScene *start_scene = qobject_cast<StartScene *>(scene);
     if (start_scene) {
@@ -611,7 +611,7 @@ void MainWindow::checkVersion(const QString &server_version_str, const QString &
 
     if (server_version == client_version) {
         client->signup();
-        connect(client, SIGNAL(server_connected()), SLOT(enterRoom()));
+        connect(client, &Client::server_connected, this, &MainWindow::enterRoom);
         return;
     }
 
@@ -631,8 +631,8 @@ void MainWindow::checkVersion(const QString &server_version_str, const QString &
 void MainWindow::startConnection() {
     Client *client = new Client(this);
 
-    connect(client, SIGNAL(version_checked(QString, QString)), SLOT(checkVersion(QString, QString)));
-    connect(client, SIGNAL(error_message(QString)), SLOT(networkError(QString)));
+    connect(client, &Client::version_checked, this, &MainWindow::checkVersion);
+    connect(client, &Client::error_message, this, &MainWindow::networkError);
 }
 
 void MainWindow::on_actionReplay_triggered() {
@@ -654,7 +654,7 @@ void MainWindow::on_actionReplay_triggered() {
     Config.setValue("LastReplayDir", last_dir);
 
     Client *client = new Client(this, filename);
-    connect(client, SIGNAL(server_connected()), SLOT(enterRoom()));
+    connect(client, &Client::server_connected, this, &MainWindow::enterRoom);
     client->signup();
 }
 
@@ -697,22 +697,22 @@ void MainWindow::enterRoom() {
     ui->actionSurrender->setEnabled(true);
     ui->actionNever_nullify_my_trick->setEnabled(true);
     ui->actionSaveRecord->setEnabled(true);
-
-    connect(ClientInstance, SIGNAL(surrender_enabled(bool)), ui->actionSurrender, SLOT(setEnabled(bool)));
-
-    connect(ui->actionView_Discarded, SIGNAL(triggered()), room_scene, SLOT(toggleDiscards()));
-    connect(ui->actionView_distance, SIGNAL(triggered()), room_scene, SLOT(viewDistance()));
-    connect(ui->actionServerInformation, SIGNAL(triggered()), room_scene, SLOT(showServerInformation()));
-    connect(ui->actionSurrender, SIGNAL(triggered()), room_scene, SLOT(surrender()));
-    connect(ui->actionSaveRecord, SIGNAL(triggered()), room_scene, SLOT(saveReplayRecord()));
+    
+    connect(ClientInstance, &Client::surrender_enabled, ui->actionSurrender, &QAction::setEnabled);
+    
+    connect(ui->actionView_Discarded, &QAction::triggered, room_scene, &RoomScene::toggleDiscards);
+    connect(ui->actionView_distance, &QAction::triggered, room_scene, &RoomScene::viewDistance);
+    connect(ui->actionServerInformation, &QAction::triggered, room_scene, &RoomScene::showServerInformation);
+    connect(ui->actionSurrender, &QAction::triggered, room_scene, &RoomScene::surrender);
+    connect(ui->actionSaveRecord, &QAction::triggered, room_scene, (void (RoomScene::*)())(&RoomScene::saveReplayRecord));
 
     if (ServerInfo.EnableCheat) {
         ui->menuCheat->setEnabled(true);
 
-        connect(ui->actionDeath_note, SIGNAL(triggered()), room_scene, SLOT(makeKilling()));
-        connect(ui->actionDamage_maker, SIGNAL(triggered()), room_scene, SLOT(makeDamage()));
-        connect(ui->actionRevive_wand, SIGNAL(triggered()), room_scene, SLOT(makeReviving()));
-        connect(ui->actionExecute_script_at_server_side, SIGNAL(triggered()), room_scene, SLOT(doScript()));
+        connect(ui->actionDeath_note, &QAction::triggered, room_scene, &RoomScene::makeKilling);
+        connect(ui->actionDamage_maker, &QAction::triggered, room_scene, &RoomScene::makeDamage);
+        connect(ui->actionRevive_wand, &QAction::triggered, room_scene, &RoomScene::makeReviving);
+        connect(ui->actionExecute_script_at_server_side, &QAction::triggered, room_scene, &RoomScene::doScript);
     }
     else {
         ui->menuCheat->setEnabled(false);
@@ -722,9 +722,9 @@ void MainWindow::enterRoom() {
         ui->actionSend_lowlevel_command->disconnect();
         ui->actionExecute_script_at_server_side->disconnect();
     }
-
-    connect(room_scene, SIGNAL(restart()), this, SLOT(startConnection()));
-    connect(room_scene, SIGNAL(return_to_start()), this, SLOT(gotoStartScene()));
+    
+    connect(room_scene, &RoomScene::restart, this, &MainWindow::startConnection);
+    connect(room_scene, &RoomScene::return_to_start, this, &MainWindow::gotoStartScene);
 
     gotoScene(room_scene);
 }
@@ -909,7 +909,7 @@ void MainWindow::on_actionMinimize_to_system_tray_triggered()
         systray = new QSystemTrayIcon(icon, this);
 
         QAction *appear = new QAction(tr("Show main window"), this);
-        connect(appear, SIGNAL(triggered()), this, SLOT(show()));
+        connect(appear, &QAction::triggered, this, &MainWindow::show);
 
         QMenu *menu = new QMenu;
         menu->addAction(appear);
@@ -935,7 +935,7 @@ void MainWindow::on_actionRule_Summary_triggered()
 }
 
 BroadcastBox::BroadcastBox(Server *server, QWidget *parent)
-    : QDialog(parent), server(server)
+    : QDialog(parent), server(server) //@Rara: FlatDialog????
 {
     setWindowTitle(tr("Broadcast"));
 
@@ -954,7 +954,7 @@ BroadcastBox::BroadcastBox(Server *server, QWidget *parent)
 
     setLayout(layout);
 
-    connect(ok_button, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(ok_button, &QPushButton::clicked, this, &BroadcastBox::accept);
 }
 
 void BroadcastBox::accept() {
@@ -1232,9 +1232,8 @@ void MainWindow::on_actionAbout_GPLv3_triggered() {
 
 void MainWindow::on_actionManage_Ban_IP_triggered(){
     BanIpDialog *dlg = new BanIpDialog(this, server);
-    if (server) {
-        connect(server, SIGNAL(newPlayer(ServerPlayer*)), dlg, SLOT(addPlayer(ServerPlayer*)));
-    }
+    if (server)
+        connect(server, &Server::newPlayer, dlg, &BanIpDialog::addPlayer);
 
     dlg->show();
 }
