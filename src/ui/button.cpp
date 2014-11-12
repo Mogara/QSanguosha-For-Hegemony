@@ -71,11 +71,10 @@ void Button::init()
         frame->setBlurRadius(12);
         frame->setEnabled(false);
         setGraphicsEffect(frame);
-    } else {
+    } else
         setFlags(ItemIsFocusable);
-    }
 
-    connect(this, SIGNAL(enabledChanged()), this, SLOT(onEnabledChanged()));
+    connect(this, &Button::enabledChanged, this, &Button::onEnabledChanged);
 }
 
 void Button::setFontName(const QString &name)
