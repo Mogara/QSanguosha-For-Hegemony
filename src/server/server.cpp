@@ -134,7 +134,7 @@ void Server::notifyClient(ClientSocket *socket, CommandType command, const QVari
 
 void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
 {
-    socket->disconnect(this, SLOT(processRequest(QByteArray)));
+    disconnect(socket, &ClientSocket::message_got, this, &Server::processRequest);
 
     if (signup.getCommandType() != S_COMMAND_SIGNUP) {
         emit server_message(tr("Invalid signup string: %1").arg(signup.toString()));
