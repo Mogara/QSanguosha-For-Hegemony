@@ -939,8 +939,7 @@ bool Room::notifyMoveFocus(const QList<ServerPlayer *> &focuses, const Countdown
             players << focuses.at(i)->objectName();
         }
         arg << QVariant(players);
-    }
-    else {
+    } else {
         arg << QSanProtocol::S_ALL_ALIVE_PLAYERS;
     }
     //============================================
