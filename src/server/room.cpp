@@ -2596,6 +2596,8 @@ void Room::chooseGenerals() {
         }
     }
 
+    m_generalSelector->resetValues();
+
     foreach(ServerPlayer *player, m_players) {
         QStringList names;
         if (player->getGeneral()) {

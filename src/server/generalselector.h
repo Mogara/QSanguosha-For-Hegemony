@@ -18,8 +18,8 @@
     QSanguosha-Rara
     *********************************************************************/
 
-#ifndef _GENERAL_SELECTOR_H
-#define _GENERAL_SELECTOR_H
+#ifndef GENERALSELECTOR_H
+#define GENERALSELECTOR_H
 
 #include <QObject>
 #include <QHash>
@@ -35,6 +35,10 @@ class GeneralSelector : public QObject {
 public:
     static GeneralSelector *getInstance();
     QStringList selectGenerals(ServerPlayer *player, const QStringList &candidates);
+    inline void resetValues()
+    {
+        m_privatePairValueTable.clear();
+    }
 
 private:
     GeneralSelector();
@@ -43,9 +47,9 @@ private:
     void calculatePairValues(const ServerPlayer *player, const QStringList &candidates);
     void calculateDeputyValue(const ServerPlayer *player, const QString &first, const QStringList &candidates, const QStringList &kingdom_list = QStringList());
 
-    QHash<QString, int> single_general_table;
-    QHash<QString, int> pair_table;
-    QHash<const ServerPlayer *, QHash<QString, int> > private_pair_value_table;
+    QHash<QString, int> m_singleGeneralTable;
+    QHash<QString, int> m_pairTable;
+    QHash<const ServerPlayer *, QHash<QString, int> > m_privatePairValueTable;
 };
 
-#endif
+#endif // GENERALSELECTOR_H

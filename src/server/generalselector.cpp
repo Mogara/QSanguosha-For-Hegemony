@@ -44,10 +44,10 @@ GeneralSelector::GeneralSelector() {
 }
 
 QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringList &candidates) {
-    if (private_pair_value_table[player].isEmpty())
+    if (m_privatePairValueTable[player].isEmpty())
         calculatePairValues(player, candidates);
 
-    QHash<QString, int> my_hash = private_pair_value_table[player];
+    QHash<QString, int> my_hash = m_privatePairValueTable[player];
 
     int max_score = my_hash.values().first();
     QString best_pair = my_hash.keys().first();
@@ -84,7 +84,7 @@ void GeneralSelector::loadGeneralTable() {
             QString general = texts.at(1);
             int value = texts.at(2).toInt();
 
-            single_general_table.insert(general, value);
+            m_singleGeneralTable.insert(general, value);
         }
 
         file.close();
@@ -103,7 +103,7 @@ void GeneralSelector::loadGeneralTable() {
                 QString general = texts.at(1);
                 int value = texts.at(2).toInt();
 
-                single_general_table.insert(general, value);
+                m_singleGeneralTable.insert(general, value);
             }
 
             lua_file.close();
@@ -129,9 +129,9 @@ void GeneralSelector::loadPairTable() {
             int value_b = texts.at(4).toInt();
 
             QString key_f = QString("%1+%2").arg(first).arg(second);
-            pair_table.insert(key_f, value_f);
+            m_pairTable.insert(key_f, value_f);
             QString key_b = QString("%1+%2").arg(second).arg(first);
-            pair_table.insert(key_b, value_b);
+            m_pairTable.insert(key_b, value_b);
         }
 
         file.close();
@@ -153,9 +153,9 @@ void GeneralSelector::loadPairTable() {
                 int value_b = texts.at(4).toInt();
 
                 QString key_f = QString("%1+%2").arg(first).arg(second);
-                pair_table.insert(key_f, value_f);
+                m_pairTable.insert(key_f, value_f);
                 QString key_b = QString("%1+%2").arg(second).arg(first);
-                pair_table.insert(key_b, value_b);
+                m_pairTable.insert(key_b, value_b);
             }
 
             lua_file.close();
@@ -192,23 +192,23 @@ void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QSt
     QStringList candidates = _candidates;
     foreach(QString candidate, _candidates){
         if (BanPair::isBanned(first, candidate)){
-            private_pair_value_table[player][QString("%1+%2").arg(first, candidate)] = -100;
+            m_privatePairValueTable[player][QString("%1+%2").arg(first, candidate)] = -100;
             candidates.removeOne(candidate);
         }
     }
     foreach(QString second, candidates) {
         if (first == second) continue;
         QString key = QString("%1+%2").arg(first, second);
-        if (pair_table.contains(key))
-            private_pair_value_table[player][key] = pair_table.value(key);
+        if (m_pairTable.contains(key))
+            m_privatePairValueTable[player][key] = m_pairTable.value(key);
         else {
             const General *general1 = Sanguosha->getGeneral(first);
             const General *general2 = Sanguosha->getGeneral(second);
             Q_ASSERT(general1 && general2);
             QString kingdom = general1->getKingdom();
             if (general2->getKingdom() != kingdom || general2->isLord()) continue;
-            const int general2_value = single_general_table.value(second, 0);
-            int v = single_general_table.value(first, 0) + general2_value;
+            const int general2_value = m_singleGeneralTable.value(second, 0);
+            int v = m_singleGeneralTable.value(first, 0) + general2_value;
 
             if (!kingdom_list.isEmpty())
                 v += (kingdom_list.indexOf(kingdom) - 1);
@@ -237,7 +237,7 @@ void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QSt
                 }
             }
 
-            private_pair_value_table[player][key] = v;
+            m_privatePairValueTable[player][key] = v;
         }
     }
 }
