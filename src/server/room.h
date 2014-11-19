@@ -26,18 +26,19 @@ class ProhibitSkill;
 class Scenario;
 class TrickCard;
 class GeneralSelector;
+class RoomThread;
 
 struct lua_State;
 struct LogMessage;
 
 #include "serverplayer.h"
-#include "roomthread.h"
 #include "protocol.h"
 #include "roomstate.h"
 
 #include <QMutex>
 #include <QStack>
 #include <QWaitCondition>
+#include <QThread>
 
 typedef QMap<const ServerPlayer *, QStringList> SPlayerDataMap;
 

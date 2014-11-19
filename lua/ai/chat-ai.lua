@@ -183,11 +183,11 @@ sgs.ai_chat_func[sgs.CardUsed].qinshouzhang = function(self, player, data)
 	if player:getState() ~= "robot" then return end
 	local use = data:toCardUse()
 	if use.card:isKindOf("Blade") and use.from and use.from:objectName() == player:objectName() then
-		if player:screenName() == "禽受张" then
+		if player:screenName() == "SB-禽受装逼佬张" then
 			player:speak("这把刀就是我爷爷传下来的，上斩逗比，下斩傻逼！")
 		else
 			for _, p in ipairs(sgs.robot) do
-				if p:screenName() == "禽受张" then
+				if p:screenName() == "SB-禽受装逼佬张" then
 					p:speak("敢抢我爷爷传下来的的刀，约吗？")
 				end
 			end
@@ -397,7 +397,7 @@ sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
 		table.insert(chat,"卧槽,"..name1..name2.."!")
 	end
 	for _, p in ipairs(sgs.robot) do
-		if p:objectName() ~= self.player:objectName() and (math.random() < 0.1 or (self.player:getRole() == "careerist" and math.random() < 0.5)) then
+		if p:objectName() ~= self.player:objectName() and (math.random() < 0.06 or (self.player:getRole() == "careerist" and math.random() < 0.5)) then
 			p:speak(chat[math.random(1, #chat)])
 		elseif p:objectName() == self.player:objectName() and (math.random() < 0.1 or shown == 1)then
 			p:speak(chat1[math.random(1, #chat1)])

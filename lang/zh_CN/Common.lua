@@ -11,7 +11,8 @@ CommonTranslationTable = {
 	["offensive"] = "先手",
 	["defensive"] = "后手",
 
-	["Pairs"] = "双将",
+	["Generals"] = "武将" ,
+	["Pairs"] = "组合",
 	["XMode"] = "血战到底",
 	["cancel"] = "取消",
 	["GeneralA"] = "主将",

@@ -37,6 +37,17 @@
 #include <QMessageBox>
 #include <QScrollBar>
 
+struct SearchDetails {
+    bool include_hidden;
+    QString nickname;
+    QString name;
+    QStringList genders;
+    QStringList kingdoms;
+    int lower;
+    int upper;
+    QStringList packages;
+};
+
 static QLayout *HLay(QWidget *left, QWidget *right) {
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(left);
@@ -52,7 +63,7 @@ GeneralSearch::GeneralSearch(GeneralOverview *parent)
     layout->addWidget(createInfoTab());
     layout->addLayout(createButtonLayout());
 
-    connect(this, &GeneralSearch::search, parent, &GeneralOverview::startSearch);
+    connect(this, &GeneralSearch::search, parent, (void (GeneralOverview::*)(const SearchDetails &))(&GeneralOverview::startSearch));
 }
 
 QWidget *GeneralSearch::createInfoTab() {
@@ -217,26 +228,25 @@ QLayout *GeneralSearch::createButtonLayout() {
 }
 
 void GeneralSearch::accept() {
-    QString nickname = nickname_edit->text();
-    QString name = name_edit->text();
-    QStringList genders;
+    SearchDetails detail;
+    detail.include_hidden = include_hidden_checkbox->isChecked();
+    detail.nickname = nickname_edit->text();
+    detail.name = name_edit->text();
     foreach(QAbstractButton *button, gender_buttons->buttons()) {
         if (button->isChecked())
-            genders << button->objectName();
+            detail.genders << button->objectName();
     }
-    QStringList kingdoms;
     foreach(QAbstractButton *button, kingdom_buttons->buttons()) {
         if (button->isChecked())
-            kingdoms << button->objectName();
+            detail.kingdoms << button->objectName();
     }
-    int lower = maxhp_lower_spinbox->value();
-    int upper = qMax(lower, maxhp_upper_spinbox->value());
-    QStringList packages;
+    detail.lower = maxhp_lower_spinbox->value();
+    detail.upper = qMax(detail.lower, maxhp_upper_spinbox->value());
     foreach(QAbstractButton *button, package_buttons->buttons()) {
         if (button->isChecked())
-            packages << button->objectName();
+            detail.packages << button->objectName();
     }
-    emit search(include_hidden_checkbox->isChecked(), nickname, name, genders, kingdoms, lower, upper, packages);
+    emit search(detail);
     QDialog::accept();
 }
 
@@ -383,6 +393,16 @@ QString GeneralOverview::getIllustratorInfo(const QString &generalName) {
     }
 }
 
+QList<const Skill *> qsgs_allSkillsOf(const General *general)
+{
+    QList<const Skill *> skills = general->getVisibleSkillList();
+    foreach(QString skill_name, general->getRelatedSkillNames()) {
+        const Skill *skill = Sanguosha->getSkill(skill_name);
+        if (skill && skill->isVisible()) skills << skill;
+    }
+    return skills;
+}
+
 QString GeneralOverview::getCvInfo(const QString &generalName)
 {
     const int skinId = all_generals->value(Sanguosha->getGeneral(generalName));
@@ -527,17 +547,11 @@ void GeneralOverview::on_tableView_clicked(const QModelIndex &index)
     ui->generalPhoto->setPixmap(G_ROOM_SKIN.getGeneralCardPixmap(generalName, skinId));
     ui->changeHeroSkinButton->setVisible(hasSkin(general));
 
-    QList<const Skill *> skills = general->getVisibleSkillList();
-    foreach(QString skill_name, general->getRelatedSkillNames()) {
-        const Skill *skill = Sanguosha->getSkill(skill_name);
-        if (skill && skill->isVisible()) skills << skill;
-    }
-
     ui->skillTextEdit->clear();
 
     resetButtons();
 
-    foreach(const Skill *skill, skills)
+    foreach(const Skill *skill, qsgs_allSkillsOf(general))
         addLines(general, skill);
 
     addDeathLine(general);
@@ -603,7 +617,7 @@ void GeneralOverview::showNextSkin() {
     ui->cvLineEdit->setText(getCvInfo(generalName));
     ui->illustratorLineEdit->setText(getIllustratorInfo(generalName));
     resetButtons();
-    foreach(const Skill *skill, general->getVisibleSkillList())
+    foreach(const Skill *skill, qsgs_allSkillsOf(general))
         addLines(general, skill);
 
     addDeathLine(general);
@@ -614,8 +628,11 @@ void GeneralOverview::showNextSkin() {
     button_layout->addStretch();
 }
 
-void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders,
-    const QStringList &kingdoms, int lower, int upper, const QStringList &packages) {
+void GeneralOverview::startSearch(const SearchDetails &detail) {
+    startSearch(detail.include_hidden, detail.nickname, detail.name, detail.genders, detail.kingdoms, detail.lower, detail.upper, detail.packages);
+}
+
+void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper, const QStringList &packages) {
     if (all_generals == NULL)
         return;
 

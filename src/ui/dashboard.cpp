@@ -238,16 +238,16 @@ void Dashboard::_createRight() {
     rightFrame->setZValue(-1000); // nobody should be under me.
 
     QRect avatar1 = G_DASHBOARD_LAYOUT.m_avatarArea;
-    rightSkillDock = new QSanInvokeSkillDock(rightFrame);
-    rightSkillDock->setPos(avatar1.left(), avatar1.bottom() -
+    m_leftSkillDock = new QSanInvokeSkillDock(rightFrame);
+    m_leftSkillDock->setPos(avatar1.left(), avatar1.bottom() -
         G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() / 1.3);
-    rightSkillDock->setWidth(avatar1.width());
+    m_leftSkillDock->setWidth(avatar1.width());
 
     QRect avatar2 = G_DASHBOARD_LAYOUT.m_secondaryAvatarArea;
-    leftSkillDock = new QSanInvokeSkillDock(rightFrame);
-    leftSkillDock->setPos(avatar2.left(), avatar2.bottom() -
+    m_rightSkillDock = new QSanInvokeSkillDock(rightFrame);
+    m_rightSkillDock->setPos(avatar2.left(), avatar2.bottom() -
         G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() / 1.3);
-    leftSkillDock->setWidth(avatar2.width());
+    m_rightSkillDock->setWidth(avatar2.width());
 
     _m_shadow_layer1 = new QGraphicsRectItem(rightFrame);
     _m_shadow_layer1->setRect(G_DASHBOARD_LAYOUT.m_avatarArea);
@@ -262,6 +262,8 @@ void Dashboard::_createRight() {
 
     connect(ClientInstance, &Client::head_preshowed, this, &Dashboard::onHeadSkillPreshowed);
     connect(ClientInstance, &Client::deputy_preshowed, this, &Dashboard::onDeputySkillPreshowed);
+
+
 
     _paintPixmap(headIcon, G_DASHBOARD_LAYOUT.m_headIconRegion, _getPixmap(QSanRoomSkin::S_SKIN_KEY_HEAD_ICON), rightFrame);
     _paintPixmap(deputyIcon, G_DASHBOARD_LAYOUT.m_deputyIconRegion, _getPixmap(QSanRoomSkin::S_SKIN_KEY_DEPUTY_ICON), rightFrame);
@@ -569,22 +571,24 @@ QSanSkillButton *Dashboard::addSkillButton(const QString &skillName, const bool 
     const Skill *skill = Sanguosha->getSkill(skillName);
     Q_ASSERT(skill && !skill->inherits("WeaponSkill") && !skill->inherits("ArmorSkill"));
 #endif
-    if (rightSkillDock->getSkillButtonByName(skillName)) {
+    if (m_leftSkillDock->getSkillButtonByName(skillName)) {
         //_m_button_recycle.append(_m_rightSkillDock->getSkillButtonByName(skillName));
         return NULL;
-    }
-    else if (leftSkillDock->getSkillButtonByName(skillName)) {
+    } else if (m_rightSkillDock->getSkillButtonByName(skillName)) {
         //_m_button_recycle.append(_m_leftSkillDock->getSkillButtonByName(skillName));
         return NULL;
     }
     QSanInvokeSkillDock *dock = NULL;
-    // The directions 'left' and 'right' here are opposite to the actual convention,
-    // for we have swapped the positions of avatars. Names of the two properties should
-    // be corrected later.
     if (Self->ownSkill(skillName) || Self->getAcquiredSkills().contains(skillName))
-        dock = Self->inHeadSkills(skillName) ? rightSkillDock : leftSkillDock;
+        dock = Self->inHeadSkills(skillName) ? m_leftSkillDock : m_rightSkillDock;
     else
-        dock = head ? rightSkillDock : leftSkillDock;
+        dock = head ? m_leftSkillDock : m_rightSkillDock;
+
+    if (dock == m_leftSkillDock)
+        onHeadSkillPreshowed();
+    else
+        onDeputySkillPreshowed();
+
     return dock->addSkillButtonByName(skillName);
 }
 
@@ -603,11 +607,11 @@ QSanSkillButton *Dashboard::removeSkillButton(const QString &skillName) {
     }
     _mutexEquipAnim.unlock();
     if (btn == NULL) {
-        QSanInvokeSkillDock *dock = rightSkillDock;
-        QSanSkillButton *temp = rightSkillDock->getSkillButtonByName(skillName);
+        QSanInvokeSkillDock *dock = m_leftSkillDock;
+        QSanSkillButton *temp = m_leftSkillDock->getSkillButtonByName(skillName);
         if (temp == NULL) {
-            temp = leftSkillDock->getSkillButtonByName(skillName);
-            dock = leftSkillDock;
+            temp = m_rightSkillDock->getSkillButtonByName(skillName);
+            dock = m_rightSkillDock;
         }
         btn = dock->removeSkillButtonByName(skillName);
     }
@@ -685,8 +689,8 @@ QList<TransferButton *> Dashboard::getTransferButtons() const
 
 void Dashboard::skillButtonActivated() {
     QSanSkillButton *button = qobject_cast<QSanSkillButton *>(sender());
-    QList<QSanInvokeSkillButton *> buttons = rightSkillDock->getAllSkillButtons()
-        + leftSkillDock->getAllSkillButtons();
+    QList<QSanInvokeSkillButton *> buttons = m_leftSkillDock->getAllSkillButtons()
+        + m_rightSkillDock->getAllSkillButtons();
     foreach(QSanSkillButton *btn, buttons) {
         if (button == btn) continue;
 
@@ -703,8 +707,8 @@ void Dashboard::skillButtonActivated() {
 }
 
 void Dashboard::skillButtonDeactivated() {
-    QList<QSanInvokeSkillButton *> buttons = rightSkillDock->getAllSkillButtons()
-        + leftSkillDock->getAllSkillButtons();
+    QList<QSanInvokeSkillButton *> buttons = m_leftSkillDock->getAllSkillButtons()
+        + m_rightSkillDock->getAllSkillButtons();
     foreach(QSanSkillButton *btn, buttons) {
         if (btn->getViewAsSkill() != NULL && btn->isDown())
             btn->setState(QSanButton::S_STATE_UP);
@@ -1157,9 +1161,11 @@ void Dashboard::startPending(const ViewAsSkill *skill) {
         if (resp_skill && (resp_skill->getRequest() == Card::MethodResponse || resp_skill->getRequest() == Card::MethodUse))
             expand = true;
     }
-    if (expand)
+
+    retractAllSkillPileCards();
+    if (expand) {
         expandPileCards("wooden_ox");
-    else {
+    } else {
         retractPileCards("wooden_ox");
         if (skill && !skill->getExpandPile().isEmpty()) {
             foreach (QString pile_name, skill->getExpandPile().split(","))
@@ -1259,6 +1265,14 @@ void Dashboard::retractPileCards(const QString &pile_name) {
     }
     adjustCards();
     update();
+}
+
+void Dashboard::retractAllSkillPileCards()
+{
+    foreach (const QString &pileName, _m_pile_expanded) {
+        if (pileName != "wooden_ox")
+            retractPileCards(pileName);
+    }
 }
 
 void Dashboard::onCardItemClicked() {
@@ -1536,12 +1550,12 @@ void Dashboard::onSkinChangingFinished()
         avatarItem = _m_avatarIcon;
         heroSKinBtn = m_changeHeadHeroSkinButton;
         generalName = m_player->getGeneralName();
-        skillDock = leftSkillDock;
+        skillDock = m_rightSkillDock;
     } else {
         avatarItem = _m_smallAvatarIcon;
         heroSKinBtn = m_changeDeputyHeroSkinButton;
         generalName = m_player->getGeneral2Name();
-        skillDock = rightSkillDock;
+        skillDock = m_leftSkillDock;
     }
 
     if (avatarItem->isUnderMouse() && !skillDock->isUnderMouse())

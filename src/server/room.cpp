@@ -32,6 +32,7 @@
 #include "generalselector.h"
 #include "json.h"
 #include "clientstruct.h"
+#include "roomthread.h"
 
 #include <lua.hpp>
 #include <QStringList>
@@ -939,8 +940,7 @@ bool Room::notifyMoveFocus(const QList<ServerPlayer *> &focuses, const Countdown
             players << focuses.at(i)->objectName();
         }
         arg << QVariant(players);
-    }
-    else {
+    } else {
         arg << QSanProtocol::S_ALL_ALIVE_PLAYERS;
     }
     //============================================
@@ -2595,6 +2595,8 @@ void Room::chooseGenerals() {
             }
         }
     }
+
+    m_generalSelector->resetValues();
 
     foreach(ServerPlayer *player, m_players) {
         QStringList names;
