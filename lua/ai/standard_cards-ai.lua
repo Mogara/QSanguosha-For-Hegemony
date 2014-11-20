@@ -104,24 +104,6 @@ function sgs.getDefenseSlash(player, self)
 
 	defense = defense + knownJink * 1.2
 
-	local hasEightDiagram = false
-
-	if (player:hasArmorEffect("EightDiagram") or (player:hasShownSkill("bazhen") and not player:getArmor()))
-	  and not IgnoreArmor(attacker, player) then
-		hasEightDiagram = true
-	end
-
-	if hasEightDiagram then
-		defense = defense + 1.3
-		if player:hasShownSkill("tiandu") then defense = defense + 0.6 end
-		if player:hasShownSkill("leiji") then defense = defense + 0.4 end
-		if player:hasShownSkill("hongyan") then defense = defense + 0.2 end
-	end
-
-	if player:hasShownSkill("tuntian") and player:hasShownSkill("jixi") and unknownJink >= 1 then
-		defense = defense + 1.5
-	end
-
 	if attacker:canSlashWithoutCrossbow() and attacker:getPhase() == sgs.Player_Play then
 		local hcard = player:getHandcardNum()
 		if attacker:hasShownSkill("liegong") and (hcard >= attacker:getHp() or hcard <= attacker:getAttackRange()) then defense = 0 end
@@ -160,6 +142,25 @@ function sgs.getDefenseSlash(player, self)
 
 	defense = defense + math.min(player:getHp() * 0.45, 10)
 	if sgs.isAnjiang(player) then defense = defense - 1 end
+
+	local hasEightDiagram = false
+
+	if (player:hasArmorEffect("EightDiagram") or (player:hasShownSkill("bazhen") and not player:getArmor()))
+	  and not IgnoreArmor(attacker, player) then
+		hasEightDiagram = true
+	end
+
+	if hasEightDiagram then
+		defense = defense + 1.3
+		if player:hasShownSkills("qingguo+tiandu") then defense = defense + 10
+		elseif player:hasShownSkill("tiandu") then defense = defense + 0.6 end
+		if player:hasShownSkill("leiji") then defense = defense + 0.4 end
+		if player:hasShownSkill("hongyan") then defense = defense + 0.2 end
+	end
+
+	if player:hasShownSkill("tuntian") and player:hasShownSkill("jixi") and unknownJink >= 1 then
+		defense = defense + 1.5
+	end
 
 	if attacker then
 		local m = sgs.masochism_skill:split("|")
@@ -456,10 +457,9 @@ function SmartAI:useCardSlash(card, use)
 
 	for _, friend in ipairs(self.friends_noself) do
 		if self:isPriorFriendOfSlash(friend, card) and not self:slashProhibit(card, friend) then
-			if self.player:canSlash(friend, card, not no_distance, rangefix) or (use.isDummy and self.player:distanceTo(friend, rangefix) <= self.predictedRange)
-				and canAppendTarget(friend) then
+			if self.player:canSlash(friend, card, not no_distance, rangefix) or (use.isDummy and self.player:distanceTo(friend, rangefix) <= self.predictedRange) then
 				use.card = card
-				if use.to then use.to:append(friend) end
+				if use.to and canAppendTarget(friend) then use.to:append(friend) end
 				if not use.to or self.slash_targets <= use.to:length() then return end
 			end
 		end
@@ -485,8 +485,7 @@ function SmartAI:useCardSlash(card, use)
 			and self:objectiveLevel(target) > 3
 			and not canliuli
 			and not (not self:isWeak(target) and #self.enemies > 1 and #self.friends > 1 and self.player:hasSkill("keji")
-				and self:getOverflow() > 0 and not self:hasCrossbowEffect())
-			and canAppendTarget(target) then
+				and self:getOverflow() > 0 and not self:hasCrossbowEffect()) then
 
 			if target:getHp() > 1 and target:hasShownSkill("jianxiong") and self.player:hasWeapon("Spear") and card:getSkillName() == "Spear" then
 				local ids, isGood = card:getSubcards(), true
@@ -542,7 +541,7 @@ function SmartAI:useCardSlash(card, use)
 			end
 
 			use.card = use.card or usecard
-			if use.to then use.to:append(target) end
+			if use.to and canAppendTarget(target) then use.to:append(target) end
 			if not use.to or self.slash_targets <= use.to:length() then return end
 		end
 	end
@@ -553,7 +552,7 @@ function SmartAI:useCardSlash(card, use)
 			and (self.player:canSlash(friend, card, not no_distance, rangefix)
 				or (use.isDummy and self.predictedRange and self.player:distanceTo(friend, rangefix) <= self.predictedRange)) then
 			use.card = card
-			if use.to then use.to:append(friend) end
+			if use.to and canAppendTarget(friend) then use.to:append(friend) end
 			if not use.to or self.slash_targets <= use.to:length() then return end
 		end
 	end
@@ -814,26 +813,28 @@ function SmartAI:useCardPeach(card, use)
 
 	if self.player:hasSkill("rende") and self:findFriendsByType(sgs.Friend_Draw) then return end
 
-	if self.player:hasArmorEffect("SilverLion") then
+	if not use.isDummy then
+		if self.player:hasArmorEffect("SilverLion") then
 		for _, card in sgs.qlist(self.player:getHandcards()) do
 			if card:isKindOf("Armor") and self:evaluateArmor(card) > 0 then
 				use.card = card
 				return
 			end
 		end
-	end
-
-	local SilverLion, OtherArmor
-	for _, card in sgs.qlist(self.player:getHandcards()) do
-		if card:isKindOf("SilverLion") then
-			SilverLion = card
-		elseif card:isKindOf("Armor") and not card:isKindOf("SilverLion") and self:evaluateArmor(card) > 0 then
-			OtherArmor = true
 		end
-	end
-	if SilverLion and OtherArmor then
-		use.card = SilverLion
-		return
+
+		local SilverLion, OtherArmor
+		for _, card in sgs.qlist(self.player:getHandcards()) do
+			if card:isKindOf("SilverLion") then
+				SilverLion = card
+			elseif card:isKindOf("Armor") and not card:isKindOf("SilverLion") and self:evaluateArmor(card) > 0 then
+				OtherArmor = true
+			end
+		end
+		if SilverLion and OtherArmor then
+			use.card = SilverLion
+			return
+		end
 	end
 
 	for _, enemy in ipairs(self.enemies) do
@@ -866,7 +867,7 @@ function SmartAI:useCardPeach(card, use)
 	end
 
 	local useJieyinCard
-	if self.player:hasSkill("jieyin") and not self.player:hasUsed("JieyinCard") and overflow then
+	if self.player:hasSkill("jieyin") and not self.player:hasUsed("JieyinCard") and overflow and self.player:getPhase() == sgs.Player_Play then
 		self:sort(self.friends, "hp")
 		for _, friend in ipairs(self.friends) do
 			if friend:isWounded() and friend:isMale() then useJieyinCard = true end
@@ -1353,6 +1354,7 @@ sgs.ai_skill_invoke.EightDiagram = function(self, data)
 	if zhangjiao and self:isEnemy(zhangjiao) then
 		if getKnownCard(zhangjiao, self.player, "black", false, "he") > 1 then return false end
 		if self:getCardsNum("Jink") > 1 and getKnownCard(zhangjiao, self.player, "black", false, "he") > 0 then return false end
+		if zhangjiao:getHandcardNum() - getKnownNum(zhangjiao, self.player) >= 3 then return false end
 	end
 	return true
 end
