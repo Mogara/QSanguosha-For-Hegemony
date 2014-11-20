@@ -4502,8 +4502,14 @@ function SmartAI:needToLoseHp(to, from, isSlash, passive, recover)
 	if from and self:hasHeavySlashDamage(from, nil, to) then return false end
 	local n = to:getMaxHp()
 
-	if not passive and to:getMaxHp() > 2 and to:hasShownSkill("rende") and not self:willSkipPlayPhase(to) and self:findFriendsByType(sgs.Friend_Draw, to) then
-		n = math.min(n, to:getMaxHp() - 1)
+	if not passive then
+		if to:hasShownSkill("rende") and to:getMaxHp() > 2 and not self:willSkipPlayPhase(to) and self:findFriendsByType(sgs.Friend_Draw, to) then
+			n = math.min(n, to:getMaxHp() - 1)
+		elseif to:hasShownSkill("hengzheng") and sgs.ai_skill_invoke.hengzheng(sgs.ais[to:objectName()]) then
+			n = math.min(n, to:getMaxHp() - 1)
+		elseif to:hasShownSkills("yinghun|zaiqi") then
+			n = math.min(n, to:getMaxHp() - 1)
+		end
 	end
 
 	local xiangxiang = sgs.findPlayerByShownSkillName("jieyin")
@@ -4518,9 +4524,8 @@ function SmartAI:needToLoseHp(to, from, isSlash, passive, recover)
 		end
 		if need_jieyin then n = math.min(n, to:getMaxHp() - 1) end
 	end
-	if recover then return to:getHp() >= n end
 
-	if self.player:hasSkills("hengzheng|yinghun|zaiqi") then n = 3 end
+	if recover then return to:getHp() >= n end
 
 	return to:getHp() > n
 end
@@ -5190,7 +5195,7 @@ function SmartAI:willShowForMasochism()
 		end
 	end
 	local showRate = math.random() - self.player:getHp()/10 + e/10 + shown/20
-	
+
 	local firstShowReward = false
 	if sgs.GetConfig("RewardTheFirstShowingPlayer", true) then
 		if shown == 0 then
@@ -5198,10 +5203,10 @@ function SmartAI:willShowForMasochism()
 		end
 	end
 	if firstShowReward and showRate > 0.9 then return true end
-	
+
 	if showRate < 0.2 then return false end
 	if self.player:getLostHp() == 0 and self:getCardsNum("Peach") > 0 and showRate < 0.2 then return false end
-	
+
 	return true
 end
 
