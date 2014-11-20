@@ -885,6 +885,8 @@ enum TriggerEvent {
     GeneralHidden, // For Official Hegemony mode
     GeneralRemoved, // For Official Hegemony mode
 
+    DFDebut,
+
     NumOfEvents
 };
 
