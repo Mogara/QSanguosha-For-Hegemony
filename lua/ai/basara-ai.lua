@@ -31,7 +31,10 @@ sgs.ai_skill_choice.CompanionEffect = function(self, choice, data)
 	else return "draw" end
 end
 
-sgs.ai_skill_invoke["userdefine:FirstShowReward"] = true
+sgs.ai_skill_invoke["userdefine:FirstShowReward"] = function(self, choice, data)
+	if self.room:getMode() == "jiange_defense" then return false end
+	return true
+end
 
 
 sgs.ai_skill_choice.heg_nullification = function(self, choice, data)
@@ -52,7 +55,6 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 	
 	local firstShow = ("luanji|qianhuan"):split("|")
 	local bothShow = ("luanji+shuangxiong|luanji+huoshui|huoji+jizhi|luoshen+fangzhu|guanxing+jizhi"):split("|")
-	local woundedShow = ("zaiqi|yinghun|hunshang|hengzheng"):split("|")
 	local followShow = ("qianhuan|duoshi|rende|cunsi|jieyin|xiongyi|shouyue|hongfa"):split("|")
 
 	local notshown, shown, allshown, f, e, eAtt = 0, 0, 0, 0, 0, 0
@@ -180,18 +182,6 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 		end
 	end
 
-	if self.player:getLostHp() >= 2 then
-		for _, skill in ipairs(woundedShow) do
-			if self.player:hasSkill(skill) and not self.player:hasShownOneGeneral() then
-				if self.player:inHeadSkills(skill) and canShowHead and showRate > 0.9 then
-					return "GameRule_AskForGeneralShowHead"
-				elseif canShowDeputy and showRate > 0.9 then
-					return "GameRule_AskForGeneralShowDeputy"
-				end
-			end
-		end
-	end
-
 	for _, skill in ipairs(followShow) do
 		if ((shown > 0 and e < notshown) or self.player:hasShownOneGeneral()) and self.player:hasSkill(skill) then
 			if self.player:inHeadSkills(skill) and canShowHead and showRate > 0.6 then
@@ -230,8 +220,8 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 	if skillTrigger then
 		if string.find(choices, "jieming") then return "jieming" end
 		if string.find(choices, "fankui") and string.find(choices, "ganglie") then return "fankui" end
-		if string.find(choices, "xunxun") and string.find(choices, "ganglie") then return "ganglie" end
-		if string.find(choices, "luoshen") and string.find(choices, "guanxing") then return "luoshen" end
+		if string.find(choices, "wangxi") and string.find(choices, "ganglie") then return "ganglie" end
+		if string.find(choices, "luoshen") and string.find(choices, "guanxing") then return "guanxing" end
 		if string.find(choices, "wangxi") and string.find(choices, "fangzhu") then return "fangzhu" end
 		
 		local except = {}
