@@ -126,7 +126,7 @@ function SmartAI:useCardDrowning(card, use)
 	for _, enemy in ipairs(self.enemies) do
 		if card:targetFilter(players, enemy, self.player) and not players:contains(enemy) and enemy:hasEquip()
 			and self:hasTrickEffective(card, enemy) and self:damageIsEffective(enemy, sgs.DamageStruct_Thunder, self.player) and self:canAttack(enemy)
-			and not self:getDamagedEffects(enemy, self.player) and not self:needToLoseHp(enemy, self.player)
+			and not self:getDamagedEffects(enemy, self.player) and not self:needToLoseHp(enemy, self.player) and not self:needToThrowArmor(enemy)
 			and not (enemy:hasArmorEffect("PeaceSpell") and (enemy:getHp() > 1 or self:needToLoseHp(enemy, self.player)))
 			and not (enemy:hasArmorEffect("Breastplate") and enemy:getHp() == 1) then
 			players:append(enemy)
@@ -224,7 +224,6 @@ function SmartAI:useCardBurningCamps(card, use)
 	for i = 0 , players:length() - 1 do
 		player = findPlayerByObjectName(players:at(i):objectName())
 		if not self:hasTrickEffective(card, player, self.player) then
-			if i == 0 then return end
 			continue
 		end
 		local damage = {}
@@ -240,8 +239,6 @@ function SmartAI:useCardBurningCamps(card, use)
 			else
 				return
 			end
-		elseif i == 0 then
-			return
 		end
 	end
 	if shouldUse then
@@ -686,6 +683,11 @@ sgs.ai_skill_cardask["@threaten_emperor"] = function(self)
 	if self.player:isNude() then return "." end
 	local cards = sgs.QList2Table(self.player:getCards("he"))
 	self:sortByKeepValue(cards)
+	for _, card in ipairs(cards) do
+		if not card:isKindOf("JadeSeal") then
+			return card:getEffectiveId()
+		end
+	end
 	return cards[1]:getEffectiveId()
 end
 
@@ -706,12 +708,13 @@ sgs.ai_skill_cardask["@imperial_order-equip"] = function(self)
 	if self:needToThrowArmor() then
 		return self.player:getArmor():getEffectiveId()
 	end
-	if not self:willShowForAttack() and self.player:getPhase() == sgs.Player_NotActive then
+	if self.player:getPhase() == sgs.Player_NotActive then
 		local cards = self.player:getCards("he")
 		local cards = sgs.QList2Table(self.player:getCards("he"))
 			for _, card in ipairs(cards) do
-				if (card:isKindOf("Weapon") and self.player:getHandcardNum() < 3) or card:isKindOf("OffensiveHorse")
-					or self:getSameEquip(card, self.player) then
+				if not self:willShowForAttack() and ((card:isKindOf("Weapon") and self.player:getHandcardNum() < 3) or card:isKindOf("OffensiveHorse")) then
+					return card:getEffectiveId()
+				elseif not self:willShowForDefence() and ((card:isKindOf("Armor") and self.player:getHp() > 1) or card:isKindOf("DefensiveHorse")) then
 					return card:getEffectiveId()
 				end
 			end
