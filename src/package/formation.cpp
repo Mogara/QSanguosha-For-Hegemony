@@ -714,7 +714,7 @@ public:
         return false;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.from != NULL && use.card != NULL && use.card->isKindOf("Slash") && use.to.contains(player)) {
             ServerPlayer *jiangqin = room->findPlayerBySkillName(objectName());
@@ -728,7 +728,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
         if (ask_who != NULL && ask_who->hasShownSkill(this)) {
             room->broadcastSkillInvoke(objectName(), ask_who);
             return true;
@@ -736,7 +736,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
         room->notifySkillInvoked(ask_who, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
         int x = use.to.indexOf(player);
@@ -1323,7 +1323,7 @@ public:
         events << TargetChosen;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const {
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.from != NULL && use.from->hasWeapon(objectName()) && use.card != NULL && use.card->isKindOf("Slash") && player != NULL && use.to.contains(player) && use.from->canDiscard(player, "he")) {
             ask_who = use.from;
@@ -1332,7 +1332,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
         if (ask_who->askForSkillInvoke(this, QVariant::fromValue(player))) {
             room->setEmotion(ask_who, "weapon/dragonphoenix");
             return true;
@@ -1340,7 +1340,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->askForDiscard(player, objectName(), 1, 1, false, true, "@dragonphoenix-discard");
         return false;
     }
