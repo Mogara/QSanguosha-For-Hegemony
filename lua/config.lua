@@ -75,7 +75,7 @@ config = {
 
 	robot_names = {
 		"Moligaloo" ,
-		"啦啦失恋过", --啦啦SLG
+		"啦啦生日快乐", --啦啦SLG
 		"Fsu0213", --Fsu0413
 		"凌电信", --凌天翼
 		"元嘉体",
