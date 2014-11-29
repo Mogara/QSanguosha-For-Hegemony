@@ -2442,7 +2442,12 @@ void Room::addRobotCommand(ServerPlayer *player, const QVariant &) {
     const QString robot_avatar = Sanguosha->getRandomGeneralName();
     signup(robot, robot_name, robot_avatar, true);
 
-    QString greeting = tr("Hello, I'm a robot");
+    QString greeting;
+    QDate date = QDate::currentDate();
+    if (date.month() == 11 && date.day() == 30)
+        greeting = tr("Happy Birthday to Rara!");
+    else
+        greeting = tr("Hello, I'm a robot");
     speakCommand(robot, greeting);
 
     broadcastProperty(robot, "state");
