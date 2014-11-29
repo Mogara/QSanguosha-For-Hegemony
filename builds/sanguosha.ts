@@ -3026,17 +3026,17 @@
     <message>
         <location filename="../src/core/record-analysis.cpp" line="424"/>
         <source>Awe Prestige</source>
-        <translation>天道威仪</translation>
+        <translation>魏武挥鞭</translation>
     </message>
     <message>
         <location filename="../src/core/record-analysis.cpp" line="426"/>
         <source>Wisely Loyalist</source>
-        <translation>能臣巧吏</translation>
+        <translation>汉室复兴</translation>
     </message>
     <message>
         <location filename="../src/core/record-analysis.cpp" line="427"/>
         <source>Conspiracy</source>
-        <translation>老谋深算</translation>
+        <translation>雄霸天下</translation>
     </message>
     <message>
         <location filename="../src/core/record-analysis.cpp" line="429"/>
@@ -3066,17 +3066,17 @@
     <message>
         <location filename="../src/core/record-analysis.cpp" line="449"/>
         <source>Break Point</source>
-        <translation>直捣黄龙</translation>
+        <translation>吴王光耀</translation>
     </message>
     <message>
         <location filename="../src/core/record-analysis.cpp" line="451"/>
         <source>Legatus</source>
-        <translation>破军功臣</translation>
+        <translation>护国良将</translation>
     </message>
     <message>
         <location filename="../src/core/record-analysis.cpp" line="452"/>
         <source>Frightful Lord</source>
-        <translation>势敌万军</translation>
+        <translation>苍天航路</translation>
     </message>
     <message>
         <location filename="../src/core/record-analysis.cpp" line="453"/>
@@ -3131,12 +3131,12 @@
     <message>
         <location filename="../src/core/record-analysis.cpp" line="470"/>
         <source>Priority Honor</source>
-        <translation>竭忠尽智</translation>
+        <translation>季汉功臣</translation>
     </message>
     <message>
         <location filename="../src/core/record-analysis.cpp" line="471"/>
         <source>Impasse Strike</source>
-        <translation>华丽的逆袭</translation>
+        <translation>江东英杰</translation>
     </message>
 </context>
 <context>
