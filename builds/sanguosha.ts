@@ -3071,7 +3071,7 @@
     <message>
         <location filename="../src/core/record-analysis.cpp" line="451"/>
         <source>Legatus</source>
-        <translation>护国良将</translation>
+        <translation>破军功臣</translation>
     </message>
     <message>
         <location filename="../src/core/record-analysis.cpp" line="452"/>
@@ -3131,12 +3131,12 @@
     <message>
         <location filename="../src/core/record-analysis.cpp" line="470"/>
         <source>Priority Honor</source>
-        <translation>季汉功臣</translation>
+        <translation>季汉能臣</translation>
     </message>
     <message>
         <location filename="../src/core/record-analysis.cpp" line="471"/>
         <source>Impasse Strike</source>
-        <translation>江东英杰</translation>
+        <translation>江东俊杰</translation>
     </message>
 </context>
 <context>
