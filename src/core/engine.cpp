@@ -577,7 +577,7 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const{
 }
 
 QSanVersionNumber Engine::getVersionNumber() const{
-    return QSanVersionNumber(0, 8, 0, QSanVersionNumber::beta, 2);
+    return QSanVersionNumber(0, 8, 0, QSanVersionNumber::beta, 3);
 }
 
 QString Engine::getVersion() const{
