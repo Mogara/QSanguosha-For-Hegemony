@@ -768,12 +768,10 @@ void Client::setNullification(const QVariant &str) {
     QString astr = str.toString();
     if (astr != ".") {
         if (m_noNullificationTrickName == ".") {
-            m_noNullificationThisTime = false;
             m_noNullificationTrickName = astr;
             emit nullification_asked(true);
         }
-    }
-    else {
+    } else {
         m_noNullificationThisTime = false;
         m_noNullificationTrickName = ".";
         emit nullification_asked(false);
@@ -1038,10 +1036,8 @@ void Client::askForNullification(const QVariant &arg) {
         }
     }
     if (m_noNullificationThisTime && m_noNullificationTrickName == trick_name) {
-        if (trick_card->isKindOf("AOE") || trick_card->isKindOf("GlobalEffect")) {
-            onPlayerResponseCard(NULL);
-            return;
-        }
+        onPlayerResponseCard(NULL);
+        return;
     }
 
     if (source == NULL) {
