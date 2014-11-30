@@ -2925,7 +2925,7 @@ void RoomScene::onStandoff() {
     freeze();
     Sanguosha->playSystemAudioEffect("standoff");
 
-    QDialog *dialog = new QDialog(main_window);
+    FlatDialog *dialog = new FlatDialog(main_window);
     dialog->resize(500, 600);
     dialog->setWindowTitle(tr("Standoff"));
 
@@ -2935,7 +2935,7 @@ void RoomScene::onStandoff() {
     fillTable(table, ClientInstance->getPlayers());
 
     layout->addWidget(table);
-    dialog->setLayout(layout);
+    dialog->mainLayout()->addLayout(layout);
 
     addRestartButton(dialog);
 
