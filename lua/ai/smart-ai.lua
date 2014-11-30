@@ -1896,7 +1896,7 @@ function SmartAI:filterEvent(event, player, data)
 					local count = self.room:getTag("SwapPile"):toInt()
 					for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
 						if sgs.ai_guangxing[p:objectName()][count] and table.contains(sgs.ai_guangxing[p:objectName()][count], tostring(card_id)) then
-							table.remove(sgs.ai_guangxing[p:objectName()][count], card_id)
+							table.removeOne(sgs.ai_guangxing[p:objectName()][count], card_id)
 							local flag = string.format("%s_%s_%s", "visible", p:objectName(), to:objectName())
 							self.room:setCardFlag(card_id, flag, p)
 						end
