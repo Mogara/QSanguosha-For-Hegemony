@@ -43,12 +43,10 @@ private:
     void loadIPList();
     void loadBannedList();
 
-public slots:
-
+private slots:
     void addPlayer(ServerPlayer *player);
     void removePlayer();
 
-private slots:
     void insertClicked();
     void removeClicked();
     void kickClicked();
