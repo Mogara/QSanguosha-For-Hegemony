@@ -44,6 +44,7 @@ class ChooseOptionsBox;
 class ChooseTriggerOrderBox;
 class BubbleChatBox;
 class PlayerCardBox;
+class ChooseSuitBox;
 struct RoomLayout;
 
 #include <QGraphicsScene>
@@ -254,7 +255,7 @@ private:
     QGraphicsSimpleTextItem *pausing_text;
 
     QList<QGraphicsPixmapItem *> role_items;
-    CardContainer *card_container;
+    CardContainer *m_cardContainer;
 
     QList<QSanSkillButton *> m_skillButtons;
 
@@ -266,15 +267,17 @@ private:
 
     QList<const Player *> selected_targets;
 
-    GuanxingBox *guanxing_box;
+    GuanxingBox *m_guanxingBox;
 
-    ChooseGeneralBox *choose_general_box;
+    ChooseGeneralBox *m_chooseGeneralBox;
 
-    ChooseOptionsBox *choose_options_box;
+    ChooseOptionsBox *m_chooseOptionsBox;
 
-    ChooseTriggerOrderBox *chooseTriggerOrderBox;
+    ChooseTriggerOrderBox *m_chooseTriggerOrderBox;
 
-    PlayerCardBox *playerCardBox;
+    PlayerCardBox *m_playerCardBox;
+
+    ChooseSuitBox *m_chooseSuitBox;
 
     QList<CardItem *> gongxin_items;
 

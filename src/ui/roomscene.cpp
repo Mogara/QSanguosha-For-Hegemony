@@ -45,6 +45,7 @@
 #include "stylehelper.h"
 #include "heroskincontainer.h"
 #include "flatdialog.h"
+#include "choosesuitbox.h"
 
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
@@ -195,54 +196,59 @@ RoomScene::RoomScene(QMainWindow *main_window)
     connect(ClientInstance, &Client::start_in_xs, this, &RoomScene::startInXs);
     connect(ClientInstance, &Client::update_handcard_num, this, &RoomScene::updateHandcardNum);
 
-    guanxing_box = new GuanxingBox;
-    guanxing_box->hide();
-    addItem(guanxing_box);
-    guanxing_box->setZValue(20000.0);
+    m_guanxingBox = new GuanxingBox;
+    m_guanxingBox->hide();
+    addItem(m_guanxingBox);
+    m_guanxingBox->setZValue(20000.0);
 
+    connect(ClientInstance, &Client::guanxing, m_guanxingBox, &GuanxingBox::doGuanxing);
+    connect(ClientInstance, &Client::mirror_guanxing_start, m_guanxingBox, &GuanxingBox::mirrorGuanxingStart);
+    connect(ClientInstance, &Client::mirror_guanxing_move, m_guanxingBox, &GuanxingBox::mirrorGuanxingMove);
+    connect(ClientInstance, &Client::mirror_guanxing_finish, m_guanxingBox, &GuanxingBox::clear);
+    m_guanxingBox->moveBy(-120, 0);
 
-    connect(ClientInstance, &Client::guanxing, guanxing_box, &GuanxingBox::doGuanxing);
-    connect(ClientInstance, &Client::mirror_guanxing_start, guanxing_box, &GuanxingBox::mirrorGuanxingStart);
-    connect(ClientInstance, &Client::mirror_guanxing_move, guanxing_box, &GuanxingBox::mirrorGuanxingMove);
-    connect(ClientInstance, &Client::mirror_guanxing_finish, guanxing_box, &GuanxingBox::clear);
-    guanxing_box->moveBy(-120, 0);
+    m_chooseGeneralBox = new ChooseGeneralBox;
+    m_chooseGeneralBox->hide();
+    addItem(m_chooseGeneralBox);
+    m_chooseGeneralBox->setZValue(30000.0);
+    m_chooseGeneralBox->moveBy(-120, 0);
 
-    choose_general_box = new ChooseGeneralBox;
-    choose_general_box->hide();
-    addItem(choose_general_box);
-    choose_general_box->setZValue(30000.0);
-    choose_general_box->moveBy(-120, 0);
+    m_chooseOptionsBox = new ChooseOptionsBox;
+    m_chooseOptionsBox->hide();
+    addItem(m_chooseOptionsBox);
+    m_chooseOptionsBox->setZValue(30000.0);
+    m_chooseOptionsBox->moveBy(-120, 0);
 
-    choose_options_box = new ChooseOptionsBox;
-    choose_options_box->hide();
-    addItem(choose_options_box);
-    choose_options_box->setZValue(30000.0);
-    choose_options_box->moveBy(-120, 0);
+    m_chooseTriggerOrderBox = new ChooseTriggerOrderBox;
+    m_chooseTriggerOrderBox->hide();
+    addItem(m_chooseTriggerOrderBox);
+    m_chooseTriggerOrderBox->setZValue(30000.0);
+    m_chooseTriggerOrderBox->moveBy(-120, 0);
 
-    chooseTriggerOrderBox = new ChooseTriggerOrderBox;
-    chooseTriggerOrderBox->hide();
-    addItem(chooseTriggerOrderBox);
-    chooseTriggerOrderBox->setZValue(30000.0);
-    chooseTriggerOrderBox->moveBy(-120, 0);
+    m_playerCardBox = new PlayerCardBox;
+    m_playerCardBox->hide();
+    addItem(m_playerCardBox);
+    m_playerCardBox->setZValue(30000.0);
+    m_playerCardBox->moveBy(-120, 0);
 
-    playerCardBox = new PlayerCardBox;
-    playerCardBox->hide();
-    addItem(playerCardBox);
-    playerCardBox->setZValue(30000.0);
-    playerCardBox->moveBy(-120, 0);
+    m_chooseSuitBox = new ChooseSuitBox;
+    m_chooseSuitBox->hide();
+    addItem(m_chooseSuitBox);
+    m_chooseSuitBox->setZValue(30000.0);
+    m_chooseSuitBox->moveBy(-120, 0);
 
-    card_container = new CardContainer();
-    card_container->hide();
-    addItem(card_container);
-    card_container->setZValue(9.0);
+    m_cardContainer = new CardContainer;
+    m_cardContainer->hide();
+    addItem(m_cardContainer);
+    m_cardContainer->setZValue(9.0);
 
-    connect(card_container, &CardContainer::item_chosen, ClientInstance, &Client::onPlayerChooseAG);
-    connect(card_container, &CardContainer::item_gongxined, ClientInstance, &Client::onPlayerReplyGongxin);
+    connect(m_cardContainer, &CardContainer::item_chosen, ClientInstance, &Client::onPlayerChooseAG);
+    connect(m_cardContainer, &CardContainer::item_gongxined, ClientInstance, &Client::onPlayerReplyGongxin);
     connect(ClientInstance, &Client::ag_filled, this, &RoomScene::fillCards);
     connect(ClientInstance, &Client::ag_taken, this, &RoomScene::takeAmazingGrace);
-    connect(ClientInstance, &Client::ag_cleared, card_container, &CardContainer::clear);
+    connect(ClientInstance, &Client::ag_cleared, m_cardContainer, &CardContainer::clear);
 
-    card_container->moveBy(-120, 0);
+    m_cardContainer->moveBy(-120, 0);
 
     connect(ClientInstance, &Client::skill_attached, this, &RoomScene::attachSkill);
     connect(ClientInstance, &Client::skill_detached, this, &RoomScene::detachSkill);
@@ -963,12 +969,13 @@ void RoomScene::updateTable() {
     m_tablePile->setSize(qMax((int)tableRect.width() - _m_roomLayout->m_discardPilePadding * 2,
         _m_roomLayout->m_discardPileMinWidth), _m_commonLayout->m_cardNormalHeight);
     m_tablePile->adjustCards();
-    card_container->setPos(m_tableCenterPos - QPointF(card_container->boundingRect().width() / 2, card_container->boundingRect().height() / 2));
-    guanxing_box->setPos(m_tableCenterPos - QPointF(guanxing_box->boundingRect().width() / 2, guanxing_box->boundingRect().height() / 2));
-    choose_general_box->setPos(m_tableCenterPos - QPointF(choose_general_box->boundingRect().width() / 2, choose_general_box->boundingRect().height() / 2));
-    choose_options_box->setPos(m_tableCenterPos - QPointF(choose_options_box->boundingRect().width() / 2, choose_options_box->boundingRect().height() / 2));
-    chooseTriggerOrderBox->setPos(m_tableCenterPos - QPointF(chooseTriggerOrderBox->boundingRect().width() / 2, chooseTriggerOrderBox->boundingRect().height() / 2));
-    playerCardBox->setPos(m_tableCenterPos - QPointF(chooseTriggerOrderBox->boundingRect().width() / 2, chooseTriggerOrderBox->boundingRect().height() / 2));
+    m_cardContainer->setPos(m_tableCenterPos - QPointF(m_cardContainer->boundingRect().width() / 2, m_cardContainer->boundingRect().height() / 2));
+    m_guanxingBox->setPos(m_tableCenterPos - QPointF(m_guanxingBox->boundingRect().width() / 2, m_guanxingBox->boundingRect().height() / 2));
+    m_chooseGeneralBox->setPos(m_tableCenterPos - QPointF(m_chooseGeneralBox->boundingRect().width() / 2, m_chooseGeneralBox->boundingRect().height() / 2));
+    m_chooseOptionsBox->setPos(m_tableCenterPos - QPointF(m_chooseOptionsBox->boundingRect().width() / 2, m_chooseOptionsBox->boundingRect().height() / 2));
+    m_chooseTriggerOrderBox->setPos(m_tableCenterPos - QPointF(m_chooseTriggerOrderBox->boundingRect().width() / 2, m_chooseTriggerOrderBox->boundingRect().height() / 2));
+    m_playerCardBox->setPos(m_tableCenterPos - QPointF(m_chooseTriggerOrderBox->boundingRect().width() / 2, m_chooseTriggerOrderBox->boundingRect().height() / 2));
+    m_chooseSuitBox->setPos(m_tableCenterPos - QPointF(m_chooseSuitBox->boundingRect().width() / 2, m_chooseSuitBox->boundingRect().height() / 2));
     prompt_box->setPos(m_tableCenterPos);
     pausing_text->setPos(m_tableCenterPos - pausing_text->boundingRect().center());
     pausing_item->setRect(sceneRect());
@@ -1540,30 +1547,16 @@ void RoomScene::chooseGeneral(const QStringList &generals, const bool single_res
         delete m_choiceDialog;
         m_choiceDialog = new FreeChooseDialog(main_window);
     } else {
-        choose_general_box->chooseGeneral(generals, false, single_result);
+        m_chooseGeneralBox->chooseGeneral(generals, false, single_result);
     }
 }
 
 void RoomScene::chooseSuit(const QStringList &suits) {
-    FlatDialog *dialog = new FlatDialog;
-    QVBoxLayout *layout = dialog->mainLayout();
+    QApplication::alert(main_window);
+    if (!main_window->isActiveWindow())
+        Sanguosha->playSystemAudioEffect("pop-up");
 
-    foreach(QString suit, suits) {
-        QCommandLinkButton *button = new QCommandLinkButton;
-        button->setIcon(QIcon(QString("image/system/suit/%1.png").arg(suit)));
-        button->setText(Sanguosha->translate(suit));
-        button->setObjectName(suit);
-
-        layout->addWidget(button);
-
-        connect(button, &QCommandLinkButton::clicked, ClientInstance, &Client::onPlayerChooseSuit);
-        connect(button, &QCommandLinkButton::clicked, dialog, &FlatDialog::accept);
-    }
-
-    dialog->setObjectName(".");
-    dialog->setWindowTitle(tr("Please choose a suit"));
-    delete m_choiceDialog;
-    m_choiceDialog = dialog;
+    m_chooseSuitBox->chooseSuit(suits);
 }
 
 void RoomScene::chooseKingdom(const QStringList &kingdoms) {
@@ -1601,8 +1594,8 @@ void RoomScene::chooseOption(const QString &skillName, const QStringList &option
     if (!main_window->isActiveWindow())
         Sanguosha->playSystemAudioEffect("pop-up");
 
-    choose_options_box->setSkillName(skillName);
-    choose_options_box->chooseOption(options);
+    m_chooseOptionsBox->setSkillName(skillName);
+    m_chooseOptionsBox->chooseOption(options);
 }
 
 void RoomScene::chooseCard(const ClientPlayer *player, const QString &flags, const QString &reason,
@@ -1611,7 +1604,7 @@ void RoomScene::chooseCard(const ClientPlayer *player, const QString &flags, con
     if (!main_window->isActiveWindow())
         Sanguosha->playSystemAudioEffect("pop-up");
 
-    playerCardBox->chooseCard(Sanguosha->translate(reason), player, flags,
+    m_playerCardBox->chooseCard(Sanguosha->translate(reason), player, flags,
                               handcard_visible, method, disabled_ids);
 }
 
@@ -1727,7 +1720,7 @@ void RoomScene::chooseTriggerOrder(const QString &reason, const QStringList &opt
     if (!main_window->isActiveWindow())
         Sanguosha->playSystemAudioEffect("pop-up");
 
-    chooseTriggerOrderBox->chooseOption(reason, options, optional);
+    m_chooseTriggerOrderBox->chooseOption(reason, options, optional);
 }
 
 void RoomScene::toggleDiscards() {
@@ -1747,7 +1740,7 @@ GenericCardContainer *RoomScene::_getGenericCardContainer(Player::Place place, P
         return m_tablePile;
     // @todo: AG must be a pile with name rather than simply using the name special...
     else if (player == NULL && place == Player::PlaceSpecial)
-        return card_container;
+        return m_cardContainer;
     else if (player == Self)
         return dashboard;
     else if (player != NULL)
@@ -1794,7 +1787,7 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves) {
         bool skipMove = _processCardsMove(movement, false);
         if (skipMove) continue;
         if (_shouldIgnoreDisplayMove(movement)) continue;
-        card_container->m_currentPlayer = qobject_cast<ClientPlayer *>(movement.to);
+        m_cardContainer->m_currentPlayer = qobject_cast<ClientPlayer *>(movement.to);
         GenericCardContainer *to_container = _getGenericCardContainer(movement.to_place, movement.to);
         QList<CardItem *> cards = _m_cardsMoveStash[moveId][count];
         count++;
@@ -1826,7 +1819,7 @@ void RoomScene::loseCards(int moveId, QList<CardsMoveStruct> card_moves) {
         bool skipMove = _processCardsMove(movement, true);
         if (skipMove) continue;
         if (_shouldIgnoreDisplayMove(movement)) continue;
-        card_container->m_currentPlayer = qobject_cast<ClientPlayer *>(movement.to);
+        m_cardContainer->m_currentPlayer = qobject_cast<ClientPlayer *>(movement.to);
         GenericCardContainer *from_container = _getGenericCardContainer(movement.from_place, movement.from);
         QList<CardItem *> cards = from_container->removeCardItems(movement.card_ids, movement.from_place);
         foreach(CardItem *card, cards)
@@ -2183,12 +2176,12 @@ void RoomScene::useSelectedCard() {
         break;
     }
     case Client::AskForGuanxing: {
-        guanxing_box->reply();
+        m_guanxingBox->reply();
         break;
     }
     case Client::AskForGongxin: {
         ClientInstance->onPlayerReplyGongxin();
-        card_container->clear();
+        m_cardContainer->clear();
         break;
     }
     }
@@ -2337,7 +2330,7 @@ void RoomScene::doTimeout() {
         break;
     }
     case Client::AskForAG: {
-        int card_id = card_container->getFirstEnabled();
+        int card_id = m_cardContainer->getFirstEnabled();
         if (card_id != -1)
             ClientInstance->onPlayerChooseAG(card_id);
         break;
@@ -2427,21 +2420,29 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         }
         case Client::AskForGuanxing:
         case Client::AskForGongxin: {
-            guanxing_box->clear();
-            if (!card_container->retained())
-                card_container->clear();
+            m_guanxingBox->clear();
+            if (!m_cardContainer->retained())
+                m_cardContainer->clear();
             break;
         }
         case Client::AskForGeneralChosen: {
-            choose_general_box->clear();
+            m_chooseGeneralBox->clear();
             break;
         }
         case Client::AskForChoice: {
-            choose_options_box->clear();
+            m_chooseOptionsBox->clear();
             break;
         }
         case Client::AskForCardChosen: {
-            playerCardBox->clear();
+            m_playerCardBox->clear();
+            break;
+        }
+        case Client::AskForSuit: {
+            m_chooseSuitBox->clear();
+            break;
+        }
+        case Client::AskForTriggerOrder: {
+            m_chooseTriggerOrderBox->clear();
             break;
         }
         case Client::RespondingUse: {
@@ -2611,7 +2612,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         cancel_button->setEnabled(false);
         discard_button->setEnabled(false);
 
-        card_container->startChoose();
+        m_cardContainer->startChoose();
 
         break;
     }
@@ -2630,13 +2631,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
 
         break;
     }
-    case Client::AskForGuanxing: {
-        ok_button->setEnabled(true);
-        cancel_button->setEnabled(false);
-        discard_button->setEnabled(false);
-
-        break;
-    }
+    case Client::AskForGuanxing:
     case Client::AskForGongxin: {
         ok_button->setEnabled(true);
         cancel_button->setEnabled(false);
@@ -2644,34 +2639,11 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
 
         break;
     }
-    case Client::AskForGeneralChosen: {
-        ok_button->setEnabled(false);
-        cancel_button->setEnabled(false);
-        discard_button->setEnabled(false);
-
-        break;
-    }
-    case Client::AskForArrangement: {
-        ok_button->setEnabled(false);
-        cancel_button->setEnabled(false);
-        discard_button->setEnabled(false);
-
-        break;
-    }
-    case Client::AskForChoice: {
-        ok_button->setEnabled(false);
-        cancel_button->setEnabled(false);
-        discard_button->setEnabled(false);
-
-        break;
-    }
-    case Client::AskForTriggerOrder: {
-        ok_button->setEnabled(false);
-        cancel_button->setEnabled(false);
-        discard_button->setEnabled(false);
-
-        break;
-    }
+    case Client::AskForGeneralChosen:
+    case Client::AskForArrangement:
+    case Client::AskForChoice:
+    case Client::AskForTriggerOrder:
+    case Client::AskForSuit:
     case Client::AskForCardChosen: {
         ok_button->setEnabled(false);
         cancel_button->setEnabled(false);
@@ -2742,12 +2714,12 @@ void RoomScene::onTransferButtonActivated()
 
 void RoomScene::doOkButton() {
     if (!ok_button->isEnabled()) return;
-    if (card_container->retained()) card_container->clear();
+    if (m_cardContainer->retained()) m_cardContainer->clear();
     useSelectedCard();
 }
 
 void RoomScene::doCancelButton() {
-    if (card_container->retained()) card_container->clear();
+    if (m_cardContainer->retained()) m_cardContainer->clear();
     switch (ClientInstance->getStatus() & Client::ClientStatusBasicMask) {
     case Client::Playing: {
         dashboard->skillButtonDeactivated();
@@ -2827,7 +2799,7 @@ void RoomScene::doDiscardButton() {
     dashboard->stopPending();
     dashboard->unselectAll();
 
-    if (card_container->retained()) card_container->clear();
+    if (m_cardContainer->retained()) m_cardContainer->clear();
     if (ClientInstance->getStatus() == Client::Playing)
         ClientInstance->onPlayerResponseCard(NULL);
 }
@@ -3296,7 +3268,7 @@ void RoomScene::viewGenerals(const QString &reason, const QStringList &names) {
     QApplication::alert(main_window);
     if (!main_window->isActiveWindow())
         Sanguosha->playSystemAudioEffect("pop-up");
-    choose_general_box->chooseGeneral(names, true, false,
+    m_chooseGeneralBox->chooseGeneral(names, true, false,
                                       Sanguosha->translate(reason));
 }
 
@@ -3441,8 +3413,8 @@ void RoomScene::takeAmazingGrace(ClientPlayer *taker, int card_id, bool move_car
     card_ids.append(card_id);
     m_tablePile->clear();
 
-    card_container->m_currentPlayer = taker;
-    CardItem *copy = card_container->removeCardItems(card_ids, Player::PlaceHand).first();
+    m_cardContainer->m_currentPlayer = taker;
+    CardItem *copy = m_cardContainer->removeCardItems(card_ids, Player::PlaceHand).first();
     if (copy == NULL) return;
 
     QList<CardItem *> items;
@@ -3601,18 +3573,18 @@ void RoomScene::speak() {
 }
 
 void RoomScene::fillCards(const QList<int> &card_ids, const QList<int> &disabled_ids) {
-    bringToFront(card_container);
-    card_container->fillCards(card_ids, disabled_ids);
-    card_container->setPos(m_tableCenterPos - QPointF(card_container->boundingRect().width() / 2, card_container->boundingRect().height() / 2));
-    card_container->show();
+    bringToFront(m_cardContainer);
+    m_cardContainer->fillCards(card_ids, disabled_ids);
+    m_cardContainer->setPos(m_tableCenterPos - QPointF(m_cardContainer->boundingRect().width() / 2, m_cardContainer->boundingRect().height() / 2));
+    m_cardContainer->show();
 }
 
 void RoomScene::doGongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids) {
     fillCards(card_ids);
     if (enable_heart)
-        card_container->startGongxin(enabled_ids);
-    else if (!card_container->retained())
-        card_container->addConfirmButton();
+        m_cardContainer->startGongxin(enabled_ids);
+    else if (!m_cardContainer->retained())
+        m_cardContainer->addConfirmButton();
 }
 
 void RoomScene::showOwnerButtons(bool owner) {
@@ -3660,7 +3632,7 @@ void RoomScene::showPlayerCards() {
 
 void RoomScene::onGameStart() {
     if (ClientInstance->getReplayer() != NULL)
-        choose_general_box->clear();
+        m_chooseGeneralBox->clear();
 
     main_window->activateWindow();
 
