@@ -21,13 +21,14 @@
 #ifndef _START_SCENE_H
 #define _START_SCENE_H
 
-#include "button.h"
 #include "qsanselectableitem.h"
 #include "server.h"
 
 #include <QGraphicsScene>
 #include <QAction>
 #include <QTextEdit>
+
+class Tile;
 
 class StartScene : public QGraphicsScene {
     Q_OBJECT
@@ -49,7 +50,7 @@ private:
 
     QSanSelectableItem *logo;
     QTextEdit *serverLog;
-    QList<Button *> buttons;
+    QList<Tile *> buttons;
     bool shouldMourn;
 };
 

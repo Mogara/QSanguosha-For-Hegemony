@@ -23,6 +23,7 @@
 #include "audio.h"
 #include "qsanselectableitem.h"
 #include "stylehelper.h"
+#include "tile.h"
 
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
@@ -67,9 +68,12 @@ StartScene::StartScene(QObject *parent)
 }
 
 void StartScene::addButton(QAction *action) {
-    Button *button = new Button(action->text());
+    Tile *button = new Tile(action->text());
+    QString icon = action->objectName();
+    icon.remove(0, 6);
+    button->setIcon(icon.toLower());
 
-    connect(button, &Button::clicked, action, &QAction::trigger);
+    connect(button, &Tile::clicked, action, &QAction::trigger);
     addItem(button);
 
     QRectF rect = button->boundingRect();
@@ -122,7 +126,7 @@ void StartScene::switchToServer(Server *server) {
     group->addAnimation(yScale);
     group->start(QAbstractAnimation::DeleteWhenStopped);
 
-    foreach(Button *button, buttons)
+    foreach(Tile *button, buttons)
         button->hide();
 
     serverLog = new QTextEdit;
