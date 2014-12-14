@@ -55,12 +55,12 @@ class ChooseGeneralBox : public GraphicsBox {
 public:
     explicit ChooseGeneralBox();
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void paintLayout(QPainter *painter);
     QRectF boundingRect() const;
     void clear();
 
 public slots:
-    void chooseGeneral(const QStringList &generals, bool view_only = false,
+    void chooseGeneral(const QStringList &generals, bool m_viewOnly = false,
                        bool single_result = false, const QString &reason = QString(),
                        const Player *player = NULL);
     void reply();
@@ -69,7 +69,7 @@ public slots:
 private:
     int general_number;
     bool single_result;
-    bool view_only;
+    bool m_viewOnly;
     QList<GeneralCardItem *> items, selected;
     static const int top_dark_bar = 27;
     static const int top_blank_width = 42;
