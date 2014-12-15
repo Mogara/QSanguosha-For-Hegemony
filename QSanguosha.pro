@@ -505,7 +505,8 @@ OTHER_FILES += \
     resource/android/AndroidManifest.xml \
     builds/sanguosha.ts
 
-LIBS += -lfreetype
+CONFIG(debug, debug|release): LIBS += -lfreetype_D
+else:LIBS += -lfreetype
 
 INCLUDEPATH += $$PWD/include/freetype
 DEPENDPATH += $$PWD/include/freetype
