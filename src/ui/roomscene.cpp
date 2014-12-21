@@ -3382,7 +3382,7 @@ void RoomScene::killPlayer(const QString &who) {
             general = Sanguosha->getGeneral("mifuren");
     }
 
-    if (Config.EnableEffects && Config.EnableLastWord && !Self->hasFlag("marshalling")) {
+    if (Config.EnableLastWord && !Self->hasFlag("marshalling")) {
         ClientPlayer *player = ClientInstance->getPlayer(who);
         general->lastWord(player->getHeadSkinId());
     }
@@ -3525,7 +3525,6 @@ void RoomScene::speak() {
         Audio::stopBGM();
         QString bgmusic_path = Config.value("BackgroundMusic", "audio/system/background.ogg").toString();
         Audio::playBGM(bgmusic_path);
-        Audio::setBGMVolume(Config.BGMVolume);
 #endif
     }
     else if (text.startsWith(".StartBgMusic=")) {
@@ -3540,7 +3539,6 @@ void RoomScene::speak() {
 #ifdef AUDIO_SUPPORT
         Audio::stopBGM();
         Audio::playBGM(path);
-        Audio::setBGMVolume(Config.BGMVolume);
 #endif
     }
     else if (text == ".StopBgMusic") {
@@ -3648,7 +3646,6 @@ void RoomScene::onGameStart() {
         QString bgmusic_path = Config.value("BackgroundMusic", "audio/system/background.ogg").toString();
 
         Audio::playBGM(bgmusic_path);
-        Audio::setBGMVolume(Config.BGMVolume);
     }
 #endif
     game_started = true;
