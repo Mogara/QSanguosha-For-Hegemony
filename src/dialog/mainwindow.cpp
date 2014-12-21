@@ -25,7 +25,7 @@
 #include "client.h"
 #include "generaloverview.h"
 #include "cardoverview.h"
-#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+#if defined(Q_OS_WIN) || defined(Q_OS_LINUX)
 #include "ui_mainwindow.h"
 #else
 #include "ui_mainwindow_nonwin.h"
@@ -84,7 +84,7 @@ public:
 #endif
     }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     virtual void mousePressEvent(QMouseEvent *event) {
         MainWindow *parent = qobject_cast<MainWindow *>(parentWidget());
         if (parent)
@@ -139,7 +139,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setWindowTitle(tr("QSanguosha-Hegemony") + " " + Sanguosha->getVersion());
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint);
 #endif
     setAttribute(Qt::WA_TranslucentBackground);
@@ -177,7 +177,7 @@ MainWindow::MainWindow(QWidget *parent)
     foreach(QAction *action, actions)
         start_scene->addButton(action);
 
-#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+#if defined(Q_OS_WIN) || defined(Q_OS_LINUX)
     ui->menuSumMenu->setAttribute(Qt::WA_TranslucentBackground);
     ui->menuGame->setAttribute(Qt::WA_TranslucentBackground);
     ui->menuView->setAttribute(Qt::WA_TranslucentBackground);
@@ -199,7 +199,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     addAction(ui->actionFullscreen);
 
-#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+#if defined(Q_OS_WIN) || defined(Q_OS_LINUX)
     menu = new QPushButton(this);
     menu->setMenu(ui->menuSumMenu);
     menu->setProperty("control", true);
@@ -207,7 +207,7 @@ MainWindow::MainWindow(QWidget *parent)
     menu->setToolTip(tr("<font color=%1>Config</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
 #endif
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     minButton = new QPushButton(this);
     minButton->setProperty("control", true);
 
@@ -257,7 +257,7 @@ MainWindow::MainWindow(QWidget *parent)
     systray = NULL;
 }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
     if (windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
@@ -496,7 +496,7 @@ void MainWindow::roundCorners()
 
 void MainWindow::repaintButtons()
 {
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     if (!minButton || !maxButton || !normalButton || !closeButton || !menu)
         return;
     int width = this->width();

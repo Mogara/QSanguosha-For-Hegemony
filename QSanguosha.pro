@@ -237,7 +237,7 @@ FORMS += \
 win32 {
     FORMS += src/dialog/mainwindow.ui
 }
-else: android {
+else: linux {
     FORMS += src/dialog/mainwindow.ui
 }
 else {
