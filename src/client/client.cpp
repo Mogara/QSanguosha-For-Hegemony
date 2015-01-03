@@ -480,7 +480,7 @@ void Client::getCards(const QVariant &arg) {
                 to->changePile(move.to_pile_name, true, move.card_ids);
         }
         else {
-            foreach(int card_id, move.card_ids)
+            foreach (int card_id, move.card_ids)
                 _getSingleCard(card_id, move); // DDHEJ->DDHEJ, DDH/EJ->EJ
         }
         moves.append(move);
@@ -507,7 +507,7 @@ void Client::loseCards(const QVariant &arg) {
                 from->changePile(move.from_pile_name, false, move.card_ids);
         }
         else {
-            foreach(int card_id, move.card_ids)
+            foreach (int card_id, move.card_ids)
                 _loseSingleCard(card_id, move); // DDHEJ->DDHEJ, DDH/EJ->EJ
         }
         moves.append(move);
@@ -587,7 +587,7 @@ void Client::onPlayerResponseCard(const Card *card, const QList<const Player *> 
     } else {
         JsonArray targetNames;
         if (!card->targetFixed()) {
-            foreach(const Player *target, targets)
+            foreach (const Player *target, targets)
                 targetNames << target->objectName();
         }
 
@@ -789,9 +789,9 @@ void Client::exchangeKnownCards(const QVariant &players) {
     if (args.size() != 2 || !JsonUtils::isString(args[0]) || !JsonUtils::isString(args[1])) return;
     ClientPlayer *a = getPlayer(args[0].toString()), *b = getPlayer(args[1].toString());
     QList<int> a_known, b_known;
-    foreach(const Card *card, a->getHandcards())
+    foreach (const Card *card, a->getHandcards())
         a_known << card->getId();
-    foreach(const Card *card, b->getHandcards())
+    foreach (const Card *card, b->getHandcards())
         b_known << card->getId();
     a->setCards(b_known);
     b->setCards(a_known);
@@ -1326,7 +1326,7 @@ void Client::gameOver(const QVariant &arg) {
     }
 
     QSet<QString> winners = winner.split("+").toSet();
-    foreach(const ClientPlayer *player, players) {
+    foreach (const ClientPlayer *player, players) {
         QString role = player->getRole();
         bool win = winners.contains(player->objectName()) || winners.contains(role);
 
@@ -1345,7 +1345,7 @@ void Client::killPlayer(const QVariant &player_name) {
     alive_count--;
     ClientPlayer *player = getPlayer(name);
     if (player == Self) {
-        foreach(const Skill *skill, Self->getVisibleSkills())
+        foreach (const Skill *skill, Self->getVisibleSkills())
             emit skill_detached(skill->objectName());
     }
     player->detachAllSkills();
@@ -1511,7 +1511,7 @@ void Client::onPlayerChooseKingdom() {
 void Client::onPlayerDiscardCards(const Card *cards) {
     if (cards) {
         JsonArray arr;
-        foreach(int card_id, cards->getSubcards())
+        foreach (int card_id, cards->getSubcards())
             arr << card_id;
         if (cards->isVirtualCard() && !cards->parent())
             delete cards;
@@ -1581,7 +1581,7 @@ void Client::askForSinglePeach(const QVariant &arg) {
     }
     if (Self->hasFlag("Global_PreventPeach")) {
         bool has_skill = false;
-        foreach(const Skill *skill, Self->getVisibleSkillList(true)) {
+        foreach (const Skill *skill, Self->getVisibleSkillList(true)) {
             const ViewAsSkill *view_as_skill = ViewAsSkill::parseViewAsSkill(skill);
             if (view_as_skill && view_as_skill->isAvailable(Self, CardUseStruct::CARD_USE_REASON_RESPONSE_USE, pattern.join("+"))) {
                 has_skill = true;
@@ -1910,7 +1910,7 @@ void Client::moveFocus(const QVariant &focus) {
     if (!json_players.isEmpty()) {
         JsonUtils::tryParse(json_players, players);
     } else {
-        foreach(const ClientPlayer *player, this->players) {
+        foreach (const ClientPlayer *player, this->players) {
             if (player->isAlive()) {
                 players << player->objectName();
             }

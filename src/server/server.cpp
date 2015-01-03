@@ -55,7 +55,7 @@ void Server::broadcastSystemMessage(const QString &msg) {
     Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_SPEAK);
     packet.setMessageBody(arg);
 
-    foreach(Room *room, rooms)
+    foreach (Room *room, rooms)
         room->broadcast(&packet);
 }
 
@@ -149,7 +149,7 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
     QString avatar = body[2].toString();
 
     if (is_reconnection) {
-        foreach (QString objname, name2objname.values(screen_name)) {
+        foreach (const QString &objname, name2objname.values(screen_name)) {
             ServerPlayer *player = players.value(objname);
             if (player && player->getState() == "offline" && !player->getRoom()->isFinished()) {
                 player->getRoom()->reconnect(player, socket);
@@ -187,7 +187,7 @@ void Server::gameOver() {
     Room *room = qobject_cast<Room *>(sender());
     rooms.remove(room);
 
-    foreach(ServerPlayer *player, room->findChildren<ServerPlayer *>()) {
+    foreach (ServerPlayer *player, room->findChildren<ServerPlayer *>()) {
         name2objname.remove(player->screenName(), player->objectName());
         players.remove(player->objectName());
     }

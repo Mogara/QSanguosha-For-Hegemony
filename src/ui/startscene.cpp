@@ -126,7 +126,7 @@ void StartScene::switchToServer(Server *server) {
     group->addAnimation(yScale);
     group->start(QAbstractAnimation::DeleteWhenStopped);
 
-    foreach(Tile *button, buttons)
+    foreach (Tile *button, buttons)
         button->hide();
 
     serverLog = new QTextEdit;
@@ -234,7 +234,7 @@ void StartScene::onSceneRectChanged(const QRectF &rect)
 void StartScene::printServerInfo() {
     QStringList items;
     QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
-    foreach(QHostAddress address, addresses) {
+    foreach (const QHostAddress &address, addresses) {
         quint32 ipv4 = address.toIPv4Address();
         if (ipv4)
             items << address.toString();
@@ -242,7 +242,7 @@ void StartScene::printServerInfo() {
 
     items.sort();
 
-    foreach(QString item, items) {
+    foreach (const QString &item, items) {
         if (item.startsWith("192.168.") || item.startsWith("10."))
             serverLog->append(tr("Your LAN address: %1, this address is available only for hosts that in the same LAN").arg(item));
         else if (item == "127.0.0.1")
