@@ -1282,8 +1282,8 @@ public:
         frequency = Frequent;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        TriggerList skill_list;
         if (player == NULL || player->getPhase() != Player::Discard) return skill_list;
         QList<ServerPlayer *> erzhangs = room->findPlayersBySkillName(objectName());
 
@@ -1292,7 +1292,7 @@ public:
             QVariantList guzheng_cardsOther = erzhang->tag["GuzhengOther"].toList();
 
             if (player->isDead())
-                return QMap<ServerPlayer *, QStringList>();
+                return TriggerList();
 
             QList<int> cardsToGet;
             foreach (QVariant card_data, guzheng_cardsToGet) {
@@ -1312,7 +1312,7 @@ public:
                     erzhang->tag.remove("GuzhengToGet");
                     erzhang->tag.remove("GuzhengOther");
                 }
-                return QMap<ServerPlayer *, QStringList>();
+                return TriggerList();
             }
 
             skill_list.insert(erzhang, QStringList(objectName()));
