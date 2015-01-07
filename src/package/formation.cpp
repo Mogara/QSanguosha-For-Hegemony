@@ -727,7 +727,7 @@ public:
                         targets << to->objectName();
                 }
                 if (!targets.isEmpty())
-                    skill_list.insert(skill_owner, QStringList(objectName() + "!" + targets.join("+") + "&"));
+                    skill_list.insert(skill_owner, QStringList(objectName() + "->" + targets.join("+")));
             }
         }
         return skill_list;
@@ -1123,8 +1123,7 @@ public:
 
         if (triggerEvent == CardsMoveOneTime){
             player->obtainCard(dragonPhoenix);
-        }
-        else {
+        } else {
             room->showCard(player, dragonPhoenixId);
             player->setFlags("fldf_removing");
             move.from_places.removeAt(move.card_ids.indexOf(dragonPhoenixId));
@@ -1337,7 +1336,7 @@ public:
                     targets << to->objectName();
             }
             if (!targets.isEmpty())
-                return QStringList(objectName() + "!" + targets.join("+") + "&");
+                return QStringList(objectName() + "->" + targets.join("+"));
         }
         return QStringList();
     }
