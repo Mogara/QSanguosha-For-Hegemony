@@ -5635,6 +5635,17 @@ void Room::sendLog(const LogMessage &log) {
 
     doBroadcastNotify(S_COMMAND_LOG_SKILL, log.toVariant());
 }
+ 
+void Room::sendCompulsoryTriggerLog(ServerPlayer *player, const QString &skill_name, bool notify_skill) {
+    LogMessage log;
+    log.type = "#TriggerSkill";
+    log.arg = skill_name;
+    log.from = player;
+    sendLog(log);
+    if (notify_skill)
+        notifySkillInvoked(player, skill_name);
+}
+
 
 void Room::showCard(ServerPlayer *player, int card_id, ServerPlayer *only_viewer) {
     if (getCardOwner(card_id) != player) return;

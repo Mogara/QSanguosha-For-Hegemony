@@ -756,12 +756,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         RecoverStruct recover;
         recover.who = player;
@@ -1124,12 +1119,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        room->notifySkillInvoked(player, objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         DummyCard sa(move.card_ids);
         player->obtainCard(&sa);
@@ -1205,13 +1195,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (player->hasShownSkill(this)) {
-            room->notifySkillInvoked(player, objectName());
-
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = objectName();
-            room->sendLog(log);
+            room->sendCompulsoryTriggerLog(player, objectName());
         } else if (!player->askForSkillInvoke(this, data))
             return false;
 

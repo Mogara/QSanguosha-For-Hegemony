@@ -136,7 +136,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *ask_who) const{
-        room->notifySkillInvoked(ask_who, objectName());
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash")) {
             if (triggerEvent != TargetChosen)
@@ -149,12 +149,6 @@ public:
             ask_who->tag["Jink_" + use.card->toString()] = jink_list;
         } else if (use.card->isKindOf("Duel"))
             room->setPlayerMark(ask_who, "WushuangTarget", 1);
-        
-        LogMessage log;
-        log.from = ask_who;
-        log.arg = objectName();
-        log.type = "#TriggerSkill";
-        room->sendLog(log);
         
         return false;
     }

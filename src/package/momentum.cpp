@@ -1005,12 +1005,7 @@ public:
 
     virtual bool onPhaseChange(ServerPlayer *dongzhuo) const{
         Room *room = dongzhuo->getRoom();
-        LogMessage log;
-        log.from = dongzhuo;
-        log.arg = objectName();
-        log.type = "#TriggerSkill";
-        room->sendLog(log);
-        room->notifySkillInvoked(dongzhuo, objectName());
+        room->sendCompulsoryTriggerLog(dongzhuo, objectName());
 
         QString result = room->askForChoice(dongzhuo, "benghuai", "hp+maxhp");
         int index = (result == "hp") ? 2 : 1;
@@ -1129,76 +1124,6 @@ public:
         return false;
     }
 };
-
-/*
-class Fengshi : public BattleArraySkill {
-public:
-    Fengshi() : BattleArraySkill("fengshi", HegemonyMode::Siege) {
-        events << TargetChosen;
-    }
-
-    virtual bool canPreshow() const{
-        return false;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        if (!player->hasShownSkill(this) || player->aliveCount() < 4) return QStringList();
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash")){
-            foreach (ServerPlayer *to, use.to){
-                if (use.from->inSiegeRelation(player, to)){
-                    if (to->canDiscard(to, "e")) {
-                        ask_who = player;
-                        return QStringList(objectName());
-                    }
-                }
-            }
-        }
-
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash")){
-            foreach (ServerPlayer *to, use.to){
-                if (use.from->inSiegeRelation(player, to)){
-                    if (to->canDiscard(to, "e")) {
-                        LogMessage log;
-                        if (player->hasSkill(this)) {
-                            log.from = player;
-                        } else if (player->getNextAlive() == to) {
-                            log.from = qobject_cast<ServerPlayer *>(player->getNextAlive(2));
-                        } else if (player->getLastAlive() == to) {
-                            log.from = qobject_cast<ServerPlayer *>(player->getLastAlive(2));
-                        }
-                        log.arg = objectName();
-                        log.type = "#TriggerSkill";
-                        room->sendLog(log);
-
-                        room->broadcastSkillInvoke(objectName(), player);
-                        room->notifySkillInvoked(player, objectName());
-
-                        if (room->askForCard(to, ".|.|.|equipped!", "@fengshi-discard:" + player->objectName() + ":" + use.from->objectName()) == NULL){
-                            QList<const Card *> equips = to->getEquips();
-                            QList<const Card *> equips_candiscard;
-                            foreach (const Card *e, equips){
-                                if (to->canDiscard(to, e->getEffectiveId()))
-                                    equips_candiscard << e;
-                            }
-
-                            const Card *rand_c = equips_candiscard.at(qrand() % equips_candiscard.length());
-                            room->throwCard(rand_c, to);
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-};
-*/
 
 class Wuxin : public PhaseChangeSkill {
 public:
