@@ -748,7 +748,7 @@ public:
         QVariantList jink_list = use.from->tag["Jink_" + use.card->toString()].toList();
         if (jink_list.at(x).toInt() == 1)
             jink_list[x] = 2;
-        ask_who->tag["Jink_" + use.card->toString()] = jink_list;
+        use.from->tag["Jink_" + use.card->toString()] = jink_list;
 
         return false;
     }
