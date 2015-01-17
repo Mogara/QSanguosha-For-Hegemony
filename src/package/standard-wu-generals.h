@@ -27,7 +27,7 @@
 
 class Yingzi : public DrawCardsSkill {
 public:
-    Yingzi(const QString &owner = "zhouyu", bool can_preshow = true);
+    explicit Yingzi(const QString &owner = "zhouyu", bool can_preshow = true);
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual int getDrawNum(ServerPlayer *player, int n) const;
@@ -39,7 +39,7 @@ private:
 
 class Yinghun : public PhaseChangeSkill {
 public:
-    Yinghun(const QString &owner = "sunjian");
+    explicit Yinghun(const QString &owner = "sunjian");
 
     virtual bool canPreshow() const;
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const;
