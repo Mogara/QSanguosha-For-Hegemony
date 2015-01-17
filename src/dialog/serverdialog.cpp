@@ -234,12 +234,19 @@ QWidget *ServerDialog::createConversionTab() {
     convert_ds_to_dp->setChecked(Config.value("CardConversions").toStringList().contains("DragonPhoenix") || enable_lord);
     convert_ds_to_dp->setDisabled(enable_lord);
     
+    convert_jf_to_ps = new QCheckBox(tr("Convert JingFan to PeaceSpell"));
+    convert_jf_to_ps->setChecked(Config.value("CardConversions").toStringList().contains("PeaceSpell") || enable_lord);
+    convert_jf_to_ps->setDisabled(enable_lord);
+
     connect(convert_lord, &QCheckBox::toggled, convert_ds_to_dp, &QCheckBox::setChecked);
     connect(convert_lord, &QCheckBox::toggled, convert_ds_to_dp, &QCheckBox::setDisabled);
+    connect(convert_lord, &QCheckBox::toggled, convert_jf_to_ps, &QCheckBox::setChecked);
+    connect(convert_lord, &QCheckBox::toggled, convert_jf_to_ps, &QCheckBox::setDisabled);
 
     QWidget *widget = new QWidget;
     layout->addWidget(convert_lord);
     layout->addWidget(convert_ds_to_dp);
+    layout->addWidget(convert_jf_to_ps);
     widget->setLayout(layout);
     return widget;
 }
@@ -500,7 +507,7 @@ bool ServerDialog::config() {
 
     QStringList card_conversions;
     if (convert_ds_to_dp->isChecked()) card_conversions << "DragonPhoenix";
-    //if (add_peace_spell->isChecked()) card_conversions << "+109";
+    if (convert_jf_to_ps->isChecked()) card_conversions << "PeaceSpell";
     Config.setValue("CardConversions", card_conversions);
 
     return true;

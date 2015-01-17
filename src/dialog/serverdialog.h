@@ -137,10 +137,11 @@ private:
 
 
     QCheckBox *convert_ds_to_dp;
+    QCheckBox *convert_jf_to_ps;
     QCheckBox *convert_lord;
 
     //QCheckBox *add_peace_spell;
-    QCheckBox *convert_zhangjiao_to_lord;
+    //QCheckBox *convert_zhangjiao_to_lord;
 
     QCheckBox *ai_chat_checkbox;
 

@@ -836,12 +836,16 @@ QList<int> Engine::getRandomCards() const{
     }
 
     QStringList card_conversions = Config.value("CardConversions").toStringList();
-    foreach (const QString &str, card_conversions) {
-        if (str == "DragonPhoenix")
-            list.removeOne(55);
-        else
-            list.removeOne(108);
-    }
+
+    if (card_conversions.contains("DragonPhoenix"))
+        list.removeOne(55);
+    else
+        list.removeOne(108);
+
+    if (card_conversions.contains("PeaceSpell"))
+        list.removeOne(157);
+    else
+        list.removeOne(109);
 
     qShuffle(list);
 
