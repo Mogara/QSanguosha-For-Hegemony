@@ -1074,6 +1074,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         const Card *dragonPhoenix = NULL;
         int dragonPhoenixId = -1;

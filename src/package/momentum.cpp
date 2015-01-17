@@ -763,9 +763,6 @@ public:
 
     virtual bool cost(TriggerEvent, Room* room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         if (player->hasShownSkill(this) || player->askForSkillInvoke(this)){
-            if (player->hasShownSkill(this))
-                room->notifySkillInvoked(player, objectName());
-
             room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
@@ -773,6 +770,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room* room, ServerPlayer *target, QVariant &, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(target, objectName());
         QStringList skills;
         skills << "yinghun_sunce!" << "yingzi_sunce!";
         room->handleAcquireDetachSkills(target, skills);

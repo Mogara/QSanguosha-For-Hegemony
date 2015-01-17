@@ -391,8 +391,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
-        room->notifySkillInvoked(player, objectName());
 
         room->cancelTarget(use, player); // Room::cancelTarget(use, player);
 

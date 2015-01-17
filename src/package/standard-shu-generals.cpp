@@ -382,8 +382,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
-        room->notifySkillInvoked(player, objectName());
 
         room->cancelTarget(use, player); // Room::cancelTarget(use, player);
 
@@ -944,6 +944,8 @@ bool SavageAssaultAvoid::cost(TriggerEvent, Room *room, ServerPlayer *player, QV
 }
 
 bool SavageAssaultAvoid::effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    room->notifySkillInvoked(player, avoid_skill);
+
     LogMessage log;
     log.type = "#SkillNullify";
     log.from = player;
@@ -999,7 +1001,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
-        room->notifySkillInvoked(ask_who, objectName());
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
         room->setTag("HuoshouSource", QVariant::fromValue(ask_who));
 
         return false;
