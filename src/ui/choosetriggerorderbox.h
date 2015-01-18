@@ -55,7 +55,7 @@ protected:
     static QString displayedTextOf(const QString &str);
 
 private:
-    explicit TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &m_skillStr, const int width);
+    TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skillStr, const int width);
     bool isPreferentialSkillOf(const TriggerOptionButton *other) const;
 
     QString getGeneralNameBySkill() const;
@@ -83,7 +83,7 @@ protected:
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
 private:
-    explicit GeneralButton(QGraphicsObject *parent, const QString &general, const bool isHead);
+    GeneralButton(QGraphicsObject *parent, const QString &general, const bool isHead);
 
     QString generalName;
     bool isHead;
@@ -93,7 +93,7 @@ class ChooseTriggerOrderBox : public GraphicsBox {
     Q_OBJECT
 
 public:
-    explicit ChooseTriggerOrderBox();
+    ChooseTriggerOrderBox();
 
     virtual QRectF boundingRect() const;
     void chooseOption(const QString &reason, const QStringList &options, const bool optional);
