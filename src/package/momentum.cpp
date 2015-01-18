@@ -735,24 +735,6 @@ public:
     }
 };
 
-class Yinghun_Sunce : public Yinghun{
-public:
-    Yinghun_Sunce() : Yinghun(){
-        setObjectName("yinghun_sunce");
-    }
-};
-
-class Yingzi_Sunce : public Yingzi{
-public:
-    Yingzi_Sunce() : Yingzi(){
-        setObjectName("yingzi_sunce");
-    }
-
-    virtual bool canPreshow() const {
-        return false;
-    }
-};
-
 class Hunshang : public TriggerSkill {
 public:
     Hunshang() : TriggerSkill("hunshang") {
@@ -781,9 +763,6 @@ public:
 
     virtual bool cost(TriggerEvent, Room* room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         if (player->hasShownSkill(this) || player->askForSkillInvoke(this)){
-            if (player->hasShownSkill(this))
-                room->notifySkillInvoked(player, objectName());
-
             room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
@@ -791,6 +770,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room* room, ServerPlayer *target, QVariant &, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(target, objectName());
         QStringList skills;
         skills << "yinghun_sunce!" << "yingzi_sunce!";
         room->handleAcquireDetachSkills(target, skills);
@@ -1005,12 +985,7 @@ public:
 
     virtual bool onPhaseChange(ServerPlayer *dongzhuo) const{
         Room *room = dongzhuo->getRoom();
-        LogMessage log;
-        log.from = dongzhuo;
-        log.arg = objectName();
-        log.type = "#TriggerSkill";
-        room->sendLog(log);
-        room->notifySkillInvoked(dongzhuo, objectName());
+        room->sendCompulsoryTriggerLog(dongzhuo, objectName());
 
         QString result = room->askForChoice(dongzhuo, "benghuai", "hp+maxhp");
         int index = (result == "hp") ? 2 : 1;
@@ -1114,7 +1089,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &data, ServerPlayer *ask_who) const {
-        room->notifySkillInvoked(ask_who, objectName());
+        room->sendCompulsoryTriggerLog(ask_who, objectName(), true);
         CardUseStruct use = data.value<CardUseStruct>();
         if (!room->askForCard(skill_target, ".|.|.|equipped!", "@fengshi-discard:" + ask_who->objectName())) {
             QList<const Card *> equips_candiscard;
@@ -1129,76 +1104,6 @@ public:
         return false;
     }
 };
-
-/*
-class Fengshi : public BattleArraySkill {
-public:
-    Fengshi() : BattleArraySkill("fengshi", HegemonyMode::Siege) {
-        events << TargetChosen;
-    }
-
-    virtual bool canPreshow() const{
-        return false;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        if (!player->hasShownSkill(this) || player->aliveCount() < 4) return QStringList();
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash")){
-            foreach (ServerPlayer *to, use.to){
-                if (use.from->inSiegeRelation(player, to)){
-                    if (to->canDiscard(to, "e")) {
-                        ask_who = player;
-                        return QStringList(objectName());
-                    }
-                }
-            }
-        }
-
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash")){
-            foreach (ServerPlayer *to, use.to){
-                if (use.from->inSiegeRelation(player, to)){
-                    if (to->canDiscard(to, "e")) {
-                        LogMessage log;
-                        if (player->hasSkill(this)) {
-                            log.from = player;
-                        } else if (player->getNextAlive() == to) {
-                            log.from = qobject_cast<ServerPlayer *>(player->getNextAlive(2));
-                        } else if (player->getLastAlive() == to) {
-                            log.from = qobject_cast<ServerPlayer *>(player->getLastAlive(2));
-                        }
-                        log.arg = objectName();
-                        log.type = "#TriggerSkill";
-                        room->sendLog(log);
-
-                        room->broadcastSkillInvoke(objectName(), player);
-                        room->notifySkillInvoked(player, objectName());
-
-                        if (room->askForCard(to, ".|.|.|equipped!", "@fengshi-discard:" + player->objectName() + ":" + use.from->objectName()) == NULL){
-                            QList<const Card *> equips = to->getEquips();
-                            QList<const Card *> equips_candiscard;
-                            foreach (const Card *e, equips){
-                                if (to->canDiscard(to, e->getEffectiveId()))
-                                    equips_candiscard << e;
-                            }
-
-                            const Card *rand_c = equips_candiscard.at(qrand() % equips_candiscard.length());
-                            room->throwCard(rand_c, to);
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-};
-*/
 
 class Wuxin : public PhaseChangeSkill {
 public:
@@ -1394,7 +1299,7 @@ public:
             if (triggerEvent == GeneralShown) {
                 if (player && player->isAlive() && player->hasLordSkill(objectName())) {
                     foreach (ServerPlayer *p, room->getAlivePlayers())
-                        if (p->willBeFriendWith(player) || p->getKingdom() == player->getKingdom())
+                        if (p->willBeFriendWith(player))
                             room->attachSkillToPlayer(p, "hongfa_slash");
                 } else {
                     ServerPlayer *lord = room->getLord(player->getKingdom());
@@ -1574,7 +1479,7 @@ MomentumPackage::MomentumPackage()
     lord_zhangjiao->addSkill(new Hongfa);
     lord_zhangjiao->addSkill(new Wendao);
 
-    skills << new Yongjue << new YongjueClear << new Benghuai << new HongfaSlash << new Yinghun_Sunce << new Yingzi_Sunce;
+    skills << new Yongjue << new YongjueClear << new Benghuai << new HongfaSlash << new Yinghun("sunce") << new Yingzi("sunce", false);
     insertRelatedSkills("yongjue", "#yongjue-clear");
 
     addMetaObject<CunsiCard>();

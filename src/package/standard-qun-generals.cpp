@@ -136,7 +136,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *ask_who) const{
-        room->notifySkillInvoked(ask_who, objectName());
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash")) {
             if (triggerEvent != TargetChosen)
@@ -149,12 +149,6 @@ public:
             ask_who->tag["Jink_" + use.card->toString()] = jink_list;
         } else if (use.card->isKindOf("Duel"))
             room->setPlayerMark(ask_who, "WushuangTarget", 1);
-        
-        LogMessage log;
-        log.from = ask_who;
-        log.arg = objectName();
-        log.type = "#TriggerSkill";
-        room->sendLog(log);
         
         return false;
     }
@@ -562,8 +556,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
-        room->notifySkillInvoked(player, objectName());
         
         room->cancelTarget(use, player); // Room::cancelTarget(use, player);
 
@@ -1294,6 +1288,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
         if (triggerEvent == Dying)
             player->drawCards(1);
         else if (triggerEvent == Death)

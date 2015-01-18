@@ -742,47 +742,17 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &data, ServerPlayer *ask_who) const {
-        room->notifySkillInvoked(ask_who, objectName());
+        room->sendCompulsoryTriggerLog(ask_who, objectName(), true);
         CardUseStruct use = data.value<CardUseStruct>();
         int x = use.to.indexOf(skill_target);
-        // log??
-        QVariantList jink_list = ask_who->tag["Jink_" + use.card->toString()].toList();
+        QVariantList jink_list = use.from->tag["Jink_" + use.card->toString()].toList();
         if (jink_list.at(x).toInt() == 1)
             jink_list[x] = 2;
-        ask_who->tag["Jink_" + use.card->toString()] = jink_list;
+        use.from->tag["Jink_" + use.card->toString()] = jink_list;
 
         return false;
     }
 };
-/*
-class Niaoxiang : public BattleArraySkill {
-public:
-    Niaoxiang() : BattleArraySkill("niaoxiang", HegemonyMode::Siege) {
-        events << TargetChosen;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        if (!player->hasShownSkill(this) || player->aliveCount() < 4) return QStringList();
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash")) {
-            for (int i = 0; i < use.to.length(); i++) {
-                ServerPlayer *victim = use.to.at(i);
-                if (use.from->inSiegeRelation(player, victim)) {
-                    room->notifySkillInvoked(player, objectName());
-                    room->broadcastSkillInvoke(objectName(), player);
-                    QVariantList jink_list = use.from->tag["Jink_" + use.card->toString()].toList();
-                    if (jink_list.at(i).toInt() == 1)
-                        jink_list.replace(i, QVariant(2));
-                    use.from->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
-                }
-            }
-        }
-
-        return QStringList();
-    }
-};
-*/
 
 class Yicheng : public TriggerSkill {
 public:
@@ -797,7 +767,7 @@ public:
         if (!use.card->isKindOf("Slash")) return skill_list;
         if (use.to.contains(player)) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
-                if (p->isFriendWith(player) || p->willBeFriendWith(player))
+                if (p->willBeFriendWith(player))
                     skill_list.insert(p, QStringList(objectName()));
         }
         return skill_list;
@@ -826,8 +796,9 @@ QianhuanCard::QianhuanCard(){
     handling_method = Card::MethodNone;
 }
 
-void QianhuanCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    source->tag["qianhuan_cancel"] = subcards.first();
+void QianhuanCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &) const{
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+    room->throwCard(Sanguosha->getCard(subcards.first()), reason, NULL);
 }
 
 class QianhuanVS : public OneCardViewAsSkill{
@@ -858,7 +829,7 @@ public:
         QList<ServerPlayer *> yujis = room->findPlayersBySkillName(objectName());
         if (triggerEvent == Damaged && player->isAlive()) {
             foreach (ServerPlayer *yuji, yujis)
-                if (yuji->isFriendWith(player) || yuji->willBeFriendWith(player))
+                if (yuji->willBeFriendWith(player))
                     skill_list.insert(yuji, QStringList(objectName()));
         } else if (triggerEvent == TargetConfirming) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -868,7 +839,7 @@ public:
             if (use.to.length() != 1) return skill_list;
             foreach (ServerPlayer *yuji, yujis) {
                 if (yuji->getPile("sorcery").isEmpty()) continue;
-                if (yuji->isFriendWith(use.to.first()) || yuji->willBeFriendWith(use.to.first()))
+                if (yuji->willBeFriendWith(use.to.first()))
                     skill_list.insert(yuji, QStringList(objectName()));
             }
         }
@@ -897,13 +868,7 @@ public:
             prompt_list << use.to.first()->objectName();
             prompt_list << use.card->objectName();
             prompt = prompt_list.join(":");
-            yuji->tag.remove("qianhuan_cancel");
             if (room->askForUseCard(yuji, "@@qianhuan", prompt, -1, Card::MethodNone)) {
-                int id = yuji->tag["qianhuan_cancel"].toInt();
-                yuji->tag.remove("qianhuan_cancel");
-                CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
-                room->throwCard(Sanguosha->getCard(id), reason, NULL);
-
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, yuji->objectName(), use.to.first()->objectName());
                 invoke = true;
             }
@@ -1109,6 +1074,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         const Card *dragonPhoenix = NULL;
         int dragonPhoenixId = -1;

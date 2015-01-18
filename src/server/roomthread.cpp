@@ -283,7 +283,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                 trskill = Sanguosha->getTriggerSkill(skill.split("'").last()); // "sgs1'songwei"
                             if (!trskill)
                                 trskill = Sanguosha->getTriggerSkill(skill.split("->").first()); // "tieqi->sgs4+sgs8+sgs1+sgs2"
-                            if (trskill && p->hasShownSkill(skill)
+                            if (trskill && p->hasShownSkill(trskill)
                                 && (trskill->getFrequency() == Skill::Compulsory
                                     //|| trskill->getFrequency() == Skill::NotCompulsory //for Paoxia, Anjian, etc.
                                     || trskill->getFrequency() == Skill::Wake)) {
@@ -371,8 +371,12 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         }
 
                         if (name == "cancel") break;
-                        if (name.contains(":")) // "sgs1:xxxx" or "sgs1:xxxx*yyy"
-                            name = name.split("*").first().split(":").last(); // "xxxx"
+                        // "xxxx*yyy", "sgs1:xxxx" or "sgs1:xxxx*yyy"
+                        int split = -1;
+                        if ((split = name.indexOf('*')) != -1)
+                            name = name.left(split);
+                        if ((split = name.indexOf(':')) != -1)
+                            name = name.mid(split + 1); // "xxxx"
                         
                         ServerPlayer *skill_target = NULL;
                         const TriggerSkill *result_skill = NULL;
@@ -505,14 +509,14 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                 if (!broken) {
                     if (!trigger_who[NULL].isEmpty()) {
                         foreach (QString skill_name, trigger_who[NULL]) {
-                            const TriggerSkill *skill;
+                            const TriggerSkill *skill = NULL;
                             foreach (const TriggerSkill *rule, rules) { // because we cannot get a GameRule with Engine::getTriggerSkill()
                                 if (rule->objectName() == skill_name) {
                                     skill = rule;
                                     break;
                                 }
                             }
-                            Q_ASSERT(skill);
+                            Q_ASSERT(skill != NULL);
                             if (skill->cost(triggerEvent, room, target, data, NULL)) {
                                 broken = skill->effect(triggerEvent, room, target, data, NULL);
                                 if (broken)

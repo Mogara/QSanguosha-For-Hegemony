@@ -1008,35 +1008,42 @@ void MainWindow::on_actionPC_Console_Start_triggered() {
 }
 
 void MainWindow::on_actionReplay_file_convert_triggered() {
-    QString filename = QFileDialog::getOpenFileName(this,
+    QStringList filenames = QFileDialog::getOpenFileNames(this,
         tr("Please select a replay file"),
         Config.value("LastReplayDir").toString(),
-        tr("QSanguosha Replay File(*.qsgs);; Image replay file (*.png)"));
+        tr("QSanguosha Replay File(*.qsgs)"));
 
-    if (filename.isEmpty())
+    if (filenames.isEmpty())
         return;
 
-    QFile file(filename);
-    if (file.open(QIODevice::ReadOnly)) {
-        QFileInfo info(filename);
-        QString tosave = info.absoluteDir().absoluteFilePath(info.baseName());
+    foreach (const QString &filename, filenames) {
+        QFile file(filename);
+        if (file.open(QIODevice::ReadOnly)) {
+            QFileInfo info(filename);
+            QString tosave = info.absoluteDir().absoluteFilePath(info.baseName());
 
-        if (filename.endsWith(".qsgs")) {
-            tosave.append(".png");
+            char header;
+            file.getChar(&header);
+            if (header == '\0') {
+                QByteArray content = file.readAll();
+                content = qUncompress(content);
 
-            // txt to png
-            Recorder::TXT2PNG(file.readAll()).save(tosave);
+                tosave.append("-uncompressed.qsgs");
+                QFile file(tosave);
+                if (file.open(QFile::WriteOnly | QFile::Text))
+                    file.write(content);
+            } else {
+                file.ungetChar(header);
+                QByteArray content = file.readAll();
+                content = qCompress(content);
 
-        }
-        else if (filename.endsWith(".png")) {
-            tosave.append(".qsgs");
-
-            // png to txt
-            QByteArray data = Replayer::PNG2TXT(filename);
-
-            QFile tosave_file(tosave);
-            if (tosave_file.open(QIODevice::WriteOnly))
-                tosave_file.write(data);
+                tosave.append("-compressed.qsgs");
+                QFile file(tosave);
+                if (file.open(QFile::WriteOnly)) {
+                    file.putChar('\0');
+                    file.write(content);
+                }
+            }
         }
     }
 }

@@ -159,8 +159,12 @@ public:
     }
 };
 
-Yingzi::Yingzi() : DrawCardsSkill("yingzi") {
+Yingzi::Yingzi(const QString &owner, bool can_preshow) : DrawCardsSkill("yingzi_" + owner), m_canPreshow(can_preshow) {
     frequency = Frequent;
+}
+
+bool Yingzi::canPreshow() const{
+    return m_canPreshow;
 }
 
 bool Yingzi::cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
@@ -387,8 +391,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
-        room->notifySkillInvoked(player, objectName());
 
         room->cancelTarget(use, player); // Room::cancelTarget(use, player);
 
@@ -432,9 +436,12 @@ void JieyinCard::onEffect(const CardEffectStruct &effect) const{
     RecoverStruct recover;
     recover.card = this;
     recover.who = effect.from;
-
-    room->recover(effect.from, recover, true);
-    room->recover(effect.to, recover, true);
+    
+    QList<ServerPlayer *> targets;
+    targets << effect.from << effect.to;
+    room->sortByActionOrder(targets);
+    foreach (ServerPlayer *target, targets)
+        room->recover(target, recover, true);
 }
 
 class Jieyin : public ViewAsSkill {
@@ -496,7 +503,7 @@ public:
     }
 };
 
-Yinghun::Yinghun() : PhaseChangeSkill("yinghun") {
+Yinghun::Yinghun(const QString &owner) : PhaseChangeSkill("yinghun_" + owner) {
 }
 
 bool Yinghun::canPreshow() const {
