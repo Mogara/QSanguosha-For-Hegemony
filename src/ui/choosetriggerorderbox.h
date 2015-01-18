@@ -52,13 +52,16 @@ protected:
     virtual void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
+    static QString displayedTextOf(const QString &str);
+
 private:
-    explicit TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skill, const int width);
+    explicit TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &m_skillStr, const int width);
     bool isPreferentialSkillOf(const TriggerOptionButton *other) const;
 
     QString getGeneralNameBySkill() const;
 
-    QString skillName;
+    QString m_skillStr;
+    QString m_text;
     QString playerName;
     int width;
 };
