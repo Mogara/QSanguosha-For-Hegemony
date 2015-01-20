@@ -34,22 +34,22 @@ QSanVersionNumber::QSanVersionNumber(int major, int minor, int sub, VersionType 
 }
 
 bool QSanVersionNumber::tryParse(const QString &str){
-    QRegExp regexp("(\\d+)\\.(\\d+)\\.(\\d+)(\\-([a-z]+)(\\d+))?");
+    QRegExp regexp("(\\d+)\\.(\\d+)\\.(\\d+)\\-([a-z]+)(\\d+)?");
     if (regexp.exactMatch(str)){
         QStringList l = regexp.capturedTexts();
         m_major = l[1].toInt();
         m_minor = l[2].toInt();
         m_sub = l[3].toInt();
-        if (l[5] == "alpha")
+        if (l[4] == "alpha")
             m_type = alpha;
-        else if (l[5] == "beta")
+        else if (l[4] == "beta")
             m_type = beta;
-        else if (l[5] == "offical")
+        else if (l[4] == "offical")
             m_type = offical;
         else
             m_type = other;
         if (l.length() > 5)
-            m_step = l[6].toInt();
+            m_step = l[5].toInt();
         else
             m_step = 0;
 
