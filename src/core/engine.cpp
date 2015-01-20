@@ -565,19 +565,21 @@ Card *Engine::cloneCard(const QString &name, Card::Suit suit, int number, const 
     return card;
 }
 
-SkillCard *Engine::cloneSkillCard(const QString &name) const{
+SkillCard *Engine::cloneSkillCard(const QString &name) const
+{
     const QMetaObject *meta = metaobjects.value(name, NULL);
     if (meta) {
         QObject *card_obj = meta->newInstance();
         SkillCard *card = qobject_cast<SkillCard *>(card_obj);
         return card;
-    }
-    else
+    } else {
         return NULL;
+    }
 }
 
-QSanVersionNumber Engine::getVersionNumber() const{
-    return QSanVersionNumber(0, 8, 1, QSanVersionNumber::beta, 1);
+QSanVersionNumber Engine::getVersionNumber() const
+{
+    return QSanVersionNumber(1, 0, 0);
 }
 
 QString Engine::getVersion() const{
