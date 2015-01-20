@@ -1,106 +1,118 @@
-﻿QSanguosha-Hegemony (QSGSH) Version 0.8.0-beta4
+﻿QSanguosha-Hegemony (QSGSH) Version 1.0.0
 
 
   Change Log / Release Notes
 
-？？？？？？
+1.0.0
 -----------------------------
   Bugs Fixed:
-  +AI贾诩对自己使用黑色【挟天子以令诸侯】(http://tieba.baidu.com/p/3439569041 23楼)
+  +AI 贾诩对自己使用黑色【挟天子以令诸侯】(http://tieba.baidu.com/p/3439569041 23楼)
 
-  +AI有时会对自己使用得【无懈可击】使用【无懈可击】
+  +AI 有时会对自己使用得【无懈可击】使用【无懈可击】
   
-  +AI魏延暗置时不会发动【狂骨】
+  +AI 魏延暗置时不会发动【狂骨】
 
-  +AI暗将贾诩1体力时不亮将以避免成为黑色【南蛮入侵】的目标(http://tieba.baidu.com/p/3439569041 13楼)
+  +AI 暗将贾诩1体力时不亮将以避免成为黑色【南蛮入侵】的目标(http://tieba.baidu.com/p/3439569041 13楼)
   
-  +AI对同一角色连续使用多次【知己知彼】观看手牌效果(http://tieba.baidu.com/p/3439569041 13楼)
+  +AI 对同一角色连续使用多次【知己知彼】观看手牌效果(http://tieba.baidu.com/p/3439569041 13楼)
   
-  +AI蒋钦没有手牌也能发动【尚义】(http://tieba.baidu.com/p/3439569041 15楼)
+  +AI 蒋钦没有手牌也能发动【尚义】(http://tieba.baidu.com/p/3439569041 15楼)
   
-  +AI被【挑衅】或【借刀杀人】时，不会发动【方天画戟】效果
+  +AI 被【挑衅】或【借刀杀人】时，不会发动【方天画戟】效果
   
-  +AI黄盖即使弃牌阶段弃掉【桃】也不发动【苦肉】(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +AI 黄盖即使弃牌阶段弃掉【桃】也不发动【苦肉】(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +敌对张角在场时，AI在不恰当的时机发动【八卦阵】进行判定(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +敌对张角在场时，AI 在不恰当的时机发动【八卦阵】进行判定(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +AI不会使用【木牛流马】里的牌(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +AI 不会使用【木牛流马】里的牌(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +AI华佗用装有很多红牌的【木牛流马】发动【急救】(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +AI 华佗用装有很多红牌的【木牛流马】发动【急救】(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +AI有时不会发动【挑衅】(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +AI 有时不会发动【挑衅】(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +AI反复对装备【八卦阵】的甄姬/郭嘉使用【杀】(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +AI 反复对装备【八卦阵】的甄姬/郭嘉使用【杀】(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +AI对被【调虎离山】移出游戏的角色使用【远交近攻】(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +AI 对被【调虎离山】移出游戏的角色使用【远交近攻】(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +同一角色被【断肠】两次时，第一次失去的技能会恢复(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/279)
+  +同一角色被【断肠】两次时，第一次失去的技能会恢复(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/279)
   
-  +对双暗的角色使用【断肠】，无论选什么，只能失去主将技能(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/270)
+  +对双暗的角色使用【断肠】，无论选什么，只能失去主将技能(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/270)
   
-  +【戮力同心】的目标错误(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/274)
+  +【戮力同心】的目标错误(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/274)
   
-  +【方天画戟】不能指定野心家为目标(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/275)
+  +【方天画戟】不能指定野心家为目标(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/275)
   
-  +录像回放中技能预亮后潜伏不消失(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/272)
+  +录像回放中技能预亮后潜伏不消失(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/272)
   
   +只有第一个换皮肤的武将的相应皮肤有效(http://tieba.baidu.com/p/3439569041 5楼)
   
   +发动【八阵】不播放技能配音
   
-  +Linux版的窗口不正常
+  +Linux 版的窗口不正常
   
-  +Linux版中部分字体无法显示
+  +Linux 版中部分字体无法显示
   
   +"不播放技能音效"选项影响背景音乐的播放
   
   +最小化托盘只能使用一次(http://tieba.baidu.com/p/2357497936 4楼第一个回复)
   
-  +禁止IP对话框中，部分玩家断开连接后，仍显示连接
+  +禁止 IP 对话框中，部分玩家断开连接后，仍显示连接
   
   +孟获明置在场时，不为【南蛮入侵】的伤害来源(http://tieba.baidu.com/p/3439569041 8楼)
+  
+  +【乐不思蜀】生效后，不能发动【巧变】跳过出牌阶段(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/277)
+  
+  +涉及“指定/成为目标时”技能的结算问题(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/268)
+  
+  +【太平要术】不替换【惊帆】(http://tieba.baidu.com/p/3439569041?pn=4 113楼)
+  
+  +双暗角色发动建立围攻关系的阵法召唤的判断问题
   
   ?把母牛传给敌人
   
   ?使用无目标的杀
   
   API Changes：
-  +增加Lua函数table:toSet(),返回无重复元素的table对象
+  +增加 Lua 函数 table:toSet() ，返回无重复元素的 table 对象
   
   +以"&"开头的私有牌堆可以在检测时像【木牛流马】牌堆一样视为手牌
   
-  +修复"使用TargetModSkill增加【顺手牵羊】的额外目标有时不亮将"的bug
+  +修复"使用 TargetModSkill 增加【顺手牵羊】的额外目标有时不亮将"的 bug
   
-  +修复"锁定视为锦囊时checkTargetModSkillShow返回0"的bug
+  +修复"锁定视为锦囊时 checkTargetModSkillShow 返回 0"的 bug
   
-  +新增对同一个角色点击多次的卡牌Lua接口
+  +新增对同一个角色点击多次的卡牌 Lua 接口
   
-  +开放Lua读取ServerInfo的接口
+  +开放 Lua 读取 ServerInfo 的接口
   
-  +升级Qt库支持至最新(5.4.0)
+  +升级 Qt 库支持至最新(5.4.0)
   
-  +更新freetype至2.5.4，增加debug版库(OSX及Linux使用静态库)
+  +更新 freetype 至 2.5.4 ，增加 debug 版库(OSX 及 Linux 使用静态库)
   
-  +更新fmodex至4.4.49
+  +更新 fmodex 至 4.4.49
+  
+  +新增 Room::sendCompulsoryTriggerLog ，能更方便的发送锁定技的 log
+  
+  +修复"CardAsk 时机不能正确调用 CardUsePattern"的 bug
   
   New Features/Enhancements:
-  +AI使用装备牌时优先装备【玉玺】
+  +AI 使用装备牌时优先装备【玉玺】
   
-  +优化【联军盛宴】相关的【无懈可击】AI使用策略
+  +优化【联军盛宴】相关的【无懈可击】AI 使用策略
   
-  +AI身份比较明显时，被【敕令】询问时不再弃置装备牌(http://tieba.baidu.com/p/3439569041 8楼)
+  +AI 身份比较明显时，被【敕令】询问时不再弃置装备牌(http://tieba.baidu.com/p/3439569041 8楼)
   
-  +优化AI身份判断(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +优化 AI 身份判断(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +优化【联军盛宴】的AI使用策略(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +优化【联军盛宴】的 AI 使用策略(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +优化【水淹七军】的AI使用策略(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +优化【水淹七军】的 AI 使用策略(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +优化针对【流离】的【杀】的AI使用策略(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +优化针对【流离】的【杀】的 AI 使用策略(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +优化【神速】的AI使用策略(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/258)
+  +优化【神速】的 AI 使用策略(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/258)
   
-  +支持在游戏中调整背景音乐音量，所有选项在点击“取消”后自动复原(https://github.com/MogaraOrg/QSanguosha-For-Hegemony/issues/278)
+  +支持在游戏中调整背景音乐音量，所有选项在点击“取消”后自动复原(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/278)
   
   +重写往期的更新内容(http://tieba.baidu.com/p/3450767214)
   
@@ -112,13 +124,21 @@
   
   +手牌过多分两行显示时，上移倒计时条，防止被挡住(http://tieba.baidu.com/p/3439569041?pn=2 32楼)
   
-  +优化【帷幕】关于【敕令】的亮将AI策略
+  +优化【帷幕】关于【敕令】的亮将 AI 策略
   
-  +优化【狂骨】AI策略(http://tieba.baidu.com/p/3439569041 8楼)
+  +优化【狂骨】AI 策略(http://tieba.baidu.com/p/3439569041 8楼)
   
   +优化平局对话框的样式
   
   +调整“不询问无懈可击”按钮使用方式(http://tieba.baidu.com/p/3399890782?pid=60513158733#60513158733)
+  
+  +给一系列锁定技添加技能发动后的战报信息
+  
+  +新增 AI 名
+  
+  +压缩录像文件体积，不再提供 png 的录像储存格式(https://github.com/Mogara/QSanguosha-For-Hegemony/issues/262)
+  
+  +优化聊天窗口中的角色名标注，使之简明清晰
   
 
 0.8.0 beta3 (Nov 30 2014）
@@ -144,7 +164,7 @@
   
   +被【飞龙夺凤】复活的糜夫人被移除后不触发【闺秀②】加血效果
   
-  +张飞/黄月英对距离超过1的角色使用【顺手牵羊】或【兵粮寸断】时可以亮张飞
+  +张飞/黄月英对距离超过 1 的角色使用【顺手牵羊】或【兵粮寸断】时可以亮张飞
   
   +“指定目标后”时机技能结算顺序错误
   
@@ -192,38 +212,38 @@
   
   +部分情况下弃牌不能发动【礼让】
   
-  +开启“禁止同一IP连接服务器”功能导致无法断线重连（尝试修复）
+  +开启“禁止同一 IP 连接服务器”功能导致无法断线重连（尝试修复）
   
   +围攻暗将时阵法召唤错误
   
   +【木牛流马】转移时闪退
   
-  + AI使用【方天画戟】为【杀】以外的牌指定额外目标
+  + AI 使用【方天画戟】为【杀】以外的牌指定额外目标
   
   API Changes：
-  +ServerPlayer::askForSkillInvoke()方法加入一个以const Skill *为参数的重载，以方便使用
+  +ServerPlayer::askForSkillInvoke()方法加入一个以 const Skill * 为参数的重载，以方便使用
   
-  +修改Room::askForDiscard()，支持加入技能名信息
+  +修改 Room::askForDiscard() ，支持加入技能名信息
   
   New Features/Enhancements:
   +将“开局自动预亮所有技能”应用于所有模式
   
   +“势备篇”更名为“君临天下·势备篇”
   
-  +AI聊天新增部分台词
+  +AI 聊天新增部分台词
   
   +根据发布版调整势备篇的卡牌结算
   
-  +大幅优化AI出牌阶段牌多时的响应时间
+  +大幅优化 AI 出牌阶段牌多时的响应时间
   
-  +新增一些AI名字
+  +新增一些 AI 名字
 
 0.8.0 beta1 (Oct 20 2014)
 -----------------------------
   Bugs Fixed:
   +选将框里不能选择的武将可以随便移动
 
-  +AI可以选到没有分配到的武将
+  +AI 可以选到没有分配到的武将
 
   +特定情况下，君主在场时该势力出现野心家
 
@@ -238,21 +258,21 @@
   +卡牌编辑器自动换行失效
 
   API Changes:
-  +更新VS2013和Qt5构建环境，删除VS2012解决方案与工程文件
+  +更新 VS2013 和 Qt5 构建环境，删除 VS2012 解决方案与工程文件
 
   +根据最新规则，调整了大量游戏流程，同步修改对应接口
 
-  +更新fmodex至v4.44.45
+  +更新 fmodex 至 v4.44.45
 
-  +更新Breakpad至r1353
+  +更新 Breakpad 至 r1353
 
-  +新增用-1表示距离不存在
+  +新增用 -1 表示距离不存在
 
   +修改队列与场上某势力玩家数的判断的接口
 
-  +新增Lua json库
+  +新增 Lua json 库
 
-  +为服务器安全考虑，屏蔽Lua中的os.execute()函数
+  +为服务器安全考虑，屏蔽 Lua 中的 os.execute() 函数
 
   New Features/Enhancements:
 
@@ -275,15 +295,15 @@
 
   +新增小型场景（自定义场景）
 
-  +新增“守卫剑阁”模式（根据《三国杀Online》同名模式改编）
+  +新增“守卫剑阁”模式（根据《三国杀 Online》同名模式改编）
 
-  +修改AI的名称
+  +修改 AI 的名称
 
-  +新增“禁止加入AI”的服务器选项
+  +新增“禁止加入 AI”的服务器选项
 
   +新增皮肤替换系统
 
-  +恢复AI聊天功能
+  +恢复 AI 聊天功能
 
   +新增聊天时的气泡框
 
@@ -298,11 +318,11 @@
   Bugs Fixed:
   +【天覆】不能使用
 
-  +多个技能的AI问题
+  +多个技能的 AI 问题
 
   +内存严重泄露
 
-  +【狂骨】始终只回复1点体力
+  +【狂骨】始终只回复 1 点体力
 
   +【烈弓】、【铁骑】引起的闪电移动过程中闪退
 
@@ -317,27 +337,27 @@
   +部分技能按钮预亮后无法取消
 
   API Changes:
-  +LUA扩展包文件写法更换：由原来的module改为返回table，支持一个文件定义多个扩展包
+  +Lua 扩展包文件写法更换：由原来的 module 改为返回 table ，支持一个文件定义多个扩展包
 
   +新函数：QList<int> Room::getCardIdsOnTable(const Card *)
    用于获取正在结算当中的牌在处理区的部分
    
-  +开放Windows x64平台下的构建
+  +开放 Windows x64 平台下的构建
   
-  +配置VS2012的解决方案和工程文件
+  +配置 VS2012 的解决方案和工程文件
  
-  +升级fmodex音频库至4.44.35
+  +升级 fmodex 音频库至 4.44.35
 
-  +升级Lua至5.2.3，删除module
+  +升级 Lua 至 5.2.3，删除 module
 
-  +升级Qt基础库至4.8.6(release)/5.3.0(develop)
+  +升级 Qt 基础库至 4.8.6(release)/5.3.0(develop)
 
   New Features/Enhancements:
-  +新增加了许多AI名字，均衡名字的出现次数
+  +新增加了许多 AI 名字，均衡名字的出现次数
 
-  +在AI延时为0时不显示觉醒动画
+  +在 AI 延时为 0 时不显示觉醒动画
 
-  +新增替换Lua君主武将的选项
+  +新增替换 Lua 君主武将的选项
 
   +替换董卓、君张角的配音
    
@@ -349,13 +369,13 @@
   
   +在选将框中提示座位号
   
-  +优化董卓选将AI
+  +优化董卓选将 AI
   
   +单机游戏时，可设置为自动预亮
   
   +【乱武】设定延时
   
-  +来源为三国杀Online的配音，不再标注为“官方”配音
+  +来源为三国杀 Online 的配音，不再标注为“官方”配音
   
   +性能大幅优化
   
@@ -380,19 +400,19 @@
 
   +牌永久卡在处理区的问题以及结算当中的牌从非处理区移动到弃牌堆
 
-  +Lua视为技发动时闪退
+  +Lua 视为技发动时闪退
 
   API Changes:
-  +针对多种Player::hasSkill方法加入了方便的重载函数
+  +针对多种 Player::hasSkill 方法加入了方便的重载函数
 
   New Features/Enhancements:
-  +优化AI对【无懈可击·国】的选择
+  +优化 AI 对【无懈可击·国】的选择
 
   +优化【飞龙夺凤】AI
 
-  +离线时使用托管时的AI
+  +离线时使用托管时的 AI
 
-  +回复卡牌编辑器，支持DIY国战武将卡牌
+  +回复卡牌编辑器，支持 DIY 国战武将卡牌
 
   +根据官方对很多技能结算的修改，同步调整结算
 
@@ -402,11 +422,11 @@
 0.7.0 beta (April 1 2014)
 -----------------------------
   Bugs Fixed:
-  +AI不发动【屯田】
+  +AI 不发动【屯田】
 
   +【尚义】可以选自己做目标
 
-  +AI用弃牌堆中的牌发动【放权】
+  +AI 用弃牌堆中的牌发动【放权】
 
   +通过【魂殇】获得的【英魂】无法使用
 
@@ -414,7 +434,7 @@
 
   +暗将会被围攻
 
-  +AI邹氏对副将为周泰的角色发动【倾城】时选择对方主将
+  +AI 邹氏对副将为周泰的角色发动【倾城】时选择对方主将
 
   +死亡后的角色依然拥有【鹤翼】
   
@@ -442,15 +462,15 @@
 
   +被【飞龙夺凤】复活后没有限定技标记
 
-  +AI对装备区有防具的角色发动【护援】，将【白银狮子】置入其装备区
+  +AI 对装备区有防具的角色发动【护援】，将【白银狮子】置入其装备区
 
-  +AI手牌大量溢出时，不发动【巧变】跳过弃牌阶段
+  +AI 手牌大量溢出时，不发动【巧变】跳过弃牌阶段
 
   +【谦逊】台词重复播放
 
   +【飞龙夺凤】复活目标后可以发动造成伤害后可触发的技能
 
-  +Lua扩展包技能造成【度势】无法正常使用
+  +Lua 扩展包技能造成【度势】无法正常使用
 
   +孔融在场时发动【固政】会获得一些莫名奇妙的牌
 
@@ -459,60 +479,61 @@
   +【双雄】按钮在颜良&文丑被【断肠】后立即消失
 
   API Changes:
-  +修复lua主将技和副将技无效的问题
+  +修复 Lua 主将技和副将技无效的问题
 
-  +开放添加自定义势力的UI接口
+  +开放添加自定义势力的 UI 接口
 
-  +新增LuaAttackRangeSkill, 可以锁定或调整攻击范围
+  +新增 LuaAttackRangeSkill, 可以锁定或调整攻击范围
 
   +调整底层关于锁定手牌上限的实现，多技能锁定手牌上限时，以数值最高的为准
 
-  +修复ServerPlayer::inSiegeRelation底层实现中暗将也会视为被围攻的问题
+  +修复 ServerPlayer::inSiegeRelation 底层实现中暗将也会视为被围攻的问题
 
-  +Lua扩展包的AI文件改为放入"extensions/ai/"以方便玩家移除（原位置不再有效）
+  +Lua 扩展包的 AI 文件改为放入"extensions/ai/"以方便玩家移除（原位置不再有效）
 
-  +触发技can_preshow缺省时，技能有视为技部分不可预亮，反之可预亮
+  +触发技 can_preshow 缺省时，技能有视为技部分不可预亮，反之可预亮
 
-  +移除Room::getLord的默认参数值
+  +移除 Room::getLord 的默认参数值
 
-  +修改Player::getPlayerNumWithSameKingdom底层实现，若对象未明置武将，返回0
+  +修改 Player::getPlayerNumWithSameKingdom 底层实现，若对象未明置武将，返回 0
 
-  +DamageStruct新增属性transfer_reason(QString类型，用以记录伤害被转移的原因，如"tianxiang"), prevented(bool，用以记录伤害是否被防止)
+  +DamageStruct 新增属性 transfer_reason (QString 类型，用以记录伤害被转移的原因，如"tianxiang"),
+   prevented(bool，用以记录伤害是否被防止)
 
-  +更新lua扩展包帮助文档OtherSkill和SkillCard中部分内容
+  +更新 lua 扩展包帮助文档 OtherSkill 和 SkillCard 中部分内容
 
-  +修改Player::hasShownSkill底层实现，考虑装备技能和隐藏技能
+  +修改 Player::hasShownSkill 底层实现，考虑装备技能和隐藏技能
 
-  +新增时机TargetChoosing和TargetChosen，用以区分选择目标与指定目标
+  +新增时机 TargetChoosing 和 TargetChosen ，用以区分选择目标与指定目标
 
-  +新增sgs.getMappedRole，用以获取势力对应的身份
+  +新增 sgs.getMappedRole ，用以获取势力对应的身份
 
-  +关闭Room::changeHero接口
+  +关闭 Room::changeHero 接口
 
-  +移除Room::hasWelfare
+  +移除 Room::hasWelfare
 
-  +升级Lua middleclass对象库至最新(3.0.1)
+  +升级 Lua middleclass 对象库至最新(3.0.1)
 
-  +添加通用Log模板 #DanlaoAvoid
+  +添加通用 Log 模板 #DanlaoAvoid
 
-  +修改TriggerSkill，on_cost与on_effect变为6参数
+  +修改 TriggerSkill，on_cost 与 on_effect变为 6 参数
 
   New Features/Enhancements:
   +战报窗口增加边框
 
   +使用清晰度更高的曹洪、陆逊、邹氏卡牌
 
-  +崩溃后询问是否立即上传dmp文件给程序维护人员
+  +崩溃后询问是否立即上传 dmp 文件给程序维护人员
 
   +移除暗置武将前先明置
 
-  +AI对中立角色发动【穿心】
+  +AI 对中立角色发动【穿心】
 
   +完善【千幻】技能询问提示，以便于区分不同状况
 
   +失去【飞影】效果时，不显示战报提示
 
-  +AI周泰选择弃不屈牌时，禁用AI延时，以保证游戏流畅
+  +AI 周泰选择弃不屈牌时，禁用 AI 延时，以保证游戏流畅
 
   +"展示武将"统一规范为"明置武将"
 
@@ -520,13 +541,13 @@
 
   +技能描述中提示技能是否可预亮
 
-  +放缓AI亮将的节奏
+  +放缓 AI 亮将的节奏
 
   +着手优化程序性能
 
   +显示所有珠联璧合关系，不论扩展包是否禁用
 
-  +升级freetype字体渲染库至最新版(2.5.3)
+  +升级 freetype 字体渲染库至最新版(2.5.3)
 
   +"关于我们"对话框中的悬浮文字背景色设为白色，易于识别
 
@@ -540,13 +561,13 @@
 
   +选将时右击卡牌换将
 
-  +预置更多AI昵称
+  +预置更多 AI 昵称
 
   +添加返回起始界面的按钮
 
-  +队友有【勇决】时，AI优先使用杀
+  +队友有【勇决】时，AI 优先使用杀
 
-  +加入AI武将筛选功能，现在可以通过ai-selector/pair-value.txt里设置每组武将的评分了
+  +加入 AI 武将筛选功能，现在可以通过 ai-selector/pair-value.txt 里设置每组武将的评分了
   
   +卡牌编辑器抗锯齿优化
   
@@ -568,7 +589,7 @@
 
   +AI【倾城】随机暗置武将牌
 
-  +AI对陆逊使用【乐不思蜀】
+  +AI 对陆逊使用【乐不思蜀】
 
   +已亮邹氏回合内暗置卧龙可以发动【看破】
 
@@ -582,83 +603,83 @@
 
   +一场游戏结束后点击武将一览时崩溃
 
-  +AI一张卡牌不断弃置
+  +AI 一张卡牌不断弃置
 
   +【倾城】暗置君主或者士兵
 
   API Changes:
-  +修复lua技能卡不能亮将的问题
+  +修复 Lua 技能卡不能亮将的问题
 
-  +更新lua扩展包帮助文档SkillGeneral,ViewAsSkill,TriggerSkill及SkillCard部分内容，新增章节OtherSkill
+  +更新 Lua 扩展包帮助文档 SkillGeneral, ViewAsSkill, TriggerSkill 及 SkillCard 部分内容，新增章节 OtherSkill
 
   New Features/Enhancements:
-  +没有建立服务器时，禁止IP对话框加入一个提示
+  +没有建立服务器时，禁止 IP 对话框加入一个提示
 
-  +新增AI【享乐】亮将策略
+  +新增 AI【享乐】亮将策略
 
-  +调整AI【节命】策略，不再对同一角色使用多次节命
+  +调整 AI【节命】策略，不再对同一角色使用多次节命
 
-  +调整AI【忘隙】策略，仅对不需要空手牌的队友发动【忘隙】
+  +调整 AI【忘隙】策略，仅对不需要空手牌的队友发动【忘隙】
 
-  +调整AI敌对关系判断策略
+  +调整 AI 敌对关系判断策略
 
-  +调整AI【天妒】策略：当判定牌为【屯田】判定时，不获得判定牌
+  +调整 AI【天妒】策略：当判定牌为【屯田】判定时，不获得判定牌
 
-  +调整AI被【刚烈】时的策略：手牌有【桃】则选择受到伤害
+  +调整 AI 被【刚烈】时的策略：手牌有【桃】则选择受到伤害
 
-  +调整AI【雄异】策略：如果自己已亮主将董卓，出牌阶段立即发动【雄异】
+  +调整 AI【雄异】策略：如果自己已亮主将董卓，出牌阶段立即发动【雄异】
 
   +删除身份分配表
 
   +录像文件后缀名更改为"qsgs"
 
-  +优化AI【铁索连环】使用策略
+  +优化 AI【铁索连环】使用策略
 
-  +优化AI【火攻】使用策略
+  +优化 AI【火攻】使用策略
 
-  +调整AI策略：减少弃置邓艾防具的几率
+  +调整 AI 策略：减少弃置邓艾防具的几率
 
-  +调整AI策略：如队友【闪电】判定为黑桃2-9，将可能用【桃】改判
+  +调整 AI 策略：如队友【闪电】判定为黑桃 2-9，将可能用【桃】改判
 
-  +提升AI智商：知道发动【好施】会额外摸两张牌
+  +提升 AI 智商：知道发动【好施】会额外摸两张牌
 
-  +调整AI策略：如果邓艾为盟友，董卓发动【横征】的几率微升
+  +调整 AI 策略：如果邓艾为盟友，董卓发动【横征】的几率微升
 
-  +调整AI策略：发动【雄异】拯救濒危队友
+  +调整 AI 策略：发动【雄异】拯救濒危队友
 
-  +调整AI策略：微降赵云囤积基本牌的概率
+  +调整 AI 策略：微降赵云囤积基本牌的概率
 
-  +调整AI策略：不对手牌数不小于2的邓艾使用【突袭】
+  +调整 AI 策略：不对手牌数不小于 2 的邓艾使用【突袭】
 
-  +调整AI策略：当自己有防具有闪时，残血不自杀
+  +调整 AI 策略：当自己有防具有闪时，残血不自杀
 
-  +调整AI策略：考虑对盟友邓艾使用【英魂】，不对敌对邓艾使用【英魂】
+  +调整 AI 策略：考虑对盟友邓艾使用【英魂】，不对敌对邓艾使用【英魂】
 
-  +调整AI策略：增加指定队友邓艾为【缔盟】目标之一的概率
+  +调整 AI 策略：增加指定队友邓艾为【缔盟】目标之一的概率
 
-  +调整AI策略：丁奉无法使用杀时，不发动【奋迅】
+  +调整 AI 策略：丁奉无法使用杀时，不发动【奋迅】
 
-  +调整AI策略：非敌对邓艾回合，不选择对邓艾发动【寒冰剑】特效
+  +调整 AI 策略：非敌对邓艾回合，不选择对邓艾发动【寒冰剑】特效
 
-  +调整AI策略：不对敌对邓艾使用【借刀杀人】
+  +调整 AI 策略：不对敌对邓艾使用【借刀杀人】
 
-  +提升AI智商：学会重铸【知己知彼】
+  +提升 AI 智商：学会重铸【知己知彼】
 
-  +将最大选将上限控制在7，防止10人局武将不够
+  +将最大选将上限控制在 7 ，防止 10 人局武将不够
 
   +增加【太平要术】防止伤害时的动画
 
   +开放自定义悬浮文字颜色及其背景色、一览中文字颜色的设置
 
-  +调整AI策略：【飞龙夺凤】询问是否令目标弃牌时进行势力判断
+  +调整 AI 策略：【飞龙夺凤】询问是否令目标弃牌时进行势力判断
 
   +增补【享乐】使【杀】无效时战报的汉语翻译及询问弃牌时的汉语翻译
 
-  +增补AI策略：【鹰扬】的发动
+  +增补 AI 策略：【鹰扬】的发动
 
   +增补【崩坏】选项的汉语翻译
 
-  +优化【无双】AI关于【决斗】的亮将时机
+  +优化【无双】AI 关于【决斗】的亮将时机
 
   +调整触发技结算模式，技能逐个执行，不再拆分
 
@@ -666,9 +687,9 @@
 
   +发动【奋命】弃自己的牌不再需要点击对话框
 
-  +调整AI策略：敌方有君刘备且自身没有【枭姬】则不装备【飞龙夺凤】
+  +调整 AI 策略：敌方有君刘备且自身没有【枭姬】则不装备【飞龙夺凤】
 
-  +优化AI准备阶段的亮将策略
+  +优化 AI 准备阶段的亮将策略
 
   +优化张任、周瑜、小乔卡牌图片
 
@@ -707,23 +728,23 @@
 
   +选将时，主将进入主将框后，仅与主将存在珠联璧合关系的武将显示珠联璧合字样
 
-  +武将牌上有不屈牌的AI回血，弃不屈牌中点数相同的牌
+  +武将牌上有不屈牌的 AI 回血，弃不屈牌中点数相同的牌
 
   +非手牌面板上的阴阳鱼加上黑色背景，以免受伤的阴阳鱼难以辨识
 
   +移除暂时无法使用的禁表按钮
 
-  +AI发动【倾城】，暗置有不屈牌的明将周泰，出杀前暗置有卖血技能的武将
+  +AI 发动【倾城】，暗置有不屈牌的明将周泰，出杀前暗置有卖血技能的武将
 
-  +AI恢复【观星】的智商
+  +AI 恢复【观星】的智商
 
   +开局若存在君主，且均为同势力武将，直接结束游戏
 
-  +未明置徐晃时，可以对距离为2的角色使用【兵粮寸断】
+  +未明置徐晃时，可以对距离为 2 的角色使用【兵粮寸断】
 
-  +AI不对明置的陆逊使用【乐不思蜀】
+  +AI 不对明置的陆逊使用【乐不思蜀】
 
-  +未明置所有武将的AI不以造成伤害为目的对孔融使用【杀】
+  +未明置所有武将的 AI 不以造成伤害为目的对孔融使用【杀】
 
   +更新【观星】、和【五谷丰登】选择框的界面风格，使其与选将框一致；将观看牌的框关闭按钮放大为确认按钮，方便点击
 
@@ -733,19 +754,19 @@
 
   +显示主副将武将名
 
-  +简易【断肠】AI策略
+  +简易【断肠】AI 策略
 
-  +AI主动使用【礼让】
+  +AI 主动使用【礼让】
 
-  +AI识别被【飞龙夺凤】复活的同势力武将为队友
+  +AI 识别被【飞龙夺凤】复活的同势力武将为队友
 
-  +AI被邹氏暗置后，在邹氏回合外主动明置发动技能
+  +AI 被邹氏暗置后，在邹氏回合外主动明置发动技能
 
   +暗置的状态锁定技不生效
 
   +触发珠联璧合时动画提示
 
-  +暗置黄月英在对距离超过1的角色使用【顺手牵羊】、【兵粮寸断】后立即亮将
+  +暗置黄月英在对距离超过 1 的角色使用【顺手牵羊】、【兵粮寸断】后立即亮将
 
   +将版本号加入窗口标题
 
