@@ -935,6 +935,12 @@
     <ClCompile Include="Release\moc_tile.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="Debug\moc_choosesuitbox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_choosesuitbox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">
@@ -1228,6 +1234,9 @@
     <CustomBuild Include="..\..\src\ui\tile.h">
       <Filter>ui</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\choosesuitbox.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\resource\icon.rc" />
@@ -1292,9 +1301,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\core\json.h">
       <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ui\choosesuitbox.h">
-      <Filter>ui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
