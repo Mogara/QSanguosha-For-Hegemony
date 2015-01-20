@@ -1293,7 +1293,8 @@ void RoomScene::updateTargetsEnablity(const Card *card) {
             animations->effectOut(animationTarget);
             if (animationTarget2)
                 animations->effectOut(animationTarget2);
-        } else {
+        } else if (!animationTarget->graphicsEffect()
+                   || !animationTarget->graphicsEffect()->inherits("SentbackEffect")) {
             animations->sendBack(animationTarget);
             if (animationTarget2)
                 animations->sendBack(animationTarget2);
@@ -1840,14 +1841,15 @@ QString RoomScene::_translateMovement(const CardsMoveStruct &move) {
     if (srcPhoto != NULL)
         playerName = Sanguosha->translate(srcPhoto->getPlayer()->getFootnoteName());
     else if (reason.m_playerId == Self->objectName())
-        playerName = QString("%1(%2)").arg(Sanguosha->translate(Self->getFootnoteName())).arg(Sanguosha->translate("yourself"));
+        playerName = QString("%1(%2)").arg(Sanguosha->translate(Self->getFootnoteName())).arg(tr("yourself"));
 
-    if (dstPhoto != NULL)
-        targetName = Sanguosha->translate("use upon").append(Sanguosha->translate(dstPhoto->getPlayer()->getFootnoteName()));
-    else if (reason.m_targetId == Self->objectName())
-        targetName = QString("%1%2(%3)").arg(Sanguosha->translate("use upon"))
-        .arg(Sanguosha->translate(Self->getFootnoteName()))
-        .arg(Sanguosha->translate("yourself"));
+    if (dstPhoto != NULL) {
+        targetName = tr("use upon %1").arg(Sanguosha->translate(dstPhoto->getPlayer()->getFootnoteName()));
+    } else if (reason.m_targetId == Self->objectName()) {
+        targetName = tr("use upon %1(%2)")
+                .arg(Sanguosha->translate(Self->getFootnoteName()))
+                .arg(tr("yourself"));
+    }
 
     QString result(playerName + targetName);
     result.append(Sanguosha->translate(reason.m_eventName));
