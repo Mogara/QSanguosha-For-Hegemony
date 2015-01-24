@@ -863,6 +863,25 @@ bool Room::doBroadcastNotify(int command, const char *arg) {
     return doBroadcastNotify(m_players, command, arg);
 }
 
+bool Room::doNotify(ServerPlayer *player, int command, const QVariant &arg) {
+    Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, (QSanProtocol::CommandType)command);
+    packet.setMessageBody(arg);
+    player->unicast(&packet);
+    return true;
+}
+
+bool Room::doBroadcastNotify(const QList<ServerPlayer *> &players, int command, const QVariant &arg) {
+    foreach (ServerPlayer *player, players)
+        doNotify(player, command, arg);
+    return true;
+}
+
+bool Room::doBroadcastNotify(int command, const QVariant &arg) {
+    return doBroadcastNotify(m_players, command, arg);
+}
+
+// end for Lua
+
 void Room::broadcast(const QSanProtocol::AbstractPacket *packet, ServerPlayer *except) {
     broadcast(packet->toJson(), except);
 }

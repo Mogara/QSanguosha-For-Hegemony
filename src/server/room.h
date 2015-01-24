@@ -196,6 +196,10 @@ public:
     bool doBroadcastNotify(int command, const char *arg);
     bool doBroadcastNotify(const QList<ServerPlayer *> &players, int command, const char *arg);
 
+    bool doNotify(ServerPlayer *player, int command, const QVariant &arg);
+    bool doBroadcastNotify(int command, const QVariant &arg);
+    bool doBroadcastNotify(const QList<ServerPlayer *> &players, int command,  const QVariant &arg);
+
     // Ask a server player to wait for the client response. Call is blocking until client replies or server times out,
     // whichever is earlier.
     // @param player

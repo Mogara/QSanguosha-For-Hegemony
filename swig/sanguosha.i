@@ -780,7 +780,7 @@ struct CardResponseStruct {
 };
 
 struct PlayerNumStruct {
-	PlayerNumStruct();
+    PlayerNumStruct();
     PlayerNumStruct(int num, const char *toCalculate);
     PlayerNumStruct(int num, const char *toCalculate, MaxCardsType::MaxCardsCount type);
     PlayerNumStruct(int num, const char *toCalculate, MaxCardsType::MaxCardsCount type, const char *reason);
@@ -800,7 +800,7 @@ struct ServerInfoStruct {
     const bool RandomSeat;
     const bool EnableCheat;
     const bool FreeChoose;
-	const bool ForbidAddingRobot;
+    const bool ForbidAddingRobot;
     const bool DisableChat;
     const bool FirstShowingReward;
 
@@ -1405,6 +1405,10 @@ public:
     bool doNotify(ServerPlayer *player, int command, const char *arg);
     bool doBroadcastNotify(int command, const char *arg);
     bool doBroadcastNotify(const QList<ServerPlayer *> &players, int command, const char *arg);
+    
+    bool doNotify(ServerPlayer *player, int command, const QVariant &arg);
+    bool doBroadcastNotify(int command, const QVariant &arg);
+    bool doBroadcastNotify(const QList<ServerPlayer *> &players, int command,  const QVariant &arg);
 
     bool notifyMoveCards(bool isLostPhase, QList<CardsMoveStruct> move, bool forceVisible, QList<ServerPlayer *> players = QList<ServerPlayer *>());
     bool notifyProperty(ServerPlayer *playerToNotify, const ServerPlayer *propertyOwner, const char *propertyName, const char *value = NULL);
