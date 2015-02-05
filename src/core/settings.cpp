@@ -77,6 +77,10 @@ void Settings::init() {
         SmallFont.setWeight(QFont::Bold);
 
         AppFont = value("AppFont", QApplication::font("QMainWindow")).value<QFont>();
+        //SE add font for Roomscene::log_box of iphone(ios)
+        iosLogFont = value("AppFont", QApplication::font("QMainWindow")).value<QFont>();
+        iosLogFont.setPixelSize(13);
+
         UIFont = value("UIFont", QApplication::font("QTextEdit")).value<QFont>();
         TextEditColor = QColor(value("TextEditColor", "white").toString());
         SkillDescriptionInToolTipColor = value("SkillDescriptionInToolTipColor", "#FFFF33").toString();

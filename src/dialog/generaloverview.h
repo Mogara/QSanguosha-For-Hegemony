@@ -110,6 +110,9 @@ private slots:
     void copyLines();
     void showNextSkin();
     void fillAllGenerals();
+#ifdef Q_OS_IOS
+    void comboBoxChanged(const QString &);
+#endif
     void on_tableView_clicked(const QModelIndex &index);
     void playDeathAudio();
 };

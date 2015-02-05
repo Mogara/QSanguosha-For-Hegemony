@@ -78,12 +78,24 @@ void StartScene::addButton(QAction *action) {
 
     QRectF rect = button->boundingRect();
     int n = buttons.length();
-    qreal center_x = Config.Rect.width() / 4;
-    qreal top_y = - (2 * rect.height()) - (4 * 3);
+    qreal center_x, top_y;
+#ifdef Q_OS_IOS
+    center_x = Config.Rect.width() / 6;
+    top_y = - (1.5 * rect.height()) - (4 * 3);
+    if (n < 3)
+        button->setPos(center_x - rect.width() - 4, top_y + n * (rect.height() + 8));
+    else if (n < 6)
+        button->setPos(center_x + 4, top_y + (n - 3) * (rect.height() + 8));
+    else
+        button->setPos(center_x + 12 + rect.width(), top_y + (n - 6) * (rect.height() + 8));
+#else
+    center_x = Config.Rect.width() / 4;
+    top_y = - (2 * rect.height()) - (4 * 3);
     if (n < 4)
         button->setPos(center_x - rect.width() - 4, top_y + n * (rect.height() + 8));
     else
         button->setPos(center_x + 4, top_y + (n - 4) * (rect.height() + 8));
+#endif
 
     buttons << button;
 }

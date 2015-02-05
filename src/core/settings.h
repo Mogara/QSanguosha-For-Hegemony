@@ -54,6 +54,7 @@ public:
     QFont TinyFont;
 
     QFont AppFont;
+    QFont iosLogFont;
     QFont UIFont;
     QColor TextEditColor;
     QColor SkillDescriptionInToolTipColor;

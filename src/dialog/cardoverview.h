@@ -51,6 +51,9 @@ private slots:
     void on_femalePlayButton_clicked();
     void on_malePlayButton_clicked();
     void on_playAudioEffectButton_clicked();
+#ifdef Q_OS_IOS
+    void comboBoxChanged();
+#endif
     void on_tableWidget_itemDoubleClicked(QTableWidgetItem *item);
     void on_tableWidget_itemSelectionChanged();
     void askCard();

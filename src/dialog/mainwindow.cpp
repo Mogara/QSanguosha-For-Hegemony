@@ -28,7 +28,11 @@
 #if defined(Q_OS_WIN) || defined(Q_OS_LINUX)
 #include "ui_mainwindow.h"
 #else
+#ifdef Q_OS_IOS
+#include "ui_mainwindow_ios.h"
+#else
 #include "ui_mainwindow_nonwin.h"
+#endif
 #endif
 #include "rule-summary.h"
 #include "pixmapanimation.h"
@@ -174,6 +178,9 @@ MainWindow::MainWindow(QWidget *parent)
         << ui->actionCard_Overview
         << ui->actionAbout;
 
+#ifdef Q_OS_IOS
+    actions << ui->actionRule_Summary;//SE
+#endif
     foreach (QAction *action, actions)
         start_scene->addButton(action);
 
@@ -707,15 +714,18 @@ void MainWindow::enterRoom() {
     connect(ui->actionSaveRecord, &QAction::triggered, room_scene, (void (RoomScene::*)())(&RoomScene::saveReplayRecord));
 
     if (ServerInfo.EnableCheat) {
+#if !defined(Q_OS_IOS)
         ui->menuCheat->setEnabled(true);
-
+#endif
         connect(ui->actionDeath_note, &QAction::triggered, room_scene, &RoomScene::makeKilling);
         connect(ui->actionDamage_maker, &QAction::triggered, room_scene, &RoomScene::makeDamage);
         connect(ui->actionRevive_wand, &QAction::triggered, room_scene, &RoomScene::makeReviving);
         connect(ui->actionExecute_script_at_server_side, &QAction::triggered, room_scene, &RoomScene::doScript);
     }
     else {
+#if !defined(Q_OS_IOS)
         ui->menuCheat->setEnabled(false);
+#endif
         ui->actionDeath_note->disconnect();
         ui->actionDamage_maker->disconnect();
         ui->actionRevive_wand->disconnect();
@@ -751,13 +761,18 @@ void MainWindow::gotoStartScene() {
         << ui->actionGeneral_Overview
         << ui->actionCard_Overview
         << ui->actionAbout;
+#ifdef Q_OS_IOS
+    actions << ui->actionRule_Summary;
+#endif
 
     foreach (QAction *action, actions)
         start_scene->addButton(action);
 
     setCentralWidget(view);
 
+#if !defined(Q_OS_IOS)
     ui->menuCheat->setEnabled(false);
+#endif
     ui->actionDeath_note->disconnect();
     ui->actionDamage_maker->disconnect();
     ui->actionRevive_wand->disconnect();
@@ -914,11 +929,12 @@ void MainWindow::on_actionMinimize_to_system_tray_triggered()
 
         QMenu *menu = new QMenu;
         menu->addAction(appear);
+#if !defined(Q_OS_IOS)
         menu->addMenu(ui->menuGame);
-
         menu->addMenu(ui->menuView);
         menu->addMenu(ui->menuOptions);
         menu->addMenu(ui->menuHelp);
+#endif
 
         systray->setContextMenu(menu);
     }

@@ -19,7 +19,11 @@
     *********************************************************************/
 
 #include "cardoverview.h"
+#ifdef Q_OS_IOS
+#include "ui_cardoverview_ios.h"
+#else
 #include "ui_cardoverview.h"
+#endif
 #include "engine.h"
 #include "stylehelper.h"
 #include "clientstruct.h"
@@ -48,11 +52,13 @@ CardOverview::CardOverview(QWidget *parent)
 
     connect(this, &CardOverview::windowTitleChanged, ui->titleLabel, &QLabel::setText);
 
+#if !defined(Q_OS_IOS)
     ui->tableWidget->setColumnWidth(0, 80);
     ui->tableWidget->setColumnWidth(1, 60);
     ui->tableWidget->setColumnWidth(2, 30);
     ui->tableWidget->setColumnWidth(3, 60);
     ui->tableWidget->setColumnWidth(4, 70);
+#endif
 
     connect(ui->getCardButton, &QPushButton::clicked, this, &CardOverview::askCard);
     connect(ui->closeButton, &QPushButton::clicked, this, &CardOverview::reject);
@@ -63,20 +69,33 @@ CardOverview::CardOverview(QWidget *parent)
     ui->playAudioEffectButton->hide();
 
     const QString style = StyleHelper::styleSheetOfScrollBar();
+#if !defined(Q_OS_IOS)
     ui->tableWidget->verticalScrollBar()->setStyleSheet(style);
+#else
     ui->cardDescriptionBox->verticalScrollBar()->setStyleSheet(style);
+#endif
 }
 
 void CardOverview::loadFromAll() {
     int n = Sanguosha->getCardCount();
+#if !defined(Q_OS_IOS)
     ui->tableWidget->setRowCount(n);
+#endif
     for (int i = 0; i < n; i++) {
         const Card *card = Sanguosha->getEngineCard(i);
         addCard(i, card);
     }
-
+#ifdef Q_OS_IOS
+    connect(ui->cardComboBox, &QComboBox::currentTextChanged, this, &CardOverview::comboBoxChanged);
+#endif
     if (n > 0) {
+        //SE
+#ifdef Q_OS_IOS
+        ui->cardComboBox->setCurrentIndex(0);
+        comboBoxChanged();
+#else
         ui->tableWidget->setCurrentItem(ui->tableWidget->item(0, 0));
+#endif
 
         const Card *card = Sanguosha->getEngineCard(0);
         if (card->getTypeId() == Card::TypeEquip) {
@@ -94,12 +113,21 @@ void CardOverview::loadFromAll() {
 
 void CardOverview::loadFromList(const QList<const Card *> &list) {
     int n = list.length();
+#ifdef Q_OS_IOS
+    ui->cardComboBox->setMaxCount(n);
+#else
     ui->tableWidget->setRowCount(n);
+#endif
     for (int i = 0; i < n; i++)
         addCard(i, list.at(i));
 
     if (n > 0) {
+#ifdef Q_OS_IOS
+        ui->cardComboBox->setCurrentIndex(0);
+        comboBoxChanged();
+#else
         ui->tableWidget->setCurrentItem(ui->tableWidget->item(0, 0));
+#endif
 
         const Card *card = list.first();
         if (card->getTypeId() == Card::TypeEquip) {
@@ -118,8 +146,10 @@ void CardOverview::loadFromList(const QList<const Card *> &list) {
 void CardOverview::addCard(int i, const Card *card) {
     QString name = Sanguosha->translate(card->objectName());
     QIcon suit_icon = QIcon(QString("image/system/suit/%1.png").arg(card->getSuitString()));
-    QString suit_str = Sanguosha->translate(card->getSuitString());
     QString point = card->getNumberString();
+#if !defined(Q_OS_IOS)
+    QString suit_str = Sanguosha->translate(card->getSuitString());
+
     QString type = Sanguosha->translate(card->getType());
     QString subtype = Sanguosha->translate(card->getSubtype());
     QString package = Sanguosha->translate(card->getPackage());
@@ -139,13 +169,40 @@ void CardOverview::addCard(int i, const Card *card) {
         package_item->setToolTip(tr("<font color=%1>This is an Lua extension</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
     }
     ui->tableWidget->setItem(i, 5, package_item);
+#else
+    ui->cardComboBox->addItem(suit_icon, name + " " + point, card->getId());
+#endif
 }
 
 CardOverview::~CardOverview() {
     delete ui;
 }
 
+#ifdef Q_OS_IOS
+void CardOverview::comboBoxChanged() {
+    int card_id = ui->cardComboBox->currentData().toInt();
+    const Card *card = Sanguosha->getEngineCard(card_id);
+    QString pixmap_path = QString("image/card/%1.png").arg(card->objectName());
+    ui->cardLabel->setPixmap(pixmap_path);
+
+    ui->cardDescriptionBox->setText(card->getDescription(false));
+    ui->packageLine->setText(Sanguosha->translate(card->getPackage()));
+    ui->subtypeLine->setText(Sanguosha->translate(card->getSubtype()));
+    ui->typeLine->setText(Sanguosha->translate(card->getType()));
+
+    if (card->getTypeId() == Card::TypeEquip) {
+        ui->playAudioEffectButton->show();
+        ui->malePlayButton->hide();
+        ui->femalePlayButton->hide();
+    } else {
+        ui->playAudioEffectButton->hide();
+        ui->malePlayButton->show();
+        ui->femalePlayButton->show();
+    }
+}
+#endif
 void CardOverview::on_tableWidget_itemSelectionChanged() {
+#ifndef Q_OS_IOS
     int row = ui->tableWidget->currentRow();
     int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
     const Card *card = Sanguosha->getEngineCard(card_id);
@@ -163,15 +220,31 @@ void CardOverview::on_tableWidget_itemSelectionChanged() {
         ui->malePlayButton->show();
         ui->femalePlayButton->show();
     }
+#endif
 }
+
+void CardOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem *) {
+#ifndef Q_OS_IOS
+    if (Self) askCard();
+#endif
+}
+
 
 void CardOverview::askCard() {
     if (!ServerInfo.EnableCheat || !ClientInstance)
         return;
 
+#ifdef Q_OS_IOS
+    int row = ui->cardComboBox->currentIndex();
+#else
     int row = ui->tableWidget->currentRow();
+#endif
     if (row >= 0) {
+#ifdef Q_OS_IOS
+        int card_id = ui->cardComboBox->currentData().toInt();
+#else
         int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
+#endif
         if (!ClientInstance->getAvailableCards().contains(card_id)) {
             QMessageBox::warning(this, tr("Warning"), tr("These packages don't contain this card"));
             return;
@@ -180,32 +253,54 @@ void CardOverview::askCard() {
     }
 }
 
-void CardOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem *) {
-    if (Self) askCard();
-}
+
 
 void CardOverview::on_malePlayButton_clicked() {
+#ifdef Q_OS_IOS
+    int row = ui->cardComboBox->currentIndex();
+#else
     int row = ui->tableWidget->currentRow();
+#endif
     if (row >= 0) {
+#ifdef Q_OS_IOS
+        int card_id = ui->cardComboBox->currentData().toInt();
+#else
         int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
+#endif
         const Card *card = Sanguosha->getEngineCard(card_id);
         Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(card->objectName(), true));
     }
 }
 
 void CardOverview::on_femalePlayButton_clicked() {
+#ifdef Q_OS_IOS
+    int row = ui->cardComboBox->currentIndex();
+#else
     int row = ui->tableWidget->currentRow();
+#endif
     if (row >= 0) {
+#ifdef Q_OS_IOS
+        int card_id = ui->cardComboBox->currentData().toInt();
+#else
         int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
+#endif
         const Card *card = Sanguosha->getEngineCard(card_id);
         Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(card->objectName(), false));
     }
 }
 
 void CardOverview::on_playAudioEffectButton_clicked() {
+#ifdef Q_OS_IOS
+    int row = ui->cardComboBox->currentIndex();
+#else
     int row = ui->tableWidget->currentRow();
+#endif
     if (row >= 0) {
+#ifdef Q_OS_IOS
+        int card_id = ui->cardComboBox->currentData().toInt();
+#else
         int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
+#endif
         const Card *card = Sanguosha->getEngineCard(card_id);
         if (card->getTypeId() == Card::TypeEquip) {
             QString effectName = card->getEffectName();

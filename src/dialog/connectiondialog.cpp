@@ -19,7 +19,11 @@
     *********************************************************************/
 
 #include "connectiondialog.h"
+#ifdef Q_OS_IOS
+#include "ui_connectiondialog_ios.h"
+#else
 #include "ui_connectiondialog.h"
+#endif
 #include "settings.h"
 #include "engine.h"
 #include "stylehelper.h"
