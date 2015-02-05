@@ -101,7 +101,9 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const{
-        return (TriggerSkill::triggerable(player) && !player->isKongcheng()) ? QStringList(objectName()) : QStringList();
+		if (player->isKongcheng() && player->getPile("wooden_ox").isEmpty())
+			return QStringList();
+        return QStringList(objectName());
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{

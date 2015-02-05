@@ -660,7 +660,7 @@ public:
         if (!TriggerSkill::triggerable(target))
             return QStringList();
 
-        if (target->isKongcheng()) {
+		if (target->isKongcheng() && target->getPile("wooden_ox").isEmpty()) {
             bool has_black = false;
             for (int i = 0; i < 4; i++) {
                 const EquipCard *equip = target->getEquip(i);
@@ -671,8 +671,7 @@ public:
             }
             return (has_black) ? QStringList(objectName()) : QStringList();
         }
-        else
-            return QStringList(objectName());
+        return QStringList(objectName());
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
