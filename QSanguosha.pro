@@ -229,10 +229,6 @@ HEADERS += \
     src/util/socket.h
 
 FORMS += \
-    src/dialog/cardoverview_ios.ui \
-    src/dialog/configdialog_ios.ui \
-    src/dialog/connectiondialog_ios.ui \
-    src/dialog/generaloverview_ios.ui \
     src/dialog/cardoverview.ui \
     src/dialog/configdialog.ui \
     src/dialog/connectiondialog.ui \
@@ -246,7 +242,12 @@ else: linux {
     FORMS += src/dialog/mainwindow.ui
 }
 else: ios {
-    FORMS += src/dialog/mainwindow_ios.ui
+    FORMS += \
+    src/dialog/mainwindow_ios.ui\
+    src/dialog/cardoverview_ios.ui \
+    src/dialog/configdialog_ios.ui \
+    src/dialog/connectiondialog_ios.ui \
+    src/dialog/generaloverview_ios.ui
 }
 else {
     FORMS += src/dialog/mainwindow_nonwin.ui
