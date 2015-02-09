@@ -1377,7 +1377,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *erzhang) const{
         QList<int> cards = VariantList2IntList(erzhang->tag["GuzhengCards"].toList());
         erzhang->tag.remove("GuzhengCards");
-        if (!cards.isEmpty()) {
+        if (!cards.isEmpty() && room->askForSkillInvoke(erzhang, "_Guzheng", "GuzhengObtain")) {
             DummyCard dummy(cards);
             room->obtainCard(erzhang, &dummy);
         }
