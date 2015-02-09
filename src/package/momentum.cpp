@@ -1296,7 +1296,7 @@ public:
         } else {
             if (player == NULL)
                 return QStringList();
-            if (triggerEvent == GeneralShown) {
+            if (triggerEvent == GeneralShown && player->hasShownGeneral1()) {
                 if (player && player->isAlive() && player->hasLordSkill(objectName())) {
                     foreach (ServerPlayer *p, room->getAlivePlayers())
                         if (p->willBeFriendWith(player))
