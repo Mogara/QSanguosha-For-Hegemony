@@ -187,8 +187,17 @@ function sgs.getDefenseSlash(player, self)
 	end
 
 	if player:hasShownSkill("tianxiang") then defense = defense + player:getHandcardNum() * 0.5 end
-
-	if player:getHandcardNum() == 0 and player:getPile("wooden_ox"):isEmpty() and not player:hasShownSkills("kongcheng") then
+	local isInPile = function()
+		for _,pile in sgs.list(player:getPileNames())do
+			if pile:startsWith("&") or pile == "wooden_ox" then
+				if not player:getPile(pile):isEmpty() then
+					return false
+				end
+			end
+		end
+		return true
+	end
+	if player:getHandcardNum() == 0 and isInPile() and not player:hasShownSkills("kongcheng") then
 		if player:getHp() <= 1 then defense = defense - 2.5 end
 		if player:getHp() == 2 then defense = defense - 1.5 end
 		if not hasEightDiagram then defense = defense - 2 end
@@ -1216,10 +1225,14 @@ function sgs.ai_cardsview.Spear(self, class_name, player, cards)
 				if sgs.cardIsVisible(c, player, self.player) and c:isKindOf("Slash") then continue end
 				table.insert(cards, c)
 			end
-			for _, id in sgs.qlist(player:getPile("wooden_ox")) do
-				c = sgs.Sanguosha:getCard(id)
-				if sgs.cardIsVisible(c, player, self.player) and c:isKindOf("Slash") then continue end
-				table.insert(cards, c)
+			for _,pile in sgs.list(player:getPileNames())do
+				if pile:startsWith("&") or pile == "wooden_ox" then
+					for _, id in sgs.qlist(player:getPile(pile)) do
+						c = sgs.Sanguosha:getCard(id)
+						if sgs.cardIsVisible(c, player, self.player) and c:isKindOf("Slash") then continue end
+						table.insert(cards, c)
+					end
+				end
 			end
 		end
 		if #cards < 2 then return {} end
@@ -1253,8 +1266,12 @@ function turnUse_spear(self, inclusive, skill_name)
 	if self.player:hasSkill("wusheng") then
 		local cards = self.player:getCards("he")
 		cards = sgs.QList2Table(cards)
-		for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
-			table.insert(cards, sgs.Sanguosha:getCard(id))
+		for _,pile in sgs.list(self.player:getPileNames())do
+			if pile:startsWith("&") or pile == "wooden_ox" then
+				for _, id in sgs.qlist(self.player:getPile(pile)) do
+					table.insert(cards, sgs.Sanguosha:getCard(id))
+				end
+			end
 		end
 		for _, acard in ipairs(cards) do
 			if isCard("Slash", acard, self.player) then return end

@@ -142,8 +142,12 @@ sgs.ai_skill_cardask["@guicai-card"] = function(self, data)
 	if not (self:willShowForAttack() or self:willShowForDefence() ) then return "." end
 	local judge = data:toJudge()
 	local cards = sgs.QList2Table(self.player:getHandcards())
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
-		table.insert(cards, 1, sgs.Sanguosha:getCard(id))
+	for _,pile in sgs.list(self.player:getPileNames())do
+		if pile:startsWith("&") or pile == "wooden_ox" then
+			for _, id in sgs.qlist(self.player:getPile(pile)) do
+				table.insert(cards, 1, sgs.Sanguosha:getCard(id))
+			end
+		end
 	end
 	if judge.reason == "tieqi" then
 		local target
@@ -494,12 +498,19 @@ sgs.ai_need_damaged.yiji = function (self, attacker, player)
 
 	return player:getHp() > 2 and sgs.turncount > 2 and #self.friends > 1
 end
-
+local isInPile = function(player,id)
+	for _,pile in sgs.list(player:getPileNames())do
+		if pile:startsWith("&") or pile == "wooden_ox" then
+			if player:getPile(pile):contains(id) then return true end
+		end
+	end
+	return false
+end
 sgs.ai_view_as.qingguo = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	if card:isBlack() and (card_place == sgs.Player_PlaceHand or player:getPile("wooden_ox"):contains(card_id)) then
+	if card:isBlack() and (card_place == sgs.Player_PlaceHand or isInPile(player,card_id)) then
 		return ("jink:qingguo[%s:%s]=%d&qingguo"):format(suit, number, card_id)
 	end
 end
@@ -958,8 +969,12 @@ duanliang_skill.getTurnUseCard = function(self)
 
 	local cards = self.player:getCards("he")
 	cards = sgs.QList2Table(cards)
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
-		table.insert(cards, sgs.Sanguosha:getCard(id))
+	for _,pile in sgs.list(self.player:getPileNames())do
+		if pile:startsWith("&") or pile == "wooden_ox" then
+			for _, id in sgs.qlist(self.player:getPile(pile)) do
+				table.insert(cards, sgs.Sanguosha:getCard(id))
+			end
+		end
 	end
 	local card
 

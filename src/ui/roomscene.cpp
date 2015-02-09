@@ -291,6 +291,12 @@ RoomScene::RoomScene(QMainWindow *main_window)
     log_box->setTextColor(Config.TextEditColor);
     log_box->setObjectName("log_box");
 
+#ifndef Q_OS_IOS
+    //change font because of iphone screen's disharmony
+    QFont qf1 = Config.iosLogFont;
+    qf1.setPixelSize(11);
+    log_box->setFont(qf1);
+#endif
     log_box_widget = addWidget(log_box);
     log_box_widget->setObjectName("log_box_widget");
     log_box_widget->setZValue(-1.0);

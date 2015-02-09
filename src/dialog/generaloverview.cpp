@@ -20,7 +20,11 @@
 
 #include "generaloverview.h"
 #include "engine.h"
+#ifdef Q_OS_IOS
+#include "ui_generaloverview_ios.h"
+#else
 #include "ui_generaloverview.h"
+#endif
 #include "settings.h"
 #include "clientplayer.h"
 #include "generalmodel.h"
@@ -292,7 +296,9 @@ GeneralOverview::GeneralOverview(QWidget *parent)
     connect(ui->closeButton, &QPushButton::clicked, this, &GeneralOverview::reject);
 
     const QString style = StyleHelper::styleSheetOfScrollBar();
+#if !defined(Q_OS_IOS)
     ui->tableView->verticalScrollBar()->setStyleSheet(style);
+#endif
     ui->skillTextEdit->verticalScrollBar()->setStyleSheet(style);
     ui->scrollArea->verticalScrollBar()->setStyleSheet(style);
 
@@ -309,6 +315,12 @@ GeneralOverview::GeneralOverview(QWidget *parent)
     connect(ui->searchButton, &QPushButton::clicked, general_search, &GeneralSearch::show);
     ui->returnButton->hide();
     connect(ui->returnButton, &QPushButton::clicked, this, &GeneralOverview::fillAllGenerals);
+
+
+#ifdef Q_OS_IOS
+    ui->scrollArea->grabGesture(Qt::SwipeGesture);
+    ui->scrollArea->grabGesture(Qt::PanGesture);
+#endif
 }
 
 void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool init) {
@@ -326,6 +338,9 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
             if (skinId != 0)
                 general->tryLoadingSkinTranslation(skinId);
             tempGeneralMap[general] = skinId;
+#ifdef Q_OS_IOS
+            ui->comboBox->addItem(general->getTitle() + " " + Sanguosha->translate(general->objectName()), QVariant::fromValue(general->objectName()));
+#endif
         } else {
             generalsCopy.removeOne(general);
         }
@@ -343,6 +358,7 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
     }
 
     model->setParent(this);
+#if !defined(Q_OS_IOS)
     ui->tableView->setModel(model);
 
     ui->tableView->setColumnWidth(0, 80);
@@ -353,6 +369,11 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
     ui->tableView->setColumnWidth(5, 85);
 
     on_tableView_clicked(model->firstIndex());
+#else
+    const QString str = "caocao";
+    comboBoxChanged(str);
+    connect(ui->comboBox, &QComboBox::currentTextChanged, this, &GeneralOverview::comboBoxChanged);
+#endif
 }
 
 void GeneralOverview::resetButtons() {
@@ -539,8 +560,48 @@ void GeneralOverview::copyLines() {
     }
 }
 
+#ifdef Q_OS_IOS
+void GeneralOverview::comboBoxChanged(const QString &){
+    const QString generalName = ui->comboBox->currentText() != NULL? ui->comboBox->currentData().toString():"caocao";
+    const General *general = Sanguosha->getGeneral(generalName);
+    const int skinId = all_generals->value(general);
+    ui->generalPhoto->setPixmap(G_ROOM_SKIN.getGeneralCardPixmap(generalName, skinId).scaled(100, 145));
+    ui->changeHeroSkinButton->setVisible(hasSkin(general));
+
+    ui->skillTextEdit->clear();
+
+    resetButtons();
+
+    foreach (const Skill *skill, qsgs_allSkillsOf(general))
+        addLines(general, skill);
+
+    addDeathLine(general);
+
+    if (generalName.contains("caocao"))
+        addWinLineOfCaoCao();
+
+    QString designer_text = Sanguosha->translate("designer:" + generalName);
+    if (!designer_text.startsWith("designer:"))
+        ui->designerLineEdit->setText(designer_text);
+    else
+        ui->designerLineEdit->setText(tr("Official"));
+
+    ui->cvLineEdit->setText(getCvInfo(generalName));
+    ui->illustratorLineEdit->setText(getIllustratorInfo(generalName));
+    ui->packageLineEdit->setText(Sanguosha->translate((general->getPackage())));
+
+    button_layout->addStretch();
+    QString companions_text = general->getCompanions();
+    if (companions_text.isEmpty())
+        ui->companionsLineEdit->setText(tr("None"));
+    else
+        ui->companionsLineEdit->setText(companions_text);
+    ui->skillTextEdit->append(general->getSkillDescription(false, false));
+}
+#endif
 void GeneralOverview::on_tableView_clicked(const QModelIndex &index)
 {
+#ifndef Q_OS_IOS
     const QString generalName = ui->tableView->model()->data(index, Qt::UserRole).toString();
     const General *general = Sanguosha->getGeneral(generalName);
     const int skinId = all_generals->value(general);
@@ -575,7 +636,9 @@ void GeneralOverview::on_tableView_clicked(const QModelIndex &index)
     else
         ui->companionsLineEdit->setText(companions_text);
     ui->skillTextEdit->append(general->getSkillDescription(false, false));
+    #endif
 }
+
 
 void GeneralOverview::playDeathAudio()
 {
@@ -594,6 +657,8 @@ void GeneralOverview::playAudioEffect() {
 }
 
 void GeneralOverview::showNextSkin() {
+    //SE
+    /*
     QModelIndex index = ui->tableView->currentIndex();
     if (!index.isValid())
         return;
@@ -626,6 +691,7 @@ void GeneralOverview::showNextSkin() {
         addWinLineOfCaoCao();
 
     button_layout->addStretch();
+    */
 }
 
 void GeneralOverview::startSearch(const SearchDetails &detail) {

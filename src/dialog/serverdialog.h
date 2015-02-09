@@ -68,6 +68,10 @@ public:
 
 private:
     QWidget *createBasicTab();
+#ifdef Q_OS_IOS
+    QWidget *createGameModeTab();
+    QWidget *createAiTab();
+#endif
     QWidget *createPackageTab();
     //************************************
     // Method:    createAdvancedTab

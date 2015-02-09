@@ -233,12 +233,21 @@ FORMS += \
     src/dialog/configdialog.ui \
     src/dialog/connectiondialog.ui \
     src/dialog/generaloverview.ui
+    
 
 win32 {
     FORMS += src/dialog/mainwindow.ui
 }
 else: linux {
     FORMS += src/dialog/mainwindow.ui
+}
+else: ios {
+    FORMS += \
+    src/dialog/mainwindow_ios.ui\
+    src/dialog/cardoverview_ios.ui \
+    src/dialog/configdialog_ios.ui \
+    src/dialog/connectiondialog_ios.ui \
+    src/dialog/generaloverview_ios.ui
 }
 else {
     FORMS += src/dialog/mainwindow_nonwin.ui

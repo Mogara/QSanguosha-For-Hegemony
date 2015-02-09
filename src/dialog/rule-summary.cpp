@@ -34,10 +34,22 @@ RuleSummary::RuleSummary(QWidget *parent)
     : FlatDialog(parent)
 {
     setWindowTitle(tr("Rule Summary"));
+
+#ifdef Q_OS_IOS
+    this->setMinimumWidth(480);
+    this->setMinimumHeight(320);
+    this->setMaximumWidth(100000);
+    this->setMaximumHeight(100000);
+#else
     resize(853, 600);
+#endif
 
     list = new QListWidget;
+#ifdef Q_OS_IOS
+    list->setMinimumWidth(50);
+#else
     list->setMinimumWidth(90);
+#endif
     list->setMaximumWidth(100);
 
     QPushButton *closeButton = new QPushButton(tr("Close"));

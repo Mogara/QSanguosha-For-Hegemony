@@ -19,7 +19,11 @@
     *********************************************************************/
 
 #include "configdialog.h"
+#ifdef Q_OS_IOS
+#include "ui_configdialog_ios.h"
+#else
 #include "ui_configdialog.h"
+#endif
 #include "settings.h"
 #include "stylehelper.h"
 #include "audio.h"
@@ -45,17 +49,23 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     ui->tableBgPathLineEdit->setText(Config.TableBgImage);
 
     QFont font = Config.AppFont;
+#if !defined(Q_OS_IOS)
     showFont(ui->appFontLineEdit, font);
+#endif
 
     font = Config.UIFont;
+#if !defined(Q_OS_IOS)
     showFont(ui->textEditFontLineEdit, font);
+#endif
 
     QPalette palette;
     palette.setColor(QPalette::Text, Config.TextEditColor);
     QColor color = Config.TextEditColor;
     int aver = (color.red() + color.green() + color.blue()) / 3;
     palette.setColor(QPalette::Base, aver >= 208 ? Qt::black : Qt::white);
+#if !defined(Q_OS_IOS)
     ui->textEditFontLineEdit->setPalette(palette);
+#endif
 
     // tab 2
     ui->bgMusicPathLineEdit->setText(Config.value("BackgroundMusic", "audio/system/background.ogg").toString());
@@ -174,7 +184,9 @@ void ConfigDialog::setAppFont(const QVariant &font)
 {
     QFont newFont = font.value<QFont>();
     Config.AppFont = newFont;
+#if !defined(Q_OS_IOS)
     showFont(ui->appFontLineEdit, newFont);
+#endif
 
     QApplication::setFont(newFont);
 }
@@ -183,8 +195,9 @@ void ConfigDialog::setTextEditFont(const QVariant &font)
 {
     QFont newFont = font.value<QFont>();
     Config.UIFont = newFont;
+#if !defined(Q_OS_IOS)
     showFont(ui->textEditFontLineEdit, newFont);
-
+#endif
     QApplication::setFont(newFont, "QTextEdit");
 }
 
@@ -196,7 +209,9 @@ void ConfigDialog::setTextEditColor(const QVariant &color)
     palette.setColor(QPalette::Text, newColor);
     int aver = (newColor.red() + newColor.green() + newColor.blue()) / 3;
     palette.setColor(QPalette::Base, aver >= 208 ? Qt::black : Qt::white);
+#if !defined(Q_OS_IOS)
     ui->textEditFontLineEdit->setPalette(palette);
+#endif
 }
 
 void ConfigDialog::setTooltipFontColor(const QVariant &color)
