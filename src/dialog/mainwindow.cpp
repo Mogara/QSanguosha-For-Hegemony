@@ -785,8 +785,10 @@ void MainWindow::gotoStartScene() {
 
     delete systray;
     systray = NULL;
-    if (ClientInstance)
+    if (ClientInstance) {
         delete ClientInstance;
+        ClientInstance = NULL;
+    }
 }
 
 void MainWindow::startGameInAnotherInstance() {
