@@ -1887,6 +1887,9 @@ sgs.ai_skill_askforag.guzheng = function(self, card_ids)
 	return card_ids[1]
 end
 
+sgs.ai_skill_invoke["_Guzheng"] = function(self, data)
+	return not (self:needKongcheng() and self.player:isKongcheng())
+end
 
 local fenxun_skill = {}
 fenxun_skill.name = "fenxun"
