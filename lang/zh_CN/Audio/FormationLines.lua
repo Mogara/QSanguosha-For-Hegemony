@@ -33,7 +33,7 @@ return {
 	["~jiangwei"] = "早除宦佞，绝非此境，悔不该……",
 	
 	-- 蒋琬&费祎
-	["cv:jiangwanfeiyi"] = "曹操&德邦总管老张",
+	--["cv:jiangwanfeiyi"] = "曹操&德邦总管老张",
 		
 	-- 徐盛
 	["cv:xusheng"] = "极光",
@@ -56,7 +56,7 @@ return {
 	["~yuji"] = "竟然…被猜到了……",
 	
 	-- 何太后
-	["cv:hetaihou"] = "郁望梦始",
+	--["cv:hetaihou"] = "郁望梦始",
 
 	-- 君刘备
 	["cv:lord_liubei"] = "喵小林",
