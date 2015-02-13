@@ -1239,6 +1239,7 @@ FormationPackage::FormationPackage()
     jiangwei->addSkill(new YiZhi);
     jiangwei->setDeputyMaxHpAdjustedValue(-1);
     jiangwei->addSkill(new Tianfu);
+    jiangwei->addRelateSkill("kanpo");
 
     General *jiangwanfeiyi = new General(this, "jiangwanfeiyi", "shu", 3); // SHU 018
     jiangwanfeiyi->addSkill(new Shengxi);
