@@ -657,8 +657,6 @@ void GeneralOverview::playAudioEffect() {
 }
 
 void GeneralOverview::showNextSkin() {
-    //SE
-    /*
     QModelIndex index = ui->tableView->currentIndex();
     if (!index.isValid())
         return;
@@ -691,7 +689,6 @@ void GeneralOverview::showNextSkin() {
         addWinLineOfCaoCao();
 
     button_layout->addStretch();
-    */
 }
 
 void GeneralOverview::startSearch(const SearchDetails &detail) {
