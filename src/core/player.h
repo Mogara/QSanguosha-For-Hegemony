@@ -241,6 +241,9 @@ public:
     QStringList getPileNames() const;
     QString getPileName(int card_id) const;
 
+    //Xusine:
+    QList<int> getHandPile() const;
+
     bool pileOpen(const QString &pile_name, const QString &player) const;
     void setPileOpen(const QString &pile_name, const QString &player);
 

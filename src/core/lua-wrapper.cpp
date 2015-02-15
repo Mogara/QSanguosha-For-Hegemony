@@ -22,7 +22,7 @@
 #include "util.h"
 
 LuaTriggerSkill::LuaTriggerSkill(const char *name, Frequency frequency, const char *limit_mark)
-    : TriggerSkill(name), can_trigger(0), on_cost(0), on_effect(0), priority(2)
+    : TriggerSkill(name), can_trigger(0), on_cost(0), on_effect(0), priority(3) //Fs is a Bug ! 666666……   by Xusine
 {
     this->frequency = frequency;
     this->limit_mark = limit_mark;
