@@ -46,6 +46,7 @@
 #include "heroskincontainer.h"
 #include "flatdialog.h"
 #include "choosesuitbox.h"
+#include "guhuobox.h"
 
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
@@ -2071,6 +2072,16 @@ void RoomScene::addSkillButton(const Skill *skill, const bool &head) {
         // design for guhuo and qice. now it is just for DIY.
     }
 
+    QString guhuo_type = skill->getGuhuoBox();
+    if(guhuo_type != "" && !m_replayControl){
+        GuhuoBox *guhuo = new GuhuoBox(btn->getSkill()->objectName(),guhuo_type,!guhuo_type.startsWith("!"));
+        guhuo->setParent(this);
+        guhuo_items[guhuo->getSkillName()] = guhuo;
+        connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), guhuo, &GuhuoBox::popup);
+        connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_deactivated), guhuo, &GuhuoBox::reply);
+        disconnect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), this, &RoomScene::onSkillActivated);
+        connect(guhuo, &GuhuoBox::onButtonClick, this, &RoomScene::onSkillActivated);
+    }
     m_skillButtons.append(btn);
 }
 
@@ -2688,7 +2699,15 @@ void RoomScene::onSkillDeactivated() {
 
 void RoomScene::onSkillActivated() {
     QSanSkillButton *button = qobject_cast<QSanSkillButton *>(sender());
-    const ViewAsSkill *skill = button->getViewAsSkill();
+    const ViewAsSkill *skill = NULL;
+    if (button)
+        skill = button->getViewAsSkill();
+    else{ //by Xusine
+        GuhuoBox *guhuo = qobject_cast<GuhuoBox *>(sender());
+        if(guhuo){
+            skill = Sanguosha->getViewAsSkill(guhuo->getSkillName());
+        }
+    }
 
     if (skill) {
         dashboard->startPending(skill);
@@ -2698,7 +2717,7 @@ void RoomScene::onSkillActivated() {
         const Card *card = dashboard->getPendingCard();
         if (card && card->targetFixed() && card->isAvailable(Self)) {
             useSelectedCard();
-        } else if (skill->inherits("OneCardViewAsSkill") && !skill->getDialog() && Config.EnableIntellectualSelection)
+        } else if (skill->inherits("OneCardViewAsSkill") && !skill->getDialog() && skill->getGuhuoBox() == "" && Config.EnableIntellectualSelection)
             dashboard->selectOnlyCard(ClientInstance->getStatus() == Client::Playing);
     }
 }
@@ -3516,6 +3535,8 @@ void RoomScene::detachSkill(const QString &skill_name) {
         if (btn == NULL) return;    //be care LordSkill and SPConvertSkill
         m_skillButtons.removeAll(btn);
         btn->deleteLater();
+        if(guhuo_items[skill_name] != NULL)
+            guhuo_items[skill_name]->deleteLater(); //added by Xusine for GuhuoBox
     }
 }
 

@@ -281,6 +281,10 @@ private:
 
     QList<CardItem *> gongxin_items;
 
+    //Xusine:
+
+    QMap<QString,GuhuoBox *> guhuo_items;
+
     ClientLogBox *log_box;
     QTextEdit *chatBox;
     QLineEdit *chatEdit;
