@@ -5246,7 +5246,7 @@ function SmartAI:willShowForAttack()
 	end
 	if firstShowReward and showRate > 0.9 then return true end
 
-	if showRate < 0.8 then return false end
+	if showRate < 0.9 then return false end
 	if e < f or eAtt <= 0 then return false end
 
 return true
