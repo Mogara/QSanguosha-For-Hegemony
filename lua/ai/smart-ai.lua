@@ -3297,7 +3297,7 @@ function SmartAI:needRetrial(judge)
 			if self.player:objectName() == who:objectName() then
 				return not self:isWeak()
 			else
-				return not judge:isGood()
+				return not judge:isGood() and not who:hasShownSkill("tiandu")
 			end
 		else
 			return judge:isGood()
