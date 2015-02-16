@@ -3416,7 +3416,7 @@ function SmartAI:damageIsEffective_(damageStruct)
 	if to:hasArmorEffect("PeaceSpell") and nature ~= sgs.DamageStruct_Normal then return false end
 	if to:hasShownSkills("jgyuhuo_pangtong|jgyuhuo_zhuque") and nature == sgs.DamageStruct_Fire then return false end
 	if to:getMark("@fog") > 0 and nature ~= sgs.DamageStruct_Thunder then return false end
-	if to:hasArmorEffect("Breastplate") and damage > to:getHp() then return false end
+	if to:hasArmorEffect("Breastplate") and (damage > to:getHp() or (to:getHp() > 1 and damage = to:getHp())) then return false end
 
 	for _, callback in pairs(sgs.ai_damage_effect) do
 		if type(callback) == "function" then
