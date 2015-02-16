@@ -810,6 +810,9 @@ function sgs.getDefense(player)
 	if not player:faceUp() then defense = defense - 0.5 end
 	if player:containsTrick("indulgence") then defense = defense - 0.5 end
 	if player:containsTrick("supply_shortage") then defense = defense - 0.5 end
+	
+	if player:hasShownSkills("qinguo+yiji|duoshi+xiaoji|jijiu+qianhuan|yiji+ganglie") then defense = defense + 2
+	if player:hasShownSkills("yiji+qiaobiao|xiaoji+zhiheng|buqu+yinghun_sunjian|luoshen+guicai") then defense = defense + 1.5
 
 	if global_room:getCurrent() then
 		defense = defense + (player:aliveCount() - (player:getSeat() - global_room:getCurrent():getSeat()) % player:aliveCount()) / 4
