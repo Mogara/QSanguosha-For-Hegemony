@@ -521,17 +521,17 @@ sgs.ai_skill_choice.DragonPhoenix = function(self, choices, data)
 	choices_t = string.split(choices, "+")
 	if (kingdom == "wei") then
 		if (string.find(choices, "guojia")) then
-			return "guojia"
+			table.insert(choices_pri,"guojia")
 		elseif (string.find(choices, "xunyu")) then
-			return "xunyu"
+			table.insert(choices_pri,"xunyu")
 		elseif (string.find(choices, "lidian")) then
-			return "lidian"
+			table.insert(choices_pri,"lidian")
 		elseif (string.find(choices, "zhanghe")) then
-			return "zhanghe"
+			table.insert(choices_pri,"zhanghe")
 		elseif (string.find(choices, "caopi")) then
-			return "caopi"
+			table.insert(choices_pri,"caopi")
 		elseif (string.find(choices, "zhangliao")) then
-			return "zhangliao"
+			table.insert(choices_pri,"zhangliao")
 		end
 
 		table.removeOne(choices_t, "caohong")
@@ -542,18 +542,19 @@ sgs.ai_skill_choice.DragonPhoenix = function(self, choices, data)
 
 	elseif (kingdom == "shu") then
 		if (string.find(choices, "mifuren")) then
-			return "mifuren"
+			table.insert(choices_pri,"mifuren")
 		elseif (string.find(choices, "pangtong")) then
-			return "pangtong"
+			table.insert(choices_pri,"pangtong")
 		elseif (string.find(choices, "lord_liubei")) then
-			return "lord_liubei"
+			table.insert(choices_pri,"lord_liubei")
 		elseif (string.find(choices, "liushan")) then
-			return "liushan"
+			table.insert(choices_pri, "liushan")
 		elseif (string.find(choices, "jiangwanfeiyi")) then
-			return "jiangwanfeiyi"
+			table.insert(choices_pri, "jiangwanfeiyi")
+		elseif (string.find(choices, "wolong")) then
+			table.insert(choices_pri, "wolong")
 		end
 
-		table.removeOne(choices_t, "liubei")
 		table.removeOne(choices_t, "guanyu")
 		table.removeOne(choices_t, "zhangfei")
 		table.removeOne(choices_t, "weiyan")
@@ -562,13 +563,15 @@ sgs.ai_skill_choice.DragonPhoenix = function(self, choices, data)
 
 	elseif (kingdom == "wu") then
 		if (string.find(choices, "zhoutai")) then
-			return "zhoutai"
+			table.insert(choices_pri, "zhoutai")
 		elseif (string.find(choices, "lusu")) then
-			return "lusu"
+			table.insert(choices_pri, "lusu")
 		elseif (string.find(choices, "taishici")) then
-			return "taishici"
+			table.insert(choices_pri, "taishici")
 		elseif (string.find(choices, "sunjian")) then
-			return "sunjian"
+			table.insert(choices_pri, "sunjian")
+		elseif (string.find(choices, "sunshangxiang")) then
+			table.insert(choices_pri, "sunshangxiang")
 		end
 
 		table.removeOne(choices_t, "sunce")
@@ -578,21 +581,27 @@ sgs.ai_skill_choice.DragonPhoenix = function(self, choices, data)
 
 	elseif (kingdom == "qun") then
 		if (string.find(choices, "yuji")) then
-			return "yuji"
+			table.insert(choices_pri,"yuji")
 		elseif (string.find(choices, "caiwenji")) then
-			return "caiwenji"
+			table.insert(choices_pri,"caiwenji")
 		elseif (string.find(choices, "mateng")) then
-			return "mateng"
+			table.insert(choices_pri,"mateng")
 		elseif (string.find(choices, "kongrong")) then
-			return "kongrong"
+			table.insert(choices_pri,"kongrong")
 		elseif (string.find(choices, "lord_zhangjiao")) then
-			return "lord_zhangjiao"
+			table.insert(choices_pri,"lord_zhangjiao")
+		elseif (string.find(choices, "huatuo")) then
+			table.insert(choices_pri,"huatuo")
 		end
 
 		table.removeOne(choices_t, "dongzhuo")
 		table.removeOne(choices_t, "tianfeng")
 		table.removeOne(choices_t, "zhangjiao")
 
+	end
+	
+	if #choices_pri > 0 then 
+		return choices_pri[math.random(1, #choices_pri)] 
 	end
 	if #choices_t == 0 then choices_t = string.split(choices, "+") end
 	return choices_t[math.random(1, #choices_t)]
