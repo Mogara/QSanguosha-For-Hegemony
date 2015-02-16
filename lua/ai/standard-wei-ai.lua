@@ -1354,7 +1354,6 @@ sgs.ai_skill_cardask["@xiaoguo-discard"] = function(self, data)
 	if self:needToThrowArmor() then
 		return "$" .. player:getArmor():getEffectiveId()
 	end
-
 	if not self:damageIsEffective(player, sgs.DamageStruct_Normal, yuejin) then
 		return "."
 	end
@@ -1386,6 +1385,7 @@ sgs.ai_skill_cardask["@xiaoguo-discard"] = function(self, data)
 	if not card_id then
 		if player:getWeapon() then card_id = player:getWeapon():getId()
 		elseif player:getOffensiveHorse() then card_id = player:getOffensiveHorse():getId()
+		elseif player:getTreasure() and not (who:getPile("wooden_ox"):length() > 1 or who:hasTreasure("JadeSeal")) then card_id = player:getTreasure():getId()
 		elseif self:isWeak(player) and player:getArmor() then card_id = player:getArmor():getId()
 		elseif self:isWeak(player) and player:getDefensiveHorse() then card_id = player:getDefensiveHorse():getId()
 		end
