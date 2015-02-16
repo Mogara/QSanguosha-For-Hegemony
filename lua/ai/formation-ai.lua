@@ -518,6 +518,7 @@ end
 
 sgs.ai_skill_choice.DragonPhoenix = function(self, choices, data)
 	local kingdom = data:toString()
+	local choices_pri = {}
 	choices_t = string.split(choices, "+")
 	if (kingdom == "wei") then
 		if (string.find(choices, "guojia")) then
