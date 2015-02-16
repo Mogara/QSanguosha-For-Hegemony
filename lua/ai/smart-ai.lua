@@ -811,8 +811,8 @@ function sgs.getDefense(player)
 	if player:containsTrick("indulgence") then defense = defense - 0.5 end
 	if player:containsTrick("supply_shortage") then defense = defense - 0.5 end
 	
-	if player:hasShownSkills("qinguo+yiji|duoshi+xiaoji|jijiu+qianhuan|yiji+ganglie") then defense = defense + 2
-	if player:hasShownSkills("yiji+qiaobiao|xiaoji+zhiheng|buqu+yinghun_sunjian|luoshen+guicai") then defense = defense + 1.5
+	if player:hasShownSkills("qinguo+yiji|duoshi+xiaoji|jijiu+qianhuan|yiji+ganglie") then defense = defense + 2 end 
+	if player:hasShownSkills("yiji+qiaobiao|xiaoji+zhiheng|buqu+yinghun_sunjian|luoshen+guicai") then defense = defense + 1.5 end 
 
 	if global_room:getCurrent() then
 		defense = defense + (player:aliveCount() - (player:getSeat() - global_room:getCurrent():getSeat()) % player:aliveCount()) / 4
@@ -3419,7 +3419,7 @@ function SmartAI:damageIsEffective_(damageStruct)
 	if to:hasArmorEffect("PeaceSpell") and nature ~= sgs.DamageStruct_Normal then return false end
 	if to:hasShownSkills("jgyuhuo_pangtong|jgyuhuo_zhuque") and nature == sgs.DamageStruct_Fire then return false end
 	if to:getMark("@fog") > 0 and nature ~= sgs.DamageStruct_Thunder then return false end
-	if to:hasArmorEffect("Breastplate") and (damage > to:getHp() or (to:getHp() > 1 and damage = to:getHp())) then return false end
+	if to:hasArmorEffect("Breastplate") and (damage > to:getHp() or (to:getHp() > 1 and damage == to:getHp())) then return false end
 
 	for _, callback in pairs(sgs.ai_damage_effect) do
 		if type(callback) == "function" then
