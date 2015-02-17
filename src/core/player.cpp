@@ -890,7 +890,7 @@ QString Player::getPileName(int card_id) const {
 }
 
 QList<int> Player::getHandPile() const{
-    QList<int> result;
+    QList<int> result = QList<int>();
     foreach (const QString &pile,getPileNames()){
         if (pile.startsWith("&") || pile == "wooden_ox"){
             foreach(int id,getPile(pile)){
