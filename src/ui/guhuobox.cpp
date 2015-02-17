@@ -66,7 +66,7 @@ QRectF GuhuoBox::boundingRect() const {
             + (((card_list["DelayedTrick"].length()+3)/4) - 1) * interval
             +((card_list["EquipCard"].length()+3)/4) * defaultButtonHeight
             + (((card_list["EquipCard"].length()+3)/4) - 1) * interval
-            +card_list.keys().length()*bottomBlankWidth //add some titles……
+            +card_list.keys().length()*titleWidth*2 //add some titles……
             +defaultButtonHeight+interval //for cancel button
             + bottomBlankWidth;
 
@@ -120,20 +120,21 @@ void GuhuoBox::popup(){
                 tooltip = Sanguosha->translate(original_tooltip);
             }
             connect(button, &Button::clicked, this, &GuhuoBox::reply);
-            connect(button,&Button::clicked,this,&GuhuoBox::onButtonClick);
             if (tooltip != original_tooltip)
                 button->setToolTip(QString("<font color=%1>%2</font>")
                                    .arg(Config.SkillDescriptionInToolTipColor.name())
                                    .arg(tooltip));
         }
-        titles[key] = new Title(this,translate(key),Button::defaultFont().toString(),bottomBlankWidth-5);
+        titles[key] = new Title(this,translate(key),Button::defaultFont().toString(),titleWidth);
     }
     moveToCenter();
     show();
     int x = 1;
     int y = 1;
     foreach(const QString &key, card_list.keys()){
-        titles[key]->setPos(interval,topBlankWidth + defaultButtonHeight * y + (y - 1) * interval + defaultButtonHeight / 2 + bottomBlankWidth);
+        int titles_num = 1;
+        titles[key]->setPos(interval,topBlankWidth + defaultButtonHeight * y + (y - 1) * interval + defaultButtonHeight / 2 + titleWidth*titles_num);
+        ++titles_num;
         foreach(const QString &card_name,card_list.value(key)){
             QPointF apos;
             apos.setX(x*outerBlankWidth + (x-1)*buttonWidth);
@@ -142,7 +143,7 @@ void GuhuoBox::popup(){
                 ++y;
                 x = 0;
             }
-            apos.setY(topBlankWidth + defaultButtonHeight * y + (y - 1) * interval + defaultButtonHeight / 2);
+            apos.setY(topBlankWidth + defaultButtonHeight * y + (y - 1) * interval + defaultButtonHeight / 2+titleWidth *(titles_num-1)*2);
             buttons[card_name]->setPos(apos);
         }
         ++y;
@@ -153,9 +154,9 @@ void GuhuoBox::popup(){
     cancel->setPos(boundingRect().x()/2,boundingRect().y()-interval);
 
     connect(cancel, &Button::clicked, this, &GuhuoBox::reply);
-    connect(cancel,&Button::clicked,this,&GuhuoBox::onButtonClick);
 }
 void GuhuoBox::reply(){
+    emit onButtonClick();
     const QString &answer = sender()->objectName();
     if(answer == "cancel" || !sender()->inherits("Button")){
         clear();

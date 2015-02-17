@@ -43,6 +43,8 @@ protected:
     static const int interval = 15;
     static const int outerBlankWidth = 37;
 
+    static const int titleWidth = 15;
+
 };
 
 #endif // GUHUOBOX
