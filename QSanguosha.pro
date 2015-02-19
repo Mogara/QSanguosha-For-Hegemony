@@ -116,7 +116,8 @@ SOURCES += \
     src/util/detector.cpp \
     src/util/nativesocket.cpp \
     src/util/recorder.cpp \
-    swig/sanguosha_wrap.cxx
+    swig/sanguosha_wrap.cxx \
+    src/ui/guhuobox.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -226,7 +227,8 @@ HEADERS += \
     src/util/detector.h \
     src/util/nativesocket.h \
     src/util/recorder.h \
-    src/util/socket.h
+    src/util/socket.h \
+    src/ui/guhuobox.h
 
 FORMS += \
     src/dialog/cardoverview.ui \
