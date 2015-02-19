@@ -45,6 +45,9 @@ function sgs.CreateTriggerSkill(spec)
 				skill:setCanPreshow(true)
 			end
 		end
+		if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
+			skill:setGuhuoType(spec.guhuo_type)
+		end
 	end
 
 	if type(spec.events) == "number" then
@@ -511,6 +514,9 @@ function sgs.CreateViewAsSkill(spec)
 
 	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, expand_pile)
 
+	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
+		skill:setGuhuoType(spec.guhuo_type)
+	end
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
 	end

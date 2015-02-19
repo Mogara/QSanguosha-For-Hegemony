@@ -37,6 +37,8 @@ public:
     inline void setViewAsSkill(ViewAsSkill *view_as_skill) { this->view_as_skill = view_as_skill; }
     inline void setGlobal(bool global) { this->global = global; }
     inline void setCanPreshow(bool preshow) { this->can_preshow = preshow; }
+    inline void setGuhuoType(const char *type){ this->guhuo_type = type;}
+    virtual QString getGuhuoBox() const;
 
     virtual int getPriority() const;
     virtual bool canPreshow() const;
@@ -50,6 +52,8 @@ public:
 
     int priority;
     bool can_preshow;
+protected:
+    QString guhuo_type;
 };
 
 class LuaBattleArraySkill : public BattleArraySkill {
@@ -79,6 +83,9 @@ class LuaViewAsSkill : public ViewAsSkill {
 public:
     LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile);
 
+    inline void setGuhuoType(const char *type){ this->guhuo_type = type;}
+    virtual QString getGuhuoBox() const;
+
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const;
     virtual const Card *viewAs(const QList<const Card *> &cards) const;
 
@@ -95,6 +102,9 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const;
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const;
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const;
+
+protected:
+    QString guhuo_type;
 
 };
 

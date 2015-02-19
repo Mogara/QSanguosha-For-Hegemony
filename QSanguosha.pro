@@ -364,6 +364,8 @@ CONFIG(audio){
         CONFIG(debug, debug|release):ANDROID_EXTRA_LIBS += $$ANDROID_LIBPATH/libfmodexL.so
         else:ANDROID_EXTRA_LIBS += $$ANDROID_LIBPATH/libfmodex.so
     }
+
+    ios: QMAKE_LFLAGS += -framework AudioToolBox
 }
 
 
