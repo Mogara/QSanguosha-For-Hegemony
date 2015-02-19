@@ -192,7 +192,7 @@ void GuhuoBox::clear(){
 
     titles.values().clear();
 
-    //cancel->deleteLater();
+    cancel->deleteLater();
 
     disappear();
 }
