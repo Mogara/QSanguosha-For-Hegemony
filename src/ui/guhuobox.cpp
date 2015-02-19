@@ -67,7 +67,7 @@ QRectF GuhuoBox::boundingRect() const {
             + (((card_list["DelayedTrick"].length()+3)/4) - 1) * interval
             +((card_list["EquipCard"].length()+3)/4) * defaultButtonHeight
             + (((card_list["EquipCard"].length()+3)/4) - 1) * interval
-            +card_list.keys().length()*titleWidth*2 //add some titles……
+            +card_list.keys().length()*titleWidth*2 //add some titles......
             +defaultButtonHeight+interval //for cancel button
             + bottomBlankWidth;
 
