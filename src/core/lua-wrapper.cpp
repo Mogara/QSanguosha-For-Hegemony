@@ -26,6 +26,7 @@ LuaTriggerSkill::LuaTriggerSkill(const char *name, Frequency frequency, const ch
 {
     this->frequency = frequency;
     this->limit_mark = limit_mark;
+    this->guhuo_type = "";
 }
 
 int LuaTriggerSkill::getPriority() const{
@@ -34,6 +35,10 @@ int LuaTriggerSkill::getPriority() const{
 
 bool LuaTriggerSkill::canPreshow() const{
     return can_preshow;
+}
+
+QString LuaTriggerSkill::getGuhuoBox() const{
+    return guhuo_type;
 }
 
 LuaBattleArraySkill::LuaBattleArraySkill(const char *name, Frequency frequency, const char *limit_mark, HegemonyMode::ArrayType array_type)
@@ -54,6 +59,11 @@ LuaViewAsSkill::LuaViewAsSkill(const char *name, const char *response_pattern, b
     this->response_pattern = response_pattern;
     this->response_or_use = response_or_use;
     this->expand_pile = expand_pile;
+    this->guhuo_type = "";
+}
+
+QString LuaViewAsSkill::getGuhuoBox() const{
+    return guhuo_type;
 }
 
 LuaFilterSkill::LuaFilterSkill(const char *name)
