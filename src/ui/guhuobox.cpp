@@ -168,6 +168,10 @@ void GuhuoBox::reply(){
     clear();
 }
 void GuhuoBox::clear(){
+    if(!isVisible()){
+        Self->tag.remove(skill_name);
+        return;
+    }
     foreach (Button *button, buttons.values())
         button->deleteLater();
 
