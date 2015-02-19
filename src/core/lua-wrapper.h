@@ -37,7 +37,7 @@ public:
     inline void setViewAsSkill(ViewAsSkill *view_as_skill) { this->view_as_skill = view_as_skill; }
     inline void setGlobal(bool global) { this->global = global; }
     inline void setCanPreshow(bool preshow) { this->can_preshow = preshow; }
-    inline void setGuhuoType(const QString &type){ this->guhuo_type = type;}
+    inline void setGuhuoType(const char *type){ this->guhuo_type = type;}
     virtual QString getGuhuoBox() const;
 
     virtual int getPriority() const;
@@ -83,7 +83,7 @@ class LuaViewAsSkill : public ViewAsSkill {
 public:
     LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile);
 
-    inline void setGuhuoType(const QString &type){ this->guhuo_type = type;}
+    inline void setGuhuoType(const char *type){ this->guhuo_type = type;}
     virtual QString getGuhuoBox() const;
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const;
