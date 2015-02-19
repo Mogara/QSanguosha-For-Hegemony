@@ -23,13 +23,14 @@ GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
         QList<const TrickCard*> tricks = Sanguosha->findChildren<const TrickCard*>();
         foreach(const TrickCard *card,tricks){
             if(!ServerInfo.Extensions.contains("!" + card->getPackage()) && card->isNDTrick()){
-                if(card->inherits("SingleTargetTrick") && !card_list["SingleTarget"].contains(card->objectName())){
-                    card_list["SingleTarget"].append(card->objectName());
+                if(card_list["SingleTargetTrick"].contains(card->objectName())
+                        || card_list["MultiTarget"].contains(card->objectName()))
                     continue;
-                }
-                if(!card_list["MultiTarget"].contains(card->objectName())){
+                if(card->inherits("SingleTargetTrick") && !card_list["SingleTargetTrick"].contains(card->objectName()))
+                    card_list["SingleTargetTrick"].append(card->objectName());
+                else
                     card_list["MultiTarget"].append(card->objectName());
-                }
+
             }
         }
     }
@@ -41,14 +42,14 @@ GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
                 card_list["DelayedTrick"].append(card->objectName());
         }
     }
-    if(flags.contains("e")){
-        QList<const EquipCard*> equips = Sanguosha->findChildren<const EquipCard*>();
-        foreach(const EquipCard *card,equips){
-            if(!card_list["EquipCard"].contains(card->objectName())
-                    && !ServerInfo.Extensions.contains("!" + card->getPackage()))
-                card_list["EquipCard"].append(card->objectName());
-        }
-    }
+//    if(flags.contains("e")){
+//        QList<const EquipCard*> equips = Sanguosha->findChildren<const EquipCard*>();
+//        foreach(const EquipCard *card,equips){
+//            if(!card_list["EquipCard"].contains(card->objectName())
+//                    && !ServerInfo.Extensions.contains("!" + card->getPackage()))
+//                card_list["EquipCard"].append(card->objectName());
+//        }
+//    }
 }
 
 
@@ -58,8 +59,8 @@ QRectF GuhuoBox::boundingRect() const {
     int height = topBlankWidth +
             ((card_list["BasicCard"].length()+3)/4) * defaultButtonHeight
             + (((card_list["BasicCard"].length()+3)/4) - 1) * interval
-            +((card_list["SingleTarget"].length()+3)/4) * defaultButtonHeight
-            + (((card_list["SingleTarget"].length()+3)/4) - 1) * interval
+            +((card_list["SingleTargetTrick"].length()+3)/4) * defaultButtonHeight
+            + (((card_list["SingleTargetTrick"].length()+3)/4) - 1) * interval
             +((card_list["MultiTarget"].length()+3)/4) * defaultButtonHeight
             + (((card_list["MultiTarget"].length()+3)/4) - 1) * interval
             +((card_list["DelayedTrick"].length()+3)/4) * defaultButtonHeight
@@ -125,40 +126,54 @@ void GuhuoBox::popup(){
                                    .arg(Config.SkillDescriptionInToolTipColor.name())
                                    .arg(tooltip));
         }
-        titles[key] = new Title(this,translate(key),Button::defaultFont().toString(),titleWidth);
+        titles[key] = new Title(this,translate(key),Button::defaultFont().toString().split(" ").first(),Config.TinyFont.pixelSize()); //undefined reference to "GuhuoBox::titleWidth" 666666
+        titles[key]->setParentItem(this);
     }
     moveToCenter();
+    setZValue(1);
     show();
-    int x = 1;
-    int y = 1;
+    int x = 0;
+    int y = 0;
+    int titles_num = 0;
     foreach(const QString &key, card_list.keys()){
-        int titles_num = 1;
-        titles[key]->setPos(interval,topBlankWidth + defaultButtonHeight * y + (y - 1) * interval + defaultButtonHeight / 2 + titleWidth*titles_num);
+        titles[key]->setPos(interval,
+                            topBlankWidth +
+                            defaultButtonHeight * y + (y - 1) * interval
+                            + titleWidth*titles_num);
         ++titles_num;
         foreach(const QString &card_name,card_list.value(key)){
             QPointF apos;
-            apos.setX(x*outerBlankWidth + (x-1)*buttonWidth);
+            apos.setX((x+1)*outerBlankWidth + x*buttonWidth);
+            apos.setY(topBlankWidth+
+                      defaultButtonHeight*y+
+                      interval*(y-1)+
+                      titleWidth*titles_num*2
+                      );
             ++x;
             if (x == 4){
                 ++y;
                 x = 0;
             }
-            apos.setY(topBlankWidth + defaultButtonHeight * y + (y - 1) * interval + defaultButtonHeight / 2+titleWidth *(titles_num-1)*2);
             buttons[card_name]->setPos(apos);
         }
         ++y;
+        x = 0;
     }
     cancel = new Button(translate("cancel"), QSizeF(buttonWidth,
                                                defaultButtonHeight));
+    cancel->setParentItem(this);
     cancel->setObjectName("cancel");
-    cancel->setPos(boundingRect().x()/2,boundingRect().y()-interval);
+    cancel->setPos(boundingRect().width()/2 - getButtonWidth()/2,boundingRect().height()-titleWidth*3);
 
     connect(cancel, &Button::clicked, this, &GuhuoBox::reply);
+
 }
 void GuhuoBox::reply(){
+    if(!Self->tag[skill_name].isNull())
+        Self->tag[skill_name] = QVariant();
     emit onButtonClick();
     const QString &answer = sender()->objectName();
-    if(answer == "cancel" || !sender()->inherits("Button")){
+    if(answer == "cancel" ){
         clear();
         return;
     }
@@ -177,7 +192,7 @@ void GuhuoBox::clear(){
 
     titles.values().clear();
 
-    cancel->deleteLater();
+    //cancel->deleteLater();
 
     disappear();
 }

@@ -2076,9 +2076,11 @@ void RoomScene::addSkillButton(const Skill *skill, const bool &head) {
     if(guhuo_type != "" && !m_replayControl){
         GuhuoBox *guhuo = new GuhuoBox(btn->getSkill()->objectName(),guhuo_type,!guhuo_type.startsWith("!"));
         guhuo->setParent(this);
+        addItem(guhuo);
+        guhuo->hide();
         guhuo_items[guhuo->getSkillName()] = guhuo;
         connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), guhuo, &GuhuoBox::popup);
-        connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_deactivated), guhuo, &GuhuoBox::reply);
+        connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_deactivated), guhuo, &GuhuoBox::clear);
         disconnect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), this, &RoomScene::onSkillActivated);
         connect(guhuo, &GuhuoBox::onButtonClick, this, &RoomScene::onSkillActivated);
     }
