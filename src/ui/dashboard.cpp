@@ -1329,10 +1329,8 @@ void Dashboard::retractPileCards(const QString &pile_name) {
 void Dashboard::retractAllSkillPileCards()
 {
     foreach (const QString &pileName, _m_pile_expanded) {
-        foreach (const QString &pile,Self->getPileNames()){
-            if ((pile.startsWith("&") || pile == "wooden_ox") && (pileName != pile))
-               retractPileCards(pileName);
-        }
+        if (!(pileName.startsWith("&") || pileName == "wooden_ox"))
+            retractPileCards(pileName);
     }
 }
 
