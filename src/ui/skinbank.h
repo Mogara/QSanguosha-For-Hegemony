@@ -64,8 +64,10 @@ public:
         // QGraphicsPixmapItem passed in and then start drawing.
         void paintText(QGraphicsPixmapItem *item, const QRect &pos, Qt::Alignment align, const QString &text) const;
 
-    protected:
-        static QHash<QString, int *> _m_fontBank;
+        static QHash<QString, int *> _m_fontBank; //by Xusine
+
+    //protected:
+        //static QHash<QString, int *> _m_fontBank;
     };
 
     class QSanShadowTextFont : public QSanSimpleTextFont {

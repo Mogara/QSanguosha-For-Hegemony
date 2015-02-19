@@ -65,8 +65,8 @@ QRectF GuhuoBox::boundingRect() const {
             + (((card_list["MultiTarget"].length()+3)/4) - 1) * interval
             +((card_list["DelayedTrick"].length()+3)/4) * defaultButtonHeight
             + (((card_list["DelayedTrick"].length()+3)/4) - 1) * interval
-            +((card_list["EquipCard"].length()+3)/4) * defaultButtonHeight
-            + (((card_list["EquipCard"].length()+3)/4) - 1) * interval
+//            +((card_list["EquipCard"].length()+3)/4) * defaultButtonHeight
+//            + (((card_list["EquipCard"].length()+3)/4) - 1) * interval
             +card_list.keys().length()*titleWidth*2 //add some titles......
             + bottomBlankWidth;
 
@@ -125,7 +125,8 @@ void GuhuoBox::popup(){
                                    .arg(Config.SkillDescriptionInToolTipColor.name())
                                    .arg(tooltip));
         }
-        titles[key] = new Title(this,translate(key),Button::defaultFont().toString().split(" ").first(),Config.TinyFont.pixelSize()); //undefined reference to "GuhuoBox::titleWidth" 666666
+
+        titles[key] = new Title(this,translate(key),IQSanComponentSkin::QSanSimpleTextFont::_m_fontBank.key(G_COMMON_LAYOUT.graphicsBoxTitleFont.m_fontFace),Config.TinyFont.pixelSize()); //undefined reference to "GuhuoBox::titleWidth" 666666
         titles[key]->setParentItem(this);
     }
     moveToCenter();
@@ -134,10 +135,14 @@ void GuhuoBox::popup(){
     int y = 0;
     int titles_num = 0;
     foreach(const QString &key, card_list.keys()){
-        titles[key]->setPos(interval,
-                            topBlankWidth +
-                            defaultButtonHeight * y + (y - 1) * interval
-                            + titleWidth*titles_num);
+        QPointF titlepos;
+        titlepos.setX(interval);
+        titlepos.setY(topBlankWidth+
+                      defaultButtonHeight*y+
+                      interval*(y-1)+
+                      titleWidth*titles_num*2
+                      -2*titles[key]->y());
+        titles[key]->setPos(titlepos);
         ++titles_num;
         foreach(const QString &card_name,card_list.value(key)){
             QPointF apos;
