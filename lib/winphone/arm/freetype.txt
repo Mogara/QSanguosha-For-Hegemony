@@ -1,1 +1,1 @@
-cl.exe crashed when building lib
+freetype is built using VS, not sure whether it can run or not.
