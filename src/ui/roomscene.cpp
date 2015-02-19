@@ -2078,6 +2078,7 @@ void RoomScene::addSkillButton(const Skill *skill, const bool &head) {
         guhuo->setParent(this);
         addItem(guhuo);
         guhuo->hide();
+        guhuo->setZValue(30001);
         guhuo_items[guhuo->getSkillName()] = guhuo;
         connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), guhuo, &GuhuoBox::popup);
         connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_deactivated), guhuo, &GuhuoBox::clear);

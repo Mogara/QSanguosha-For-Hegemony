@@ -34,8 +34,6 @@ protected:
 
     QMap<QString,Title*> titles;
 
-    Button *cancel;
-
     static const int minButtonWidth = 100;
     static const int defaultButtonHeight = 30;
     static const int topBlankWidth = 42;

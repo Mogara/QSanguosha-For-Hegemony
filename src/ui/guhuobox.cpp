@@ -68,7 +68,6 @@ QRectF GuhuoBox::boundingRect() const {
             +((card_list["EquipCard"].length()+3)/4) * defaultButtonHeight
             + (((card_list["EquipCard"].length()+3)/4) - 1) * interval
             +card_list.keys().length()*titleWidth*2 //add some titles……
-            +defaultButtonHeight+interval //for cancel button
             + bottomBlankWidth;
 
     return QRectF(0, 0, width, height);
@@ -130,7 +129,6 @@ void GuhuoBox::popup(){
         titles[key]->setParentItem(this);
     }
     moveToCenter();
-    setZValue(1);
     show();
     int x = 0;
     int y = 0;
@@ -159,13 +157,6 @@ void GuhuoBox::popup(){
         ++y;
         x = 0;
     }
-    cancel = new Button(translate("cancel"), QSizeF(buttonWidth,
-                                               defaultButtonHeight));
-    cancel->setParentItem(this);
-    cancel->setObjectName("cancel");
-    cancel->setPos(boundingRect().width()/2 - getButtonWidth()/2,boundingRect().height()-titleWidth*3);
-
-    connect(cancel, &Button::clicked, this, &GuhuoBox::reply);
 
 }
 void GuhuoBox::reply(){
@@ -173,10 +164,6 @@ void GuhuoBox::reply(){
         Self->tag[skill_name] = QVariant();
     emit onButtonClick();
     const QString &answer = sender()->objectName();
-    if(answer == "cancel" ){
-        clear();
-        return;
-    }
     Self->tag[skill_name] = answer;
     clear();
 }
@@ -191,8 +178,6 @@ void GuhuoBox::clear(){
     }
 
     titles.values().clear();
-
-    cancel->deleteLater();
 
     disappear();
 }
