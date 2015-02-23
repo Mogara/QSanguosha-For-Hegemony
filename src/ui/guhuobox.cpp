@@ -162,21 +162,18 @@ void GuhuoBox::popup(){
         ++y;
         x = 0;
     }
-
 }
 void GuhuoBox::reply(){
-    if(!Self->tag[skill_name].isNull())
-        Self->tag[skill_name] = QVariant();
-    emit onButtonClick();
+    Self->tag.remove(skill_name);
     const QString &answer = sender()->objectName();
     Self->tag[skill_name] = answer;
+    emit onButtonClick();
     clear();
 }
 void GuhuoBox::clear(){
-    if(!isVisible()){
-        Self->tag.remove(skill_name);
+    if(!isVisible())
         return;
-    }
+
     foreach (Button *button, buttons.values())
         button->deleteLater();
 
