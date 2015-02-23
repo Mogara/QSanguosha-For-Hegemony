@@ -1,18 +1,18 @@
---¼¼ÄÜ½²½â7£º»ù±¾¼¼ÄÜÀàĞÍµÄ×éºÏºÍ¸´ÔÓ¼¼ÄÜµÄÊµÏÖ£¨¶ş£©
+--æŠ€èƒ½è®²è§£7ï¼šåŸºæœ¬æŠ€èƒ½ç±»å‹çš„ç»„åˆå’Œå¤æ‚æŠ€èƒ½çš„å®ç°ï¼ˆäºŒï¼‰
 --[[
-	ÔÚÕâ¸öÕÂ½ÚÖĞ£¬ÎÒ½«´øÁì´ó¼Ò¿´Ò»¸ö¸´ÔÓµÄ¼¼ÄÜ¡£
-	Õâ¸ö¼¼ÄÜ¼¸ºõ×ÛºÏÁËÇ°ÃæLuaÖĞËùËµÃ÷µÄ¼¼ÇÉ¡£
-	ºÃÁË£¬»°²»¶àËµ£¬ÉÏ¼¼ÄÜ£º
+	åœ¨è¿™ä¸ªç« èŠ‚ä¸­ï¼Œæˆ‘å°†å¸¦é¢†å¤§å®¶çœ‹ä¸€ä¸ªå¤æ‚çš„æŠ€èƒ½ã€‚
+	è¿™ä¸ªæŠ€èƒ½å‡ ä¹ç»¼åˆäº†å‰é¢Luaä¸­æ‰€è¯´æ˜çš„æŠ€å·§ã€‚
+	å¥½äº†ï¼Œè¯ä¸å¤šè¯´ï¼Œä¸ŠæŠ€èƒ½ï¼š
 ]]
 
 --[[
-	ÂÔ¶®£º(³öÅÆ½×¶ÎÏŞÒ»´Î)Ã¿µ±ÄãĞèÒªÊ¹ÓÃ»ò´ò³öÒ»ÕÅ»ù±¾ÅÆÊ±£¬Äã¿ÉÕ¹Ê¾ÅÆ¶Ñ¶¥1+XÕÅÅÆ£¨XÎªÄãµ±Ç°ÒÑËğÊ§ÌåÁ¦ÖµÇÒÖÁÉÙÎª1£©¡£Äã¿ÉÊ¹ÓÃ»ò´ò³öÕâĞ©ÅÆÖĞÒ»ÕÅÏàÓ¦Àà±ğµÄÅÆ¡££¨ÕâĞ©ÅÆÖĞ£¬Äã¿ÉÒÔ½«ºÚÌÒÎª¡¾¾Æ¡¿£¬·½¿éÎª¡¾É±¡¿£¬Ã·»¨Îª¡¾ÉÁ¡¿¡££©
+	ç•¥æ‡‚ï¼š(å‡ºç‰Œé˜¶æ®µé™ä¸€æ¬¡)æ¯å½“ä½ éœ€è¦ä½¿ç”¨æˆ–æ‰“å‡ºä¸€å¼ åŸºæœ¬ç‰Œæ—¶ï¼Œä½ å¯å±•ç¤ºç‰Œå †é¡¶1+Xå¼ ç‰Œï¼ˆXä¸ºä½ å½“å‰å·²æŸå¤±ä½“åŠ›å€¼ä¸”è‡³å°‘ä¸º1ï¼‰ã€‚ä½ å¯ä½¿ç”¨æˆ–æ‰“å‡ºè¿™äº›ç‰Œä¸­ä¸€å¼ ç›¸åº”ç±»åˆ«çš„ç‰Œã€‚ï¼ˆè¿™äº›ç‰Œä¸­ï¼Œä½ å¯ä»¥å°†é»‘æ¡ƒä¸ºã€é…’ã€‘ï¼Œæ–¹å—ä¸ºã€æ€ã€‘ï¼Œæ¢…èŠ±ä¸ºã€é—ªã€‘ã€‚ï¼‰
 ]]
 --[[
-	Ã»ÓĞÊ²Ã´ÌØÊâµÄÖµµÃ·ÖÎöµÄ£¬ĞèÒªËµµÄ¶¼ÔÚ´úÂëÀïÁË¡£
+	æ²¡æœ‰ä»€ä¹ˆç‰¹æ®Šçš„å€¼å¾—åˆ†æçš„ï¼Œéœ€è¦è¯´çš„éƒ½åœ¨ä»£ç é‡Œäº†ã€‚
 ]]
 local json = require ("json")
---ÔØÈëjson¿â£¬ÎÒÃÇ¿ÉÒÔÊ¹ÓÃjson.encodeÀ´Éú³Éjson×Ö·û´®À´²Ù¿Øjson¡£
+--è½½å…¥jsonåº“ï¼Œæˆ‘ä»¬å¯ä»¥ä½¿ç”¨json.encodeæ¥ç”Ÿæˆjsonå­—ç¬¦ä¸²æ¥æ“æ§jsonã€‚
 function view(room, player, ids, enabled, disabled,skill_name)
 	local result = -1;
     local jsonLog = {
@@ -25,29 +25,29 @@ function view(room, player, ids, enabled, disabled,skill_name)
 	}
     room:doNotify(player,sgs.CommandType.S_COMMAND_LOG_SKILL, json.encode(jsonLog))
 	----------doNotify--------
-	--Õâ¸öº¯ÊıµÄ×÷ÓÃÊÇ¸üĞÂ¿Í»§¶Ë
-	--Í¨¹ıJsonºÍÏà¹ØµÄÃüÁîÀ´¸üĞÂ¿Í»§¶Ë¡£
-	--ÓëËü¹¦ÄÜÏàÍ¬µÄ»¹ÓĞdoBroadcastNotifyµÈ
-	--²ÎÊı£º
-	--µÚÒ»¸ö²ÎÊıÊÇServerPlayerÀàĞÍ£¬´úÖ¸±»¸üĞÂ¿Í»§¶ËµÄÍæ¼Ò¡£
-	--µÚ¶ş¸ö²ÎÊıÊÇcommandTypeÀàĞÍ£¨ÊµÖÊÊÇint£©£¬¸üĞÂ¿Í»§¶ËµÄÃüÁî»òÕßËµÍ¨Ñ¶Ğ­Òé
-	--µÚÈı¸ö²ÎÊıÊÇ×Ö·û´®ÀàĞÍ£¬Ò²¾ÍÊÇĞÂ²ÎÊı¡£
-	--¹ØÓÚcommandType¿ÉÒÔ²Î¼ûlua\utilities.luaµÄ×îºó²¿·Ö
-	--ÔÚÔ´ÂëÖĞ£¬Ò»°ãÍ¨Ñ¶Ğ­ÒéµÄ±íÊ¾·½Ê½ÊÇÕâÑù£º
-	--QSanProtocol::¼ÓÉÏÒ»¸öÍ¨Ñ¶Ğ­Òé
-	--¶øÔÚLuaÖĞ£¬ÎÒÃÇÖ»ĞèÒª°ÑQSanProtocol::»»³Ésgs.CommandType.
-	--¶ÔÓÚµÚÈı¸ö²ÎÊıvalue£¬Í¨³£ÓĞÁ½ÖÖĞÎÊ½£º
-	--Ò»°ãµÄvalue
-	--Êı×éarray
-	--Èç¹û´¦ÀíÒ»°ãµÄvalueµÄ»°Ö»ĞèÒªÓÃjson.encode(value)¾Í¿ÉÒÔÁË
-	--Èç¹ûÊÇÊı×éarrayµÄ»°¾ÍĞèÒªÍêÈ«°´ÕÕÔ´ÂëÖĞµÄË³ĞòÀ´Ğ´
-	--ÓĞÊ±ºòarrayÀïÃæ»¹»áÔÙÌ×Ò»¸ö´ÓQList×ª»¯¹ıÀ´µÄarray
-	--ÎÒÃÇÖ»ĞèÒªÓÃÕâ¸öº¯Êısgs.QList2Table°ÑËü×ª³ÉLua table¾Í¿ÉÒÔÁË
-	--×îºó±ğÍüÁËÓÃjson.encode°Ñtable±ä³ÉJson×Ö·û´®
-	--¾ßÌåµÄÀı×ÓÎÒ»áÔÚÏÂÃæÑİÊ¾¡£
+	--è¿™ä¸ªå‡½æ•°çš„ä½œç”¨æ˜¯æ›´æ–°å®¢æˆ·ç«¯
+	--é€šè¿‡Jsonå’Œç›¸å…³çš„å‘½ä»¤æ¥æ›´æ–°å®¢æˆ·ç«¯ã€‚
+	--ä¸å®ƒåŠŸèƒ½ç›¸åŒçš„è¿˜æœ‰doBroadcastNotifyç­‰
+	--å‚æ•°ï¼š
+	--ç¬¬ä¸€ä¸ªå‚æ•°æ˜¯ServerPlayerç±»å‹ï¼Œä»£æŒ‡è¢«æ›´æ–°å®¢æˆ·ç«¯çš„ç©å®¶ã€‚
+	--ç¬¬äºŒä¸ªå‚æ•°æ˜¯commandTypeç±»å‹ï¼ˆå®è´¨æ˜¯intï¼‰ï¼Œæ›´æ–°å®¢æˆ·ç«¯çš„å‘½ä»¤æˆ–è€…è¯´é€šè®¯åè®®
+	--ç¬¬ä¸‰ä¸ªå‚æ•°æ˜¯å­—ç¬¦ä¸²ç±»å‹ï¼Œä¹Ÿå°±æ˜¯æ–°å‚æ•°ã€‚
+	--å…³äºcommandTypeå¯ä»¥å‚è§lua\utilities.luaçš„æœ€åéƒ¨åˆ†
+	--åœ¨æºç ä¸­ï¼Œä¸€èˆ¬é€šè®¯åè®®çš„è¡¨ç¤ºæ–¹å¼æ˜¯è¿™æ ·ï¼š
+	--QSanProtocol::åŠ ä¸Šä¸€ä¸ªé€šè®¯åè®®
+	--è€Œåœ¨Luaä¸­ï¼Œæˆ‘ä»¬åªéœ€è¦æŠŠQSanProtocol::æ¢æˆsgs.CommandType.
+	--å¯¹äºç¬¬ä¸‰ä¸ªå‚æ•°valueï¼Œé€šå¸¸æœ‰ä¸¤ç§å½¢å¼ï¼š
+	--ä¸€èˆ¬çš„value
+	--æ•°ç»„array
+	--å¦‚æœå¤„ç†ä¸€èˆ¬çš„valueçš„è¯åªéœ€è¦ç”¨json.encode(value)å°±å¯ä»¥äº†
+	--å¦‚æœæ˜¯æ•°ç»„arrayçš„è¯å°±éœ€è¦å®Œå…¨æŒ‰ç…§æºç ä¸­çš„é¡ºåºæ¥å†™
+	--æœ‰æ—¶å€™arrayé‡Œé¢è¿˜ä¼šå†å¥—ä¸€ä¸ªä»QListè½¬åŒ–è¿‡æ¥çš„array
+	--æˆ‘ä»¬åªéœ€è¦ç”¨è¿™ä¸ªå‡½æ•°sgs.QList2TableæŠŠå®ƒè½¬æˆLua tableå°±å¯ä»¥äº†
+	--æœ€ååˆ«å¿˜äº†ç”¨json.encodeæŠŠtableå˜æˆJsonå­—ç¬¦ä¸²
+	--å…·ä½“çš„ä¾‹å­æˆ‘ä¼šåœ¨ä¸‹é¢æ¼”ç¤ºã€‚
     room:notifySkillInvoked(player,skill_name)
-	---Õâ¾ä»°µÄ×÷ÓÃÊÇÍ¨ÖªËùÓĞ¿Í»§¶ËÄ³ÈËÊ¹ÓÃÁËÊ²Ã´¼¼ÄÜ¡£
-	--¾ßÌå×÷ÓÃ¾ÍÊÇÔÚÍæ¼Ò¿òÉÏÏÔÊ¾¼¼ÄÜÃû¡£
+	---è¿™å¥è¯çš„ä½œç”¨æ˜¯é€šçŸ¥æ‰€æœ‰å®¢æˆ·ç«¯æŸäººä½¿ç”¨äº†ä»€ä¹ˆæŠ€èƒ½ã€‚
+	--å…·ä½“ä½œç”¨å°±æ˜¯åœ¨ç©å®¶æ¡†ä¸Šæ˜¾ç¤ºæŠ€èƒ½åã€‚
     if enabled:isEmpty() then
 		local jsonValue = {
             ".",
@@ -55,7 +55,7 @@ function view(room, player, ids, enabled, disabled,skill_name)
             sgs.QList2Table(ids)
 		}
         room:doNotify(player,sgs.CommandType.S_COMMAND_SHOW_ALL_CARDS, json.encode(jsonValue))
-		--ÔÚÕâ¸öµØ·½Ô´ÂëÊÇÕâÑùĞ´µÄ£¬Çë¶Ô±ÈÒ»ÏÂ¡£
+		--åœ¨è¿™ä¸ªåœ°æ–¹æºç æ˜¯è¿™æ ·å†™çš„ï¼Œè¯·å¯¹æ¯”ä¸€ä¸‹ã€‚
 		--[[
 		Json::Value arg(Json::arrayValue);
         arg[0] = QSanProtocol::Utils::toJsonString(".");
@@ -63,9 +63,9 @@ function view(room, player, ids, enabled, disabled,skill_name)
         arg[2] = QSanProtocol::Utils::toJsonArray(ids);
         room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, arg);
 		]]
-		--¿ÉÒÔËµÕâÖÖ¶«Î÷Ã»ÓĞÔ´Âë¸ù±¾Ğ´²»³öÀ´¡­¡­
-		--ËùÒÔÇë²»ÒªÉÃ×ÔÓÃjson
-		--¾¡¿ÉÄÜµÄ²Î¿¼Ô´ÂëĞ´¡£
+		--å¯ä»¥è¯´è¿™ç§ä¸œè¥¿æ²¡æœ‰æºç æ ¹æœ¬å†™ä¸å‡ºæ¥â€¦â€¦
+		--æ‰€ä»¥è¯·ä¸è¦æ“…è‡ªç”¨json
+		--å°½å¯èƒ½çš„å‚è€ƒæºç å†™ã€‚
     else
         room:fillAG(ids, player, disabled)
         local id = room:askForAG(player, enabled, true,skill_name);
@@ -74,16 +74,16 @@ function view(room, player, ids, enabled, disabled,skill_name)
             result = id
         end
         room:clearAG(player)
-		--ÕâÀï»¹ÊÇÊ¹ÓÃAG¿òÀ´Ñ¡ÅÆ
+		--è¿™é‡Œè¿˜æ˜¯ä½¿ç”¨AGæ¡†æ¥é€‰ç‰Œ
     end
 	if ids:length() > 0 then
-		local drawPile = room:getDrawPile() --ĞÂ°æµÄgetDrawPileÊÇ¶ÔÕæÕıµÄPile½øĞĞÒıÓÃ¡£
+		local drawPile = room:getDrawPile() --æ–°ç‰ˆçš„getDrawPileæ˜¯å¯¹çœŸæ­£çš„Pileè¿›è¡Œå¼•ç”¨ã€‚
         for i = ids:length() - 1,0,-1 do
             drawPile:prepend(ids:at(i))
 		end
-		--°ÑÅÆ·Å»ØÅÆ¶Ñ
+		--æŠŠç‰Œæ”¾å›ç‰Œå †
         room:doBroadcastNotify(sgs.CommandType.S_COMMAND_UPDATE_PILE, sgs.QVariant(drawPile:length()))
-		--Í¨Öª¿Í»§¶Ë¸üĞÂÅÆ¶ÑÊıÄ¿
+		--é€šçŸ¥å®¢æˆ·ç«¯æ›´æ–°ç‰Œå †æ•°ç›®
 	end
     if result == -1 then
         room:setPlayerFlag(player, "Global_"..skill_name.."Failed")
@@ -106,8 +106,8 @@ devLvedongCard=sgs.CreateSkillCard{
 			name = uses[1]
 			card = sgs.Sanguosha:cloneCard(name)
 		end
-		card:deleteLater() --²»ÓÃµÄÒªÉ¾³ı
-		return card and card:targetFilter(plist, to_select, sgs.Self) --µ÷ÓÃÏà¹ØCardµÄÏà¹Øº¯Êı
+		card:deleteLater() --ä¸ç”¨çš„è¦åˆ é™¤
+		return card and card:targetFilter(plist, to_select, sgs.Self) --è°ƒç”¨ç›¸å…³Cardçš„ç›¸å…³å‡½æ•°
 	end ,
 	feasible = function(self, targets)
 		local name = ""
@@ -121,9 +121,9 @@ devLvedongCard=sgs.CreateSkillCard{
 			card = sgs.Sanguosha:cloneCard(name)
 		end
 		card:deleteLater()
-		return card and card:targetsFeasible(plist, sgs.Self)--Í¬ÉÏ
+		return card and card:targetsFeasible(plist, sgs.Self)--åŒä¸Š
 	end,
-	on_validate_in_response = function(self, user) --ÔÚ¼¼ÄÜ¿¨ÖĞ½éÉÜ¹ı
+	on_validate_in_response = function(self, user) --åœ¨æŠ€èƒ½å¡ä¸­ä»‹ç»è¿‡
 		local room = user:getRoom()
 		local ids = room:getNCards(1 + math.max(user:getLostHp(),1), false)
 		local aocaistring = self:getUserString()
@@ -166,7 +166,7 @@ devLvedongCard=sgs.CreateSkillCard{
 			return returnCard
 		end
 	end,
-	on_validate = function(self, cardUse) --ÔÚ¼¼ÄÜ¿¨ÖĞ½éÉÜ¹ı
+	on_validate = function(self, cardUse) --åœ¨æŠ€èƒ½å¡ä¸­ä»‹ç»è¿‡
 		cardUse.m_isOwnerUse = false
 		local user = cardUse.from
 		local room = user:getRoom()
@@ -233,7 +233,7 @@ devLvedongVS = sgs.CreateZeroCardViewAsSkill{
 		local acard = devLvedongCard:clone()
 		local pattern = "233"
 		if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_PLAY then
-			pattern = sgs.Self:getTag("devLvedong"):toString() --¹Æ»ó¿òµãÍêÖ®ºó¾Í»á°ÑÑ¡µÄÅÆµÄobjectName´¢´æÔÚsgs.SelfµÄÃûÎª¸Ã¼¼ÄÜobjectNameµÄTagÖĞ
+			pattern = sgs.Self:getTag("devLvedong"):toString() --è›Šæƒ‘æ¡†ç‚¹å®Œä¹‹åå°±ä¼šæŠŠé€‰çš„ç‰Œçš„objectNameå‚¨å­˜åœ¨sgs.Selfçš„åä¸ºè¯¥æŠ€èƒ½objectNameçš„Tagä¸­
 		else
 			pattern = sgs.Sanguosha:getCurrentCardUsePattern()
 			if pattern == "peach+analeptic" and sgs.Self:hasFlag("Global_PreventPeach") then
@@ -242,7 +242,7 @@ devLvedongVS = sgs.CreateZeroCardViewAsSkill{
 		end
 		local ac = sgs.Sanguosha:cloneCard(pattern:split("+")[1])
 		ac:deleteLater()
-		acard:setTargetFixed(ac:targetFixed()) --ÉèÖÃTargetFixed
+		acard:setTargetFixed(ac:targetFixed()) --è®¾ç½®TargetFixed
 		acard:setUserString(pattern)
 		acard:setShowSkill(self:objectName())
 		acard:setSkillName(self:objectName())
@@ -253,7 +253,7 @@ devLvedong = sgs.CreateTriggerSkill{
 	name = "devLvedong" ,
 	events = {sgs.CardAsked},
 	view_as_skill = devLvedongVS,
-	guhuo_type = "b", --¹Æ»ó¿òÀàĞÍ£¬ÔÚÊÓÎª¼¼²¿·Ö½éÉÜ¹ı¡£
+	guhuo_type = "b", --è›Šæƒ‘æ¡†ç±»å‹ï¼Œåœ¨è§†ä¸ºæŠ€éƒ¨åˆ†ä»‹ç»è¿‡ã€‚
 	can_trigger = function(self, event, room, player, data)
 		if player and player:isAlive() and player:hasSkill(self:objectName()) then
 			local pattern = data:toStringList()[1]
@@ -309,9 +309,9 @@ devLvedong = sgs.CreateTriggerSkill{
 	end ,
 }
 --[[
-	Õâ¸ö¸´ÔÓµÄ¼¼ÄÜ´©²åÁËºÃ¶à¸ß¼¶µÄ¶«Î÷ºÍ¼¼ÇÉ£¬Ï£ÍûÄÜ¸ø´ó¼ÒÒ»¸ö½è¼ø¡£
+	è¿™ä¸ªå¤æ‚çš„æŠ€èƒ½ç©¿æ’äº†å¥½å¤šé«˜çº§çš„ä¸œè¥¿å’ŒæŠ€å·§ï¼Œå¸Œæœ›èƒ½ç»™å¤§å®¶ä¸€ä¸ªå€Ÿé‰´ã€‚
 ]]
 --[[
-	µ½ÕâÀï£¬¹úÕ½ÉñÉ±À©Õ¹ÎÄµµ¾Í¸æÒ»¶ÎÂäÁË£¬Ï£ÍûÕâĞ©¼òµ¥µÄÀı×ÓÄÜ¹»°ïÖú´ó¼Ò½â¾öÎÊÌâ¡£
-	Èç¹ûÄãÓĞÊ²Ã´ºÃµÄ½¨Òé»òÕßÒâ¼û£¬¿ÉÒÔÁªÏµÊı×Ö¡£µç×ÓÓÊÏä²»ÖªµÀÔÚÄÄ¸öÎÄ¼ş¡­¡­
+	åˆ°è¿™é‡Œï¼Œå›½æˆ˜ç¥æ€æ‰©å±•æ–‡æ¡£å°±å‘Šä¸€æ®µè½äº†ï¼Œå¸Œæœ›è¿™äº›ç®€å•çš„ä¾‹å­èƒ½å¤Ÿå¸®åŠ©å¤§å®¶è§£å†³é—®é¢˜ã€‚
+	å¦‚æœä½ æœ‰ä»€ä¹ˆå¥½çš„å»ºè®®æˆ–è€…æ„è§ï¼Œå¯ä»¥è”ç³»æ•°å­—ã€‚ç”µå­é‚®ç®±ä¸çŸ¥é“åœ¨å“ªä¸ªæ–‡ä»¶â€¦â€¦
 ]]

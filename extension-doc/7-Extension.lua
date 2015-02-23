@@ -1,34 +1,34 @@
---¼¼ÄÜ½²½â6£ºLuaAPIµÄÀ©Õ¹
+--æŠ€èƒ½è®²è§£6ï¼šLuaAPIçš„æ‰©å±•
 --[[
-	´ó¼ÒºÃ£¬ÎÒÊÇÊı×Ö£¨Xusine£©
-	ÔÚÕâÒ»¸öÕÂ½ÚÖĞÎÒ½«´øÁì´ó¼ÒÑĞ¾¿Ò»ÏÂ¹úÕ½0.8.3Ö®ºó°æ±¾µÄLua½Ó¿ÚµÄÉî¶ÈÀ©Õ¹¡£
-	±¾ÕÂ½ÚÊÇ½¨Á¢ÔÚÄãÄÜ¹»¶ÀÁ¢ÇÒÕıÈ·±àĞ´Õı³£LuaµÄÄÜÁ¦ÉÏ¶ø½øĞĞµÄÉî¶ÈÀ©Õ¹¡£
-	Èç¹ûÄãÃ»ÓĞ½ÏºÃµÄLua»ù´¡£¬¿ÉÄÜÔÚÔÄ¶Á±¾ÕÂ½ÚµÄÊ±ºò»áÓĞÒ»Ğ©³ÔÁ¦¡£
-	ºÃÁË£¬·Ï»°²»¶àËµ£¬ÎÒÃÇ¿ªÊ¼°É¡£
+	å¤§å®¶å¥½ï¼Œæˆ‘æ˜¯æ•°å­—ï¼ˆXusineï¼‰
+	åœ¨è¿™ä¸€ä¸ªç« èŠ‚ä¸­æˆ‘å°†å¸¦é¢†å¤§å®¶ç ”ç©¶ä¸€ä¸‹å›½æˆ˜0.8.3ä¹‹åç‰ˆæœ¬çš„Luaæ¥å£çš„æ·±åº¦æ‰©å±•ã€‚
+	æœ¬ç« èŠ‚æ˜¯å»ºç«‹åœ¨ä½ èƒ½å¤Ÿç‹¬ç«‹ä¸”æ­£ç¡®ç¼–å†™æ­£å¸¸Luaçš„èƒ½åŠ›ä¸Šè€Œè¿›è¡Œçš„æ·±åº¦æ‰©å±•ã€‚
+	å¦‚æœä½ æ²¡æœ‰è¾ƒå¥½çš„LuaåŸºç¡€ï¼Œå¯èƒ½åœ¨é˜…è¯»æœ¬ç« èŠ‚çš„æ—¶å€™ä¼šæœ‰ä¸€äº›åƒåŠ›ã€‚
+	å¥½äº†ï¼ŒåºŸè¯ä¸å¤šè¯´ï¼Œæˆ‘ä»¬å¼€å§‹å§ã€‚
 ]]
 --[[
 	1.expand_pile
-	Õâ¸öÔÚ½éÉÜÊÓÎª¼¼µÄÊ±ºòÉÔÎ¢ÌáÁËÒ»µã£¬ÆäÊµ¾ÍÊÇÒ»¸öºÍÊÓÎª¼¼°ó¶¨µÄPile¡£
-	ÔÚÔÄ¶ÁÒÔÏÂÄÚÈİµÄÊ±ºòÇëÏÈÈ¥ÌåÑéÒ»°ÑµË°¬Ö÷½«¼±Ï®µÄ¿ì¸Ğ¡­¡­
-	ÔÚ´«Í³µÄÉñÉ±ÖĞ£¬ÕâÖÖ°ÑPileÉÏµÄÅÆµ±×÷Ä³ÖÖÅÆÊ¹ÓÃ¶¼ÊÇÓÃ¼¼ÄÜ¿¨ÀïÃæaskForAGÊµÏÖµÄ¡£
-	ÇÒ²»ËµÕâÖÖ·½·¨ÔÚĞ´´úÂëÊ±ºÜÂé·³£¬ÓÃ»§ÌåÑéÒ²ÊÇ²»¾¡ÈËÒâ¡£
-	È»¶øÓĞÁËÕâÖÖ·½Ê½¾ÍÄÜÊ¹µÃ¼¼ÄÜ¼ò½à¶àÁË¡£
-	»¹¼ÇµÃÉÏÒ»ÕÂÀïÃæµÄ×îºóÒ»¸ö¼¼ÄÜ¡°¼ıÊ¸¡±Ã´£¬Èç½ñÎÒÃÇ¿ÉÒÔ°ÑËü¸Ä³ÉÕâÑùÒ»ÖÖĞ´·¨£º
+	è¿™ä¸ªåœ¨ä»‹ç»è§†ä¸ºæŠ€çš„æ—¶å€™ç¨å¾®æäº†ä¸€ç‚¹ï¼Œå…¶å®å°±æ˜¯ä¸€ä¸ªå’Œè§†ä¸ºæŠ€ç»‘å®šçš„Pileã€‚
+	åœ¨é˜…è¯»ä»¥ä¸‹å†…å®¹çš„æ—¶å€™è¯·å…ˆå»ä½“éªŒä¸€æŠŠé‚“è‰¾ä¸»å°†æ€¥è¢­çš„å¿«æ„Ÿâ€¦â€¦
+	åœ¨ä¼ ç»Ÿçš„ç¥æ€ä¸­ï¼Œè¿™ç§æŠŠPileä¸Šçš„ç‰Œå½“ä½œæŸç§ç‰Œä½¿ç”¨éƒ½æ˜¯ç”¨æŠ€èƒ½å¡é‡Œé¢askForAGå®ç°çš„ã€‚
+	ä¸”ä¸è¯´è¿™ç§æ–¹æ³•åœ¨å†™ä»£ç æ—¶å¾ˆéº»çƒ¦ï¼Œç”¨æˆ·ä½“éªŒä¹Ÿæ˜¯ä¸å°½äººæ„ã€‚
+	ç„¶è€Œæœ‰äº†è¿™ç§æ–¹å¼å°±èƒ½ä½¿å¾—æŠ€èƒ½ç®€æ´å¤šäº†ã€‚
+	è¿˜è®°å¾—ä¸Šä¸€ç« é‡Œé¢çš„æœ€åä¸€ä¸ªæŠ€èƒ½â€œç®­çŸ¢â€ä¹ˆï¼Œå¦‚ä»Šæˆ‘ä»¬å¯ä»¥æŠŠå®ƒæ”¹æˆè¿™æ ·ä¸€ç§å†™æ³•ï¼š
 ]]
 
 --[[
-	¼ıÊ¸£ºÃ¿µ±ÄãµÄºÚÉ«ÅÆÒòÆúÖÃ¶øÊ§È¥Ê±£¬Äã¿É½«ÕâĞ©ÅÆÖÃÓÚÄãµÄÎä½«ÅÆÉÏ³ÆÎª¡°¼ı¡±¡£»ØºÏÍâÄã¿É½«Á½ÕÅ¡°¼ı¡±µ±³É¡¾ÎŞĞ¸¿É»÷¡¿Ê¹ÓÃ¡£
+	ç®­çŸ¢ï¼šæ¯å½“ä½ çš„é»‘è‰²ç‰Œå› å¼ƒç½®è€Œå¤±å»æ—¶ï¼Œä½ å¯å°†è¿™äº›ç‰Œç½®äºä½ çš„æ­¦å°†ç‰Œä¸Šç§°ä¸ºâ€œç®­â€ã€‚å›åˆå¤–ä½ å¯å°†ä¸¤å¼ â€œç®­â€å½“æˆã€æ— æ‡ˆå¯å‡»ã€‘ä½¿ç”¨ã€‚
 ]]
 
-devJianshiVS = sgs.CreateViewAsSkill{ --ÏêÏ¸¶¨Òå¿ÉÒÔ²Î¿¼lua\sgs_ex.lua
+devJianshiVS = sgs.CreateViewAsSkill{ --è¯¦ç»†å®šä¹‰å¯ä»¥å‚è€ƒlua\sgs_ex.lua
 	name = "devJianshi",
 	n = 2,
-	expand_pile = "devJianshi", --ÔÚÕâÀïÌí¼Óexpand_pile³ÉÔ±£¬ÔÚµã»÷°´Å¥µÄÊ±ºò¾Í»á°ÑPileÒÆ¶¯µ½ÊÖÅÆÖĞ¡£
-	--Èç¹ûÒª¸ã¶à¸öPileµÄ»°£¬¿ÉÒÔÓÃ¶ººÅ¸ô¿ª¡£
+	expand_pile = "devJianshi", --åœ¨è¿™é‡Œæ·»åŠ expand_pileæˆå‘˜ï¼Œåœ¨ç‚¹å‡»æŒ‰é’®çš„æ—¶å€™å°±ä¼šæŠŠPileç§»åŠ¨åˆ°æ‰‹ç‰Œä¸­ã€‚
+	--å¦‚æœè¦æå¤šä¸ªPileçš„è¯ï¼Œå¯ä»¥ç”¨é€—å·éš”å¼€ã€‚
 	view_filter = function(self, selected, to_select)
 		if #selected >= 2 or to_select:hasFlag("using") then return false end
 		local pat = ".|.|.|devJianshi"
-		--expattern ÆäÖĞ×îºóÒ»¸ö²ÎÁ¿Î»ÖÃ¿ÉÒÔÓĞPileµÄÃû×Ö¡£
+		--expattern å…¶ä¸­æœ€åä¸€ä¸ªå‚é‡ä½ç½®å¯ä»¥æœ‰Pileçš„åå­—ã€‚
 		if string.endsWith(pat, "!") then
 			if sgs.Self:isJilei(to_select) then return false end
 			pat = string.sub(pat, 1, -2)
@@ -99,33 +99,33 @@ devJianshi = sgs.CreateTriggerSkill{
 		for _,id in sgs.qlist(dummy:getSubcards()) do
 			move.card_ids:removeOne(id)
 		end
-		data:setValue(move) --Èç¹û¶Ôdata×ö¹ı¸ü±äÒ»¶¨²»ÒªÍü¼ÇsetValue
+		data:setValue(move) --å¦‚æœå¯¹dataåšè¿‡æ›´å˜ä¸€å®šä¸è¦å¿˜è®°setValue
 		player:addToPile("devJianshi", dummy:getSubcards())
-		dummy:deleteLater() --¼Ç×¡£¬DummyCard²»ÓÃÒ»¶¨ÒªÉ¾³ı£¬·ñÔò»áÔì³ÉÄÚ´æĞ¹Â©¡£
+		dummy:deleteLater() --è®°ä½ï¼ŒDummyCardä¸ç”¨ä¸€å®šè¦åˆ é™¤ï¼Œå¦åˆ™ä¼šé€ æˆå†…å­˜æ³„æ¼ã€‚
 	end,
 }
 --[[
-	Í¨¹ı¶ÔÉÏÃæÀı×ÓµÄÌå»á£¬ÄãÊÇ·ñ¸ĞÊÜµ½ÁËexpand_pileµÄÉñÆæ×÷ÓÃ£¿
-	ÆäÊµ£¬expand_pileµÄ×÷ÓÃ»¹²»¹âÕâĞ©£¬ÎÒÃÇÔÙÀ´¿´Ò»¸öºÍËüÏà¹ØµÄpile:
+	é€šè¿‡å¯¹ä¸Šé¢ä¾‹å­çš„ä½“ä¼šï¼Œä½ æ˜¯å¦æ„Ÿå—åˆ°äº†expand_pileçš„ç¥å¥‡ä½œç”¨ï¼Ÿ
+	å…¶å®ï¼Œexpand_pileçš„ä½œç”¨è¿˜ä¸å…‰è¿™äº›ï¼Œæˆ‘ä»¬å†æ¥çœ‹ä¸€ä¸ªå’Œå®ƒç›¸å…³çš„pile:
 	2.%pile
-	ÏÈÈ¥ÍêÒ»¾ÖÓĞ¾ıÕÅ½ÇµÄÈºĞÛ£¬ÊÔÊÔºë·¨¡£
-	Ê²Ã´£¿ÓÃ±ğÈËÉíÉÏµÄPile£¿¿´ÆğÀ´²»¿ÉË¼Òé°É¡£
-	ÊÇµÄ£¬ÔÚexpand_pileÀïÃæÉùÃ÷PileµÄÊ±ºòÈç¹ûÓĞÇ°×º%µÄ»°Ôò»á´ÓËûÈËÉíÉÏÑ°ÕÒÏà¹ØPileÈ»ºóÒÆ¶¯µ½ÊÖÅÆ¡£
-	ÎÒÃÇÔÙÀ´¿´ÕâÑùÒ»¸ö¼¼ÄÜ¡£
+	å…ˆå»å®Œä¸€å±€æœ‰å›å¼ è§’çš„ç¾¤é›„ï¼Œè¯•è¯•å¼˜æ³•ã€‚
+	ä»€ä¹ˆï¼Ÿç”¨åˆ«äººèº«ä¸Šçš„Pileï¼Ÿçœ‹èµ·æ¥ä¸å¯æ€è®®å§ã€‚
+	æ˜¯çš„ï¼Œåœ¨expand_pileé‡Œé¢å£°æ˜Pileçš„æ—¶å€™å¦‚æœæœ‰å‰ç¼€%çš„è¯åˆ™ä¼šä»ä»–äººèº«ä¸Šå¯»æ‰¾ç›¸å…³Pileç„¶åç§»åŠ¨åˆ°æ‰‹ç‰Œã€‚
+	æˆ‘ä»¬å†æ¥çœ‹è¿™æ ·ä¸€ä¸ªæŠ€èƒ½ã€‚
 ]]
 
 --[[
-	Ê©ÈÊ:	¾ıÖ÷¼¼£¬»ØºÏ¿ªÊ¼Ê±£¬ÈôÄãµÄÎä½«ÅÆÉÏÃ»ÓĞÅÆ£¬Äã¿ÉÒÔ·­¿ªÅÆ¶Ñ¶¥XÕÅÅÆ£¬½«ÆäÖĞµÄ»ù±¾ÅÆºÍ¡¾ÎŞĞ¸¿É»÷¡¿·ÅÖÃÓÚÎä½«ÅÆÉÏ£¬½«ÆäËûÅÆÖÃÓÚÆúÅÆ¶Ñ.(XÎªµ±Ç°ÓëÄãÊÆÁ¦ÏàÍ¬µÄ½ÇÉ«*3)
-	¾ıÖ÷¼¼£¬Ö»ÒªÄãµÄÎä½«ÅÆÉÏÓĞÅÆ£¬ÄãÓµÓĞ¡°¿ª·¢×é¡±
-	#¿ª·¢×é£º
-	ÈÎÒâÒ»ÃûÓëÄãÊÆÁ¦ÏàÍ¬µÄ½ÇÉ«ĞèÒªÊ¹ÓÃ»òÕß´ò³öÅÆÊ±£¬ÈôÄãµÄÎä½«ÅÆÉÏÓĞĞèÒªµÄÅÆ£¬¿ÉÒÔ´ÓÄãµÄÎä½«ÅÆÉÏÊ¹ÓÃ»ò´ò³öÖ®¡£
+	æ–½ä»:	å›ä¸»æŠ€ï¼Œå›åˆå¼€å§‹æ—¶ï¼Œè‹¥ä½ çš„æ­¦å°†ç‰Œä¸Šæ²¡æœ‰ç‰Œï¼Œä½ å¯ä»¥ç¿»å¼€ç‰Œå †é¡¶Xå¼ ç‰Œï¼Œå°†å…¶ä¸­çš„åŸºæœ¬ç‰Œå’Œã€æ— æ‡ˆå¯å‡»ã€‘æ”¾ç½®äºæ­¦å°†ç‰Œä¸Šï¼Œå°†å…¶ä»–ç‰Œç½®äºå¼ƒç‰Œå †.(Xä¸ºå½“å‰ä¸ä½ åŠ¿åŠ›ç›¸åŒçš„è§’è‰²*3)
+	å›ä¸»æŠ€ï¼Œåªè¦ä½ çš„æ­¦å°†ç‰Œä¸Šæœ‰ç‰Œï¼Œä½ æ‹¥æœ‰â€œå¼€å‘ç»„â€
+	#å¼€å‘ç»„ï¼š
+	ä»»æ„ä¸€åä¸ä½ åŠ¿åŠ›ç›¸åŒçš„è§’è‰²éœ€è¦ä½¿ç”¨æˆ–è€…æ‰“å‡ºç‰Œæ—¶ï¼Œè‹¥ä½ çš„æ­¦å°†ç‰Œä¸Šæœ‰éœ€è¦çš„ç‰Œï¼Œå¯ä»¥ä»ä½ çš„æ­¦å°†ç‰Œä¸Šä½¿ç”¨æˆ–æ‰“å‡ºä¹‹ã€‚
 ]]
 
 --[[
-	·ÖÎö£º
-	Õâ¸ö¼¼ÄÜ¿ÉÒÔËµÊÇÒ»¸ö±È½Ï¸´ÔÓµÄ¼¼ÄÜÁË£¬½áºÏÉÏÃæµÄ¾­Ñé£¬ÎÒÃÇÓ¦¸Ã¿¼ÂÇÊ¹ÓÃexpand_pile¡£
-	ÎªÁËÔöÇ¿ÓÃ»§ÌåÑé£¬ÎÒÃÇ»¹ĞèÒª¿ØÖÆºÃenable_at_*****º¯Êı¡£
-	´úÂëÈçÏÂ£º
+	åˆ†æï¼š
+	è¿™ä¸ªæŠ€èƒ½å¯ä»¥è¯´æ˜¯ä¸€ä¸ªæ¯”è¾ƒå¤æ‚çš„æŠ€èƒ½äº†ï¼Œç»“åˆä¸Šé¢çš„ç»éªŒï¼Œæˆ‘ä»¬åº”è¯¥è€ƒè™‘ä½¿ç”¨expand_pileã€‚
+	ä¸ºäº†å¢å¼ºç”¨æˆ·ä½“éªŒï¼Œæˆ‘ä»¬è¿˜éœ€è¦æ§åˆ¶å¥½enable_at_*****å‡½æ•°ã€‚
+	ä»£ç å¦‚ä¸‹ï¼š
 ]]
 
 devShiren = sgs.CreateTriggerSkill{
@@ -163,10 +163,10 @@ devShiren = sgs.CreateTriggerSkill{
 	end ,
 }
 --[[
-	ÉÏÃæµÄ¼¼ÄÜÊÇÎªÁËÏòPileÀïÃæ×°ÅÆ¡£
+	ä¸Šé¢çš„æŠ€èƒ½æ˜¯ä¸ºäº†å‘Pileé‡Œé¢è£…ç‰Œã€‚
 ]]
 
-devShirenAddSkill = sgs.CreateTriggerSkill{ --Õâ¸ö¼¼ÄÜÊÇÎªÁËÌí¼Ó¼¼ÄÜ
+devShirenAddSkill = sgs.CreateTriggerSkill{ --è¿™ä¸ªæŠ€èƒ½æ˜¯ä¸ºäº†æ·»åŠ æŠ€èƒ½
 	name = "devShirenAddSkill" ,
 	global = true,
 	events = {sgs.GeneralShown,sgs.EventLoseSkill},
@@ -196,25 +196,25 @@ devShirenAddSkill = sgs.CreateTriggerSkill{ --Õâ¸ö¼¼ÄÜÊÇÎªÁËÌí¼Ó¼¼ÄÜ
 		return ""
 	end ,
 }
-addSkillToEngine(devShirenAddSkill) --ÉÏÎÄ¶¨ÒåÁËÕâ¸öº¯Êı£¬×÷ÓÃÊÇÎªÁË°Ñ¼¼ÄÜ¼ÓÈëEngine
+addSkillToEngine(devShirenAddSkill) --ä¸Šæ–‡å®šä¹‰äº†è¿™ä¸ªå‡½æ•°ï¼Œä½œç”¨æ˜¯ä¸ºäº†æŠŠæŠ€èƒ½åŠ å…¥Engine
 
-devShirenAsk = sgs.CreateOneCardViewAsSkill{ --ÊÓÎª¼¼ÊÇÕû¸ö¼¼ÄÜµÄºËĞÄ¡£
+devShirenAsk = sgs.CreateOneCardViewAsSkill{ --è§†ä¸ºæŠ€æ˜¯æ•´ä¸ªæŠ€èƒ½çš„æ ¸å¿ƒã€‚
 	name = "devShirenAsk",
 	expand_pile = "devShiren,%devShiren",
-	--²»¿ÉÈ±ÉÙµÄexpand_pile,ÓÃ¶ººÅ¸ô¿ª¿ÉÒÔĞ´¶à¸ö
-	--ÆäÖĞµÚÒ»¸ödevShirenÊÇ¸ø±¾ÈËÓÃµÄ
-	--µÚ¶ş¸ö%devShirenÔòÊÇ¸øÆäËûÍ¬ÊÆÁ¦½ÇÉ«ÓÃµÄ¡£
+	--ä¸å¯ç¼ºå°‘çš„expand_pile,ç”¨é€—å·éš”å¼€å¯ä»¥å†™å¤šä¸ª
+	--å…¶ä¸­ç¬¬ä¸€ä¸ªdevShirenæ˜¯ç»™æœ¬äººç”¨çš„
+	--ç¬¬äºŒä¸ª%devShirenåˆ™æ˜¯ç»™å…¶ä»–åŒåŠ¿åŠ›è§’è‰²ç”¨çš„ã€‚
 	view_filter = function(self,to_select)
-		local pat = ".|.|.|devShiren,%devShiren" --ºÍexpand_pileÏàÕÕÓ¦µÄPattern
+		local pat = ".|.|.|devShiren,%devShiren" --å’Œexpand_pileç›¸ç…§åº”çš„Pattern
 		if not sgs.Sanguosha:matchExpPattern(pat, sgs.Self, to_select) then return false end
-		if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE or sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then --·ÇÖ÷¶¯Ê¹ÓÃµÄÇé¿ö
+		if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE or sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then --éä¸»åŠ¨ä½¿ç”¨çš„æƒ…å†µ
 			local pattern = sgs.Sanguosha:getCurrentCardUsePattern()
 			if to_select:match(pattern) or (pattern == "nullification" and to_select:isKindOf("Nullification")) then
 				return true
 			else
 				return false
 			end
-		else --Ö÷¶¯Ê¹ÓÃµÄÇé¿ö
+		else --ä¸»åŠ¨ä½¿ç”¨çš„æƒ…å†µ
 			if to_select:isAvailable(sgs.Self) then
 				return true
 			else
@@ -223,10 +223,10 @@ devShirenAsk = sgs.CreateOneCardViewAsSkill{ --ÊÓÎª¼¼ÊÇÕû¸ö¼¼ÄÜµÄºËĞÄ¡£
 		end
 		return false
 	end,
-	view_as = function(self,origin) --Ö±½Ó·µ»ØÔ­¿¨£¬²»×ö¸Ä±ä
+	view_as = function(self,origin) --ç›´æ¥è¿”å›åŸå¡ï¼Œä¸åšæ”¹å˜
 		return origin
 	end,
-	enabled_at_play = function(self, player) --¼ì²âÄÜ²»ÄÜÖ÷¶¯Ê¹ÓÃ
+	enabled_at_play = function(self, player) --æ£€æµ‹èƒ½ä¸èƒ½ä¸»åŠ¨ä½¿ç”¨
 		local bool = false
 		local lord = player:getLord()
 		if lord == nil then return false end
@@ -240,7 +240,7 @@ devShirenAsk = sgs.CreateOneCardViewAsSkill{ --ÊÓÎª¼¼ÊÇÕû¸ö¼¼ÄÜµÄºËĞÄ¡£
 		end
 		return bool
 	end,
-	enabled_at_response = function(self, player, pattern) --Ö÷¶¯´ò³ö
+	enabled_at_response = function(self, player, pattern) --ä¸»åŠ¨æ‰“å‡º
 		sgs.ShirenPattern = pattern
 		local bool = false
 		local lord = player:getLord()
@@ -253,14 +253,14 @@ devShirenAsk = sgs.CreateOneCardViewAsSkill{ --ÊÓÎª¼¼ÊÇÕû¸ö¼¼ÄÜµÄºËĞÄ¡£
 					break
 				end
 			end
-			if c:match(pattern) then --ÇĞ¼ÇÕâÀïµÄmatch²»ÊÇLuaµÄmatchº¯Êı£¬ÊÇCard::match
+			if c:match(pattern) then --åˆ‡è®°è¿™é‡Œçš„matchä¸æ˜¯Luaçš„matchå‡½æ•°ï¼Œæ˜¯Card::match
 				bool = true
 				break
 			end
 		end
 		return bool
 	end,
-	enabled_at_nullification = function(self,player) --ÏàÓ¦ÎŞĞ¸¿É»÷
+	enabled_at_nullification = function(self,player) --ç›¸åº”æ— æ‡ˆå¯å‡»
 		local lord = player:getLord()
 		if lord then
 			local pile = lord:getPile("devShiren")
@@ -275,20 +275,20 @@ devShirenAsk = sgs.CreateOneCardViewAsSkill{ --ÊÓÎª¼¼ÊÇÕû¸ö¼¼ÄÜµÄºËĞÄ¡£
 	end,
 }
 --[[
-	Èç¹ûÉÏÃæÕâ¸ö¼¼ÄÜÄãÑĞ¾¿Ã÷°×ÁËµÄ»°£¬»ù±¾ÉÏÄã¾Í¿ÉÒÔ¼ÓÈëÎÒÃÇ¿ª·¢×éÁË^_^
-	£¨Èç¹ûÄãÓĞÄÜÁ¦¶øÓÖÏë¼ÓÈë¿ª·¢×éµÄ¿ÉÒÔÁªÏµÊı×Ö¡£ Email : xusine@mogara.org £©
-	µ±È»£¬ÑĞ¾¿Ã÷°×Ò²²»Òª½ô£»×Ô¼º¸Ä×ÅÒ»Ğ©¶«Î÷ÊÔÊÔ¾ÍºÃÁË¡£
-	ºÃµÄ£¬ÎÒÃÇÔÙÀ´¿´ÁíÍâÒ»¸öPile£º
+	å¦‚æœä¸Šé¢è¿™ä¸ªæŠ€èƒ½ä½ ç ”ç©¶æ˜ç™½äº†çš„è¯ï¼ŒåŸºæœ¬ä¸Šä½ å°±å¯ä»¥åŠ å…¥æˆ‘ä»¬å¼€å‘ç»„äº†^_^
+	ï¼ˆå¦‚æœä½ æœ‰èƒ½åŠ›è€Œåˆæƒ³åŠ å…¥å¼€å‘ç»„çš„å¯ä»¥è”ç³»æ•°å­—ã€‚ Email : xusine@mogara.org ï¼‰
+	å½“ç„¶ï¼Œç ”ç©¶æ˜ç™½ä¹Ÿä¸è¦ç´§ï¼›è‡ªå·±æ”¹ç€ä¸€äº›ä¸œè¥¿è¯•è¯•å°±å¥½äº†ã€‚
+	å¥½çš„ï¼Œæˆ‘ä»¬å†æ¥çœ‹å¦å¤–ä¸€ä¸ªPileï¼š
 	3.&Pile
-	PileÃûÒÔ&´òÍ·µÄ¶¼»áÏëÄ¾Å£Á÷ÂíÄÇÑù£¬ÔÚÊ¹ÓÃºÍ´ò³öÊ±»á±»ÊÓÎªÊÖÅÆ¡£
-	ÏÈÀ´¿´ÕâÑùÒ»¸ö¼¼ÄÜ£º
+	Pileåä»¥&æ‰“å¤´çš„éƒ½ä¼šæƒ³æœ¨ç‰›æµé©¬é‚£æ ·ï¼Œåœ¨ä½¿ç”¨å’Œæ‰“å‡ºæ—¶ä¼šè¢«è§†ä¸ºæ‰‹ç‰Œã€‚
+	å…ˆæ¥çœ‹è¿™æ ·ä¸€ä¸ªæŠ€èƒ½ï¼š
 ]]
 
 --[[
-	Õï¶Ï£ºÃ¿µ±Ò»Ãû½ÇÉ«¿ªÊ¼ÅĞ¶¨Ê±£¬Äã¿ÉÒÔ°ÑÅÆ¶Ñ¶¥Á½ÕÅÅÆ·Åµ½Îä½«ÅÆÉÏ£¬³ÆÖ®Îª¡°Õï¶ÏÅÆ¡±¡£Äã¿ÉÒÔ½«Õï¶ÏÅÆµ±×÷ÊÖÅÆÊ¹ÓÃ»ò´ò³ö¡£
+	è¯Šæ–­ï¼šæ¯å½“ä¸€åè§’è‰²å¼€å§‹åˆ¤å®šæ—¶ï¼Œä½ å¯ä»¥æŠŠç‰Œå †é¡¶ä¸¤å¼ ç‰Œæ”¾åˆ°æ­¦å°†ç‰Œä¸Šï¼Œç§°ä¹‹ä¸ºâ€œè¯Šæ–­ç‰Œâ€ã€‚ä½ å¯ä»¥å°†è¯Šæ–­ç‰Œå½“ä½œæ‰‹ç‰Œä½¿ç”¨æˆ–æ‰“å‡ºã€‚
 ]]
 
---²»·Ï»°ÁË£¬Ö±½ÓÉÏ¼¼ÄÜ£º
+--ä¸åºŸè¯äº†ï¼Œç›´æ¥ä¸ŠæŠ€èƒ½ï¼š
 
 devZhenduan = sgs.CreateTriggerSkill{
 	name = "devZhenduan",
@@ -305,56 +305,56 @@ devZhenduan = sgs.CreateTriggerSkill{
 		return room:askForSkillInvoke(ask_who,self:objectName(),data)
 	end,
 	on_effect = function(self, evnet, room, player, data,ask_who)
-		ask_who:addToPile("&devZhenduan",room:getNCards(2)) --ÅäºÏÕç¼§»á·Ç³£Ï²¸Ğ¡­¡­
+		ask_who:addToPile("&devZhenduan",room:getNCards(2)) --é…åˆç”„å§¬ä¼šéå¸¸å–œæ„Ÿâ€¦â€¦
 		--[[
-			Çë×¢ÒâÕâÀïµÄ&devZhenduanÕâ¸öPile£¬ÔÚ·­ÒëºÍ²Ù×÷µÄÊ±ºò&±ØĞë±£Áô¡£
+			è¯·æ³¨æ„è¿™é‡Œçš„&devZhenduanè¿™ä¸ªPileï¼Œåœ¨ç¿»è¯‘å’Œæ“ä½œçš„æ—¶å€™&å¿…é¡»ä¿ç•™ã€‚
 		]]
 		return false
 	end,
 }
 
 --[[
-	ÆäÊµºÏÀíÊ¹ÓÃÉÏÃæÈı¸öPile¿ÉÒÔÍê³É²»ÉÙ¿´ËÆÀ§ÄÑµÄ¹¤×÷¡£
-	ÖµµÃ×¢ÒâµÄÊÇ£¬¶ÔÓÚLuaÊÓÎª¼¼£¬&PileĞèÒªÊÖ¶¯ÔÚÊÓÎª¼¼ÖĞ¸ã¶¨¡£
-	ÎÒÃÇÔÙÀ´¿´ÁíÍâÒ»¸öÔÚ¿Í»§¶ËÄÜ¹»Ê¹ÓÃµÄ¶«Î÷¡£
+	å…¶å®åˆç†ä½¿ç”¨ä¸Šé¢ä¸‰ä¸ªPileå¯ä»¥å®Œæˆä¸å°‘çœ‹ä¼¼å›°éš¾çš„å·¥ä½œã€‚
+	å€¼å¾—æ³¨æ„çš„æ˜¯ï¼Œå¯¹äºLuaè§†ä¸ºæŠ€ï¼Œ&Pileéœ€è¦æ‰‹åŠ¨åœ¨è§†ä¸ºæŠ€ä¸­æå®šã€‚
+	æˆ‘ä»¬å†æ¥çœ‹å¦å¤–ä¸€ä¸ªåœ¨å®¢æˆ·ç«¯èƒ½å¤Ÿä½¿ç”¨çš„ä¸œè¥¿ã€‚
 	4.ServerInfo
-	¹ËÃûË¼Òå£¬¾ÍÊÇ·şÎñÆ÷ĞÅÏ¢¡£ËüµÄ¶¨ÒåÈçÏÂ£º
+	é¡¾åæ€ä¹‰ï¼Œå°±æ˜¯æœåŠ¡å™¨ä¿¡æ¯ã€‚å®ƒçš„å®šä¹‰å¦‚ä¸‹ï¼š
 ]]
 struct ServerInfoStruct {
-    const QString Name; --·şÎñÆ÷Ãû×Ö
-    const QString GameMode; --ÓÎÏ·Ä£Ê½£¬¾ßÌåµØ£¬Çë²Î¿¼Ô´´úÂë
-    const int OperationTimeout; --²Ù×÷Ê±¼ä
-    const int NullificationCountDown; --ÎŞĞ¸¿É»÷Ê±¼ä
-    const QStringList Extensions; --À©Õ¹°ü
-    const bool RandomSeat; --Ëæ»ú×ùÎ»
-    const bool EnableCheat; --ÔÊĞí×÷±×
-    const bool FreeChoose; --×ÔÓÉÑ¡½«
-    const bool ForbidAddingRobot; --½ûÖ¹AI
-    const bool DisableChat; --½ûÖ¹ÁÄÌì
-    const bool FirstShowingReward; --Ê×ÁÁÃşÅÆ
+    const QString Name; --æœåŠ¡å™¨åå­—
+    const QString GameMode; --æ¸¸æˆæ¨¡å¼ï¼Œå…·ä½“åœ°ï¼Œè¯·å‚è€ƒæºä»£ç 
+    const int OperationTimeout; --æ“ä½œæ—¶é—´
+    const int NullificationCountDown; --æ— æ‡ˆå¯å‡»æ—¶é—´
+    const QStringList Extensions; --æ‰©å±•åŒ…
+    const bool RandomSeat; --éšæœºåº§ä½
+    const bool EnableCheat; --å…è®¸ä½œå¼Š
+    const bool FreeChoose; --è‡ªç”±é€‰å°†
+    const bool ForbidAddingRobot; --ç¦æ­¢AI
+    const bool DisableChat; --ç¦æ­¢èŠå¤©
+    const bool FirstShowingReward; --é¦–äº®æ‘¸ç‰Œ
 
-    const bool DuringGame; --ÔÚÓÎÏ·ÖĞ
+    const bool DuringGame; --åœ¨æ¸¸æˆä¸­
 };
 
 extern ServerInfoStruct ServerInfo;
 
---ÕâÊÇC++´úÂë£¬ÔÚLuaÎÄ¼şÖĞÏÔÊ¾²»µ½ºÃ´¦¡­¡­
---µ±È»£¬ÄãÒ²¿ÉÒÔ²Î¿¼swig/sanguosha.i ÎÄ¼ş¡£
+--è¿™æ˜¯C++ä»£ç ï¼Œåœ¨Luaæ–‡ä»¶ä¸­æ˜¾ç¤ºä¸åˆ°å¥½å¤„â€¦â€¦
+--å½“ç„¶ï¼Œä½ ä¹Ÿå¯ä»¥å‚è€ƒswig/sanguosha.i æ–‡ä»¶ã€‚
 --[[
-	´Ó¶¨Òå¿ÉÒÔ£¬ÎÒÃÇ¿ÉÒÔÍ¨¹ısgs.ServerInfoÀ´·ÃÎÊÕâ¸ö½á¹¹Ìå£¬±ÈÈçËµ
-	sgs.ServerInfo.NameÉñÂíµÄ
-	ÓÉÓÚÕâ¸ö±È½Ï¼òµ¥£¬ËùÒÔÕâÀï¾Í²»ÏêÏ¸½éÉÜÁË¡£
+	ä»å®šä¹‰å¯ä»¥ï¼Œæˆ‘ä»¬å¯ä»¥é€šè¿‡sgs.ServerInfoæ¥è®¿é—®è¿™ä¸ªç»“æ„ä½“ï¼Œæ¯”å¦‚è¯´
+	sgs.ServerInfo.Nameç¥é©¬çš„
+	ç”±äºè¿™ä¸ªæ¯”è¾ƒç®€å•ï¼Œæ‰€ä»¥è¿™é‡Œå°±ä¸è¯¦ç»†ä»‹ç»äº†ã€‚
 	5.SkipGameRule
-	´Ó×ÖÃæÉÏ¿´¾ÍÊÇÌø¹ıÓÎÏ·¹æÔò£¬ÎÒÃÇÀ´¿´ÕâÑùÒ»¸ö¼¼ÄÜ¡£
+	ä»å­—é¢ä¸Šçœ‹å°±æ˜¯è·³è¿‡æ¸¸æˆè§„åˆ™ï¼Œæˆ‘ä»¬æ¥çœ‹è¿™æ ·ä¸€ä¸ªæŠ€èƒ½ã€‚
 ]]
 
 --[[
-	²ÂÒÉ£ºÖ÷½«¼¼£¬Ã¿µ±ÄãÊ¹ÓÃ¡¾É±¡¿Ö¸¶¨Ò»Ãû½ÇÉ«Ê±£¬¿ÉÒÔÈÃÄ¿±ê½ÇÉ«Ê¹ÓÃ¡¾É±¡¿À´ÏìÓ¦¡£
+	çŒœç–‘ï¼šä¸»å°†æŠ€ï¼Œæ¯å½“ä½ ä½¿ç”¨ã€æ€ã€‘æŒ‡å®šä¸€åè§’è‰²æ—¶ï¼Œå¯ä»¥è®©ç›®æ ‡è§’è‰²ä½¿ç”¨ã€æ€ã€‘æ¥å“åº”ã€‚
 ]]
 --[[
-	·ÖÎö£º
-	Õâ¸ö¼¼ÄÜ¸Ä±äÁËÕı³£µÄÓÎÏ·½ø³Ì£¬Òò´ËÎñ±ØĞèÒªÓÃSkipGameRuleÀ´Íê³É¡£
-	´úÂëÈçÏÂ£º
+	åˆ†æï¼š
+	è¿™ä¸ªæŠ€èƒ½æ”¹å˜äº†æ­£å¸¸çš„æ¸¸æˆè¿›ç¨‹ï¼Œå› æ­¤åŠ¡å¿…éœ€è¦ç”¨SkipGameRuleæ¥å®Œæˆã€‚
+	ä»£ç å¦‚ä¸‹ï¼š
 ]]
 devCaiyi = sgs.CreateTriggerSkill{
 	name = "devCaiyi",
@@ -373,11 +373,11 @@ devCaiyi = sgs.CreateTriggerSkill{
 			return true
 		end
 	end ,
-	on_effect = function(self, evnet, room, player, data) --ÕâĞ©ÄÚÈİÀ´×ÔGameRule.cpp
+	on_effect = function(self, evnet, room, player, data) --è¿™äº›å†…å®¹æ¥è‡ªGameRule.cpp
 		local effect = data:toSlashEffect()
 		if effect.jink_num == 1 then
             local jink = room:askForCard(effect.to, "slash", "slash-slash:" .. effect.from:objectName(), data, sgs.Card_MethodResponse, effect.from)
-			----¿ÉÄÜÕâÀïµÄhandling_methodÓĞÒ»Ğ©ÎÊÌâ£¬ÎÒ»á°ÑËü»»³É´ò³ö¡£
+			----å¯èƒ½è¿™é‡Œçš„handling_methodæœ‰ä¸€äº›é—®é¢˜ï¼Œæˆ‘ä¼šæŠŠå®ƒæ¢æˆæ‰“å‡ºã€‚
 			if room:isJinkEffected(effect.to, jink) then else jink = nil end
             room:slashResult(effect, jink)
         else
@@ -391,7 +391,7 @@ devCaiyi = sgs.CreateTriggerSkill{
 					prompt = ("@multi-slash%s:%s::%d"):format("",effect.from:objectName(),i)
 				end
                 asked_jink = room:askForCard(effect.to, "slash", prompt, data, sgs.Card_MethodResponse, effect.from)
-				--Í¬ÉÏ¡£
+				--åŒä¸Šã€‚
                 if ( not room:isJinkEffected(effect.to, asked_jink)) then
 					jink:deleteLater()
                     jink = nil
@@ -402,19 +402,19 @@ devCaiyi = sgs.CreateTriggerSkill{
             end
             room:slashResult(effect, jink)
         end
-		room:setTag("SkipGameRule",sgs.QVariant(true)) --ÕâÀïSkipGameRuleÁË¡£Ò»°ãÊÇ×îºóÔÙSkipGameRuleµÄ¡£
+		room:setTag("SkipGameRule",sgs.QVariant(true)) --è¿™é‡ŒSkipGameRuleäº†ã€‚ä¸€èˆ¬æ˜¯æœ€åå†SkipGameRuleçš„ã€‚
 	end ,
-	priority = 1 --Èç¹ûSkipGameRuleµÄ»°£¬ÓÅÏÈÈ¨Ò»¶¨Îª1
+	priority = 1 --å¦‚æœSkipGameRuleçš„è¯ï¼Œä¼˜å…ˆæƒä¸€å®šä¸º1
 }
 --[[
-	ºÃÏñÒ²²¢²»ÊÇºÜÄÑ°¡¡£
+	å¥½åƒä¹Ÿå¹¶ä¸æ˜¯å¾ˆéš¾å•Šã€‚
 	6.extra_cost 
-	Õâ¸öÊÇÒ»¸ö¼¼ÄÜ¿¨ÊôĞÔ£¬Ò»°ãÔÚÆ´µãµÄÊ±ºò»áÊ¹ÓÃµ½¡£
-	À´¿´ÕâÑùÒ»¸ö¼¼ÄÜ£º
+	è¿™ä¸ªæ˜¯ä¸€ä¸ªæŠ€èƒ½å¡å±æ€§ï¼Œä¸€èˆ¬åœ¨æ‹¼ç‚¹çš„æ—¶å€™ä¼šä½¿ç”¨åˆ°ã€‚
+	æ¥çœ‹è¿™æ ·ä¸€ä¸ªæŠ€èƒ½ï¼š
 ]]
 
 --[[
-	ÈÈĞÄ£º	¸±½«¼¼£¬»ØºÏÍâÃ¿µ±Ò»Ãû½ÇÉ«½øÈë±ôËÀ½×¶ÎÊ±£¬Äã¿ÉÒÔÓëµ±Ç°½ÇÉ«Æ´µã£¬ÈôÄãÓ®£¬ÊÓÎªÄã¶Ôµ±Ç°±ôËÀ½ÇÉ«Ê¹ÓÃÒ»ÕÅ¡¾ÌÒ¡¿¡£Äã¿ÉÒÔÖØ¸´´Ë¹ı³ÌÖ±µ½ÄãÆ´µãÊ§°Ü»òÕß²»Ïë¼ÌĞøÆ´µãÎªÖ¹¡£
+	çƒ­å¿ƒï¼š	å‰¯å°†æŠ€ï¼Œå›åˆå¤–æ¯å½“ä¸€åè§’è‰²è¿›å…¥æ¿’æ­»é˜¶æ®µæ—¶ï¼Œä½ å¯ä»¥ä¸å½“å‰è§’è‰²æ‹¼ç‚¹ï¼Œè‹¥ä½ èµ¢ï¼Œè§†ä¸ºä½ å¯¹å½“å‰æ¿’æ­»è§’è‰²ä½¿ç”¨ä¸€å¼ ã€æ¡ƒã€‘ã€‚ä½ å¯ä»¥é‡å¤æ­¤è¿‡ç¨‹ç›´åˆ°ä½ æ‹¼ç‚¹å¤±è´¥æˆ–è€…ä¸æƒ³ç»§ç»­æ‹¼ç‚¹ä¸ºæ­¢ã€‚
 ]]
 
 devRexinCard=sgs.CreateSkillCard{
@@ -424,7 +424,7 @@ devRexinCard=sgs.CreateSkillCard{
 	filter = function(self, targets, to_select)
 		return #targets == 0 and to_select:getPhase() ~= sgs.Player_NotActive and to_select:objectName() ~= sgs.Self:objectName()
 	end ,
-	extra_cost = function(self,room,card_use) --ÒªÔÚÕâ¸öÊ±ºòÑ¯ÎÊÆ´µãÅÆºÍ¼ÇÂ¼Æ´µã¹ı³Ì
+	extra_cost = function(self,room,card_use) --è¦åœ¨è¿™ä¸ªæ—¶å€™è¯¢é—®æ‹¼ç‚¹ç‰Œå’Œè®°å½•æ‹¼ç‚¹è¿‡ç¨‹
 		local source = card_use.from
 		local subcard = sgs.Sanguosha:getCard(self:getEffectiveId())
 		local pd 
@@ -440,7 +440,7 @@ devRexinCard=sgs.CreateSkillCard{
 	on_effect = function(self,effect)
 		local pd = effect.from:getTag("devRexin"):toPindian()
 		effect.from:removeTag("devRexin")
-		local success = effect.from:pindian(pd) --ÔÚÕâÀïÆ´µã²úÉú½á¹û¡£
+		local success = effect.from:pindian(pd) --åœ¨è¿™é‡Œæ‹¼ç‚¹äº§ç”Ÿç»“æœã€‚
 		if success then
 			local peach = sgs.Sanguosha:cloneCard("peach")
 			peach:setSkillName("devRexin")
@@ -449,26 +449,26 @@ devRexinCard=sgs.CreateSkillCard{
 		else
 			effect.from:getRoom():setPlayerFlag(effect.from,"Global_devRexinFailed")
 			--[[
-				ÔÚÕâÀïËµÒ»ÏÂGlobal_***FailedÕâ¸öFlag
-				Õâ¸öFlag»áÔÚÇ¡µ±µÄÊ±»ú£¨ChoiceMade£©±»ÏµÍ³Çå³ı¡£
-				ËùÒÔ£¬¸Ğ¾õÓ¦¸Ã±»ÏŞÖÆµÄÊ±ºò¾ÍÓÃ°É¡­¡­
-				¶ÔÓÚChoiceMade£¬¿ÉÒÔ²Î¿¼ÉñÉ±Lua°ÉÀïÃæµÄÒ»ÆªChoiceMadeµÄËµÃ÷
+				åœ¨è¿™é‡Œè¯´ä¸€ä¸‹Global_***Failedè¿™ä¸ªFlag
+				è¿™ä¸ªFlagä¼šåœ¨æ°å½“çš„æ—¶æœºï¼ˆChoiceMadeï¼‰è¢«ç³»ç»Ÿæ¸…é™¤ã€‚
+				æ‰€ä»¥ï¼Œæ„Ÿè§‰åº”è¯¥è¢«é™åˆ¶çš„æ—¶å€™å°±ç”¨å§â€¦â€¦
+				å¯¹äºChoiceMadeï¼Œå¯ä»¥å‚è€ƒç¥æ€Luaå§é‡Œé¢çš„ä¸€ç¯‡ChoiceMadeçš„è¯´æ˜
 			]]
 		end
 	end
 }
 devRexin = sgs.CreateOneCardViewAsSkill{
 	name = "devRexin",
-	enabled_at_play = function() --Ò»¶¨²»ÄÜÖ÷¶¯Ê¹ÓÃ
+	enabled_at_play = function() --ä¸€å®šä¸èƒ½ä¸»åŠ¨ä½¿ç”¨
 		return false
 	end,
 	filter_pattern = ".",
 	enabled_at_response=function(self, player, pattern)
-		if player:hasFlag("Global_devRexinFailed") or player:hasFlag("Global_PreventPeach") then return false end --´¦ÀíÍêÉ±ºÍÊ§°Ü¡£
+		if player:hasFlag("Global_devRexinFailed") or player:hasFlag("Global_PreventPeach") then return false end --å¤„ç†å®Œæ€å’Œå¤±è´¥ã€‚
 		if player:isKongcheng() then return false end
 		if not string.find(pattern,"peach") then return false end
-		for _,p in sgs.qlist(player:getAliveSiblings()) do --µü´úµ±Ç°¿Í»§¶ËµÄËùÓĞÍæ¼Ò
-			if p:getPhase() ~= sgs.Player_NotActive and not p:isKongcheng() then --µ±Ç°»ØºÏ½ÇÉ«²»¿Õ³Ç
+		for _,p in sgs.qlist(player:getAliveSiblings()) do --è¿­ä»£å½“å‰å®¢æˆ·ç«¯çš„æ‰€æœ‰ç©å®¶
+			if p:getPhase() ~= sgs.Player_NotActive and not p:isKongcheng() then --å½“å‰å›åˆè§’è‰²ä¸ç©ºåŸ
 				return true
 			end
 		end
@@ -477,15 +477,15 @@ devRexin = sgs.CreateOneCardViewAsSkill{
 	view_as = function(self,card)
 		local acard = devRexinCard:clone()
 		acard:addSubcard(card)
-		acard:setShowSkill(self:objectName()) --±ğÍüÁË
+		acard:setShowSkill(self:objectName()) --åˆ«å¿˜äº†
 		acard:setSkillName(self:objectName())
 		return acard
 	end,
 }
 --[[
-	ÆäÊµÕâÊÇÉñÉ±ÎªÁË¹æÔò¶øÉè¼ÆµÄÒ»¸ö½Ó¿Ú£¬ÔÚextra_costµÄÊ±ºòÍæ¼Ò»¹Ã»ÓĞÃ÷ÖÃÎä½«£¬ËùÒÔ¿ÉÒÔÖ´ĞĞÒ»Ğ©Ğ§¹û¡£
-	µ±È»£¬À©Õ¹ĞÔµÄÄÚÈİ²»½ö½ö¾ÍÕâÃ´¶à£¬ÓĞÒ»Ğ©ÒÑ¾­½éÉÜ¹ıÁË£¬¾ßÌåµØ£¬¿ÉÒÔ²Î¿¼ÏÂÃæµÄÎÄµµ£º
-	1.ÊÓÎª¼¼²¿·Ö
-	2.Ê¹ÓÃJsonÀ´¿ØÖÆ¿Í»§¶Ë
-	3.´¥·¢¼¼²¿·Ö
+	å…¶å®è¿™æ˜¯ç¥æ€ä¸ºäº†è§„åˆ™è€Œè®¾è®¡çš„ä¸€ä¸ªæ¥å£ï¼Œåœ¨extra_costçš„æ—¶å€™ç©å®¶è¿˜æ²¡æœ‰æ˜ç½®æ­¦å°†ï¼Œæ‰€ä»¥å¯ä»¥æ‰§è¡Œä¸€äº›æ•ˆæœã€‚
+	å½“ç„¶ï¼Œæ‰©å±•æ€§çš„å†…å®¹ä¸ä»…ä»…å°±è¿™ä¹ˆå¤šï¼Œæœ‰ä¸€äº›å·²ç»ä»‹ç»è¿‡äº†ï¼Œå…·ä½“åœ°ï¼Œå¯ä»¥å‚è€ƒä¸‹é¢çš„æ–‡æ¡£ï¼š
+	1.è§†ä¸ºæŠ€éƒ¨åˆ†
+	2.ä½¿ç”¨Jsonæ¥æ§åˆ¶å®¢æˆ·ç«¯
+	3.è§¦å‘æŠ€éƒ¨åˆ†
 ]]
