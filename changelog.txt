@@ -1,7 +1,58 @@
-﻿QSanguosha-Hegemony (QSGSH) Version 1.0.0
+﻿QSanguosha-Hegemony (QSGSH) Version 1.1.0
 
 
   Change Log / Release Notes
+
+1.1.0
+-----------------------------
+  Bugs Fixed:
+  +【木牛流马】有牌时不能发动【鬼才】、【鬼道】(http://tieba.baidu.com/p/3555358729?pn=2 52楼)
+
+  +【固政】②的“可以”没有提供选择权(http://tieba.baidu.com/p/3555358729?share=9105&fr=share 57楼）
+
+  +君张角先亮副将群势力提前获得【弘法】(http://tieba.baidu.com/p/3555358729?pn=2 62楼)
+
+  +【朱雀羽扇】翻译错误(http://tieba.baidu.com/p/3555358729?pn=1 33楼)
+
+  +AI 【护心镜】敌方策略(http://tieba.baidu.com/p/3555358729?pn=1 30楼)
+
+  +AI 【无双】亮将(http://tieba.baidu.com/p/3555358729?pn=1 7楼)
+
+  +AI 拼点武将连横大点数牌
+
+  +AI 被【骁果】时不弃置宝物(http://tieba.baidu.com/p/3555358729?pn=2 45楼)
+
+  +AI 修复 getOverflow
+
+  +点击【弘法】后选牌过程中点选其他视为技导致错误(http://tieba.baidu.com/p/3555358729?pn=2 58楼)
+
+  +修正 Lua 触发技的优先权
+
+  +避免客户端实例成为野指针
+
+  API Changes：
+  +使用 TriggerList 取代 QMap<ServerPlayer *, QStringList>
+
+  +增加 Player::getHandPile()
+
+  +对国战 Lua 开放 GuhuoBox 蛊惑框 详见 extension-doc 文档
+
+  +更新 fmod 至 4.44.50，更新 freetype 至 2.5.5
+
+  +增加 AI 对 &pile 的支持
+
+  New Features/Enhancements:
+  +添加阵包配音及其翻译
+  
+  +添加【势备篇】卡牌一览卡图
+
+  +新启动界面
+
+  +AI 优化 boss 组合的技能组 Defense 值 (http://tieba.baidu.com/p/3555358729 37楼)
+    
+  +AI 【天妒】【屯田】不为其改判(http://tieba.baidu.com/p/3555358729?pn=2 53楼)
+
+  +AI 优化【飞龙夺凤】选将 使其多样化(http://tieba.baidu.com/p/3555358729?pn=3 75楼)
 
 1.0.0
 -----------------------------
