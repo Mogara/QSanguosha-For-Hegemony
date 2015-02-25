@@ -474,6 +474,7 @@ android:DEFINES += "\"l_getlocaledecpoint()='.'\""
         src/lua53/lapi.c \
         src/lua53/lutf8lib.c
     HEADERS += \
+        src/lua53/lprefix.h \
         src/lua53/lzio.h \
         src/lua53/lvm.h \
         src/lua53/lundump.h \

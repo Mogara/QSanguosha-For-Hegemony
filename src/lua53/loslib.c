@@ -1,8 +1,13 @@
 /*
-** $Id: loslib.c,v 1.49 2014/10/17 16:28:21 roberto Exp $
+** $Id: loslib.c,v 1.54 2014/12/26 14:46:07 roberto Exp $
 ** Standard Operating System library
 ** See Copyright Notice in lua.h
 */
+
+#define loslib_c
+#define LUA_LIB
+
+#include "lprefix.h"
 
 
 #include <errno.h>
@@ -10,9 +15,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#define loslib_c
-#define LUA_LIB
 
 #include "lua.h"
 
@@ -25,9 +27,9 @@
 ** list of valid conversion specifiers for the 'strftime' function
 */
 
-#if !defined(LUA_USE_POSIX)
+#if defined(LUA_USE_C89)
 #define LUA_STRFTIMEOPTIONS	{ "aAbBcdHIjmMpSUwWxXyYz%", "" }
-#else
+#else  /* C99 specification */
 #define LUA_STRFTIMEOPTIONS \
 	{ "aAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ%", "", \
 	  "E", "cCxXyY",  \
@@ -74,7 +76,7 @@
 
 #else				/* }{ */
 
-/* ANSI definitions */
+/* ISO C definitions */
 #define LUA_TMPNAMBUFSIZE	L_tmpnam
 #define lua_tmpnam(b,e)		{ e = (tmpnam(b) == NULL); }
 
@@ -97,9 +99,9 @@
 
 #else				/* }{ */
 
-/* ANSI definitions */
-#define l_gmtime(t,r)		((void)r, gmtime(t))
-#define l_localtime(t,r)  	((void)r, localtime(t))
+/* ISO C definitions */
+#define l_gmtime(t,r)		((void)(r)->tm_sec, gmtime(t))
+#define l_localtime(t,r)  	((void)(r)->tm_sec, localtime(t))
 
 #endif				/* } */
 
@@ -108,9 +110,14 @@
 
 
 static int os_execute (lua_State *L) {
-  luaL_optstring(L, 1, NULL);
-  lua_pushboolean(L, 1);  /* true if there is a shell */
-  return 1;
+  const char *cmd = luaL_optstring(L, 1, NULL);
+  int stat = system(cmd);
+  if (cmd != NULL)
+    return luaL_execresult(L, stat);
+  else {
+    lua_pushboolean(L, stat);  /* true if there is a shell */
+    return 1;
+  }
 }
 
 
@@ -139,13 +146,7 @@ static int os_tmpname (lua_State *L) {
 
 
 static int os_getenv (lua_State *L) {
-  lua_pushstring(L,
-#ifndef WINRT
-                 getenv(luaL_checkstring(L, 1))
-#else
-                 NULL
-#endif
-                 );  /* if NULL push nil */
+  lua_pushstring(L, getenv(luaL_checkstring(L, 1)));  /* if NULL push nil */
   return 1;
 }
 
@@ -228,7 +229,7 @@ static int os_date (lua_State *L) {
   struct tm tmr, *stm;
   if (*s == '!') {  /* UTC? */
     stm = l_gmtime(&t, &tmr);
-    s++;  /* skip `!' */
+    s++;  /* skip '!' */
   }
   else
     stm = l_localtime(&t, &tmr);
