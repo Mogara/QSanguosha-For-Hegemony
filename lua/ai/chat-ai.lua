@@ -216,7 +216,7 @@ sgs.ai_chat_func[sgs.TargetConfirmed].gounannv = function(self, player, data)
 		if to:objectName() ~= use.from:objectName() and use.from:isFemale() and to:isMale() and math.random() < 0.1
 			and to:getState() == "robot" and use.from:getState() == "robot" then
 			use.from:speak("复活吧，我的勇士")
-			to:speak("为你而战，我的女士")
+			to:speak("为你而战，我的女王")
 		end
 	end
 end
