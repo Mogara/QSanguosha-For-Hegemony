@@ -116,7 +116,8 @@ SOURCES += \
     src/util/detector.cpp \
     src/util/nativesocket.cpp \
     src/util/recorder.cpp \
-    swig/sanguosha_wrap.cxx
+    swig/sanguosha_wrap.cxx \
+    src/ui/guhuobox.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -226,7 +227,8 @@ HEADERS += \
     src/util/detector.h \
     src/util/nativesocket.h \
     src/util/recorder.h \
-    src/util/socket.h
+    src/util/socket.h \
+    src/ui/guhuobox.h
 
 FORMS += \
     src/dialog/cardoverview.ui \
@@ -362,6 +364,8 @@ CONFIG(audio){
         CONFIG(debug, debug|release):ANDROID_EXTRA_LIBS += $$ANDROID_LIBPATH/libfmodexL.so
         else:ANDROID_EXTRA_LIBS += $$ANDROID_LIBPATH/libfmodex.so
     }
+
+    ios: QMAKE_LFLAGS += -framework AudioToolBox
 }
 
 
@@ -470,6 +474,7 @@ android:DEFINES += "\"l_getlocaledecpoint()='.'\""
         src/lua53/lapi.c \
         src/lua53/lutf8lib.c
     HEADERS += \
+        src/lua53/lprefix.h \
         src/lua53/lzio.h \
         src/lua53/lvm.h \
         src/lua53/lundump.h \

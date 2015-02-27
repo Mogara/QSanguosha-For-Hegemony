@@ -1,0 +1,1 @@
+freetype is built using VS, not sure whether it can run or not.

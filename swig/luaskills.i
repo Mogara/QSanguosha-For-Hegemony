@@ -25,6 +25,8 @@ public:
     void setViewAsSkill(ViewAsSkill *view_as_skill);
     void setGlobal(bool global);
     void setCanPreshow(bool preshow);
+    void setGuhuoType(const char *type);
+    
 
     virtual int getPriority() const;
 
@@ -120,6 +122,8 @@ class LuaViewAsSkill: public ViewAsSkill {
 public:
     LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile);
 
+    void setGuhuoType(const char *type);
+    
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const;
     virtual const Card *viewAs(const QList<const Card *> &cards) const;
 

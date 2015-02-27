@@ -902,13 +902,16 @@ public:
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        QStringList handlist;
-        bool allEmpty = true;
-        foreach (const QString &pile,player->getPileNames()){
-            if (pile.startsWith("&") || pile == "wooden_ox")
-                allEmpty = false;
+        QList <const Card *> handlist = player->getCards("h");
+        foreach(int id,player->getHandPile()){
+            const Card *ca = Sanguosha->getCard(id);
+            handlist.append(ca);
         }
-        return !player->isKongcheng() || !allEmpty;
+        foreach(const Card *ca,handlist){
+            if(ca->isBlack())
+                return true;
+        }
+        return false;
     }
 
     virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{

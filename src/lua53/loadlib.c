@@ -1,5 +1,5 @@
 /*
-** $Id: loadlib.c,v 1.117 2014/10/17 16:28:21 roberto Exp $
+** $Id: loadlib.c,v 1.124 2015/01/05 13:51:39 roberto Exp $
 ** Dynamic library loader for Lua
 ** See Copyright Notice in lua.h
 **
@@ -8,21 +8,14 @@
 ** systems.
 */
 
+#define loadlib_c
+#define LUA_LIB
 
-/*
-** if needed, includes windows header before everything else
-*/
-#if defined(_WIN32)
-#include <windows.h>
-#endif
+#include "lprefix.h"
 
 
 #include <stdlib.h>
 #include <string.h>
-
-
-#define loadlib_c
-#define LUA_LIB
 
 #include "lua.h"
 
@@ -92,8 +85,11 @@
 #define LUA_OFSEP	"_"
 
 
-/* table (in the registry) that keeps handles for all loaded C libraries */
-#define CLIBS		"_CLIBS"
+/*
+** unique key for table in the registry that keeps handles
+** for all loaded C libraries
+*/
+static const int CLIBS = 0;
 
 #define LIB_FAIL	"open"
 
@@ -127,7 +123,7 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym);
 
 
 
-#if defined(LUA_USE_DLOPEN)
+#if defined(LUA_USE_DLOPEN)	/* { */
 /*
 ** {========================================================================
 ** This is an implementation of loadlib based on the dlfcn interface.
@@ -138,6 +134,18 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym);
 */
 
 #include <dlfcn.h>
+
+/*
+** Macro to covert pointer to void* to pointer to function. This cast
+** is undefined according to ISO C, but POSIX assumes that it must work.
+** (The '__extension__' in gnu compilers is only to avoid warnings.)
+*/
+#if defined(__GNUC__)
+#define cast_func(p) (__extension__ (lua_CFunction)(p))
+#else
+#define cast_func(p) ((lua_CFunction)(p))
+#endif
+
 
 static void lsys_unloadlib (void *lib) {
   dlclose(lib);
@@ -152,7 +160,7 @@ static void *lsys_load (lua_State *L, const char *path, int seeglb) {
 
 
 static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
-  lua_CFunction f = (lua_CFunction)dlsym(lib, sym);
+  lua_CFunction f = cast_func(dlsym(lib, sym));
   if (f == NULL) lua_pushstring(L, dlerror());
   return f;
 }
@@ -161,12 +169,14 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
 
 
 
-#elif defined(LUA_DL_DLL)
+#elif defined(LUA_DL_DLL)	/* }{ */
 /*
 ** {======================================================================
 ** This is an implementation of loadlib for Windows using native functions.
 ** =======================================================================
 */
+
+#include <windows.h>
 
 #undef setprogdir
 
@@ -225,7 +235,7 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
 /* }====================================================== */
 
 
-#else
+#else				/* }{ */
 /*
 ** {======================================================
 ** Fallback for other systems
@@ -258,7 +268,7 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
 }
 
 /* }====================================================== */
-#endif
+#endif				/* } */
 
 
 /*
@@ -266,7 +276,7 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
 */
 static void *checkclib (lua_State *L, const char *path) {
   void *plib;
-  lua_getfield(L, LUA_REGISTRYINDEX, CLIBS);
+  lua_rawgetp(L, LUA_REGISTRYINDEX, &CLIBS);
   lua_getfield(L, -1, path);
   plib = lua_touserdata(L, -1);  /* plib = CLIBS[path] */
   lua_pop(L, 2);  /* pop CLIBS table and 'plib' */
@@ -279,7 +289,7 @@ static void *checkclib (lua_State *L, const char *path) {
 ** registry.CLIBS[#CLIBS + 1] = plib  -- also keep a list of all libraries
 */
 static void addtoclib (lua_State *L, const char *path, void *plib) {
-  lua_getfield(L, LUA_REGISTRYINDEX, CLIBS);
+  lua_rawgetp(L, LUA_REGISTRYINDEX, &CLIBS);
   lua_pushlightuserdata(L, plib);
   lua_pushvalue(L, -1);
   lua_setfield(L, -3, path);  /* CLIBS[path] = plib */
@@ -520,8 +530,8 @@ static void findloader (lua_State *L, const char *name) {
   int i;
   luaL_Buffer msg;  /* to build error message */
   luaL_buffinit(L, &msg);
-  lua_getfield(L, lua_upvalueindex(1), "searchers");  /* will be at index 3 */
-  if (!lua_istable(L, 3))
+  /* push 'package.searchers' to index 3 in the stack */
+  if (lua_getfield(L, lua_upvalueindex(1), "searchers") != LUA_TTABLE)
     luaL_error(L, "'package.searchers' must be a table");
   /*  iterate over available searchers to find a loader */
   for (i = 1; ; i++) {
@@ -734,7 +744,7 @@ static void createsearcherstable (lua_State *L) {
   }
 #if defined(LUA_COMPAT_LOADERS)
   lua_pushvalue(L, -1);  /* make a copy of 'searchers' table */
-  lua_setfield(L, -3, "loaders");  /* put it in field `loaders' */
+  lua_setfield(L, -3, "loaders");  /* put it in field 'loaders' */
 #endif
   lua_setfield(L, -2, "searchers");  /* put it in field 'searchers' */
 }
@@ -745,17 +755,18 @@ static void createsearcherstable (lua_State *L) {
 ** setting a finalizer to close all libraries when closing state.
 */
 static void createclibstable (lua_State *L) {
-  luaL_getsubtable(L, LUA_REGISTRYINDEX, CLIBS);  /* create CLIBS table */
+  lua_newtable(L);  /* create CLIBS table */
   lua_createtable(L, 0, 1);  /* create metatable for CLIBS */
   lua_pushcfunction(L, gctm);
   lua_setfield(L, -2, "__gc");  /* set finalizer for CLIBS table */
   lua_setmetatable(L, -2);
+  lua_rawsetp(L, LUA_REGISTRYINDEX, &CLIBS);  /* set CLIBS table in registry */
 }
 
 
 LUAMOD_API int luaopen_package (lua_State *L) {
   createclibstable(L);
-  luaL_newlib(L, pk_funcs);  /* create `package' table */
+  luaL_newlib(L, pk_funcs);  /* create 'package' table */
   createsearcherstable(L);
   /* set field 'path' */
   setpath(L, "path", LUA_PATHVARVERSION, LUA_PATH_VAR, LUA_PATH_DEFAULT);
@@ -765,10 +776,10 @@ LUAMOD_API int luaopen_package (lua_State *L) {
   lua_pushliteral(L, LUA_DIRSEP "\n" LUA_PATH_SEP "\n" LUA_PATH_MARK "\n"
                      LUA_EXEC_DIR "\n" LUA_IGMARK "\n");
   lua_setfield(L, -2, "config");
-  /* set field `loaded' */
+  /* set field 'loaded' */
   luaL_getsubtable(L, LUA_REGISTRYINDEX, "_LOADED");
   lua_setfield(L, -2, "loaded");
-  /* set field `preload' */
+  /* set field 'preload' */
   luaL_getsubtable(L, LUA_REGISTRYINDEX, "_PRELOAD");
   lua_setfield(L, -2, "preload");
   lua_pushglobaltable(L);

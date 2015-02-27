@@ -272,6 +272,9 @@ public:
 
     bool pileOpen(const char *pile_name, const char *player) const;
     void setPileOpen(const char *pile_name, const char *player);
+	
+	//Xusine:
+    QList<int> getHandPile() const;
 
     void addHistory(const char *name, int times = 1);
     void clearHistory(const char *name = "");
@@ -1250,6 +1253,8 @@ public:
 
     virtual int getEffectIndex(const ServerPlayer *player, const Card *card) const;
     virtual QDialog *getDialog() const;
+	
+	virtual QString getGuhuoBox() const;
 
     void initMediaSource();
     void playAudioEffect(int index = -1) const;

@@ -25,6 +25,7 @@ class Player;
 class ServerPlayer;
 class Card;
 class QDialog;
+class GuhuoBox;
 
 #include "room.h"
 #include "namespace.h"
@@ -54,6 +55,8 @@ public:
 
     virtual int getEffectIndex(const ServerPlayer *player, const Card *card) const;
     virtual QDialog *getDialog() const;
+
+    virtual QString getGuhuoBox() const;
 
     void initMediaSource();
     void playAudioEffect(int index = -1) const;

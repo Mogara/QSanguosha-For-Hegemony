@@ -49,6 +49,8 @@ sgs.ai_skill_use_func.TransferCard = function(transferCard, use, self)
 			if not oneJink and isCard("Jink", c, self.player) then
 				oneJink = true
 				continue
+			elseif c:getNumber() > 10 and self.player:hasSkills("tianyi|quhu|shuangren|lieren") then 
+				continue
 			end
 			table.insert(cards, c)
 		end

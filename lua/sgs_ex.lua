@@ -45,6 +45,9 @@ function sgs.CreateTriggerSkill(spec)
 				skill:setCanPreshow(true)
 			end
 		end
+		if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
+			skill:setGuhuoType(spec.guhuo_type)
+		end
 	end
 
 	if type(spec.events) == "number" then
@@ -511,6 +514,9 @@ function sgs.CreateViewAsSkill(spec)
 
 	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, expand_pile)
 
+	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
+		skill:setGuhuoType(spec.guhuo_type)
+	end
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
 	end
@@ -566,7 +572,11 @@ function sgs.CreateOneCardViewAsSkill(spec)
 	skill.enabled_at_play = spec.enabled_at_play
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
-
+	
+	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
+		skill:setGuhuoType(spec.guhuo_type)
+	end
+	
 	return skill
 end
 
@@ -594,7 +604,11 @@ function sgs.CreateZeroCardViewAsSkill(spec)
 	skill.enabled_at_play = spec.enabled_at_play
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
-
+	
+	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
+		skill:setGuhuoType(spec.guhuo_type)
+	end
+	
 	return skill
 end
 

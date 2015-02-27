@@ -6,7 +6,7 @@
 
 --CreateTriggerSkill需要以下参数：
 
---name, relate_to_place, can_preshow, frequency, limit_mark, is_battle_array, battle_array_type, events, view_as_skill, can_trigger, on_cost, on_effect, priority
+--name, relate_to_place, can_preshow, frequency, limit_mark, guhuo_type, is_battle_array, battle_array_type, events, view_as_skill, can_trigger, on_cost, on_effect, priority
 
 --name和relate_to_place不再说明。
 
@@ -29,6 +29,9 @@
 --字符串类型，用于限定技，指定限定技所使用的标记名称。
 --无默认值。
 
+--guhuo_type:
+--参见视为技的相关内容。
+
 --is_battle_array:
 --布尔类型，指示这个技能为阵法技。
 --阵法技的view_as_skill要指向阵法召唤视为技，不能为空，也不能指向其他的视为技。
@@ -50,6 +53,7 @@
 --有view_as_skill的技能，frequency不能为sgs.Skill_Wake
 --界面上的按钮将不再指向触发技，而是指向本视为技
 --阵法技里如果没有定义该量，则会报错
+--如果在绑定的视为技中有guhuo_type成员，请将其移动到触发技中。
 
 --can_trigger:
 --lua函数，返回两个值，第一个用加号分割的技能名的字符串，第二个是技能的发动者（也就是源码里可以改变的那个ask_who）。
@@ -62,6 +66,10 @@ if yuejin and yuejin:isAlive() then
 	return "xiaoguo", yuejin
 end
 --第二个返回值可以省略
+--第三种情况是返回一个字符串和发动玩家。这个字符串有 "技能名字->目标玩家的objectName" 这样得到格式。对于有多个目标玩家的应该用"+"将其连起来。比如说“无双”的部分can_trigger:
+return self:objectName().."->"..table.concat(targets,"+")
+--其中的targets是含有【杀】的所有目标角色的objectName的一个Lua table。
+--这个时候下文中消耗(on_cost)和效果(on_effect)的player参数就变成了目标，而ask_who参数就变成了技能所有者。
 --传入参数为self(技能对象),event(触发事件),room(房间对象),player(技能的触发者),data(事件数据)
 --默认条件为“具有本技能并且存活，并且是技能触发者只发动一次本技能”
 --在这里和身份局技能不同，国战要求把所有关于技能判断的部分全放到这里，还有一些锁定效果也要放到里面
@@ -69,13 +77,13 @@ end
 
 --on_cost:
 --lua函数，返回布尔值。执行技能的询问发动以及技能消耗。
---传入参数为：self,event,room,player,data，与can_trigger的参数名对应的意义一致
+--传入参数为：self,event,room,player,data,ask_who，前五个与can_trigger的参数名对应的意义一致，对于最后一个参数ask_who，实际上就是在can_trigger返回的玩家，比如说上文第二种情况的yuejin
 --默认值为返回true，而这个效果肯定是对于大多数技能来讲是不能用的，所以大家就尽量更改这个地方吧
 
 --on_effect:
 --lua函数，返回布尔值，执行技能的效果。
 --有些防止部分事件发生的需要在本函数当中返回true，需要注意。
---传入参数为：self,event,room,player,data，与on_cost一致。
+--传入参数为：self,event,room,player,data,ask_who，与on_cost一致。
 --如果需要区分不同的事件执行不同效果，请根据event参数使用条件语句。
 --通常需要将事件数据(data)转为具体的游戏结构对象才能进行操作。你可以在源码的swig/qvariant.i文件中看到定义。
 --无默认值。
@@ -83,8 +91,8 @@ end
 --priority:
 --整数值，代表本技能的优先度。
 --如果本技能与其他技能（或规则）在同一个时机都触发，那么优先度影响这些技能或规则的执行顺序。
---优先度更大的技能（或规则）优先执行。游戏规则的优先度为0，典型的技能优先度为2
---觉醒技的优先度默认为3，其他情况下默认为2
+--优先度更大的技能（或规则）优先执行。游戏规则的优先度为0，其他的C++技能优先度基本为2
+--Lua技能的优先度为3
 
 -- **实例：
 
@@ -94,7 +102,7 @@ LuaJianxiong = sgs.CreateTriggerSkill{
 	name = "LuaJianxiong" ,
 	events = {sgs.Damaged} ,
 	can_trigger = function(self, event, room, player, data)
-		if table.contains(self:TriggerSkillTriggerable(event, room, player, data, player), self:objectName()) then
+		if player and player:isAlive() and player:hasSkill(self:objectName()) then
 			local damage = data:toDamage() --这步通常是必要的。我们需要将data对象转成对应的数据类型来得到相应的信息。
 			local card = damage.card
 			return (card and (room:getCardPlace(card:getEffectiveId()) == sgs.Player_PlaceTable)) and self:objectName() or ""
@@ -102,7 +110,7 @@ LuaJianxiong = sgs.CreateTriggerSkill{
 		end
 		return ""
 	end ,
-	on_cost = function(self, event, room, player, data)
+	on_cost = function(self, event, room, player, data,ask_who)
 		if player:askForSkillInvoke(self:objectName(), data) then --询问技能发动
 			room:broadcastSkillInvoke(self:objectName()) --播放配音
 			return true --表示技能已经消耗完成
@@ -111,7 +119,7 @@ LuaJianxiong = sgs.CreateTriggerSkill{
 		end
 		return false --表示没有执行消耗，技能不执行
 	end ,
-	on_effect = function(self, event, room, player, data)
+	on_effect = function(self, event, room, player, data,ask_who)
 		local damage = data:toDamage()
 		player:obtainCard(damage.card) --获得该牌，没得说
 		return false --表示运行流程不发生某种中断
@@ -139,7 +147,7 @@ LuaWangxi = sgs.CreateTriggerSkill{
 	name = "LuaWangxi" ,
 	events = {sgs.Damage, sgs.Damaged} ,
 	can_trigger = function(self, event, room, player, data)
-		if not table.contains(self:TriggerSkillTriggerable(event, room, player, data, player), self:objectName()) then return "" end
+		if not (player and player:isAlive() and player:hasSkill(self:objectName())) then return "" end
 		local damage = data:toDamage()
 		local target = nil
 		if event == sgs.Damage then

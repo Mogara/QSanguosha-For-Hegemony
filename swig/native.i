@@ -71,7 +71,11 @@ static int GetConfig(lua_State *lua) {
     int type = lua_type(lua, 2);
     switch (type) {
     case LUA_TNUMBER: {
+#if LUA_VERSION_NUM >= 503
+        int n = luaL_checkinteger(lua, 2);
+#else
         int n = luaL_checkint(lua, 2);
+#endif
         lua_pushinteger(lua, Config.value(key, n).toInt());
 
         break;
@@ -102,7 +106,11 @@ static int SetConfig(lua_State *lua) {
 
     switch (type) {
     case LUA_TNUMBER: {
+#if LUA_VERSION_NUM >= 503
+        int n = luaL_checkinteger(lua, 2);
+#else
         int n = luaL_checkint(lua, 2);
+#endif
         Config.setValue(key, n);
 
         break;

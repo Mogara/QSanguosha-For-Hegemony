@@ -105,7 +105,7 @@ end
 sgs.ai_skill_cardask["@multi-jink"] = sgs.ai_skill_cardask["@multi-jink-start"]
 
 sgs.ai_skill_invoke.wushuang = function(self, data)
-	if not self:willShowForAttack() then return false end
+	if not self:willShowForAttack() and not self:willShowForDefence() then return false end
 	local use = self.player:getTag("WushuangData"):toCardUse()
 	local current_trigger = data:toPlayer()
 	local index = use.to:indexOf(current_trigger)

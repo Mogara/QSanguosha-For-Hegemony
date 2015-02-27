@@ -13,7 +13,7 @@
 
 --sgs.CreateSkillCard需要以下参数定义：
 
---name, target_fixed, will_throw, handling_method, can_recast, filter, feasible, about_to_use, on_use, on_effect, on_validate, on_validate_in_response
+--name, target_fixed, will_throw, handling_method, can_recast, filter, feasible, about_to_use, on_use, on_effect, on_validate, on_validate_in_response,extra_cost
 
 --name:
 --字符串，牌的名字。取个好听的名字~
@@ -46,6 +46,109 @@ sgs.Card_MethodDiscard --will_throw
 --如果你确实需要“作为对象的牌”，请还是在了解游戏机制后自行发明解决方法……
 --传入参数为self,targets(已经选择的玩家),to_select(需要判断是否能选择的玩家), Self(自身玩家)
 --默认条件为“一名其他玩家”。
+--扩展：在国战0.8.3版本以后加入了可以选择重复选择角色的filter。（类似于业炎）具体的，请参考下面给出的技能。
+--[[
+	大业炎：你可以弃置4张花色不同的牌来分配5点火焰伤害。
+]]
+Fire = function(player,target,damagePoint)
+	local damage = sgs.DamageStruct()
+	damage.from = player
+	damage.to = target
+	damage.damage = damagePoint
+	damage.nature = sgs.DamageStruct_Fire
+	player:getRoom():damage(damage)
+end
+GreatYeyanCard = sgs.CreateSkillCard{
+	name="GreatYeyanCard",
+	will_throw = true,
+	skill_name = "Yeyan",
+	filter = function(self, targets, to_select)
+		local i = 0
+		for _,p in pairs(targets)do
+			if p:objectName() == to_select:objectName() then
+				i = i + 1
+			end
+		end
+		local maxVote = math.max(5-#targets,0)+i
+		return maxVote --这里的filter使用了返回maxVote的模式。
+		--[[
+			当然，还有很多其他的模式：
+			1.只返回布尔值，这时的效果和正常的filter相同
+			2.返回一个整数值，这个整数值就是maxVote。只要vote大于0那么就可以选择角色
+			3.同时返回一个布尔值和整数值，此时布尔值作为结果，整数值作为maxVote。
+			这里的maxVote为最大能选择该角色几次。
+		]]
+	end,
+	feasible = function(self, targets)
+		if self:getSubcards():length() ~= 4 then return false end
+		local all_suit = {}
+		for _,id in sgs.qlist(self:getSubcards())do
+			local c = sgs.Sanguosha:getCard(id)
+			if not table.contains(all_suit,c:getSuit()) then
+				table.insert(all_suit,c:getSuit())
+			else
+				return false
+			end
+		end
+		return #targets <= 5
+	end,
+	on_use = function(self, room, source, targets)
+		local criticaltarget = 0
+		local totalvictim = 0
+		local map = {}
+		for _,sp in pairs(targets)do
+			if map[sp:objectName()] then
+				map[sp:objectName()] = map[sp:objectName()] + 1
+			else
+				map[sp:objectName()] = 1
+			end
+		end
+		
+		if #targets == 1 then
+			map[targets[1]:objectName()] = map[targets[1]:objectName()] + 2;
+		end
+		local target_table = sgs.SPlayerList()
+		for sp,va in pairs(map)do
+			if va > 1 then criticaltarget = criticaltarget + 1  end
+			totalvictim = totalvictim + 1
+			for _,p in pairs(targets)do
+				if p:objectName() == sp then
+					target_table:append(p)
+					break
+				end
+			end
+		end
+		if criticaltarget > 0 then
+			room:sortByActionOrder(target_table)
+			for _,sp in sgs.qlist(target_table)do
+				Fire(source, sp, map[sp:objectName()])
+			end
+		end
+	end,
+}
+Yeyan = sgs.CreateViewAsSkill{ --详细定义可以参考lua\sgs_ex.lua
+	name = "Yeyan",
+	n = 4,
+	view_filter = function(self, selected, to_select)
+		if to_select:isEquipped() or sgs.Self:isJilei(to_select) then
+			return false
+		end
+		for _,ca in sgs.list(selected)do
+			if ca:getSuit() == to_select:getSuit() then return false end
+		end
+		return true
+	end,
+	view_as = function(self,cards) 
+		if #cards == 4 then
+			local YeyanCard =  GreatYeyanCard:clone()
+			for _,card in ipairs(cards) do
+				YeyanCard:addSubcard(card)
+			end
+			YeyanCard:setShowSkill(self:objectName())
+			return YeyanCard
+		end
+	end, 
+}
 
 --feasible：
 --lua函数，返回一个布尔值，相当于viewasSkill的view_as方法是否应该返回nil。
@@ -82,6 +185,10 @@ sgs.Card_MethodDiscard --will_throw
 --传入参数：self, user（打出牌的人）
 --默认值为返回自身
 --使用此函数可以参考弘法
+
+--extra_cost
+--lua函数，无返回值，在亮将前需要执行的额外消耗。
+--比如说天义的拼点就是在这一步进行的。
 
 --以下为“离间牌”的实现方法
 

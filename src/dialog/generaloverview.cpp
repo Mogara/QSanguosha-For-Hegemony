@@ -636,7 +636,7 @@ void GeneralOverview::on_tableView_clicked(const QModelIndex &index)
     else
         ui->companionsLineEdit->setText(companions_text);
     ui->skillTextEdit->append(general->getSkillDescription(false, false));
-    #endif
+#endif
 }
 
 
@@ -657,6 +657,7 @@ void GeneralOverview::playAudioEffect() {
 }
 
 void GeneralOverview::showNextSkin() {
+#ifndef Q_OS_IOS
     QModelIndex index = ui->tableView->currentIndex();
     if (!index.isValid())
         return;
@@ -689,6 +690,7 @@ void GeneralOverview::showNextSkin() {
         addWinLineOfCaoCao();
 
     button_layout->addStretch();
+#endif
 }
 
 void GeneralOverview::startSearch(const SearchDetails &detail) {

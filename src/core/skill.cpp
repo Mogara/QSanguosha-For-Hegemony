@@ -203,6 +203,10 @@ QDialog *Skill::getDialog() const{
     return NULL;
 }
 
+QString Skill::getGuhuoBox() const{
+    return "";
+}
+
 bool Skill::canPreshow() const{
     if (inherits("TriggerSkill")) {
         const TriggerSkill *triskill = qobject_cast<const TriggerSkill *>(this);
