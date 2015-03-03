@@ -334,6 +334,7 @@ public:
 HeyiSummon::HeyiSummon()
     : ArraySummonCard("heyi")
 {
+    mute = true;
 }
 
 class Heyi : public BattleArraySkill {
@@ -399,6 +400,61 @@ public:
     }
 };
 
+class HeyiEffect : public TriggerSkill {
+public:
+    HeyiEffect() : TriggerSkill("#heyi_effect") {
+        events << EventPhaseStart << GeneralShown;
+        frequency = Compulsory;
+    }
+
+    virtual int getPriority() const {
+        return 8;
+    }
+
+    virtual bool canPreshow() const {
+        return false;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const{
+        if (triggerEvent == EventPhaseStart) {
+            if (player != NULL && player->isAlive() && player->getPhase() == Player::RoundStart) {
+                ServerPlayer *caohong = room->findPlayerBySkillName("heyi");
+                if (caohong && caohong->isAlive() && caohong->hasShownSkill("heyi") && player->inFormationRalation(caohong)) {
+                    if (player != caohong) {
+                        ask_who = caohong;
+                        return QStringList(objectName());
+                    }
+                }
+            }
+        } else if (triggerEvent == GeneralShown) {
+            if (TriggerSkill::triggerable(player) && player->hasShownSkill("heyi") && data.toBool() == player->inHeadSkills("heyi")) {
+                ask_who = player;
+                return QStringList(objectName());
+            }
+        }
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent , Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who /* = NULL */) const{
+        if (ask_who == NULL)
+            ask_who = player;
+
+        if (ask_who->hasShownSkill("heyi"))
+            return true;
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who /* = NULL */) const{
+        if (ask_who == NULL)
+            ask_who = player;
+
+        room->broadcastSkillInvoke("heyi", ask_who);
+        return false;
+    }
+};
+
 class Feiying : public TriggerSkill {
 public:
     Feiying() : TriggerSkill("feiying") {
@@ -443,6 +499,13 @@ public:
         TiaoxinCard *card = new TiaoxinCard;
         card->setShowSkill(objectName());
         return card;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const {
+        if (player->hasArmorEffect("bazhen") || player->hasArmorEffect("EightDiagram"))
+            return 3;
+
+        return qrand() % 2 + 1;
     }
 };
 
@@ -1232,7 +1295,8 @@ FormationPackage::FormationPackage()
     caohong->addSkill(new Huyuan);
     caohong->addSkill(new Heyi);
     caohong->addSkill(new HeyiFeiying);
-    insertRelatedSkills("heyi", "#heyi_feiying");
+    caohong->addSkill(new HeyiEffect);
+    insertRelatedSkills("heyi", 2, "#heyi_feiying", "#heyi_effect");
 
     General *jiangwei = new General(this, "jiangwei", "shu"); // SHU 012 G
     jiangwei->addSkill(new Tiaoxin);
