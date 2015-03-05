@@ -116,9 +116,10 @@ void BanIpDialog::insertClicked() {
     if (row != -1){
         QString ip = left->currentItem()->text().split("::").last();
 
-        if (ip.startsWith("127."))
+        if (ip.startsWith("127.")){
             QMessageBox::warning(this, tr("Warning!"), tr("This is your local Loopback Address and can't be banned!"));
-
+            return;
+        }
         if (right->findItems(ip, Qt::MatchFlags(Qt::MatchExactly)).isEmpty())
             right->addItem(ip);
     }

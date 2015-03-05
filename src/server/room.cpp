@@ -3029,8 +3029,9 @@ bool Room::useCard(const CardUseStruct &use, bool add_history) {
     QString key;
     if (card->inherits("LuaSkillCard"))
         key = "#" + card->objectName();
-    else
-        key = card->getClassName();
+	else
+		key = card->getClassName();
+
     int slash_count = card_use.from->getSlashCount();
     bool slash_not_record = key.contains("Slash")
         && slash_count > 0
@@ -3045,6 +3046,8 @@ bool Room::useCard(const CardUseStruct &use, bool add_history) {
         if (!slash_not_record) {
             card_use.m_addHistory = true;
             addPlayerHistory(card_use.from, key);
+			if(card->isVirtualCard())
+				addPlayerHistory(card_use.from,card->toString()); // just for convenience
         }
         addPlayerHistory(NULL, "pushPile");
     }

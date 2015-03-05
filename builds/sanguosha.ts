@@ -2150,7 +2150,7 @@
     <message>
         <location filename="../src/ui/guhuobox.cpp" line="12"/>
         <source>Please choose:</source>
-        <translation type="unfinished">请选择:</translation>
+        <translation>请选择:</translation>
     </message>
 </context>
 <context>

@@ -21,6 +21,34 @@
 #include "standard-package.h"
 #include "exppattern.h"
 #include "card.h"
+#include "skill.h"
+
+//Xusine: we can put some global skills in here,for example,the Global FakeMove.
+//just for convenience.
+
+class GlobalFakeMoveSkill : public TriggerSkill { 
+public:
+	GlobalFakeMoveSkill()
+		:TriggerSkill(QString("global-fake-move"))
+	{
+		events << BeforeCardsMove << CardsMoveOneTime;
+		global = true;
+	}
+
+	virtual int getPriority() const{
+		return 15;
+	}
+	virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &) const{
+		return (target != NULL) ? QStringList(objectName()) : QStringList();
+	}
+	virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const{
+		foreach (ServerPlayer *p, room->getAllPlayers())
+			if (p->hasFlag("Global_InTempMoving")) return true;
+
+		return false;
+	}
+
+};
 
 StandardPackage::StandardPackage()
     : Package("standard")
@@ -29,6 +57,8 @@ StandardPackage::StandardPackage()
     addShuGenerals();
     addWuGenerals();
     addQunGenerals();
+
+	skills << new GlobalFakeMoveSkill;
 
     patterns["."] = new ExpPattern(".|.|.|hand");
     patterns[".S"] = new ExpPattern(".|spade|.|hand");

@@ -1573,7 +1573,7 @@ public:
 
 %{
 
-void Room::doScript(const char *script) {
+void Room::doScript(const QString &script) {
     SWIG_NewPointerObj(L, this, SWIGTYPE_p_Room, 0);
     lua_setglobal(L, "R");
 

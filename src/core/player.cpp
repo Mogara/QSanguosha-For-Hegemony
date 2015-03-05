@@ -254,6 +254,9 @@ int Player::getAttackRange(bool include_weapon) const{
 bool Player::inMyAttackRange(const Player *other) const{
     if (distanceTo(other) == -1)
         return false;
+    QStringList in_attack_range_players = property("in_my_attack_range").toStringList();
+    if(in_attack_range_players.contains(other->objectName())) // for DIY Skills
+        return true;
     return distanceTo(other) <= getAttackRange();
 }
 
