@@ -26,7 +26,8 @@
 #include "skill.h"
 #include "standard.h"
 
-class CunsiCard : public SkillCard {
+class CunsiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -38,7 +39,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class DuanxieCard : public SkillCard {
+class DuanxieCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -48,14 +50,16 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class FengshiSummon : public ArraySummonCard {
+class FengshiSummon : public ArraySummonCard
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE FengshiSummon();
 };
 
-class HongfaCard : public SkillCard {
+class HongfaCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -63,7 +67,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class HongfaTianbingCard : public SkillCard {
+class HongfaTianbingCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -71,7 +76,8 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
-class WendaoCard : public SkillCard {
+class WendaoCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -80,14 +86,16 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class MomentumPackage : public Package {
+class MomentumPackage : public Package
+{
     Q_OBJECT
 
 public:
     MomentumPackage();
 };
 
-class PeaceSpell : public Armor{
+class PeaceSpell : public Armor
+{
     Q_OBJECT
 
 public:
@@ -95,7 +103,8 @@ public:
     virtual void onUninstall(ServerPlayer *player) const;
 };
 
-class MomentumEquipPackage : public Package{
+class MomentumEquipPackage : public Package
+{
     Q_OBJECT
 
 public:

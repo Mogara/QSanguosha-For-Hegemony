@@ -70,7 +70,7 @@ RuleSummary::RuleSummary(QWidget *parent)
     layout->addLayout(hLayout);
 
     QStringList names = Sanguosha->getModScenarioNames();
-    for(int i = 0; i < names.size(); ++ i) {
+    for (int i = 0; i < names.size(); ++i) {
         QString fileName = QString("rule/%1.html").arg(names.at(i));
         if (!QFile::exists(fileName))
             names.removeAt(i);
@@ -93,7 +93,8 @@ RuleSummary::RuleSummary(QWidget *parent)
     content_box->verticalScrollBar()->setStyleSheet(style);
 }
 
-void RuleSummary::loadContent(int row) {
+void RuleSummary::loadContent(int row)
+{
     QString name = list->item(row)->data(Qt::UserRole).toString();
     QString filename = QString("rule/%1.html").arg(name);
     QFile file(filename);

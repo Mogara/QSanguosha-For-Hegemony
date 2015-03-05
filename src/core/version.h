@@ -23,9 +23,11 @@
 
 #include <QString>
 
-class QSanVersionNumber{
+class QSanVersionNumber
+{
 public:
-    enum VersionType{
+    enum VersionType
+    {
         alpha,
         beta,
         offical,
@@ -57,7 +59,8 @@ private:
     int m_step;
 };
 
-struct UpdateInfoStruct {
+struct UpdateInfoStruct
+{
     QString version_number;
     bool is_patch;
     QString address;

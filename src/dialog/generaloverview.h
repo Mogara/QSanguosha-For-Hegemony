@@ -34,7 +34,8 @@ class Skill;
 class GeneralOverview;
 struct SearchDetails;
 
-class GeneralSearch : public FlatDialog {
+class GeneralSearch : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -74,7 +75,8 @@ namespace Ui {
     class GeneralOverview;
 }
 
-class GeneralOverview : public FlatDialog {
+class GeneralOverview : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -105,6 +107,7 @@ private:
 public slots:
     void startSearch(const SearchDetails &detail);
     void startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper, const QStringList &packages);
+
 private slots:
     void playAudioEffect();
     void copyLines();

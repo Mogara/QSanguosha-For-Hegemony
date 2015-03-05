@@ -23,10 +23,11 @@
 
 #include <QGraphicsObject>
 
-class GraphicsBox : public QGraphicsObject {
+class GraphicsBox : public QGraphicsObject
+{
     Q_OBJECT
 
-public :
+public:
     explicit GraphicsBox(const QString &title = QString());
     virtual ~GraphicsBox();
 
@@ -39,7 +40,10 @@ protected:
 
     virtual QRectF boundingRect() const = 0;
 
-    virtual void paintLayout(QPainter *painter) { Q_UNUSED(painter) }
+    virtual void paintLayout(QPainter *painter)
+    {
+        Q_UNUSED(painter)
+    }
 
     void moveToCenter();
     void disappear();

@@ -25,14 +25,16 @@
 #include "card.h"
 #include "skill.h"
 
-class Mashu : public DistanceSkill {
+class Mashu : public DistanceSkill
+{
 public:
     explicit Mashu(const QString &);
 
     virtual int getCorrect(const Player *from, const Player *) const;
 };
 
-class RendeCard : public SkillCard {
+class RendeCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -41,7 +43,8 @@ public:
     virtual void extraCost(Room *room, const CardUseStruct &card_use) const;
 };
 
-class SavageAssaultAvoid : public TriggerSkill {
+class SavageAssaultAvoid : public TriggerSkill
+{
 public:
     explicit SavageAssaultAvoid(const QString &);
 
@@ -52,7 +55,8 @@ private:
     QString avoid_skill;
 };
 
-class FangquanCard : public SkillCard {
+class FangquanCard : public SkillCard
+{
     Q_OBJECT
 
 public:

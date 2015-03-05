@@ -26,7 +26,8 @@
 class QListWidget;
 class QTextEdit;
 
-class RuleSummary : public FlatDialog {
+class RuleSummary : public FlatDialog
+{
     Q_OBJECT
 
 public:

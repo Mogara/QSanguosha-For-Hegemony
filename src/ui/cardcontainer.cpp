@@ -32,7 +32,7 @@
 
 CardContainer::CardContainer()
     : confirm_button(new Button(tr("confirm"), 0.6)),
-      scene_width(0), itemCount(0)
+    scene_width(0), itemCount(0)
 {
     confirm_button->setParentItem(this);
     confirm_button->hide();
@@ -41,7 +41,8 @@ CardContainer::CardContainer()
     GraphicsBox::stylize(this);
 }
 
-void CardContainer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void CardContainer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     GraphicsBox::paintGraphicsBoxStyle(painter, tr("QSanguosha-Hegemony"), boundingRect());
 
     const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
@@ -60,8 +61,7 @@ void CardContainer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
         if (i < first_row) {
             x = 25 + (card_width + cardInterval) * i;
             y = 45;
-        }
-        else {
+        } else {
             if (items.length() % 2 == 1)
                 x = 25 + card_width / 2 + cardInterval / 2
                 + (card_width + cardInterval) * (i - first_row);
@@ -73,7 +73,8 @@ void CardContainer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
     }
 }
 
-QRectF CardContainer::boundingRect() const{
+QRectF CardContainer::boundingRect() const
+{
     const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
     bool one_row = true;
@@ -87,7 +88,8 @@ QRectF CardContainer::boundingRect() const{
     return QRectF(0, 0, width, height);
 }
 
-void CardContainer::fillCards(const QList<int> &card_ids, const QList<int> &disabled_ids) {
+void CardContainer::fillCards(const QList<int> &card_ids, const QList<int> &disabled_ids)
+{
     if (card_ids == ids)
         return;
 
@@ -100,7 +102,7 @@ void CardContainer::fillCards(const QList<int> &card_ids, const QList<int> &disa
     } else if (!items.isEmpty()) {
         retained_stack.push(retained());
         items_stack.push(items);
-        foreach (CardItem *item, items)
+        foreach(CardItem *item, items)
             item->hide();
         items.clear();
     }
@@ -154,15 +156,18 @@ void CardContainer::fillCards(const QList<int> &card_ids, const QList<int> &disa
     confirm_button->setPos(boundingRect().center().x() - confirm_button->boundingRect().width() / 2, boundingRect().height() - 40);
 }
 
-bool CardContainer::_addCardItems(QList<CardItem *> &, const CardsMoveStruct &) {
+bool CardContainer::_addCardItems(QList<CardItem *> &, const CardsMoveStruct &)
+{
     return true;
 }
 
-bool CardContainer::retained() {
+bool CardContainer::retained()
+{
     return confirm_button != NULL && confirm_button->isVisible();
 }
 
-void CardContainer::clear() {
+void CardContainer::clear()
+{
     foreach (CardItem *item, items) {
         item->hide();
         item->deleteLater();
@@ -184,12 +189,14 @@ void CardContainer::clear() {
     }
 }
 
-void CardContainer::freezeCards(bool is_frozen) {
-    foreach (CardItem *item, items)
+void CardContainer::freezeCards(bool is_frozen)
+{
+    foreach(CardItem *item, items)
         item->setFrozen(is_frozen);
 }
 
-QList<CardItem *> CardContainer::removeCardItems(const QList<int> &card_ids, Player::Place) {
+QList<CardItem *> CardContainer::removeCardItems(const QList<int> &card_ids, Player::Place)
+{
     QList<CardItem *> result;
     foreach (int card_id, card_ids) {
         CardItem *to_take = NULL;
@@ -214,7 +221,8 @@ QList<CardItem *> CardContainer::removeCardItems(const QList<int> &card_ids, Pla
     return result;
 }
 
-int CardContainer::getFirstEnabled() const{
+int CardContainer::getFirstEnabled() const
+{
     foreach (CardItem *card, items) {
         if (card->isEnabled())
             return card->getCard()->getId();
@@ -222,7 +230,8 @@ int CardContainer::getFirstEnabled() const{
     return -1;
 }
 
-void CardContainer::startChoose() {
+void CardContainer::startChoose()
+{
     confirm_button->hide();
     foreach (CardItem *item, items) {
         connect(item, &CardItem::leave_hover, this, &CardContainer::grabItem);
@@ -230,7 +239,8 @@ void CardContainer::startChoose() {
     }
 }
 
-void CardContainer::startGongxin(const QList<int> &enabled_ids) {
+void CardContainer::startGongxin(const QList<int> &enabled_ids)
+{
     if (enabled_ids.isEmpty()) return;
     foreach (CardItem *item, items) {
         const Card *card = item->getCard();
@@ -241,14 +251,16 @@ void CardContainer::startGongxin(const QList<int> &enabled_ids) {
     }
 }
 
-void CardContainer::addConfirmButton() {
-    foreach (CardItem *card, items)
+void CardContainer::addConfirmButton()
+{
+    foreach(CardItem *card, items)
         card->setFlag(ItemIsMovable, false);
 
     confirm_button->show();
 }
 
-void CardContainer::grabItem() {
+void CardContainer::grabItem()
+{
     CardItem *card_item = qobject_cast<CardItem *>(sender());
     if (card_item && !collidesWithItem(card_item)) {
         card_item->disconnect(this);
@@ -256,7 +268,8 @@ void CardContainer::grabItem() {
     }
 }
 
-void CardContainer::chooseItem() {
+void CardContainer::chooseItem()
+{
     CardItem *card_item = qobject_cast<CardItem *>(sender());
     if (card_item) {
         card_item->disconnect(this);
@@ -264,7 +277,8 @@ void CardContainer::chooseItem() {
     }
 }
 
-void CardContainer::gongxinItem() {
+void CardContainer::gongxinItem()
+{
     CardItem *card_item = qobject_cast<CardItem *>(sender());
     if (card_item) {
         emit item_gongxined(card_item->getCard()->getId());
@@ -272,10 +286,11 @@ void CardContainer::gongxinItem() {
     }
 }
 
-void CardContainer::view(const ClientPlayer *player) {
+void CardContainer::view(const ClientPlayer *player)
+{
     QList<int> card_ids;
     QList<const Card *> cards = player->getHandcards();
-    foreach (const Card *card, cards)
+    foreach(const Card *card, cards)
         card_ids << card->getEffectiveId();
 
     fillCards(card_ids);

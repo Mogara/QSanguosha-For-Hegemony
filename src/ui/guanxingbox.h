@@ -23,7 +23,8 @@
 
 #include "cardcontainer.h"
 
-class GuanxingBox : public CardContainer {
+class GuanxingBox : public CardContainer
+{
     Q_OBJECT
 
 public:

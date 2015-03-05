@@ -31,8 +31,8 @@ static QRectF ButtonRect(0, 0, 154, 154);
 
 Tile::Tile(const QString &label, const QSizeF &size)
     : Button(QPixmap(), size),
-      down(false), auto_hide_title(true), mouse_area(Outside),
-      rotation(NULL), scale(NULL), title(NULL), scroll_timer(NULL)
+    down(false), auto_hide_title(true), mouse_area(Outside),
+    rotation(NULL), scale(NULL), title(NULL), scroll_timer(NULL)
 {
     this->label = label;
     init();
@@ -40,8 +40,8 @@ Tile::Tile(const QString &label, const QSizeF &size)
 
 Tile::Tile(const QString &label, qreal scale)
     : Button(QPixmap(), scale),
-      down(false), auto_hide_title(true), mouse_area(Outside),
-      rotation(NULL), scale(NULL), title(NULL), scroll_timer(NULL)
+    down(false), auto_hide_title(true), mouse_area(Outside),
+    rotation(NULL), scale(NULL), title(NULL), scroll_timer(NULL)
 {
     this->label = label;
     size = ButtonRect.size() * scale;

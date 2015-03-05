@@ -37,7 +37,8 @@ class QPushButton;
 class QPropertyAnimation;
 class GraphicsPixmapHoverItem;
 
-class Photo : public PlayerCardContainer {
+class Photo : public PlayerCardContainer
+{
     Q_OBJECT
 
 public:
@@ -54,7 +55,8 @@ public:
 
     void updateSmallAvatar();
 
-    enum FrameType {
+    enum FrameType
+    {
         S_FRAME_PLAYING,
         S_FRAME_RESPONDING,
         S_FRAME_SOS,
@@ -72,18 +74,54 @@ public slots:
     virtual void refresh();
 
 protected:
-    inline virtual QGraphicsItem *_getEquipParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getDelayedTrickParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getAvatarParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getMarkParent() { return _m_floatingArea; }
-    inline virtual QGraphicsItem *_getPhaseParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getRoleComboBoxParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getProgressBarParent() { return this; }
-    inline virtual QGraphicsItem *_getFocusFrameParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getDeathIconParent() { return _m_groupDeath; }
-    virtual QGraphicsItem *_getPileParent() { return _m_groupMain; }
-    inline virtual QString getResourceKeyName() { return QSanRoomSkin::S_SKIN_KEY_PHOTO; }
-    inline virtual QAbstractAnimation *_getPlayerRemovedEffect() { return _blurEffect; }
+    inline virtual QGraphicsItem *_getEquipParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getDelayedTrickParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getAvatarParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getMarkParent()
+    {
+        return _m_floatingArea;
+    }
+    inline virtual QGraphicsItem *_getPhaseParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getRoleComboBoxParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getProgressBarParent()
+    {
+        return this;
+    }
+    inline virtual QGraphicsItem *_getFocusFrameParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getDeathIconParent()
+    {
+        return _m_groupDeath;
+    }
+    virtual QGraphicsItem *_getPileParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QString getResourceKeyName()
+    {
+        return QSanRoomSkin::S_SKIN_KEY_PHOTO;
+    }
+    inline virtual QAbstractAnimation *_getPlayerRemovedEffect()
+    {
+        return _blurEffect;
+    }
     virtual void _adjustComponentZValues();
     bool _addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo);
 

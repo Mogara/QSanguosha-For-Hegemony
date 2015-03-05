@@ -25,7 +25,8 @@
 #include <QPainter>
 #include <QGraphicsSceneEvent>
 
-class RoleComboBox : public QGraphicsObject {
+class RoleComboBox : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -35,7 +36,10 @@ public:
 
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    inline bool isExpanding() const { return expanding; };
+    inline bool isExpanding() const
+    {
+        return expanding;
+    };
 
 private:
 

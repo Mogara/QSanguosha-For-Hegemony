@@ -26,13 +26,15 @@
 class QLabel;
 class QVBoxLayout;
 
-class FlatDialog : public QDialog {
+class FlatDialog : public QDialog
+{
     Q_OBJECT
 
 public:
     FlatDialog(QWidget *parent = 0, bool initialLayoutWithTitle = true);
 
-    inline QVBoxLayout *mainLayout() const {
+    inline QVBoxLayout *mainLayout() const
+    {
         return layout;
     }
 

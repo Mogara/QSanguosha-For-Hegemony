@@ -24,7 +24,8 @@
 #include "package.h"
 #include "standard.h"
 
-class JiangeDefensePackage : public Package{
+class JiangeDefensePackage : public Package
+{
     Q_OBJECT
 
 public:

@@ -42,12 +42,16 @@ struct LogMessage;
 
 typedef QMap<const ServerPlayer *, QStringList> SPlayerDataMap;
 
-class Room : public QThread {
+class Room : public QThread
+{
     Q_OBJECT
     Q_ENUMS(GuanxingType)
 
 public:
-    enum GuanxingType { GuanxingUpOnly = 1, GuanxingBothSides = 0, GuanxingDownOnly = -1 };
+    enum GuanxingType
+    {
+        GuanxingUpOnly = 1, GuanxingBothSides = 0, GuanxingDownOnly = -1
+    };
 
     friend class RoomThread;
 
@@ -57,7 +61,10 @@ public:
     explicit Room(QObject *parent, const QString &mode);
     ~Room();
     ServerPlayer *addSocket(ClientSocket *socket);
-    inline int getId() const{ return _m_Id; }
+    inline int getId() const
+    {
+        return _m_Id;
+    }
     bool isFull() const;
     bool isFinished() const;
     bool canPause(ServerPlayer *p) const;
@@ -198,7 +205,7 @@ public:
 
     bool doNotify(ServerPlayer *player, int command, const QVariant &arg);
     bool doBroadcastNotify(int command, const QVariant &arg);
-    bool doBroadcastNotify(const QList<ServerPlayer *> &players, int command,  const QVariant &arg);
+    bool doBroadcastNotify(const QList<ServerPlayer *> &players, int command, const QVariant &arg);
 
     // Ask a server player to wait for the client response. Call is blocking until client replies or server times out,
     // whichever is earlier.
@@ -258,7 +265,8 @@ public:
         QList<ServerPlayer *> players = QList<ServerPlayer *>());
 
     inline void doAnimate(int type, const QString &arg1 = QString(), const QString &arg2 = QString(),
-        QList<ServerPlayer *> players = QList<ServerPlayer *>()) {
+        QList<ServerPlayer *> players = QList<ServerPlayer *>())
+    {
         doAnimate((QSanProtocol::AnimateType)type, arg1, arg2, players);
     }
 
@@ -272,8 +280,14 @@ public:
     void adjustSeats();
     void swapPile();
     QList<int> getDiscardPile();
-    inline QList<int> &getDrawPile() { return *m_drawPile; }
-    inline const QList<int> &getDrawPile() const{ return *m_drawPile; }
+    inline QList<int> &getDrawPile()
+    {
+        return *m_drawPile;
+    }
+    inline const QList<int> &getDrawPile() const
+    {
+        return *m_drawPile;
+    }
     int getCardFromPile(const QString &card_name);
     ServerPlayer *findPlayer(const QString &general_name, bool include_dead = false) const;
     QList<ServerPlayer *> findPlayersBySkillName(const QString &skill_name) const;
@@ -396,9 +410,18 @@ public:
 
     void broadcast(const QSanProtocol::AbstractPacket *packet, ServerPlayer *except = NULL);
     void networkDelayTestCommand(ServerPlayer *player, const QVariant &);
-    inline RoomState *getRoomState() { return &_m_roomState; }
-    inline Card *getCard(int cardId) const{ return _m_roomState.getCard(cardId); }
-    inline void resetCard(int cardId) { _m_roomState.resetCard(cardId); }
+    inline RoomState *getRoomState()
+    {
+        return &_m_roomState;
+    }
+    inline Card *getCard(int cardId) const
+    {
+        return _m_roomState.getCard(cardId);
+    }
+    inline void resetCard(int cardId)
+    {
+        _m_roomState.resetCard(cardId);
+    }
     void updateCardsOnLose(const CardsMoveStruct &move);
     void updateCardsOnGet(const CardsMoveStruct &move);
 
@@ -407,20 +430,25 @@ protected:
     int _m_Id;
 
 private:
-    struct _MoveSourceClassifier {
-        inline _MoveSourceClassifier(const CardsMoveStruct &move) {
+    struct _MoveSourceClassifier
+    {
+        inline _MoveSourceClassifier(const CardsMoveStruct &move)
+        {
             m_from = move.from; m_from_place = move.from_place;
             m_from_pile_name = move.from_pile_name; m_from_player_name = move.from_player_name;
         }
-        inline void copyTo(CardsMoveStruct &move) const{
+        inline void copyTo(CardsMoveStruct &move) const
+        {
             move.from = m_from; move.from_place = m_from_place;
             move.from_pile_name = m_from_pile_name; move.from_player_name = m_from_player_name;
         }
-        inline bool operator ==(const _MoveSourceClassifier &other) const{
+        inline bool operator ==(const _MoveSourceClassifier &other) const
+        {
             return m_from == other.m_from && m_from_place == other.m_from_place
                 && m_from_pile_name == other.m_from_pile_name && m_from_player_name == other.m_from_player_name;
         }
-        inline bool operator <(const _MoveSourceClassifier &other) const{
+        inline bool operator <(const _MoveSourceClassifier &other) const
+        {
             return m_from < other.m_from || m_from_place < other.m_from_place
                 || m_from_pile_name < other.m_from_pile_name || m_from_player_name < other.m_from_player_name;
         }
@@ -430,8 +458,10 @@ private:
         QString m_from_player_name;
     };
 
-    struct _MoveMergeClassifier {
-        inline _MoveMergeClassifier(const CardsMoveStruct &move) {
+    struct _MoveMergeClassifier
+    {
+        inline _MoveMergeClassifier(const CardsMoveStruct &move)
+        {
             m_from = move.from; m_to = move.to;
             m_to_place = move.to_place;
             m_to_pile_name = move.to_pile_name;
@@ -441,11 +471,13 @@ private:
             m_origin_to_place = move.origin_to_place;
             m_origin_to_pile_name = move.origin_to_pile_name;
         }
-        inline bool operator ==(const _MoveMergeClassifier &other) const{
+        inline bool operator ==(const _MoveMergeClassifier &other) const
+        {
             return m_from == other.m_from && m_to == other.m_to
                 && m_to_place == other.m_to_place && m_to_pile_name == other.m_to_pile_name;
         }
-        inline bool operator < (const _MoveMergeClassifier &other) const{
+        inline bool operator < (const _MoveMergeClassifier &other) const
+        {
             return m_from < other.m_from || m_to < other.m_to
                 || m_to_place < other.m_to_place || m_to_pile_name < other.m_to_pile_name;
         }
@@ -460,8 +492,10 @@ private:
         QString m_origin_to_pile_name;
     };
 
-    struct _MoveSeparateClassifier {
-        inline _MoveSeparateClassifier(const CardsMoveOneTimeStruct &moveOneTime, int index) {
+    struct _MoveSeparateClassifier
+    {
+        inline _MoveSeparateClassifier(const CardsMoveOneTimeStruct &moveOneTime, int index)
+        {
             m_from = moveOneTime.from; m_to = moveOneTime.to;
             m_from_place = moveOneTime.from_places[index]; m_to_place = moveOneTime.to_place;
             m_from_pile_name = moveOneTime.from_pile_names[index]; m_to_pile_name = moveOneTime.to_pile_name;
@@ -470,13 +504,15 @@ private:
             m_is_last_handcard = moveOneTime.is_last_handcard;
         }
 
-        inline bool operator ==(const _MoveSeparateClassifier &other) const{
+        inline bool operator ==(const _MoveSeparateClassifier &other) const
+        {
             return m_from == other.m_from && m_to == other.m_to
                 && m_from_place == other.m_from_place && m_to_place == other.m_to_place
                 && m_from_pile_name == other.m_from_pile_name && m_to_pile_name == other.m_to_pile_name
                 && m_open == other.m_open && m_reason == other.m_reason && m_is_last_handcard == other.m_is_last_handcard;
         }
-        inline bool operator < (const _MoveSeparateClassifier &other) const{
+        inline bool operator < (const _MoveSeparateClassifier &other) const
+        {
             return m_from < other.m_from && m_to < other.m_to
                 && m_from_place < other.m_from_place && m_to_place < other.m_to_place
                 && m_from_pile_name < other.m_from_pile_name && m_to_pile_name < other.m_to_pile_name
@@ -568,7 +604,8 @@ private:
     void doScript(const QString &script);
 
     //helper functions and structs
-    struct _NullificationAiHelper {
+    struct _NullificationAiHelper
+    {
         const Card *m_trick;
         ServerPlayer *m_from;
         ServerPlayer *m_to;

@@ -104,7 +104,7 @@ void FreeChooseDialog::chooseGeneral()
                 break;
             }
         }
-        if (second.isEmpty()){
+        if (second.isEmpty()) {
             QMessageBox::information(this, tr("Information"), tr("You can only select 2 generals in Pairs mode."));
             return;
         }
@@ -180,24 +180,24 @@ void FreeChooseDialog::disableButtons(QAbstractButton *)
 {
     QList<QAbstractButton *> buttons = group->buttons();
     QList<QAbstractButton *> checked;
-    foreach (QAbstractButton *btn, buttons){
+    foreach (QAbstractButton *btn, buttons) {
         if (btn->isChecked())
             checked << btn;
     }
-    if (checked.length() == 2){
-        foreach (QAbstractButton *btn, buttons){
+    if (checked.length() == 2) {
+        foreach (QAbstractButton *btn, buttons) {
             if (!btn->isChecked())
                 btn->setEnabled(false);
             else
                 btn->setEnabled(true);
         }
-    } else if (checked.length() == 1){
+    } else if (checked.length() == 1) {
         QString checked_kingdom = Sanguosha->getGeneral(checked.first()->objectName())->getKingdom();
-        foreach (QAbstractButton *btn, buttons){
+        foreach (QAbstractButton *btn, buttons) {
             QString btn_kingdom = Sanguosha->getGeneral(btn->objectName())->getKingdom();
             btn->setEnabled(checked_kingdom == btn_kingdom);
         }
-    } else if (checked.length() == 0){
+    } else if (checked.length() == 0) {
         foreach (QAbstractButton *btn, buttons)
             btn->setEnabled(true);
     } else {

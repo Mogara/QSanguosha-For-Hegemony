@@ -32,9 +32,12 @@ class SkinItem : public QGraphicsObject
 
 public:
     SkinItem(const QString &generalName, int skinId, bool used,
-             QGraphicsItem *parent = 0);
+        QGraphicsItem *parent = 0);
 
-    void setUsed(bool used) { m_used = used; }
+    void setUsed(bool used)
+    {
+        m_used = used;
+    }
 
     virtual QRectF boundingRect() const;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);

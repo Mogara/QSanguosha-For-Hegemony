@@ -22,7 +22,7 @@
 #include "skinbank.h"
 
 Title::Title(QGraphicsObject *parent, const QString &text, const QString &font_name, const int &font_size)
-: QGraphicsObject(parent), text(text), font_name(font_name), font_size(font_size)
+    : QGraphicsObject(parent), text(text), font_name(font_name), font_size(font_size)
 {
 }
 

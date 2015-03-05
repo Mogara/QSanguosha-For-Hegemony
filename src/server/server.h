@@ -32,7 +32,8 @@ class ClientSocket;
 class ServerSocket;
 class ServerPlayer;
 
-class Server : public QObject {
+class Server : public QObject
+{
     Q_OBJECT
 
 public:

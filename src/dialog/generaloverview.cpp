@@ -41,7 +41,8 @@
 #include <QMessageBox>
 #include <QScrollBar>
 
-struct SearchDetails {
+struct SearchDetails
+{
     bool include_hidden;
     QString nickname;
     QString name;
@@ -52,7 +53,8 @@ struct SearchDetails {
     QStringList packages;
 };
 
-static QLayout *HLay(QWidget *left, QWidget *right) {
+static QLayout *HLay(QWidget *left, QWidget *right)
+{
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(left);
     layout->addWidget(right);
@@ -70,7 +72,8 @@ GeneralSearch::GeneralSearch(GeneralOverview *parent)
     connect(this, &GeneralSearch::search, parent, (void (GeneralOverview::*)(const SearchDetails &))(&GeneralOverview::startSearch));
 }
 
-QWidget *GeneralSearch::createInfoTab() {
+QWidget *GeneralSearch::createInfoTab()
+{
     QVBoxLayout *layout = new QVBoxLayout;
 
     include_hidden_checkbox = new QCheckBox;
@@ -213,7 +216,8 @@ QWidget *GeneralSearch::createInfoTab() {
     return widget;
 }
 
-QLayout *GeneralSearch::createButtonLayout() {
+QLayout *GeneralSearch::createButtonLayout()
+{
     QHBoxLayout *button_layout = new QHBoxLayout;
 
     QPushButton *cancelButton = new QPushButton(tr("Cancel"));
@@ -231,7 +235,8 @@ QLayout *GeneralSearch::createButtonLayout() {
     return button_layout;
 }
 
-void GeneralSearch::accept() {
+void GeneralSearch::accept()
+{
     SearchDetails detail;
     detail.include_hidden = include_hidden_checkbox->isChecked();
     detail.nickname = nickname_edit->text();
@@ -254,7 +259,8 @@ void GeneralSearch::accept() {
     QDialog::accept();
 }
 
-void GeneralSearch::clearAll() {
+void GeneralSearch::clearAll()
+{
     include_hidden_checkbox->setChecked(true);
     nickname_edit->clear();
     name_edit->clear();
@@ -268,19 +274,22 @@ void GeneralSearch::clearAll() {
         button->setChecked(false);
 }
 
-void GeneralSearch::selectAllPackages() {
+void GeneralSearch::selectAllPackages()
+{
     foreach (QAbstractButton *button, package_buttons->buttons())
         button->setChecked(true);
 }
 
-void GeneralSearch::unselectAllPackages() {
+void GeneralSearch::unselectAllPackages()
+{
     foreach (QAbstractButton *button, package_buttons->buttons())
         button->setChecked(false);
 }
 
 static GeneralOverview *Overview;
 
-GeneralOverview *GeneralOverview::getInstance(QWidget *main_window) {
+GeneralOverview *GeneralOverview::getInstance(QWidget *main_window)
+{
     if (Overview == NULL)
         Overview = new GeneralOverview(main_window);
 
@@ -323,7 +332,8 @@ GeneralOverview::GeneralOverview(QWidget *parent)
 #endif
 }
 
-void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool init) {
+void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool init)
+{
     QList<const General *> generalsCopy = generals;
     QMap<const General *, int> tempGeneralMap;
     foreach (const General *general, generalsCopy) {
@@ -376,7 +386,8 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
 #endif
 }
 
-void GeneralOverview::resetButtons() {
+void GeneralOverview::resetButtons()
+{
     QLayoutItem *child;
     while ((child = button_layout->takeAt(0))) {
         QWidget *widget = child->widget();
@@ -385,7 +396,8 @@ void GeneralOverview::resetButtons() {
     }
 }
 
-GeneralOverview::~GeneralOverview() {
+GeneralOverview::~GeneralOverview()
+{
     delete ui;
 }
 
@@ -399,7 +411,8 @@ bool GeneralOverview::hasSkin(const General *general) const
     return true;
 }
 
-QString GeneralOverview::getIllustratorInfo(const QString &generalName) {
+QString GeneralOverview::getIllustratorInfo(const QString &generalName)
+{
     const int skinId = all_generals->value(Sanguosha->getGeneral(generalName));
     QString prefix = (skinId > 0) ? QString::number(skinId) : QString();
     QString illustratorText = Sanguosha->translate(QString("illustrator:%1%2").arg(prefix).arg(generalName));
@@ -440,12 +453,12 @@ QString GeneralOverview::getCvInfo(const QString &generalName)
     }
 }
 
-void GeneralOverview::addLines(const General *general, const Skill *skill) {
+void GeneralOverview::addLines(const General *general, const Skill *skill)
+{
     QString skill_name = Sanguosha->translate(skill->objectName());
 
     const int skinId = all_generals->value(general);
-    QStringList sources = skill->getSources(general->objectName(),
-                                            all_generals->value(general));
+    QStringList sources = skill->getSources(general->objectName(), all_generals->value(general));
 
     bool usingDefault = false;
 
@@ -480,9 +493,9 @@ void GeneralOverview::addLines(const General *general, const Skill *skill) {
             if (skinId == 0 || usingDefault)
                 skill_line = Sanguosha->translate("$" + filename);
             else
-                skill_line = Sanguosha->translate("$"+ QString::number(skinId) + filename);
+                skill_line = Sanguosha->translate("$" + QString::number(skinId) + filename);
             button->setDescription(skill_line);
-            
+
             connect(button, &QCommandLinkButton::clicked, this, &GeneralOverview::playAudioEffect);
 
             addCopyAction(button);
@@ -542,7 +555,8 @@ void GeneralOverview::addWinLineOfCaoCao()
     connect(win_button, &QCommandLinkButton::clicked, this, &GeneralOverview::playAudioEffect);
 }
 
-void GeneralOverview::addCopyAction(QCommandLinkButton *button) {
+void GeneralOverview::addCopyAction(QCommandLinkButton *button)
+{
     QAction *action = new QAction(button);
     action->setData(button->description());
     button->addAction(action);
@@ -552,7 +566,8 @@ void GeneralOverview::addCopyAction(QCommandLinkButton *button) {
     connect(action, &QAction::triggered, this, &GeneralOverview::copyLines);
 }
 
-void GeneralOverview::copyLines() {
+void GeneralOverview::copyLines()
+{
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
         QClipboard *clipboard = QApplication::clipboard();
@@ -561,8 +576,9 @@ void GeneralOverview::copyLines() {
 }
 
 #ifdef Q_OS_IOS
-void GeneralOverview::comboBoxChanged(const QString &){
-    const QString generalName = ui->comboBox->currentText() != NULL? ui->comboBox->currentData().toString():"caocao";
+void GeneralOverview::comboBoxChanged(const QString &)
+{
+    const QString generalName = ui->comboBox->currentText() != NULL ? ui->comboBox->currentData().toString() : "caocao";
     const General *general = Sanguosha->getGeneral(generalName);
     const int skinId = all_generals->value(general);
     ui->generalPhoto->setPixmap(G_ROOM_SKIN.getGeneralCardPixmap(generalName, skinId).scaled(100, 145));
@@ -647,7 +663,8 @@ void GeneralOverview::playDeathAudio()
     general->lastWord(skinId);
 }
 
-void GeneralOverview::playAudioEffect() {
+void GeneralOverview::playAudioEffect()
+{
     QObject *button = sender();
     if (button) {
         QString source = button->objectName();
@@ -656,7 +673,8 @@ void GeneralOverview::playAudioEffect() {
     }
 }
 
-void GeneralOverview::showNextSkin() {
+void GeneralOverview::showNextSkin()
+{
 #ifndef Q_OS_IOS
     QModelIndex index = ui->tableView->currentIndex();
     if (!index.isValid())
@@ -664,7 +682,7 @@ void GeneralOverview::showNextSkin() {
     const QString generalName = ui->tableView->model()->data(index, Qt::UserRole).toString();
 
     const General *general = Sanguosha->getGeneral(generalName);
-    int skinId = ++ (*all_generals)[general];
+    int skinId = ++(*all_generals)[general];
 
     QPixmap pixmap;
     if (G_ROOM_SKIN.generalHasSkin(generalName, skinId, true)) {
@@ -693,11 +711,13 @@ void GeneralOverview::showNextSkin() {
 #endif
 }
 
-void GeneralOverview::startSearch(const SearchDetails &detail) {
+void GeneralOverview::startSearch(const SearchDetails &detail)
+{
     startSearch(detail.include_hidden, detail.nickname, detail.name, detail.genders, detail.kingdoms, detail.lower, detail.upper, detail.packages);
 }
 
-void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper, const QStringList &packages) {
+void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper, const QStringList &packages)
+{
     if (all_generals == NULL)
         return;
 
@@ -754,7 +774,8 @@ void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, 
     }
 }
 
-void GeneralOverview::fillAllGenerals() {
+void GeneralOverview::fillAllGenerals()
+{
     ui->returnButton->hide();
     setWindowTitle(origin_window_title);
     fillGenerals(all_generals->keys(), false);

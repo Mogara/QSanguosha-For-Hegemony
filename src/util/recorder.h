@@ -29,7 +29,8 @@
 #include <QImage>
 #include <QMap>
 
-class Recorder : public QObject {
+class Recorder : public QObject
+{
     Q_OBJECT
 
 public:
@@ -46,14 +47,18 @@ private:
     QByteArray data;
 };
 
-class Replayer : public QThread {
+class Replayer : public QThread
+{
     Q_OBJECT
 
 public:
     explicit Replayer(QObject *parent, const QString &filename);
     static QByteArray PNG2TXT(const QString &filename);
 
-    int getDuration() const { return duration / 1000; }
+    int getDuration() const
+    {
+        return duration / 1000;
+    }
     qreal getSpeed();
 
     QString getPath() const;
@@ -78,7 +83,8 @@ private:
     int duration;
     int pair_offset;
 
-    struct Pair {
+    struct Pair
+    {
         int elapsed;
         QByteArray cmd;
     };

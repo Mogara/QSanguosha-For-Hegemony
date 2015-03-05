@@ -64,8 +64,8 @@ static int getSkinId(const QString &playerName, const QString &generalName)
 
 TriggerOptionButton::TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skillStr, const int width)
     : QGraphicsObject(parent),
-      m_skillStr(skillStr), m_text(displayedTextOf(skillStr)),
-      playerName(player), width(width)
+    m_skillStr(skillStr), m_text(displayedTextOf(skillStr)),
+    playerName(player), width(width)
 {
     QString realSkill = skillStr;
     if (realSkill.contains("'")) // "sgs1'songwei"
@@ -136,14 +136,15 @@ void TriggerOptionButton::paint(QPainter *painter, const QStyleOptionGraphicsIte
     painter->drawRoundedRect(pixmapRect, 5, 5);
 
     QRect textArea(optionButtonHeight, 0, width - optionButtonHeight,
-                   optionButtonHeight);
+        optionButtonHeight);
 
     G_COMMON_LAYOUT.optionButtonText.paintText(painter, textArea,
-                                               Qt::AlignCenter,
-                                               m_text);
+        Qt::AlignCenter,
+        m_text);
 }
 
-QRectF TriggerOptionButton::boundingRect() const {
+QRectF TriggerOptionButton::boundingRect() const
+{
     return QRectF(0, 0, width, optionButtonHeight);
 }
 
@@ -152,11 +153,13 @@ void TriggerOptionButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
     event->accept();
 }
 
-void TriggerOptionButton::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
+void TriggerOptionButton::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+{
     emit clicked();
 }
 
-void TriggerOptionButton::hoverEnterEvent(QGraphicsSceneHoverEvent *) {
+void TriggerOptionButton::hoverEnterEvent(QGraphicsSceneHoverEvent *)
+{
     QPropertyAnimation *animation = new QPropertyAnimation(this, "opacity");
     animation->setEndValue(1.0);
     animation->setDuration(100);
@@ -164,7 +167,8 @@ void TriggerOptionButton::hoverEnterEvent(QGraphicsSceneHoverEvent *) {
     emit hovered(true);
 }
 
-void TriggerOptionButton::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+void TriggerOptionButton::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
+{
     QPropertyAnimation *animation = new QPropertyAnimation(this, "opacity");
     animation->setEndValue(initialOpacity);
     animation->setDuration(100);
@@ -186,7 +190,7 @@ QString TriggerOptionButton::displayedTextOf(const QString &str)
         QString targetObj = skillName.split("->").last().split("&").first(); // "sgs4"
         QString targetName = ClientInstance->getPlayer(targetObj)->getFootnoteName();
         text = tr("%1 (use upon %2)").arg(Sanguosha->translate(realSkill))
-                                             .arg(Sanguosha->translate(targetName));
+            .arg(Sanguosha->translate(targetName));
     }
     if (time > 1)
         text += " " + tr("*") + time;
@@ -261,8 +265,8 @@ void GeneralButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
     if (name.startsWith("&"))
         name = Sanguosha->translate(general->objectName());
     G_DASHBOARD_LAYOUT.m_avatarNameFont.paintText(painter,
-    G_COMMON_LAYOUT.generalButtonNameRegion,
-    Qt::AlignLeft | Qt::AlignVCenter | Qt::AlignJustify, name);
+        G_COMMON_LAYOUT.generalButtonNameRegion,
+        Qt::AlignLeft | Qt::AlignVCenter | Qt::AlignJustify, name);
 }
 
 QRectF GeneralButton::boundingRect() const
@@ -275,18 +279,21 @@ void GeneralButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
     event->accept();
 }
 
-void GeneralButton::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
+void GeneralButton::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+{
     emit clicked();
 }
 
-void GeneralButton::hoverEnterEvent(QGraphicsSceneHoverEvent *) {
+void GeneralButton::hoverEnterEvent(QGraphicsSceneHoverEvent *)
+{
     QPropertyAnimation *animation = new QPropertyAnimation(this, "opacity");
     animation->setEndValue(1.0);
     animation->setDuration(100);
     animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
-void GeneralButton::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+void GeneralButton::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
+{
     QPropertyAnimation *animation = new QPropertyAnimation(this, "opacity");
     animation->setEndValue(initialOpacity);
     animation->setDuration(100);
@@ -295,7 +302,7 @@ void GeneralButton::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
 
 ChooseTriggerOrderBox::ChooseTriggerOrderBox()
     : optional(true), m_minimumWidth(0),
-      cancel(new Button(tr("cancel"), 0.6)), progressBar(NULL)
+    cancel(new Button(tr("cancel"), 0.6)), progressBar(NULL)
 {
     cancel->hide();
     cancel->setParentItem(this);
@@ -312,9 +319,9 @@ int ChooseTriggerOrderBox::getGeneralNum() const
 
     int count = 0;
     if (options.contains(QString("%1:%2").arg(Self->objectName()).arg(headString)))
-        ++ count;
+        ++count;
     if (options.contains(QString("%1:%2").arg(Self->objectName()).arg(deputyString)))
-        ++ count;
+        ++count;
 
     return count;
 }
@@ -345,9 +352,9 @@ QRectF ChooseTriggerOrderBox::boundingRect() const
     width = qMax(m_minimumWidth, width) + m_leftBlankWidth * 2;
 
     int height = m_topBlankWidth
-            + (options.size() - generalNum) * optionButtonHeight
-            + (options.size() - generalNum - 1) * interval
-            + bottom_blank_width;
+        + (options.size() - generalNum) * optionButtonHeight
+        + (options.size() - generalNum - 1) * interval
+        + bottom_blank_width;
 
     if (ServerInfo.OperationTimeout != 0)
         height += 12;
@@ -382,8 +389,8 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
         generalButtons << head;
 
         const int generalTop = m_topBlankWidth
-                + (options.size() - generalCount) * optionButtonHeight
-                + (options.size() - generalCount) * interval;
+            + (options.size() - generalCount) * optionButtonHeight
+            + (options.size() - generalCount) * interval;
 
         const int generalLeft = (boundingRect().width() / 2) - (interval / 2) - width;
         head->setPos(generalLeft, generalTop);
@@ -392,7 +399,7 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
         deputy->setObjectName(QString("%1:%2").arg(Self->objectName()).arg(deputyString));
         generalButtons << deputy;
         deputy->setPos(head->pos().x() + head->boundingRect().width() + interval,
-                       generalTop);
+            generalTop);
 
         width = deputy->pos().x() - head->pos().x() + deputy->boundingRect().width();
         generalHeight = head->boundingRect().height();
@@ -401,14 +408,14 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
         const QString general = isHead ? Self->getGeneralName() : Self->getGeneral2Name();
         GeneralButton *generalButton = new GeneralButton(this, general, true);
         QString objectName = QString("%1:%2")
-                .arg(Self->objectName())
-                .arg(isHead ? headString : deputyString);
+            .arg(Self->objectName())
+            .arg(isHead ? headString : deputyString);
         generalButton->setObjectName(objectName);
         generalButtons << generalButton;
         const int generalTop = m_topBlankWidth
-                + (options.size() - generalCount) * optionButtonHeight
-                + (options.size() - generalCount) * interval;
-        const int generalLeft = qMax((int) (boundingRect().width() / 2) - width, m_leftBlankWidth);
+            + (options.size() - generalCount) * optionButtonHeight
+            + (options.size() - generalCount) * interval;
+        const int generalLeft = qMax((int)(boundingRect().width() / 2) - width, m_leftBlankWidth);
         generalButton->setPos(generalLeft, generalTop);
 
         generalHeight = generalButton->boundingRect().height();
@@ -444,13 +451,13 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
         y += button->boundingRect().height() + interval;
     }
 
-    foreach (GeneralButton *button, generalButtons)
+    foreach(GeneralButton *button, generalButtons)
         connect(button, &GeneralButton::clicked, this, &ChooseTriggerOrderBox::reply);
-    
+
 
     if (optional) {
         cancel->setPos((boundingRect().width() - cancel->boundingRect().width()) / 2,
-                       y + generalHeight + interval);
+            y + generalHeight + interval);
         cancel->show();
     }
 
@@ -479,10 +486,10 @@ void ChooseTriggerOrderBox::clear()
         progressBar = NULL;
     }
 
-    foreach (TriggerOptionButton *button, optionButtons)
+    foreach(TriggerOptionButton *button, optionButtons)
         button->deleteLater();
 
-    foreach (GeneralButton *button, generalButtons)
+    foreach(GeneralButton *button, generalButtons)
         button->deleteLater();
 
     optionButtons.clear();

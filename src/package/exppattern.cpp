@@ -21,11 +21,13 @@
 #include "exppattern.h"
 #include "engine.h"
 
-ExpPattern::ExpPattern(const QString &exp) {
+ExpPattern::ExpPattern(const QString &exp)
+{
     this->exp = exp;
 }
 
-bool ExpPattern::match(const Player *player, const Card *card) const{
+bool ExpPattern::match(const Player *player, const Card *card) const
+{
     foreach (const QString &one_exp, this->exp.split('#'))
         if (this->matchOne(player, card, one_exp)) return true;
 
@@ -38,7 +40,8 @@ bool ExpPattern::match(const Player *player, const Card *card) const{
 // 2nd patt means the card suit, and ',' means more than one options.
 // 3rd part means the card number, and ',' means more than one options,
 // the number uses '~' to make a scale for valid expressions
-bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) const{
+bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) const
+{
     QStringList factors = exp.split('|');
 
     bool checkpoint = false;
@@ -74,7 +77,9 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
     QStringList card_suits = factors.at(1).split(',');
     foreach (const QString &_suit, card_suits) {
         QString suit = _suit;
-        if (suit == ".") { checkpoint = true; break; }
+        if (suit == ".") {
+            checkpoint = true; break;
+        }
         bool positive = true;
         if (suit.startsWith('^')) {
             positive = false;
@@ -96,7 +101,11 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
     int cdn = card->getNumber();
 
     foreach (const QString &number, card_numbers) {
-        if (number == ".") { checkpoint = true; break; }
+        if (number == ".") {
+            checkpoint = true;
+            break;
+        }
+
         bool isInt = false;
         if (number.contains('~')) {
             QStringList params = number.split('~');
@@ -111,11 +120,9 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
                 to = params.at(1).toInt();
 
             if (from <= cdn && cdn <= to) checkpoint = true;
-        }
-        else if (number.toInt(&isInt) == cdn && isInt) {
+        } else if (number.toInt(&isInt) == cdn && isInt) {
             checkpoint = true;
-        }
-        else if ((number == "A" && cdn == 1)
+        } else if ((number == "A" && cdn == 1)
             || (number == "J" && cdn == 11)
             || (number == "Q" && cdn == 12)
             || (number == "K" && cdn == 13)) {
@@ -152,11 +159,12 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
                         }
                     } else if (p.startsWith("%")) {
                         p = p.mid(1);
-                        foreach (const Player *pl, player->getAliveSiblings())
+                        foreach (const Player *pl, player->getAliveSiblings()) {
                             if (!pl->getPile(p).isEmpty() && pl->getPile(p).contains(id)) {
                                 checkpoint = true;
                                 break;
                             }
+                        }
                     } else if (!player->getPile(p).isEmpty() && player->getPile(p).contains(id)) {
                         checkpoint = true;
                     }

@@ -38,7 +38,8 @@
 #include <QGraphicsPixmapItem>
 #include <QAbstractAnimation>
 
-class QSanPixmapCache {
+class QSanPixmapCache
+{
 public:
     // Load pixmap from a file and map it to the given key.
     static QPixmap getPixmap(const QString &key, const QString &fileName);
@@ -47,9 +48,11 @@ public:
     static bool contains(const QString &key);
 };
 
-class IQSanComponentSkin { // interface class
+class IQSanComponentSkin
+{ // interface class
 public:
-    class QSanSimpleTextFont {
+    class QSanSimpleTextFont
+    {
     public:
         QSanUiUtils::QSanFreeTypeFont::QSanFont m_fontFace;
         QSize m_fontSize;
@@ -66,11 +69,12 @@ public:
 
         static QHash<QString, int *> _m_fontBank; //by Xusine
 
-    //protected:
+        //protected:
         //static QHash<QString, int *> _m_fontBank;
     };
 
-    class QSanShadowTextFont : public QSanSimpleTextFont {
+    class QSanShadowTextFont : public QSanSimpleTextFont
+    {
     public:
         int m_shadowRadius;
         double m_shadowDecadeFactor;
@@ -83,7 +87,8 @@ public:
         void paintText(QGraphicsPixmapItem *item, const QRect &pos, Qt::Alignment align, const QString &text) const;
     };
 
-    class AnchoredRect {
+    class AnchoredRect
+    {
     public:
         QRect getTranslatedRect(const QRect &parentRect) const;
         QRect getTranslatedRect(const QRect &parentRect, const QSize &childSize) const;
@@ -130,9 +135,11 @@ protected:
     static QHash<QString, int> S_HERO_SKIN_INDEX;
 };
 
-class QSanRoomSkin : public IQSanComponentSkin {
+class QSanRoomSkin : public IQSanComponentSkin
+{
 public:
-    struct RoomLayout {
+    struct RoomLayout
+    {
         int m_scenePadding;
         int m_roleBoxHeight;
         int m_chatTextBoxHeight;
@@ -151,7 +158,8 @@ public:
         QSize m_maximumSceneSize10Player;
     };
 
-    struct PlayerCardContainerLayout {
+    struct PlayerCardContainerLayout
+    {
         int m_normalHeight;
         QRect m_boundingRect;
         QRect m_focusFrameArea;
@@ -233,7 +241,8 @@ public:
         QRect m_extraSkillTextArea;
     };
 
-    struct PhotoLayout : public PlayerCardContainerLayout {
+    struct PhotoLayout : public PlayerCardContainerLayout
+    {
         int m_normalWidth;
         QRect m_mainFrameArea;
         QRect m_cardMoveRegion;
@@ -244,7 +253,8 @@ public:
         QSanShadowTextFont m_skillNameFont;
     };
 
-    struct DashboardLayout : public PlayerCardContainerLayout {
+    struct DashboardLayout : public PlayerCardContainerLayout
+    {
         int m_leftWidth, m_rightWidth, m_magatamasBaseWidth;
         int m_floatingAreaHeight;
         int m_rswidth;
@@ -272,7 +282,8 @@ public:
             QSanInvokeSkillButton::SkillButtonWidth width) const;
     };
 
-    struct CommonLayout {
+    struct CommonLayout
+    {
         // card related
         int m_cardNormalWidth;
         int m_cardNormalHeight;
@@ -331,7 +342,8 @@ public:
         QSanShadowTextFont skinItemTitleText;
     };
 
-    enum GeneralIconSize {
+    enum GeneralIconSize
+    {
         S_GENERAL_ICON_SIZE_TINY,
         S_GENERAL_ICON_SIZE_SMALL,
         S_GENERAL_ICON_SIZE_LARGE,
@@ -471,7 +483,8 @@ protected:
     virtual bool _loadAnimationConfig(const QVariant &animationConfig);
 };
 
-class QSanSkinScheme {
+class QSanSkinScheme
+{
     // Why do we need another layer above room skin? Because we may add lobby, login interface
     // in the future; and we may need to assemble a set of different skins into a scheme.
 public:
@@ -482,7 +495,8 @@ protected:
     QSanRoomSkin _m_roomSkin;
 };
 
-class QSanSkinFactory {
+class QSanSkinFactory
+{
 public:
     static QSanSkinFactory &getInstance();
     static void destroyInstance();

@@ -29,16 +29,17 @@ class ClientPlayer;
 class QGraphicsProxyWidget;
 class QSanCommandProgressBar;
 
-class PlayerCardBox : public GraphicsBox {
+class PlayerCardBox : public GraphicsBox
+{
     Q_OBJECT
 
 public:
     explicit PlayerCardBox();
 
     void chooseCard(const QString &reason, const ClientPlayer *player,
-               const QString &flags = "hej", bool handcardVisible = false,
-               Card::HandlingMethod method = Card::MethodNone,
-               const QList<int> &disabledIds = QList<int>());
+        const QString &flags = "hej", bool handcardVisible = false,
+        Card::HandlingMethod method = Card::MethodNone,
+        const QList<int> &disabledIds = QList<int>());
     void clear();
 
 protected:

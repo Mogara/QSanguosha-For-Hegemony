@@ -30,7 +30,8 @@
 
 class Tile;
 
-class StartScene : public QGraphicsScene {
+class StartScene : public QGraphicsScene
+{
     Q_OBJECT
 
 public:

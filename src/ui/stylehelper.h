@@ -48,8 +48,8 @@ public:
     inline static QString styleSheetOfTooltip()
     {
         return QString("QToolTip{ border: 1px solid rgb(166, 150, 122); padding: 1px; "
-                       "border-radius: 3px; background: %1; opacity: 230; }")
-                .arg(Config.ToolTipBackgroundColor.name());
+            "border-radius: 3px; background: %1; opacity: 230; }")
+            .arg(Config.ToolTipBackgroundColor.name());
     }
 
     static QString styleSheetOfScrollBar();

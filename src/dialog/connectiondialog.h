@@ -31,7 +31,8 @@ namespace Ui {
     class ConnectionDialog;
 }
 
-class ConnectionDialog : public FlatDialog {
+class ConnectionDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:

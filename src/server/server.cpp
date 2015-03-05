@@ -47,7 +47,8 @@ Server::Server(QObject *parent)
     connect(qApp, &QApplication::aboutToQuit, this, &Server::deleteLater);
 }
 
-void Server::broadcastSystemMessage(const QString &msg) {
+void Server::broadcastSystemMessage(const QString &msg)
+{
     JsonArray arg;
     arg << ".";
     arg << msg;
@@ -55,19 +56,22 @@ void Server::broadcastSystemMessage(const QString &msg) {
     Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_SPEAK);
     packet.setMessageBody(arg);
 
-    foreach (Room *room, rooms)
+    foreach(Room *room, rooms)
         room->broadcast(&packet);
 }
 
-bool Server::listen() {
+bool Server::listen()
+{
     return server->listen();
 }
 
-void Server::daemonize() {
+void Server::daemonize()
+{
     server->daemonize();
 }
 
-Room *Server::createNewRoom() {
+Room *Server::createNewRoom()
+{
     Room *new_room = new Room(this, Config.GameMode);
     current = new_room;
     rooms.insert(current);
@@ -78,7 +82,8 @@ Room *Server::createNewRoom() {
     return current;
 }
 
-void Server::processNewConnection(ClientSocket *socket) {
+void Server::processNewConnection(ClientSocket *socket)
+{
     QString address = socket->peerAddress();
     if (Config.ForbidSIMC) {
         if (addresses.contains(address)) {
@@ -90,7 +95,7 @@ void Server::processNewConnection(ClientSocket *socket) {
         }
     }
 
-    if (Config.value("BannedIP").toStringList().contains(address)){
+    if (Config.value("BannedIP").toStringList().contains(address)) {
         socket->disconnectFromHost();
         emit server_message(tr("Forbid the connection of address %1").arg(address));
         return;
@@ -171,23 +176,27 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
     }
 }
 
-void Server::cleanup() {
+void Server::cleanup()
+{
     ClientSocket *socket = qobject_cast<ClientSocket *>(sender());
     if (Config.ForbidSIMC)
         addresses.removeOne(socket->peerAddress());
     socket->deleteLater();
 }
 
-void Server::signupPlayer(ServerPlayer *player) {
+void Server::signupPlayer(ServerPlayer *player)
+{
     name2objname.insert(player->screenName(), player->objectName());
     players.insert(player->objectName(), player);
 }
 
-void Server::gameOver() {
+void Server::gameOver()
+{
     Room *room = qobject_cast<Room *>(sender());
     rooms.remove(room);
 
-    foreach (ServerPlayer *player, room->findChildren<ServerPlayer *>()) {
+    foreach(ServerPlayer *player, room->findChildren<ServerPlayer *>())
+    {
         name2objname.remove(player->screenName(), player->objectName());
         players.remove(player->objectName());
     }

@@ -35,7 +35,8 @@ Recorder::Recorder(QObject *parent)
     watch.start();
 }
 
-void Recorder::recordLine(const QByteArray &line) {
+void Recorder::recordLine(const QByteArray &line)
+{
     if (line.isEmpty())
         return;
 
@@ -46,7 +47,8 @@ void Recorder::recordLine(const QByteArray &line) {
         data.append('\n');
 }
 
-bool Recorder::save(const QString &filename) const{
+bool Recorder::save(const QString &filename) const
+{
     if (filename.endsWith(".qsgs")) {
         QFile file(filename);
         if (file.open(QIODevice::WriteOnly)) {
@@ -60,7 +62,8 @@ bool Recorder::save(const QString &filename) const{
     }
 }
 
-QList<QByteArray> Recorder::getRecords() const{
+QList<QByteArray> Recorder::getRecords() const
+{
     QList<QByteArray> records = data.split('\n');
     return records;
 }
@@ -127,7 +130,8 @@ Replayer::Replayer(QObject *parent, const QString &filename)
     duration = pairs.last().elapsed - time_offset;
 }
 
-QByteArray Replayer::PNG2TXT(const QString &filename) {
+QByteArray Replayer::PNG2TXT(const QString &filename)
+{
     QImage image(filename);
     image = image.convertToFormat(QImage::Format_ARGB32);
     const uchar *imageData = image.bits();
@@ -138,7 +142,8 @@ QByteArray Replayer::PNG2TXT(const QString &filename) {
     return data;
 }
 
-qreal Replayer::getSpeed() {
+qreal Replayer::getSpeed()
+{
     qreal speed;
     mutex.lock();
     speed = this->speed;
@@ -146,7 +151,8 @@ qreal Replayer::getSpeed() {
     return speed;
 }
 
-void Replayer::uniform() {
+void Replayer::uniform()
+{
     mutex.lock();
 
     if (speed != 1.0) {
@@ -157,7 +163,8 @@ void Replayer::uniform() {
     mutex.unlock();
 }
 
-void Replayer::speedUp() {
+void Replayer::speedUp()
+{
     mutex.lock();
 
     if (speed < 6.0) {
@@ -169,7 +176,8 @@ void Replayer::speedUp() {
     mutex.unlock();
 }
 
-void Replayer::slowDown() {
+void Replayer::slowDown()
+{
     mutex.lock();
 
     if (speed >= 1.0) {
@@ -181,13 +189,15 @@ void Replayer::slowDown() {
     mutex.unlock();
 }
 
-void Replayer::toggle() {
+void Replayer::toggle()
+{
     playing = !playing;
     if (playing)
         play_sem.release(); // to play
 }
 
-void Replayer::run() {
+void Replayer::run()
+{
     int i = 0;
     const int pair_num = pairs.length();
 
@@ -218,7 +228,8 @@ void Replayer::run() {
     }
 }
 
-QString Replayer::getPath() const{
+QString Replayer::getPath() const
+{
     return filename;
 }
 

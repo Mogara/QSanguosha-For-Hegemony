@@ -31,8 +31,8 @@
 
 StyleHelper *StyleHelper::instance = NULL;
 
-StyleHelper::StyleHelper(QObject *):
-    QObject(qApp)
+StyleHelper::StyleHelper(QObject *)
+    : QObject(qApp)
 {
     iconFont = getFontByFileName("fontawesome-webfont.ttf");
 }

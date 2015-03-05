@@ -29,10 +29,11 @@ class Button;
 class QGraphicsProxyWidget;
 class QSanCommandProgressBar;
 
-class TriggerOptionButton : public QGraphicsObject {
+class TriggerOptionButton : public QGraphicsObject
+{
     Q_OBJECT
 
-    friend class ChooseTriggerOrderBox;
+        friend class ChooseTriggerOrderBox;
 
 public:
     static QFont defaultFont();
@@ -66,9 +67,9 @@ private:
     int width;
 };
 
-class GeneralButton : public QGraphicsObject {
+class GeneralButton : public QGraphicsObject
+{
     Q_OBJECT
-
     friend class ChooseTriggerOrderBox;
 
 signals:
@@ -89,7 +90,8 @@ private:
     bool isHead;
 };
 
-class ChooseTriggerOrderBox : public GraphicsBox {
+class ChooseTriggerOrderBox : public GraphicsBox
+{
     Q_OBJECT
 
 public:

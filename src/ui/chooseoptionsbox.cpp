@@ -31,19 +31,19 @@ ChooseOptionsBox::ChooseOptionsBox()
     : optionsNumber(0), progressBar(NULL)
 {
 }
-    //====================
-    //||================||
-    //|| Please Choose: ||
-    //||    _______     ||
-    //||   |   1   |    ||
-    //||    -------     ||
-    //||    _______     ||
-    //||   |   2   |    ||
-    //||    -------     ||
-    //||    _______     ||
-    //||   |   3   |    ||
-    //||    -------     ||
-    //====================
+//====================
+//||================||
+//|| Please Choose: ||
+//||    _______     ||
+//||   |   1   |    ||
+//||    -------     ||
+//||    _______     ||
+//||   |   2   |    ||
+//||    -------     ||
+//||    _______     ||
+//||   |   3   |    ||
+//||    -------     ||
+//====================
 
 QRectF ChooseOptionsBox::boundingRect() const
 {
@@ -68,7 +68,7 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
     const int buttonWidth = getButtonWidth();
     foreach (const QString &option, options) {
         Button *button = new Button(translate(option), QSizeF(buttonWidth,
-                                                      defaultButtonHeight));
+            defaultButtonHeight));
         button->setObjectName(option);
         buttons << button;
         button->setParentItem(this);
@@ -82,8 +82,8 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
         connect(button, &Button::clicked, this, &ChooseOptionsBox::reply);
         if (tooltip != original_tooltip)
             button->setToolTip(QString("<font color=%1>%2</font>")
-                               .arg(Config.SkillDescriptionInToolTipColor.name())
-                               .arg(tooltip));
+            .arg(Config.SkillDescriptionInToolTipColor.name())
+            .arg(tooltip));
     }
 
     moveToCenter();
@@ -154,13 +154,13 @@ QString ChooseOptionsBox::translate(const QString &option) const
 
 void ChooseOptionsBox::clear()
 {
-    if (progressBar != NULL){
+    if (progressBar != NULL) {
         progressBar->hide();
         progressBar->deleteLater();
         progressBar = NULL;
     }
 
-    foreach (Button *button, buttons)
+    foreach(Button *button, buttons)
         button->deleteLater();
 
     buttons.clear();

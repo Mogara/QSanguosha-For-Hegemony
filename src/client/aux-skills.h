@@ -23,7 +23,8 @@
 
 #include "skill.h"
 
-class DiscardSkill : public ViewAsSkill {
+class DiscardSkill : public ViewAsSkill
+{
     Q_OBJECT
 
 public:
@@ -47,7 +48,8 @@ private:
 
 class CardPattern;
 
-class ResponseSkill : public OneCardViewAsSkill {
+class ResponseSkill : public OneCardViewAsSkill
+{
     Q_OBJECT
 
 public:
@@ -59,14 +61,18 @@ public:
     virtual bool viewFilter(const Card *to_select) const;
     virtual const Card *viewAs(const Card *originalCard) const;
 
-    inline Card::HandlingMethod getRequest() const{ return request; }
+    inline Card::HandlingMethod getRequest() const
+    {
+        return request;
+    }
 
 protected:
     const CardPattern *pattern;
     Card::HandlingMethod request;
 };
 
-class ShowOrPindianSkill : public ResponseSkill {
+class ShowOrPindianSkill : public ResponseSkill
+{
     Q_OBJECT
 
 public:
@@ -76,7 +82,8 @@ public:
 
 class YijiCard;
 
-class YijiViewAsSkill : public ViewAsSkill {
+class YijiViewAsSkill : public ViewAsSkill
+{
     Q_OBJECT
 
 public:
@@ -96,7 +103,8 @@ private:
 
 class ChoosePlayerCard;
 
-class ChoosePlayerSkill : public ZeroCardViewAsSkill {
+class ChoosePlayerSkill : public ZeroCardViewAsSkill
+{
     Q_OBJECT
 
 public:
@@ -111,7 +119,8 @@ private:
 
 class TransferCard;
 
-class TransferSkill : public OneCardViewAsSkill {
+class TransferSkill : public OneCardViewAsSkill
+{
     Q_OBJECT
 
 public:

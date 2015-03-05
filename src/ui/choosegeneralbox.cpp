@@ -53,7 +53,8 @@ void GeneralCardItem::changeGeneral(const QString &generalName)
     setOuterGlowColor(Sanguosha->getKingdomColor(general->getKingdom()));
 }
 
-void GeneralCardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void GeneralCardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     painter->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     QRect rect = G_COMMON_LAYOUT.m_cardMainArea;
@@ -76,19 +77,22 @@ void GeneralCardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
     painter->drawPixmap(G_COMMON_LAYOUT.m_generalCardItemCompanionPromptRegion, G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_GENERAL_CARD_ITEM_COMPANION_FONT, kingdom));
 }
 
-void GeneralCardItem::showCompanion() {
+void GeneralCardItem::showCompanion()
+{
     if (hasCompanion) return;
     hasCompanion = true;
     update();
 }
 
-void GeneralCardItem::hideCompanion() {
+void GeneralCardItem::hideCompanion()
+{
     if (!hasCompanion) return;
     hasCompanion = false;
     update();
 }
 
-void GeneralCardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void GeneralCardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
     if (ServerInfo.FreeChoose && Qt::RightButton == event->button()) {
         FreeChooseDialog *general_changer = new FreeChooseDialog(QApplication::focusWidget());
         connect(general_changer, &FreeChooseDialog::general_chosen, this, &GeneralCardItem::changeGeneral);
@@ -102,15 +106,16 @@ void GeneralCardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 ChooseGeneralBox::ChooseGeneralBox()
     : general_number(0), single_result(false), m_viewOnly(false),
-      confirm(new Button(tr("fight"), 0.6)),
-      progress_bar(NULL)
+    confirm(new Button(tr("fight"), 0.6)),
+    progress_bar(NULL)
 {
     confirm->setEnabled(ClientInstance->getReplayer());
     confirm->setParentItem(this);
     connect(confirm, &Button::clicked, this, &ChooseGeneralBox::reply);
 }
 
-void ChooseGeneralBox::paintLayout(QPainter *painter) {
+void ChooseGeneralBox::paintLayout(QPainter *painter)
+{
     //============================================================
     //||========================================================||
     //||      Please select the same nationality generals       ||
@@ -184,7 +189,8 @@ void ChooseGeneralBox::paintLayout(QPainter *painter) {
     font.paintText(painter, seat2_rect, Qt::AlignCenter, tr("deputy_general"));
 }
 
-QRectF ChooseGeneralBox::boundingRect() const {
+QRectF ChooseGeneralBox::boundingRect() const
+{
     //confirm the general count of the first and second row
     int first_row, second_row = 0;
 
@@ -215,13 +221,14 @@ QRectF ChooseGeneralBox::boundingRect() const {
     return QRectF(0, 0, width, height);
 }
 
-static bool sortByKingdom(const QString &gen1, const QString &gen2){
+static bool sortByKingdom(const QString &gen1, const QString &gen2)
+{
     static QMap<QString, int> kingdom_priority_map;
-    if (kingdom_priority_map.isEmpty()){
+    if (kingdom_priority_map.isEmpty()) {
         QStringList kingdoms = Sanguosha->getKingdoms();
         //kingdoms << "god";
         int i = 0;
-        foreach (const QString &kingdom, kingdoms){
+        foreach (const QString &kingdom, kingdoms) {
             kingdom_priority_map[kingdom] = i++;
         }
     }
@@ -235,7 +242,8 @@ static bool sortByKingdom(const QString &gen1, const QString &gen2){
 
 }
 
-void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_only, bool single_result, const QString &reason, const Player *player) {
+void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_only, bool single_result, const QString &reason, const Player *player)
+{
     //repaint background
     QStringList generals = _generals;
     this->single_result = single_result;
@@ -245,7 +253,7 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
         this->m_viewOnly = view_only;
         confirm->setText(view_only ? tr("confirm") : tr("fight"));
     }
-    foreach (const QString &general, _generals){
+    foreach (const QString &general, _generals) {
         if (general.endsWith("(lord)"))
             generals.removeOne(general);
     }
@@ -253,10 +261,10 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
     general_number = generals.length();
     if (!view_only) {
         title = single_result ? tr("Please select one general")
-                              : tr("Please select the same nationality generals");
+            : tr("Please select the same nationality generals");
         if (!single_result && Self->getSeat() > 0)
             title.prepend(Sanguosha->translate(QString("SEAT(%1)").arg(Self->getSeat()))
-                          + " ");
+            + " ");
     }
 
     prepareGeometryChange();
@@ -325,7 +333,7 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
         } else {
             if (items.length() % 2 == 1) {
                 pos.setX(left_blank_width + card_width / 2 + card_to_center_line / 2
-                + (card_width + card_to_center_line) * (i - first_row) + card_width / 2);
+                    + (card_width + card_to_center_line) * (i - first_row) + card_width / 2);
             } else {
                 pos.setX(left_blank_width + (card_width + card_to_center_line) * (i - first_row) + card_width / 2);
             }
@@ -365,7 +373,8 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
     }
 }
 
-void ChooseGeneralBox::_adjust() {
+void ChooseGeneralBox::_adjust()
+{
     GeneralCardItem *item = qobject_cast<GeneralCardItem *>(sender());
     if (item == NULL) return;
 
@@ -380,9 +389,9 @@ void ChooseGeneralBox::_adjust() {
         item->goBack(true);
         //the item is on the way
     } else if (selected.length() == 2
-            && ((!Sanguosha->getGeneral(selected.first()->objectName())->isLord()
-                    && selected.first() == item && item->x() > boundingRect().center().x())
-                || (selected.last() == item && item->x() < boundingRect().center().x())))
+        && ((!Sanguosha->getGeneral(selected.first()->objectName())->isLord()
+        && selected.first() == item && item->x() > boundingRect().center().x())
+        || (selected.last() == item && item->x() < boundingRect().center().x())))
         qSwap(selected[0], selected[1]);
     else if (items.contains(item) && item->y() > middle_y) {
         if (selected.length() > 1) return;
@@ -393,41 +402,41 @@ void ChooseGeneralBox::_adjust() {
     adjustItems();
 }
 
-void ChooseGeneralBox::adjustItems() {
+void ChooseGeneralBox::adjustItems()
+{
     if (!selected.isEmpty()) {
         const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
         const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
 
         int dest_seat_y = top_blank_width + G_COMMON_LAYOUT.m_cardNormalHeight
-                + card_bottom_to_split_line + split_line_to_card_seat + card_height / 2
-                - 1;
+            + card_bottom_to_split_line + split_line_to_card_seat + card_height / 2
+            - 1;
         if (general_number > 5)
             dest_seat_y += (card_to_center_line + card_height);
         selected.first()->setHomePos(QPointF(boundingRect().center().x()
-                                             - card_to_center_line - card_width / 2 - 2,
-                                             dest_seat_y));
+            - card_to_center_line - card_width / 2 - 2,
+            dest_seat_y));
         selected.first()->goBack(true);
         if (selected.length() == 2) {
             selected.last()->setHomePos(QPointF(boundingRect().center().x()
-                                                + card_to_center_line + card_width / 2
-                                                - 1, dest_seat_y));
+                + card_to_center_line + card_width / 2
+                - 1, dest_seat_y));
             selected.last()->goBack(true);
         }
     }
 
-    if (selected.length() == 2){
-        foreach (GeneralCardItem *card, items)
+    if (selected.length() == 2) {
+        foreach(GeneralCardItem *card, items)
             card->setFrozen(true);
         confirm->setEnabled(Sanguosha->getGeneral(selected.first()->objectName())->getKingdom()
             == Sanguosha->getGeneral(selected.last()->objectName())->getKingdom());
-    }
-    else if (selected.length() == 1) {
+    } else if (selected.length() == 1) {
         selected.first()->hideCompanion();
         const General *seleted_general = Sanguosha->getGeneral(selected.first()->objectName());
         foreach (GeneralCardItem *card, items) {
             const General *general = Sanguosha->getGeneral(card->objectName());
             if (BanPair::isBanned(seleted_general->objectName(), general->objectName())
-                || (general->getKingdom() != seleted_general->getKingdom() || general->isLord())){
+                || (general->getKingdom() != seleted_general->getKingdom() || general->isLord())) {
                 if (!card->isFrozen())
                     card->setFrozen(true);
                 card->hideCompanion();
@@ -460,9 +469,10 @@ void ChooseGeneralBox::adjustItems() {
     }
 }
 
-void ChooseGeneralBox::_initializeItems() {
+void ChooseGeneralBox::_initializeItems()
+{
     QList<const General *> generals;
-    foreach (GeneralCardItem *item, items)
+    foreach(GeneralCardItem *item, items)
         generals << Sanguosha->getGeneral(item->objectName());
 
     int index = 0;
@@ -490,7 +500,8 @@ void ChooseGeneralBox::_initializeItems() {
     }
 }
 
-void ChooseGeneralBox::reply() {
+void ChooseGeneralBox::reply()
+{
     if (m_viewOnly)
         return clear();
 
@@ -500,18 +511,19 @@ void ChooseGeneralBox::reply() {
         if (selected.length() == 2)
             generals += ("+" + selected.last()->objectName());
     }
-    if (progress_bar != NULL){
+    if (progress_bar != NULL) {
         progress_bar->hide();
         progress_bar->deleteLater();
     }
     ClientInstance->onPlayerChooseGeneral(generals);
 }
 
-void ChooseGeneralBox::clear() {
-    foreach (GeneralCardItem *card_item, items)
+void ChooseGeneralBox::clear()
+{
+    foreach(GeneralCardItem *card_item, items)
         card_item->deleteLater();
 
-    foreach (GeneralCardItem *card_item, selected)
+    foreach(GeneralCardItem *card_item, selected)
         card_item->deleteLater();
 
     items.clear();
@@ -520,7 +532,8 @@ void ChooseGeneralBox::clear() {
     disappear();
 }
 
-void ChooseGeneralBox::_onItemClicked() {
+void ChooseGeneralBox::_onItemClicked()
+{
     GeneralCardItem *item = qobject_cast<GeneralCardItem *>(sender());
     if (item == NULL) return;
 

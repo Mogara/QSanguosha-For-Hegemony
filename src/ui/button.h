@@ -28,7 +28,8 @@
 
 class QGraphicsDropShadowEffect;
 
-class Button : public QGraphicsObject {
+class Button : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -37,8 +38,14 @@ public:
     Button(const QString &label, const QSizeF &size);
     Button(const QPixmap &pixmap, const QSizeF &size);
 
-    inline void setFontName(const QString &name) { this->font_name = name; }
-    inline void setFontSize(const int &size) { this->font_size = size; }
+    inline void setFontName(const QString &name)
+    {
+        this->font_name = name;
+    }
+    inline void setFontSize(const int &size)
+    {
+        this->font_size = size;
+    }
     void setText(const QString &text);
 
     virtual QRectF boundingRect() const;
@@ -50,7 +57,9 @@ protected:
     void initTextItems();
     void prepareIcons();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    void mousePressEvent(QGraphicsSceneMouseEvent *) {}
+    void mousePressEvent(QGraphicsSceneMouseEvent *)
+    {
+    }
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
@@ -58,9 +67,15 @@ protected:
     void setTextColorReversed(bool reversed);
     void updateIconsPosition();
 
-    virtual QColor edgeColor() const { return Qt::white; }
+    virtual QColor edgeColor() const
+    {
+        return Qt::white;
+    }
     virtual QColor backgroundColor() const;
-    virtual int edgeWidth() const { return 2; }
+    virtual int edgeWidth() const
+    {
+        return 2;
+    }
 
     QString label;
     QSizeF size;

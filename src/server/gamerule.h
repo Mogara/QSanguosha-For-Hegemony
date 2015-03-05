@@ -23,7 +23,8 @@
 
 #include "skill.h"
 
-class GameRule : public TriggerSkill {
+class GameRule : public TriggerSkill
+{
     Q_OBJECT
 
 public:

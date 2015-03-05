@@ -23,7 +23,8 @@
 
 #include <QGraphicsPixmapItem>
 
-class PixmapAnimation : public QObject, public QGraphicsItem {
+class PixmapAnimation : public QObject, public QGraphicsItem
+{
     Q_OBJECT
     Q_INTERFACES(QGraphicsItem)
 

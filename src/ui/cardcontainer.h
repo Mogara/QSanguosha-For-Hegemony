@@ -28,7 +28,8 @@ class Button;
 
 #include <QStack>
 
-class CardContainer : public GenericCardContainer {
+class CardContainer : public GenericCardContainer
+{
     Q_OBJECT
 
 public:

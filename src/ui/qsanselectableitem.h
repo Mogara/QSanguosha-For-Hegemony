@@ -24,7 +24,8 @@
 #include <QGraphicsObject>
 #include <QPixmap>
 
-class QSanSelectableItem : public QGraphicsObject {
+class QSanSelectableItem : public QGraphicsObject
+{
     Q_OBJECT
 
 public:

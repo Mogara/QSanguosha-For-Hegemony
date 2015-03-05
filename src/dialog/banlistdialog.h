@@ -27,7 +27,8 @@
 
 class QListWidget;
 
-class BanListDialog : public FlatDialog {
+class BanListDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:

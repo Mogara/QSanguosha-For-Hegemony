@@ -29,7 +29,8 @@ GuanxingBox::GuanxingBox()
 {
 }
 
-void GuanxingBox::doGuanxing(const QList<int> &cardIds, bool up_only) {
+void GuanxingBox::doGuanxing(const QList<int> &cardIds, bool up_only)
+{
     if (cardIds.isEmpty()) {
         clear();
         return;
@@ -72,8 +73,7 @@ void GuanxingBox::doGuanxing(const QList<int> &cardIds, bool up_only) {
         if (i < firstRow) {
             pos.setX(25 + (cardWidth + cardInterval) * i);
             pos.setY(45);
-        }
-        else {
+        } else {
             if (upItems.length() % 2 == 1)
                 pos.setX(25 + cardWidth / 2 + cardInterval / 2
                 + (cardWidth + cardInterval) * (i - firstRow));
@@ -170,7 +170,7 @@ void GuanxingBox::onItemReleased()
     c = qBound(0, c, items->length());
     items->insert(c, item);
 
-    int toPos = toUpItems ? c + 1: -c - 1;
+    int toPos = toUpItems ? c + 1 : -c - 1;
     ClientInstance->onPlayerDoGuanxingStep(fromPos, toPos);
     adjust();
 }
@@ -197,7 +197,8 @@ void GuanxingBox::onItemClicked()
     adjust();
 }
 
-void GuanxingBox::adjust() {
+void GuanxingBox::adjust()
+{
     const int firstRowCount = itemNumberOfFirstRow();
     const int cardWidth = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
@@ -208,8 +209,7 @@ void GuanxingBox::adjust() {
         if (i < firstRowCount) {
             pos.setX(25 + (cardWidth + cardInterval) * i);
             pos.setY(45);
-        }
-        else {
+        } else {
             if (count % 2 == 1)
                 pos.setX(25 + cardWidth / 2 + cardInterval / 2
                 + (cardWidth + cardInterval) * (i - firstRowCount));
@@ -226,8 +226,7 @@ void GuanxingBox::adjust() {
         if (i < firstRowCount) {
             pos.setX(25 + (cardWidth + cardInterval) * i);
             pos.setY(45 + (card_height + cardInterval) * (isOneRow() ? 1 : 2));
-        }
-        else {
+        } else {
             if (count % 2 == 1)
                 pos.setX(25 + cardWidth / 2 + cardInterval / 2
                 + (cardWidth + cardInterval) * (i - firstRowCount));
@@ -262,10 +261,11 @@ bool GuanxingBox::isOneRow() const
     return oneRow;
 }
 
-void GuanxingBox::clear() {
-    foreach (CardItem *card_item, upItems)
+void GuanxingBox::clear()
+{
+    foreach(CardItem *card_item, upItems)
         card_item->deleteLater();
-    foreach (CardItem *card_item, downItems)
+    foreach(CardItem *card_item, downItems)
         card_item->deleteLater();
 
     upItems.clear();
@@ -275,19 +275,21 @@ void GuanxingBox::clear() {
     hide();
 }
 
-void GuanxingBox::reply() {
+void GuanxingBox::reply()
+{
     QList<int> up_cards, down_cards;
-    foreach (CardItem *card_item, upItems)
+    foreach(CardItem *card_item, upItems)
         up_cards << card_item->getCard()->getId();
 
-    foreach (CardItem *card_item, downItems)
+    foreach(CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
 
     ClientInstance->onPlayerReplyGuanxing(up_cards, down_cards);
     clear();
 }
 
-QRectF GuanxingBox::boundingRect() const {
+QRectF GuanxingBox::boundingRect() const
+{
     const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
     bool one_row = true;
@@ -303,7 +305,8 @@ QRectF GuanxingBox::boundingRect() const {
     return QRectF(0, 0, width, height);
 }
 
-void GuanxingBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void GuanxingBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     if (zhuge.isEmpty()) {
         GraphicsBox::paintGraphicsBoxStyle(painter, tr("Please arrange the cards"), boundingRect());
     } else {
@@ -326,8 +329,7 @@ void GuanxingBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWi
         if (i < firstRow) {
             x = 25 + (card_width + cardInterval) * i;
             y = 45;
-        }
-        else {
+        } else {
             if (itemCount % 2 == 1)
                 x = 25 + card_width / 2 + cardInterval / 2
                 + (card_width + cardInterval) * (i - firstRow);

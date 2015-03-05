@@ -38,7 +38,8 @@
 #include <QRadioButton>
 #include <QHostInfo>
 
-static QLayout *HLay(QWidget *left, QWidget *right) {
+static QLayout *HLay(QWidget *left, QWidget *right)
+{
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(left);
     layout->addWidget(right);
@@ -75,7 +76,8 @@ ServerDialog::ServerDialog(QWidget *parent)
 #endif
 }
 
-QWidget *ServerDialog::createBasicTab() {
+QWidget *ServerDialog::createBasicTab()
+{
     server_name_edit = new QLineEdit;
     server_name_edit->setText(Config.ServerName);
 
@@ -129,7 +131,8 @@ QWidget *ServerDialog::createBasicTab() {
 }
 
 #ifdef Q_OS_IOS
-QWidget *ServerDialog::createGameModeTab() {
+QWidget *ServerDialog::createGameModeTab()
+{
     QFormLayout *form_layout = new QFormLayout;
     form_layout->addRow(createGameModeBox());
 
@@ -139,7 +142,8 @@ QWidget *ServerDialog::createGameModeTab() {
 }
 #endif
 
-QWidget *ServerDialog::createPackageTab() {
+QWidget *ServerDialog::createPackageTab()
+{
     disable_lua_checkbox = new QCheckBox(tr("Disable Lua"));
     disable_lua_checkbox->setChecked(Config.DisableLua);
     disable_lua_checkbox->setToolTip(tr("<font color=%1>The setting takes effect after reboot</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
@@ -206,7 +210,8 @@ QWidget *ServerDialog::createPackageTab() {
     return widget;
 }
 
-QWidget *ServerDialog::createAdvancedTab() {
+QWidget *ServerDialog::createAdvancedTab()
+{
     QVBoxLayout *layout = new QVBoxLayout;
 
     forbid_same_ip_checkbox = new QCheckBox(tr("Forbid same IP with multiple connection"));
@@ -269,7 +274,8 @@ QWidget *ServerDialog::createAdvancedTab() {
     return widget;
 }
 
-QWidget *ServerDialog::createConversionTab() {
+QWidget *ServerDialog::createConversionTab()
+{
     QVBoxLayout *layout = new QVBoxLayout;
 
     bool enable_lord = Config.value("EnableLordConvertion", true).toBool();
@@ -279,7 +285,7 @@ QWidget *ServerDialog::createConversionTab() {
     convert_ds_to_dp = new QCheckBox(tr("Convert DoubleSword to DragonPhoenix"));
     convert_ds_to_dp->setChecked(Config.value("CardConversions").toStringList().contains("DragonPhoenix") || enable_lord);
     convert_ds_to_dp->setDisabled(enable_lord);
-    
+
     convert_jf_to_ps = new QCheckBox(tr("Convert JingFan to PeaceSpell"));
     convert_jf_to_ps->setChecked(Config.value("CardConversions").toStringList().contains("PeaceSpell") || enable_lord);
     convert_jf_to_ps->setDisabled(enable_lord);
@@ -297,7 +303,8 @@ QWidget *ServerDialog::createConversionTab() {
     return widget;
 }
 
-QWidget *ServerDialog::createMiscTab() {
+QWidget *ServerDialog::createMiscTab()
+{
     game_start_spinbox = new QSpinBox;
     game_start_spinbox->setRange(0, 10);
     game_start_spinbox->setValue(Config.CountDownSeconds);
@@ -381,7 +388,8 @@ QWidget *ServerDialog::createMiscTab() {
 }
 
 #ifdef Q_OS_IOS
-QWidget *ServerDialog::createAiTab() {
+QWidget *ServerDialog::createAiTab()
+{
     QVBoxLayout *layout = new QVBoxLayout;
 
     forbid_adding_robot_checkbox = new QCheckBox(tr("Forbid adding robot"));
@@ -428,7 +436,8 @@ QWidget *ServerDialog::createAiTab() {
 #endif
 
 
-QGroupBox *ServerDialog::createGameModeBox() {
+QGroupBox *ServerDialog::createGameModeBox()
+{
     QGroupBox *mode_box = new QGroupBox(tr("Game mode"));
     mode_box->setParent(this);
     mode_group = new QButtonGroup(this);
@@ -474,8 +483,7 @@ QGroupBox *ServerDialog::createGameModeBox() {
         if (item->isWidgetType()) {
             QWidget *widget = qobject_cast<QWidget *>(item);
             side->addWidget(widget);
-        }
-        else {
+        } else {
             QLayout *item_layout = qobject_cast<QLayout *>(item);
             side->addLayout(item_layout);
         }
@@ -494,7 +502,8 @@ QGroupBox *ServerDialog::createGameModeBox() {
     return mode_box;
 }
 
-QLayout *ServerDialog::createButtonLayout() {
+QLayout *ServerDialog::createButtonLayout()
+{
     QHBoxLayout *button_layout = new QHBoxLayout;
     button_layout->addStretch();
 
@@ -503,14 +512,15 @@ QLayout *ServerDialog::createButtonLayout() {
 
     button_layout->addWidget(ok_button);
     button_layout->addWidget(cancel_button);
-   
+
     connect(ok_button, &QPushButton::clicked, this, &ServerDialog::onOkButtonClicked);
     connect(cancel_button, &QPushButton::clicked, this, &ServerDialog::reject);
 
     return button_layout;
 }
 
-void ServerDialog::onDetectButtonClicked() {
+void ServerDialog::onDetectButtonClicked()
+{
     QHostInfo vHostInfo = QHostInfo::fromName(QHostInfo::localHostName());
     QList<QHostAddress> vAddressList = vHostInfo.addresses();
     foreach (const QHostAddress &address, vAddressList) {
@@ -522,12 +532,14 @@ void ServerDialog::onDetectButtonClicked() {
     }
 }
 
-void ServerDialog::onOkButtonClicked() {
+void ServerDialog::onOkButtonClicked()
+{
     accept();
 }
 
 
-bool ServerDialog::config() {
+bool ServerDialog::config()
+{
     exec();
 
     if (result() != Accepted)
@@ -608,7 +620,8 @@ bool ServerDialog::config() {
     return true;
 }
 
-void ServerDialog::editBanlist() {
+void ServerDialog::editBanlist()
+{
     BanListDialog *dialog = new BanListDialog(this);
     dialog->exec();
 }

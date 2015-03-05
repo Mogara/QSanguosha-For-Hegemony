@@ -23,15 +23,15 @@
 #include "roomscene.h"
 #include "engine.h"
 
-void RoleComboBox::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void RoleComboBox::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
     if (!fixed_role.isEmpty() || circle) return;
     QPoint point = QPoint(event->pos().x(), event->pos().y());;
     if (expanding && !boundingRect().contains(point)) {
         expanding = false;
         update();
         return;
-    }
-    else if (!expanding) {
+    } else if (!expanding) {
         expanding = true;
         update();
         return;
@@ -47,7 +47,8 @@ void RoleComboBox::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     update();
 }
 
-void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     /*
       --------------------
       --------------------
@@ -75,8 +76,7 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
             QPixmap pix;
             pix.load("image/system/roles/unknown.png");
             painter->drawPixmap(1, 0, 28, 28, pix);
-        }
-        else {
+        } else {
             QColor grey = G_COMMON_LAYOUT.m_roleDarkColor;
             QPen pen(Qt::black);
             pen.setWidth(1);
@@ -89,8 +89,7 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
                 ++index;
             }
         }
-    }
-    else {
+    } else {
         QPixmap pix = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_EXPANDING_ROLE_BOX);
         painter->drawPixmap(0, 0, pix);
 
@@ -101,7 +100,8 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
     }
 }
 
-QRectF RoleComboBox::boundingRect() const {
+QRectF RoleComboBox::boundingRect() const
+{
     static QRect rect = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_EXPANDING_ROLE_BOX).rect();
     return QRectF(rect.x(), rect.y(), rect.width(), rect.height());
 }
@@ -111,20 +111,22 @@ RoleComboBox::RoleComboBox(QGraphicsItem *photo, bool circle)
 {
     QStringList kingdoms = Sanguosha->getKingdoms();
     kingdoms.removeAll("god");
-    foreach (const QString &kingdom, kingdoms)
+    foreach(const QString &kingdom, kingdoms)
         kingdoms_excluded[kingdom] = false;
 
     connect(RoomSceneInstance, &RoomScene::cancel_role_box_expanding, this, &RoleComboBox::mouseClickedOutside);
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
-void RoleComboBox::fix(const QString &role) {
+void RoleComboBox::fix(const QString &role)
+{
     if (role == "god") return;
     fixed_role = role;
     update();
 }
 
-void RoleComboBox::mouseClickedOutside() {
+void RoleComboBox::mouseClickedOutside()
+{
     if (!expanding) return;
     expanding = false;
     update();

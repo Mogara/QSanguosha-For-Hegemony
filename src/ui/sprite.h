@@ -30,25 +30,38 @@
 
 #include "qsanselectableitem.h"
 
-class Sprite : public QObject, public QGraphicsPixmapItem {
+class Sprite : public QObject, public QGraphicsPixmapItem
+{
     Q_OBJECT
     Q_INTERFACES(QGraphicsItem)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
     Q_PROPERTY(qreal scale READ scale WRITE setScale)
 
 public:
-    Sprite(QGraphicsItem *parent = NULL) : QGraphicsPixmapItem(parent) {}
+    Sprite(QGraphicsItem *parent = NULL) : QGraphicsPixmapItem(parent)
+    {
+    }
 };
 
-class AnimatedEffect : public QGraphicsEffect {
+class AnimatedEffect : public QGraphicsEffect
+{
     Q_OBJECT
     Q_PROPERTY(int index READ getIndex WRITE setIndex)
 
 public:
     void setStay(bool stay);
-    void reset() { index = 0; }
-    int getIndex() { return index; }
-    void setIndex(int ind)  { index = ind; }
+    void reset()
+    {
+        index = 0;
+    }
+    int getIndex()
+    {
+        return index;
+    }
+    void setIndex(int ind)
+    {
+        index = ind;
+    }
 
 protected:
     bool stay;
@@ -58,7 +71,8 @@ signals:
     void loop_finished();
 };
 
-class EffectAnimation : public QObject{
+class EffectAnimation : public QObject
+{
     Q_OBJECT
 
 public:
@@ -78,7 +92,8 @@ private:
     QMap<QGraphicsItem *, AnimatedEffect *> registered;
 };
 
-class EmphasizeEffect : public AnimatedEffect {
+class EmphasizeEffect : public AnimatedEffect
+{
     Q_OBJECT
 
 public:
@@ -89,7 +104,8 @@ protected:
     virtual QRectF boundingRectFor(const QRectF &sourceRect) const;
 };
 
-class SentbackEffect : public AnimatedEffect {
+class SentbackEffect : public AnimatedEffect
+{
     Q_OBJECT
 
 public:
@@ -105,7 +121,8 @@ private:
     QImage *grayed;
 };
 
-class FadeEffect : public AnimatedEffect {
+class FadeEffect : public AnimatedEffect
+{
     Q_OBJECT
 
 public:

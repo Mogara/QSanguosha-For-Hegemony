@@ -4,20 +4,28 @@
 #include "graphicsbox.h"
 #include "button.h"
 #include "title.h"
-class GuhuoBox : public GraphicsBox{
+
+class GuhuoBox : public GraphicsBox
+{
     Q_OBJECT
+
 public:
     //static GuhuoBox *getInstance(const QString &skill_name,const QString &flags,bool play_only);
     GuhuoBox(const QString& skill_name, const QString& flags, bool playonly = true);
-    QString getSkillName()const {return skill_name;}
+    QString getSkillName()const
+    {
+        return skill_name;
+    }
+
 signals:
     void onButtonClick();
+
 public slots:
     void popup();
     void reply();
     void clear();
-protected:
 
+protected:
     virtual QRectF boundingRect() const;
 
     int getButtonWidth() const;
@@ -28,21 +36,20 @@ protected:
     QString flags;
     QString skill_name;
 
-    QMap<QString,QStringList> card_list;
+    QMap<QString, QStringList> card_list;
 
-    QMap<QString,Button *> buttons;
+    QMap<QString, Button *> buttons;
 
-    QMap<QString,Title*> titles;
+    QMap<QString, Title*> titles;
 
-    static const int minButtonWidth = 100;
-    static const int defaultButtonHeight = 30;
-    static const int topBlankWidth = 42;
-    static const int bottomBlankWidth = 85;
-    static const int interval = 15;
-    static const int outerBlankWidth = 37;
+    static const int minButtonWidth;
+    static const int defaultButtonHeight;
+    static const int topBlankWidth;
+    static const int bottomBlankWidth;
+    static const int interval;
+    static const int outerBlankWidth;
 
-    static const int titleWidth = 20;
-
+    static const int titleWidth;
 };
 
 #endif // GUHUOBOX

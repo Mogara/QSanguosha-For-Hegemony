@@ -27,7 +27,8 @@
 #include <QPixmap>
 #include <QBrush>
 
-class Settings : public QSettings {
+class Settings : public QSettings
+{
     Q_OBJECT
 
 public:

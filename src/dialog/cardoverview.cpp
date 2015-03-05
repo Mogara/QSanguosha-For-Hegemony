@@ -38,7 +38,8 @@
 
 static CardOverview *Overview;
 
-CardOverview *CardOverview::getInstance(QWidget *main_window) {
+CardOverview *CardOverview::getInstance(QWidget *main_window)
+{
     if (Overview == NULL)
         Overview = new CardOverview(main_window);
 
@@ -76,7 +77,8 @@ CardOverview::CardOverview(QWidget *parent)
 #endif
 }
 
-void CardOverview::loadFromAll() {
+void CardOverview::loadFromAll()
+{
     int n = Sanguosha->getCardCount();
 #if !defined(Q_OS_IOS)
     ui->tableWidget->setRowCount(n);
@@ -102,8 +104,7 @@ void CardOverview::loadFromAll() {
             ui->playAudioEffectButton->show();
             ui->malePlayButton->hide();
             ui->femalePlayButton->hide();
-        }
-        else {
+        } else {
             ui->playAudioEffectButton->hide();
             ui->malePlayButton->show();
             ui->femalePlayButton->show();
@@ -111,7 +112,8 @@ void CardOverview::loadFromAll() {
     }
 }
 
-void CardOverview::loadFromList(const QList<const Card *> &list) {
+void CardOverview::loadFromList(const QList<const Card *> &list)
+{
     int n = list.length();
 #ifdef Q_OS_IOS
     ui->cardComboBox->setMaxCount(n);
@@ -134,8 +136,7 @@ void CardOverview::loadFromList(const QList<const Card *> &list) {
             ui->playAudioEffectButton->show();
             ui->malePlayButton->hide();
             ui->femalePlayButton->hide();
-        }
-        else {
+        } else {
             ui->playAudioEffectButton->hide();
             ui->malePlayButton->show();
             ui->femalePlayButton->show();
@@ -143,7 +144,8 @@ void CardOverview::loadFromList(const QList<const Card *> &list) {
     }
 }
 
-void CardOverview::addCard(int i, const Card *card) {
+void CardOverview::addCard(int i, const Card *card)
+{
     QString name = Sanguosha->translate(card->objectName());
     QIcon suit_icon = QIcon(QString("image/system/suit/%1.png").arg(card->getSuitString()));
     QString point = card->getNumberString();
@@ -174,7 +176,8 @@ void CardOverview::addCard(int i, const Card *card) {
 #endif
 }
 
-CardOverview::~CardOverview() {
+CardOverview::~CardOverview()
+{
     delete ui;
 }
 
@@ -201,7 +204,8 @@ void CardOverview::comboBoxChanged() {
     }
 }
 #endif
-void CardOverview::on_tableWidget_itemSelectionChanged() {
+void CardOverview::on_tableWidget_itemSelectionChanged()
+{
 #ifndef Q_OS_IOS
     int row = ui->tableWidget->currentRow();
     int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
@@ -223,14 +227,16 @@ void CardOverview::on_tableWidget_itemSelectionChanged() {
 #endif
 }
 
-void CardOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem *) {
+void CardOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem *)
+{
 #ifndef Q_OS_IOS
     if (Self) askCard();
 #endif
 }
 
 
-void CardOverview::askCard() {
+void CardOverview::askCard()
+{
     if (!ServerInfo.EnableCheat || !ClientInstance)
         return;
 
@@ -255,7 +261,8 @@ void CardOverview::askCard() {
 
 
 
-void CardOverview::on_malePlayButton_clicked() {
+void CardOverview::on_malePlayButton_clicked()
+{
 #ifdef Q_OS_IOS
     int row = ui->cardComboBox->currentIndex();
 #else
@@ -272,7 +279,8 @@ void CardOverview::on_malePlayButton_clicked() {
     }
 }
 
-void CardOverview::on_femalePlayButton_clicked() {
+void CardOverview::on_femalePlayButton_clicked()
+{
 #ifdef Q_OS_IOS
     int row = ui->cardComboBox->currentIndex();
 #else
@@ -289,7 +297,8 @@ void CardOverview::on_femalePlayButton_clicked() {
     }
 }
 
-void CardOverview::on_playAudioEffectButton_clicked() {
+void CardOverview::on_playAudioEffectButton_clicked()
+{
 #ifdef Q_OS_IOS
     int row = ui->cardComboBox->currentIndex();
 #else

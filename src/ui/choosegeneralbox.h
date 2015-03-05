@@ -28,7 +28,8 @@
 class Button;
 class QGraphicsDropShadowEffect;
 
-class GeneralCardItem : public CardItem {
+class GeneralCardItem : public CardItem
+{
     Q_OBJECT
 
 public:
@@ -49,7 +50,8 @@ public slots:
     virtual void changeGeneral(const QString &generalName);
 };
 
-class ChooseGeneralBox : public GraphicsBox {
+class ChooseGeneralBox : public GraphicsBox
+{
     Q_OBJECT
 
 public:
@@ -60,9 +62,7 @@ public:
     void clear();
 
 public slots:
-    void chooseGeneral(const QStringList &generals, bool m_viewOnly = false,
-                       bool single_result = false, const QString &reason = QString(),
-                       const Player *player = NULL);
+    void chooseGeneral(const QStringList &generals, bool m_viewOnly = false, bool single_result = false, const QString &reason = QString(), const Player *player = NULL);
     void reply();
     void adjustItems();
 

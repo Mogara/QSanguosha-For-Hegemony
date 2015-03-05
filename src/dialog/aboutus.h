@@ -26,7 +26,8 @@
 class QListWidget;
 class QTextBrowser;
 
-class AboutUsDialog : public FlatDialog {
+class AboutUsDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:

@@ -27,7 +27,8 @@ class UdpDetector;
 class QListWidget;
 class QListWidgetItem;
 
-class UdpDetectorDialog : public FlatDialog {
+class UdpDetectorDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:

@@ -40,7 +40,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     : FlatDialog(parent, false), ui(new Ui::ConfigDialog)
 {
     ui->setupUi(this);
-    
+
     connect(this, &ConfigDialog::windowTitleChanged, ui->windowTitle, &QLabel::setText);
 
     // tab 1
@@ -71,27 +71,22 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     ui->bgMusicPathLineEdit->setText(Config.value("BackgroundMusic", "audio/system/background.ogg").toString());
 
     ui->enableEffectCheckBox->setChecked(Config.EnableEffects);
-    connect(ui->enableEffectCheckBox, &QCheckBox::toggled, this,
-            &ConfigDialog::onEffectsEnabledChanged);
+    connect(ui->enableEffectCheckBox, &QCheckBox::toggled, this, &ConfigDialog::onEffectsEnabledChanged);
 
     ui->enableLastWordCheckBox->setChecked(Config.EnableLastWord);
-    connect(ui->enableLastWordCheckBox, &QCheckBox::toggled, this,
-            &ConfigDialog::onLastWordEnabledChanged);
+    connect(ui->enableLastWordCheckBox, &QCheckBox::toggled, this, &ConfigDialog::onLastWordEnabledChanged);
 
     ui->enableBgMusicCheckBox->setChecked(Config.EnableBgMusic);
-    connect(ui->enableBgMusicCheckBox, &QCheckBox::toggled, this,
-            &ConfigDialog::setBGMEnabled);
+    connect(ui->enableBgMusicCheckBox, &QCheckBox::toggled, this, &ConfigDialog::setBGMEnabled);
 
     ui->noIndicatorCheckBox->setChecked(Config.value("NoIndicator", false).toBool());
     ui->noEquipAnimCheckBox->setChecked(Config.value("NoEquipAnim", false).toBool());
 
     ui->bgmVolumeSlider->setValue(100 * Config.BGMVolume);
-    connect(ui->bgmVolumeSlider, &QSlider::valueChanged, this,
-            &ConfigDialog::onBGMVolumeChanged);
+    connect(ui->bgmVolumeSlider, &QSlider::valueChanged, this, &ConfigDialog::onBGMVolumeChanged);
 
     ui->effectVolumeSlider->setValue(100 * Config.EffectVolume);
-    connect(ui->effectVolumeSlider, &QSlider::valueChanged, this,
-            &ConfigDialog::onEffectVolumeChanged);
+    connect(ui->effectVolumeSlider, &QSlider::valueChanged, this, &ConfigDialog::onEffectVolumeChanged);
 
     // tab 3
     ui->neverNullifyMyTrickCheckBox->setChecked(Config.NeverNullifyMyTrick);
@@ -124,7 +119,8 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     connect(this, &ConfigDialog::rejected, this, &ConfigDialog::discardSettings);
 }
 
-void ConfigDialog::showFont(QLineEdit *lineedit, const QFont &font) {
+void ConfigDialog::showFont(QLineEdit *lineedit, const QFont &font)
+{
     lineedit->setFont(font);
     lineedit->setText(QString("%1 %2").arg(font.family()).arg(font.pointSize()));
 }
@@ -255,7 +251,7 @@ void ConfigDialog::setBGMEnabled(const QVariant &enabled)
         bool play = enabled.toBool();
         if (play) {
             Audio::playBGM(Config.value("BackgroundMusic",
-                                        "audio/system/background.ogg").toString());
+                "audio/system/background.ogg").toString());
         } else {
             Audio::stopBGM();
         }
@@ -292,11 +288,13 @@ void ConfigDialog::setRecordsSavePath(const QVariant &path)
     Config.RecordSavePath = dir;
 }
 
-ConfigDialog::~ConfigDialog() {
+ConfigDialog::~ConfigDialog()
+{
     delete ui;
 }
 
-void ConfigDialog::on_browseBgButton_clicked() {
+void ConfigDialog::on_browseBgButton_clicked()
+{
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Select a background image"),
         "image/backdrop/",
@@ -306,13 +304,15 @@ void ConfigDialog::on_browseBgButton_clicked() {
         doCallback(&ConfigDialog::setBackground, Config.BackgroundImage, fileName);
 }
 
-void ConfigDialog::on_resetBgButton_clicked() {
+void ConfigDialog::on_resetBgButton_clicked()
+{
     QString fileName = "image/backdrop/bg.jpg";
     if (fileName != ui->bgPathLineEdit->text())
         doCallback(&ConfigDialog::setBackground, Config.BackgroundImage, fileName);
 }
 
-void ConfigDialog::on_browseTableBgButton_clicked() {
+void ConfigDialog::on_browseTableBgButton_clicked()
+{
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Select a tableBg image"),
         "image/backdrop/",
@@ -322,13 +322,15 @@ void ConfigDialog::on_browseTableBgButton_clicked() {
         doCallback(&ConfigDialog::setTableBg, Config.TableBgImage, fileName);
 }
 
-void ConfigDialog::on_resetTableBgButton_clicked() {
+void ConfigDialog::on_resetTableBgButton_clicked()
+{
     QString fileName = "image/backdrop/table.jpg";
     if (fileName != ui->tableBgPathLineEdit->text())
         doCallback(&ConfigDialog::setTableBg, Config.TableBgImage, fileName);
 }
 
-void ConfigDialog::on_browseRecordPathButton_clicked() {
+void ConfigDialog::on_browseRecordPathButton_clicked()
+{
     QString path = QFileDialog::getExistingDirectory(this,
         tr("Select a Record Paths"),
         "records/");
@@ -337,7 +339,8 @@ void ConfigDialog::on_browseRecordPathButton_clicked() {
         doCallback(&ConfigDialog::setRecordsSavePath, Config.RecordSavePath, path);
 }
 
-void ConfigDialog::on_resetRecordPathButton_clicked() {
+void ConfigDialog::on_resetRecordPathButton_clicked()
+{
     ui->recordPathSetupLineEdit->clear();
 
     QString path = "records/";
@@ -345,7 +348,8 @@ void ConfigDialog::on_resetRecordPathButton_clicked() {
         doCallback(&ConfigDialog::setRecordsSavePath, Config.RecordSavePath, path);
 }
 
-void ConfigDialog::saveConfig() {
+void ConfigDialog::saveConfig()
+{
     Config.setValue("BGMVolume", Config.BGMVolume);
 
     Config.setValue("EffectVolume", Config.EffectVolume);
@@ -375,15 +379,13 @@ void ConfigDialog::saveConfig() {
     Config.setValue("EnableDoubleClick", Config.EnableDoubleClick);
 
     Config.EnableAutoPreshow = ui->autoPreshowCheckBox->isChecked();
-    Config.setValue("EnableAutoPreshowInConsoleMode",
-                    Config.EnableAutoPreshow);
+    Config.setValue("EnableAutoPreshowInConsoleMode", Config.EnableAutoPreshow);
 
     Config.BubbleChatBoxKeepSeconds = ui->bubbleChatBoxKeepSpinBox->value();
     Config.setValue("BubbleChatBoxKeepSeconds", Config.BubbleChatBoxKeepSeconds);
 
     Config.IgnoreOthersSwitchesOfSkin = ui->ignoreChangingSkinCheckBox->isChecked();
-    Config.setValue("IgnoreOthersSwitchesOfSkin",
-                    Config.IgnoreOthersSwitchesOfSkin);
+    Config.setValue("IgnoreOthersSwitchesOfSkin", Config.IgnoreOthersSwitchesOfSkin);
 
     Config.EnableAutoSaveRecord = ui->enableAutoSaveCheckBox->isChecked();
     Config.setValue("EnableAutoSaveRecord", Config.EnableAutoSaveRecord);
@@ -391,10 +393,8 @@ void ConfigDialog::saveConfig() {
     Config.NetworkOnly = ui->networkOnlyCheckBox->isChecked();
     Config.setValue("NetworkOnly", Config.NetworkOnly);
 
-    Config.setValue("SkillDescriptionInOverviewColor",
-                    Config.SkillDescriptionInOverviewColor);
-    Config.setValue("SkillDescriptionInToolTipColor",
-                    Config.SkillDescriptionInToolTipColor);
+    Config.setValue("SkillDescriptionInOverviewColor", Config.SkillDescriptionInOverviewColor);
+    Config.setValue("SkillDescriptionInToolTipColor", Config.SkillDescriptionInToolTipColor);
 
     Config.setValue("TextEditColor", Config.TextEditColor);
 
@@ -422,40 +422,43 @@ void ConfigDialog::discardSettings()
     callbackArgs.clear();
 }
 
-void ConfigDialog::on_browseBgMusicButton_clicked() {
+void ConfigDialog::on_browseBgMusicButton_clicked()
+{
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Select a background music"),
         "audio/system",
         tr("Audio files (*.wav *.mp3 *.ogg)"));
     if (!fileName.isEmpty() && fileName != ui->bgMusicPathLineEdit->text()) {
-        doCallback(&ConfigDialog::setBgMusic, Config.value("BackgroundMusic"),
-                   fileName);
+        doCallback(&ConfigDialog::setBgMusic, Config.value("BackgroundMusic"), fileName);
     }
 }
 
-void ConfigDialog::on_resetBgMusicButton_clicked() {
+void ConfigDialog::on_resetBgMusicButton_clicked()
+{
     QString defaultMusic = "audio/system/background.ogg";
     if (defaultMusic != ui->bgMusicPathLineEdit->text()) {
-        doCallback(&ConfigDialog::setBgMusic, Config.value("BackgroundMusic"),
-                   defaultMusic);
+        doCallback(&ConfigDialog::setBgMusic, Config.value("BackgroundMusic"), defaultMusic);
     }
 }
 
-void ConfigDialog::on_changeAppFontButton_clicked() {
+void ConfigDialog::on_changeAppFontButton_clicked()
+{
     bool ok;
     QFont font = QFontDialog::getFont(&ok, Config.AppFont, this);
     if (ok && font != Config.AppFont)
         doCallback(&ConfigDialog::setAppFont, Config.AppFont, font);
 }
 
-void ConfigDialog::on_setTextEditFontButton_clicked() {
+void ConfigDialog::on_setTextEditFontButton_clicked()
+{
     bool ok;
     QFont font = QFontDialog::getFont(&ok, Config.UIFont, this);
     if (ok && font != Config.UIFont)
         doCallback(&ConfigDialog::setTextEditFont, Config.UIFont, font);
 }
 
-void ConfigDialog::on_setTextEditColorButton_clicked() {
+void ConfigDialog::on_setTextEditColorButton_clicked()
+{
     QColor color = QColorDialog::getColor(Config.TextEditColor, this);
     if (color.isValid() && color != Config.TextEditColor)
         doCallback(&ConfigDialog::setTextEditColor, Config.TextEditColor, color);
@@ -473,8 +476,7 @@ void ConfigDialog::on_overviewFontColorButton_clicked()
 {
     QColor color = QColorDialog::getColor(QColor(Config.SkillDescriptionInOverviewColor), this);
     if (color.isValid() && color != Config.SkillDescriptionInOverviewColor) {
-        doCallback(&ConfigDialog::setOverviewFontColor,
-                   Config.SkillDescriptionInOverviewColor, color);
+        doCallback(&ConfigDialog::setOverviewFontColor, Config.SkillDescriptionInOverviewColor, color);
     }
 }
 
@@ -482,8 +484,7 @@ void ConfigDialog::on_toolTipBackgroundColorButton_clicked()
 {
     QColor color = QColorDialog::getColor(QColor(Config.ToolTipBackgroundColor), this);
     if (color.isValid() && color != Config.ToolTipBackgroundColor) {
-        doCallback(&ConfigDialog::setTooltipBackgroundColor,
-                   Config.ToolTipBackgroundColor, color);
+        doCallback(&ConfigDialog::setTooltipBackgroundColor, Config.ToolTipBackgroundColor, color);
     }
 }
 

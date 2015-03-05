@@ -28,13 +28,8 @@
 const char *HEROSKIN_USED_ICON = "image/system/heroskin/used.png";
 const char *HEROSKIN_SELECT_FRAME_ICON = "image/system/heroskin/select.png";
 
-SkinItem::SkinItem(const QString &generalName, int skinId, bool used,
-                   QGraphicsItem *parent/* = 0*/)
-    : QGraphicsObject(parent),
-      m_skinPixmap(G_ROOM_SKIN.getGeneralPixmap(generalName,
-                                                QSanRoomSkin::S_GENERAL_ICON_SIZE_HERO_SKIN,
-                                                skinId)),
-      m_skinId(skinId), m_used(used), m_hoverEnter(false)
+SkinItem::SkinItem(const QString &generalName, int skinId, bool used, QGraphicsItem *parent/* = 0*/)
+    : QGraphicsObject(parent), m_skinPixmap(G_ROOM_SKIN.getGeneralPixmap(generalName, QSanRoomSkin::S_GENERAL_ICON_SIZE_HERO_SKIN, skinId)), m_skinId(skinId), m_used(used), m_hoverEnter(false)
 {
     setAcceptHoverEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton);
@@ -43,9 +38,7 @@ SkinItem::SkinItem(const QString &generalName, int skinId, bool used,
     if (skinId != 0)
         general->tryLoadingSkinTranslation(skinId);
     QGraphicsPixmapItem *titleItem = new QGraphicsPixmapItem(this);
-    G_COMMON_LAYOUT.skinItemTitleText.paintText(titleItem, SKIN_ITEM_AREA,
-                                                Qt::AlignRight | Qt::AlignBottom,
-                                                general->getTitle(skinId));
+    G_COMMON_LAYOUT.skinItemTitleText.paintText(titleItem, SKIN_ITEM_AREA, Qt::AlignRight | Qt::AlignBottom, general->getTitle(skinId));
 }
 
 QRectF SkinItem::boundingRect() const

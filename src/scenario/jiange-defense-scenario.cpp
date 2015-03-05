@@ -3,7 +3,8 @@
 #include "engine.h"
 #include "room.h"
 
-class JiangeDefenseScenarioRule: public ScenarioRule {
+class JiangeDefenseScenarioRule : public ScenarioRule
+{
 public:
     JiangeDefenseScenarioRule(Scenario *scenario)
         : ScenarioRule(scenario)
@@ -11,11 +12,12 @@ public:
         events << GameStart;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         if (player == NULL)
-            foreach (ServerPlayer *p, room->getPlayers())
-                if (p->getActualGeneral1Name().startsWith("jg_"))
-                    p->showGeneral(true, true, false);
+            foreach(ServerPlayer *p, room->getPlayers())
+            if (p->getActualGeneral1Name().startsWith("jg_"))
+                p->showGeneral(true, true, false);
         return false;
     }
 };
@@ -26,7 +28,8 @@ JiangeDefenseScenario::JiangeDefenseScenario()
     rule = new JiangeDefenseScenarioRule(this);
 }
 
-void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2, QStringList &kingdoms, Room *room) const{
+void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2, QStringList &kingdoms, Room *room) const
+{
     QMap<QString, QStringList> roles;
     QStringList wei_roles, shu_roles;
     wei_roles << "ghost" << "machine" << "human" << "human";
@@ -51,7 +54,7 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
     for (int i = 0; i < 8; i++) {
         if (players[i]->getState() == "online") {
             QStringList choices;
-            foreach (const QString &kingdom, roles.keys())
+            foreach(const QString &kingdom, roles.keys())
                 if (roles[kingdom].contains("human"))
                     choices << kingdom;
             QString choice = choices.at(qrand() % choices.length());
@@ -83,7 +86,7 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
             }
         }
     }
-                    
+
     for (int i = 0; i < 8; i++) {
         if (human_map.contains(players[i])) {
             QStringList answer = human_map[players[i]];
@@ -92,7 +95,7 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
             generals2 << answer.takeFirst();
         } else {
             QStringList kingdom_choices;
-            foreach (const QString &kingdom, roles.keys())
+            foreach(const QString &kingdom, roles.keys())
                 if (!roles[kingdom].isEmpty())
                     kingdom_choices << kingdom;
             QString kingdom = kingdom_choices.at(qrand() % kingdom_choices.length());
@@ -122,36 +125,43 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
     }
 }
 
-int JiangeDefenseScenario::getPlayerCount() const{
+int JiangeDefenseScenario::getPlayerCount() const
+{
     return 8;
 }
 
-QString JiangeDefenseScenario::getRoles() const{
+QString JiangeDefenseScenario::getRoles() const
+{
     return "ZNNNNNNN";
 }
 
-void JiangeDefenseScenario::onTagSet(Room *, const QString &) const{
+void JiangeDefenseScenario::onTagSet(Room *, const QString &) const
+{
 }
 
-QString JiangeDefenseScenario::getRandomWeiGhost() const{
+QString JiangeDefenseScenario::getRandomWeiGhost() const
+{
     QStringList ghosts;
     ghosts << "jg_caozhen" << "jg_xiahou" << "jg_sima" << "jg_zhanghe";
     return ghosts.at(qrand() % ghosts.length());
 }
 
-QString JiangeDefenseScenario::getRandomWeiMachine() const{
+QString JiangeDefenseScenario::getRandomWeiMachine() const
+{
     QStringList machines;
     machines << "jg_bian_machine" << "jg_suanni_machine" << "jg_chiwen_machine" << "jg_yazi_machine";
     return machines.at(qrand() % machines.length());
 }
 
-QString JiangeDefenseScenario::getRandomShuGhost() const{
+QString JiangeDefenseScenario::getRandomShuGhost() const
+{
     QStringList ghosts;
     ghosts << "jg_liubei" << "jg_zhuge" << "jg_yueying" << "jg_pangtong";
     return ghosts.at(qrand() % ghosts.length());
 }
 
-QString JiangeDefenseScenario::getRandomShuMachine() const{
+QString JiangeDefenseScenario::getRandomShuMachine() const
+{
     QStringList machines;
     machines << "jg_qinglong_machine" << "jg_baihu_machine" << "jg_zhuque_machine" << "jg_xuanwu_machine";
     return machines.at(qrand() % machines.length());

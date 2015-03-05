@@ -25,7 +25,8 @@ class ClientPlayer;
 
 #include <QTextEdit>
 
-class ClientLogBox : public QTextEdit {
+class ClientLogBox : public QTextEdit
+{
     Q_OBJECT
 
 public:

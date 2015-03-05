@@ -36,7 +36,8 @@
 #pragma message WARN("UI elements detected in server side!!!")
 #endif
 
-QString EventTriplet::toString() const{
+QString EventTriplet::toString() const
+{
     return QString("event[%1], room[%2], target = %3[%4]\n")
         .arg(_m_event)
         .arg(_m_room->getId())
@@ -44,7 +45,8 @@ QString EventTriplet::toString() const{
         .arg(_m_target ? _m_target->getGeneralName() : QString());
 }
 
-QString HegemonyMode::GetMappedRole(const QString &kingdom) {
+QString HegemonyMode::GetMappedRole(const QString &kingdom)
+{
     static QMap<QString, QString> roles;
     if (roles.isEmpty()) {
         roles["wei"] = "lord";
@@ -58,9 +60,10 @@ QString HegemonyMode::GetMappedRole(const QString &kingdom) {
     return roles[kingdom];
 }
 
-QString HegemonyMode::GetMappedKingdom(const QString &role) {
+QString HegemonyMode::GetMappedKingdom(const QString &role)
+{
     static QMap<QString, QString> kingdoms;
-    if (kingdoms.isEmpty()){
+    if (kingdoms.isEmpty()) {
         kingdoms["lord"] = "wei";
         kingdoms["loyalist"] = "shu";
         kingdoms["rebel"] = "wu";
@@ -78,7 +81,8 @@ RoomThread::RoomThread(Room *room)
     game_rule = new GameRule(this);
 }
 
-void RoomThread::addPlayerSkills(ServerPlayer *player, bool invoke_game_start) {
+void RoomThread::addPlayerSkills(ServerPlayer *player, bool invoke_game_start)
+{
     QVariant void_data;
     bool invoke_verify = false;
 
@@ -94,12 +98,14 @@ void RoomThread::addPlayerSkills(ServerPlayer *player, bool invoke_game_start) {
         trigger(GameStart, room, player, void_data);
 }
 
-void RoomThread::constructTriggerTable() {
-    foreach (ServerPlayer *player, room->getPlayers())
+void RoomThread::constructTriggerTable()
+{
+    foreach(ServerPlayer *player, room->getPlayers())
         addPlayerSkills(player, true);
 }
 
-void RoomThread::actionNormal(GameRule *game_rule) {
+void RoomThread::actionNormal(GameRule *game_rule)
+{
     try {
         forever{
             trigger(TurnStart, room, room->getCurrent());
@@ -129,7 +135,8 @@ void RoomThread::actionNormal(GameRule *game_rule) {
     }
 }
 
-void RoomThread::_handleTurnBrokenNormal(GameRule *game_rule) {
+void RoomThread::_handleTurnBrokenNormal(GameRule *game_rule)
+{
     try {
         ServerPlayer *player = room->getCurrent();
         trigger(TurnBroken, room, player);
@@ -151,12 +158,13 @@ void RoomThread::_handleTurnBrokenNormal(GameRule *game_rule) {
     }
 }
 
-void RoomThread::run() {
+void RoomThread::run()
+{
     qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
     Sanguosha->registerRoom(room);
 
     addTriggerSkill(game_rule);
-    foreach (const TriggerSkill *triggerSkill, Sanguosha->getGlobalTriggerSkills())
+    foreach(const TriggerSkill *triggerSkill, Sanguosha->getGlobalTriggerSkills())
         addTriggerSkill(triggerSkill);
 
     if (room->getScenario() != NULL) {
@@ -190,17 +198,18 @@ void RoomThread::run() {
         if (triggerEvent == GameFinished) {
             Sanguosha->unregisterRoom();
             return;
-        }
-        else
+        } else
             Q_ASSERT(false);
     }
 }
 
-static bool compareByPriority(const TriggerSkill *a, const TriggerSkill *b) {
+static bool compareByPriority(const TriggerSkill *a, const TriggerSkill *b)
+{
     return a->getPriority() > b->getPriority();
 }
 
-bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data) {
+bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data)
+{
     // push it to event stack
     EventTriplet triplet(triggerEvent, room, target);
     event_stack.push_back(triplet);
@@ -221,7 +230,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
             foreach (const TriggerSkill *skill, skills) {
                 if (!triggered.contains(skill)) {
                     if (skill->objectName() == "game_rule" || (room->getScenario()
-                                                              && room->getScenario()->objectName() == skill->objectName())) {
+                        && room->getScenario()->objectName() == skill->objectName())) {
                         room->tryPause();
                         if (will_trigger.isEmpty()
                             || skill->getPriority() == will_trigger.last()->getPriority()) {
@@ -273,7 +282,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                 foreach (ServerPlayer *p, room->getPlayers()) {
                     if (!trigger_who.contains(p)) continue;
                     QStringList already_triggered;
-                    forever {
+                    forever{
                         QStringList who_skills = trigger_who.value(p);
                         if (who_skills.isEmpty()) break;
                         bool has_compulsory = false;
@@ -285,8 +294,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                 trskill = Sanguosha->getTriggerSkill(skill.split("->").first()); // "tieqi->sgs4+sgs8+sgs1+sgs2"
                             if (trskill && p->hasShownSkill(trskill)
                                 && (trskill->getFrequency() == Skill::Compulsory
-                                    //|| trskill->getFrequency() == Skill::NotCompulsory //for Paoxia, Anjian, etc.
-                                    || trskill->getFrequency() == Skill::Wake)) {
+                                //|| trskill->getFrequency() == Skill::NotCompulsory //for Paoxia, Anjian, etc.
+                                || trskill->getFrequency() == Skill::Wake)) {
                                 has_compulsory = true;
                                 break;
                             }
@@ -302,8 +311,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                 const TriggerSkill *trskill = Sanguosha->getTriggerSkill(realSkillName);
                                 if (trskill && p->hasShownSkill(trskill)
                                     && (trskill->getFrequency() == Skill::Compulsory
-                                        //|| trskill->getFrequency() == Skill::NotCompulsory //for Paoxia, Anjian, etc.
-                                        || trskill->getFrequency() == Skill::Wake))
+                                    //|| trskill->getFrequency() == Skill::NotCompulsory //for Paoxia, Anjian, etc.
+                                    || trskill->getFrequency() == Skill::Wake))
                                     cannotSkip = true;
                                 foreach (const QString &target, targets) {
                                     QString name = QString("%1->%2&%3").arg(realSkillName).arg(target).arg(index);
@@ -330,7 +339,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                             const TriggerSkill *skill = Sanguosha->getTriggerSkill(skillName);
                             if (skill && skill->isGlobal() && skill->getFrequency() == Skill::Compulsory) {
                                 name = skillName; // a new trick to deal with all "record-skill" or "compulsory-global",
-                                                  // they should always be triggered first.
+                                // they should always be triggered first.
                                 break;
                             }
                         }
@@ -377,7 +386,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                             name = name.left(split);
                         if ((split = name.indexOf(':')) != -1)
                             name = name.mid(split + 1); // "xxxx"
-                        
+
                         ServerPlayer *skill_target = NULL;
                         const TriggerSkill *result_skill = NULL;
                         if (name.contains("'")) { // "sgs1'songwei"
@@ -418,15 +427,15 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         trigger_who.clear();
                         foreach (const TriggerSkill *skill, triggered) {
                             if (skill->objectName() == "game_rule" || (room->getScenario()
-                                                                       && room->getScenario()->objectName() == skill->objectName())) {
+                                && room->getScenario()->objectName() == skill->objectName())) {
                                 room->tryPause();
                                 continue; // dont assign them to some person.
                             } else {
                                 room->tryPause();
                                 if (skill->getPriority() == triggered.first()->getPriority()) {
                                     TriggerList triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
-                                    foreach (ServerPlayer *player, room->getAllPlayers(true)){
-                                        if (triggerSkillList.contains(player) && !triggerSkillList.value(player).isEmpty()){
+                                    foreach (ServerPlayer *player, room->getAllPlayers(true)) {
+                                        if (triggerSkillList.contains(player) && !triggerSkillList.value(player).isEmpty()) {
                                             foreach (const QString &skill_name, triggerSkillList.value(player)) {
                                                 const TriggerSkill *trskill = Sanguosha->getTriggerSkill(skill_name);
                                                 if (trskill) // "yiji"
@@ -494,8 +503,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                     s = Sanguosha->getTriggerSkill(skillName.split("->").first()); // "tieqi->sgs4+sgs8+sgs1+sgs2"
                                 if (s && p->hasShownSkill(s)
                                     && (s->getFrequency() == Skill::Compulsory
-                                        //|| s->getFrequency() == Skill::NotCompulsory // for Paoxiao, Anjian, etc.
-                                        || s->getFrequency() == Skill::Wake)) {
+                                    //|| s->getFrequency() == Skill::NotCompulsory // for Paoxiao, Anjian, etc.
+                                    || s->getFrequency() == Skill::Wake)) {
                                     has_compulsory = true;
                                     break;
                                 }
@@ -532,7 +541,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
         } while (skills.length() != triggerable_tested.size());
 
         if (target) {
-            foreach (AI *ai, room->ais)
+            foreach(AI *ai, room->ais)
                 ai->filterEvent(triggerEvent, target, data);
         }
 
@@ -541,7 +550,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
     }
     catch (TriggerEvent throwed_event) {
         if (target) {
-            foreach (AI *ai, room->ais)
+            foreach(AI *ai, room->ais)
                 ai->filterEvent(triggerEvent, target, data);
         }
 
@@ -555,16 +564,19 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
     return broken;
 }
 
-const QList<EventTriplet> *RoomThread::getEventStack() const{
+const QList<EventTriplet> *RoomThread::getEventStack() const
+{
     return &event_stack;
 }
 
-bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target) {
+bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target)
+{
     QVariant data;
     return trigger(triggerEvent, room, target, data);
 }
 
-void RoomThread::addTriggerSkill(const TriggerSkill *skill) {
+void RoomThread::addTriggerSkill(const TriggerSkill *skill)
+{
     if (skill == NULL || skillSet.contains(skill->objectName()))
         return;
 
@@ -586,7 +598,8 @@ void RoomThread::addTriggerSkill(const TriggerSkill *skill) {
     }
 }
 
-void RoomThread::delay(long secs) {
+void RoomThread::delay(long secs)
+{
     if (secs == -1) secs = Config.AIDelay;
     Q_ASSERT(secs >= 0);
     if (room->property("to_test").toString().isEmpty() && Config.AIDelay > 0)

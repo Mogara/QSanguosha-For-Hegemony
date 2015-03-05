@@ -47,8 +47,9 @@
 
 using namespace google_breakpad;
 
-static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINTERS *, MDRawAssertionInfo *, bool succeeded) {
-    if (succeeded && QFile::exists("QSanSMTPClient.exe")){
+static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINTERS *, MDRawAssertionInfo *, bool succeeded)
+{
+    if (succeeded && QFile::exists("QSanSMTPClient.exe")) {
         char ID[16000];
         memset(ID, 0, sizeof(ID));
 #ifdef _MSC_VER
@@ -68,7 +69,8 @@ static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINT
 }
 #endif
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     bool noGui = argc > 1 && strcmp(argv[1], "-server") == 0;
 
     if (noGui)
@@ -96,10 +98,10 @@ int main(int argc, char *argv[]) {
 #define showSplashMessage(message) \
     if (splash == NULL) {\
         puts(message.toUtf8().constData());\
-    } else {\
+        } else {\
         splash->showMessage(message, Qt::AlignBottom | Qt::AlignHCenter, Qt::cyan);\
         qApp->processEvents();\
-    }
+        }
 #endif
 
 #ifdef USE_BREAKPAD

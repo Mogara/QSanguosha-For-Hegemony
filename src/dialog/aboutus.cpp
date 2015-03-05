@@ -77,7 +77,8 @@ AboutUsDialog::AboutUsDialog(QWidget *parent)
     content_box->verticalScrollBar()->setStyleSheet(style);
 }
 
-void AboutUsDialog::loadContent(int row) {
+void AboutUsDialog::loadContent(int row)
+{
     QString name = list->item(row)->data(Qt::UserRole).toString();
     lua_State *L = Sanguosha->getLuaState();
     QString page = GetValueFromLuaState(L, "about_us", name.toLatin1().constData()).toString();

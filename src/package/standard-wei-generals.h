@@ -24,7 +24,8 @@
 #include "standard-package.h"
 #include "card.h"
 
-class TuxiCard : public SkillCard {
+class TuxiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -33,7 +34,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ShensuCard : public SkillCard {
+class ShensuCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -43,7 +45,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class QiaobianCard : public SkillCard {
+class QiaobianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -54,7 +57,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class QiangxiCard : public SkillCard {
+class QiangxiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -65,7 +69,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class QuhuCard : public SkillCard {
+class QuhuCard : public SkillCard
+{
     Q_OBJECT
 
 public:

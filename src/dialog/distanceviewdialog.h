@@ -25,7 +25,8 @@
 
 class DistanceViewDialogUI;
 
-class DistanceViewDialog : public FlatDialog {
+class DistanceViewDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:

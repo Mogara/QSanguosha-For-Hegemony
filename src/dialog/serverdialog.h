@@ -30,7 +30,8 @@ class QCheckBox;
 class QButtonGroup;
 class QAbstractButton;
 
-class ServerDialog : public FlatDialog {
+class ServerDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:

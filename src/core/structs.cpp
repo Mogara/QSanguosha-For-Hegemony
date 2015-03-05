@@ -23,7 +23,8 @@
 #include "exppattern.h"
 #include "room.h"
 
-bool CardsMoveStruct::tryParse(const QVariant &arg) {
+bool CardsMoveStruct::tryParse(const QVariant &arg)
+{
     JsonArray args = arg.value<JsonArray>();
     if (args.size() != 8) return false;
 
@@ -48,7 +49,8 @@ bool CardsMoveStruct::tryParse(const QVariant &arg) {
     return true;
 }
 
-QVariant CardsMoveStruct::toVariant() const{
+QVariant CardsMoveStruct::toVariant() const
+{
     JsonArray arg;
     if (open) {
         arg << JsonUtils::toJsonArray(card_ids);
@@ -66,7 +68,8 @@ QVariant CardsMoveStruct::toVariant() const{
     return arg;
 }
 
-bool CardMoveReason::tryParse(const QVariant &arg) {
+bool CardMoveReason::tryParse(const QVariant &arg)
+{
     JsonArray args = arg.value<JsonArray>();
     if (args.size() != 5 || !args[0].canConvert<int>() || !JsonUtils::isStringArray(args, 1, 4))
         return false;
@@ -80,7 +83,8 @@ bool CardMoveReason::tryParse(const QVariant &arg) {
     return true;
 }
 
-QVariant CardMoveReason::toVariant() const{
+QVariant CardMoveReason::toVariant() const
+{
     JsonArray result;
     result << m_reason;
     result << m_playerId;
@@ -95,7 +99,8 @@ LogMessage::LogMessage()
 {
 }
 
-QString LogMessage::toString() const{
+QString LogMessage::toString() const
+{
     QStringList tos;
     foreach (ServerPlayer *player, to)
         if (player != NULL) tos << player->objectName();
@@ -107,7 +112,8 @@ QString LogMessage::toString() const{
         .arg(card_str).arg(arg).arg(arg2);
 }
 
-QVariant LogMessage::toVariant() const{
+QVariant LogMessage::toVariant() const
+{
     QStringList tos;
     foreach (ServerPlayer *player, to)
         if (player != NULL) tos << player->objectName();
@@ -142,7 +148,8 @@ DamageStruct::DamageStruct(const QString &reason, ServerPlayer *from, ServerPlay
     this->reason = reason;
 }
 
-QString DamageStruct::getReason() const{
+QString DamageStruct::getReason() const
+{
     if (reason != QString())
         return reason;
     else if (card)
@@ -180,7 +187,8 @@ PindianStruct::PindianStruct()
 {
 }
 
-bool PindianStruct::isSuccess() const{
+bool PindianStruct::isSuccess() const
+{
     return success;
 }
 
@@ -190,11 +198,13 @@ JudgeStruct::JudgeStruct()
 {
 }
 
-bool JudgeStruct::isEffected() const{
+bool JudgeStruct::isEffected() const
+{
     return negative ? isBad() : isGood();
 }
 
-void JudgeStruct::updateResult() {
+void JudgeStruct::updateResult()
+{
     bool effected = (good == ExpPattern(pattern).match(who, card));
     if (effected)
         _m_result = TRIAL_RESULT_GOOD;
@@ -202,16 +212,19 @@ void JudgeStruct::updateResult() {
         _m_result = TRIAL_RESULT_BAD;
 }
 
-bool JudgeStruct::isGood() const{
+bool JudgeStruct::isGood() const
+{
     Q_ASSERT(_m_result != TRIAL_RESULT_UNKNOWN);
     return _m_result == TRIAL_RESULT_GOOD;
 }
 
-bool JudgeStruct::isBad() const{
+bool JudgeStruct::isBad() const
+{
     return !isGood();
 }
 
-bool JudgeStruct::isGood(const Card *card) const{
+bool JudgeStruct::isGood(const Card *card) const
+{
     Q_ASSERT(card);
     return (good == ExpPattern(pattern).match(who, card));
 }
@@ -226,7 +239,8 @@ CardUseStruct::CardUseStruct()
 {
 }
 
-CardUseStruct::CardUseStruct(const Card *card, ServerPlayer *from, QList<ServerPlayer *> to, bool isOwnerUse) {
+CardUseStruct::CardUseStruct(const Card *card, ServerPlayer *from, QList<ServerPlayer *> to, bool isOwnerUse)
+{
     this->card = card;
     this->from = from;
     this->to = to;
@@ -234,7 +248,8 @@ CardUseStruct::CardUseStruct(const Card *card, ServerPlayer *from, QList<ServerP
     this->m_addHistory = true;
 }
 
-CardUseStruct::CardUseStruct(const Card *card, ServerPlayer *from, ServerPlayer *target, bool isOwnerUse) {
+CardUseStruct::CardUseStruct(const Card *card, ServerPlayer *from, ServerPlayer *target, bool isOwnerUse)
+{
     this->card = card;
     this->from = from;
     this->to << target;
@@ -242,7 +257,8 @@ CardUseStruct::CardUseStruct(const Card *card, ServerPlayer *from, ServerPlayer 
     this->m_addHistory = true;
 }
 
-bool CardUseStruct::isValid(const QString &pattern) const{
+bool CardUseStruct::isValid(const QString &pattern) const
+{
     Q_UNUSED(pattern)
         return card != NULL;
     /*if (card == NULL) return false;
@@ -288,7 +304,8 @@ bool CardUseStruct::isValid(const QString &pattern) const{
     }*/
 }
 
-bool CardUseStruct::tryParse(const QVariant &usage, Room *room) {
+bool CardUseStruct::tryParse(const QVariant &usage, Room *room)
+{
     JsonArray use = usage.value<JsonArray>();
     if (use.size() < 2 || !JsonUtils::isString(use[0]) || !use[1].canConvert<JsonArray>())
         return false;
@@ -303,7 +320,8 @@ bool CardUseStruct::tryParse(const QVariant &usage, Room *room) {
     return true;
 }
 
-void CardUseStruct::parse(const QString &str, Room *room) {
+void CardUseStruct::parse(const QString &str, Room *room)
+{
     QStringList words = str.split("->", QString::KeepEmptyParts);
     Q_ASSERT(words.length() == 1 || words.length() == 2);
 

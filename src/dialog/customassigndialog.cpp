@@ -45,7 +45,8 @@
 #include <QScrollBar>
 
 static QLayout *HLay(QWidget *left, QWidget *right, QWidget *mid = NULL,
-    QWidget *rear = NULL, bool is_vertically = false) {
+    QWidget *rear = NULL, bool is_vertically = false)
+{
     QBoxLayout *layout;
     if (is_vertically)
         layout = new QVBoxLayout;
@@ -61,7 +62,8 @@ static QLayout *HLay(QWidget *left, QWidget *right, QWidget *mid = NULL,
     return layout;
 }
 
-static void stylizeScrollBars(QListWidget *widget) {
+static void stylizeScrollBars(QListWidget *widget)
+{
     static QString styleSheet = StyleHelper::styleSheetOfScrollBar();
     widget->horizontalScrollBar()->setStyleSheet(styleSheet);
     widget->verticalScrollBar()->setStyleSheet(styleSheet);
@@ -410,7 +412,8 @@ CustomAssignDialog::CustomAssignDialog(QWidget *parent)
     connect(cancelButton, &QPushButton::clicked, this, &CustomAssignDialog::reject);
 }
 
-void CustomAssignDialog::exchangePlayersInfo(QListWidgetItem *first, QListWidgetItem *second) {
+void CustomAssignDialog::exchangePlayersInfo(QListWidgetItem *first, QListWidgetItem *second)
+{
     QString first_name = first->data(Qt::UserRole).toString();
     QString second_name = second->data(Qt::UserRole).toString();
 
@@ -474,7 +477,8 @@ void CustomAssignDialog::exchangePlayersInfo(QListWidgetItem *first, QListWidget
     m_playerHasShownDeputy[second_name] = shown_deputy;
 }
 
-QString CustomAssignDialog::setListText(QString name, QString kingdom, int index) {
+QString CustomAssignDialog::setListText(QString name, QString kingdom, int index)
+{
     QString text = m_randomRolesBox->isChecked() ? QString("[%1]").arg(Sanguosha->translate(kingdom)) :
         QString("%1[%2]").arg(Sanguosha->translate(name))
         .arg(Sanguosha->translate(kingdom));
@@ -485,7 +489,8 @@ QString CustomAssignDialog::setListText(QString name, QString kingdom, int index
     return text;
 }
 
-void CustomAssignDialog::updateListItems() {
+void CustomAssignDialog::updateListItems()
+{
     for (int i = 0; i <= 9; i++) {
         QString name = (i == 0 ? "Player" : "AI");
         if (i != 0)
@@ -499,7 +504,8 @@ void CustomAssignDialog::updateListItems() {
     }
 }
 
-void CustomAssignDialog::doEquipCardAssign() {
+void CustomAssignDialog::doEquipCardAssign()
+{
     QList<int> excluded;
     for (int i = 0; i < m_list->count(); i++) {
         excluded.append(m_playersEquips[m_list->item(i)->data(Qt::UserRole).toString()]);
@@ -514,7 +520,8 @@ void CustomAssignDialog::doEquipCardAssign() {
     dialog->exec();
 }
 
-void CustomAssignDialog::getEquipCard(int card_id) {
+void CustomAssignDialog::getEquipCard(int card_id)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     QString card_type = Sanguosha->getEngineCard(card_id)->getSubtype();
     foreach (int id, m_playersEquips[name]) {
@@ -531,7 +538,8 @@ void CustomAssignDialog::getEquipCard(int card_id) {
     m_removeEquipButton->setEnabled(true);
 }
 
-void CustomAssignDialog::doHandCardAssign() {
+void CustomAssignDialog::doHandCardAssign()
+{
     QList<int> excluded;
     for (int i = 0; i < m_list->count(); i++) {
         excluded.append(m_playersHandcards[m_list->item(i)->data(Qt::UserRole).toString()]);
@@ -547,7 +555,8 @@ void CustomAssignDialog::doHandCardAssign() {
     dialog->exec();
 }
 
-void CustomAssignDialog::getHandCard(int card_id) {
+void CustomAssignDialog::getHandCard(int card_id)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     if (m_playersHandcards[name].contains(card_id))
         return;
@@ -558,7 +567,8 @@ void CustomAssignDialog::getHandCard(int card_id) {
     m_removeHandButton->setEnabled(true);
 }
 
-void CustomAssignDialog::doJudgeCardAssign() {
+void CustomAssignDialog::doJudgeCardAssign()
+{
     QList<int> excluded;
     for (int i = 0; i < m_list->count(); i++) {
         excluded.append(m_playersJudges[m_list->item(i)->data(Qt::UserRole).toString()]);
@@ -573,7 +583,8 @@ void CustomAssignDialog::doJudgeCardAssign() {
     dialog->exec();
 }
 
-void CustomAssignDialog::getJudgeCard(int card_id) {
+void CustomAssignDialog::getJudgeCard(int card_id)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     QString card_name = Sanguosha->getEngineCard(card_id)->objectName();
     foreach (int id, m_playersJudges[name]) {
@@ -590,7 +601,8 @@ void CustomAssignDialog::getJudgeCard(int card_id) {
     m_removeJudgeButton->setEnabled(true);
 }
 
-void CustomAssignDialog::doPileCardAssign() {
+void CustomAssignDialog::doPileCardAssign()
+{
     QList<int> excluded;
     for (int i = 0; i < m_list->count(); i++) {
         excluded.append(m_playersHandcards[m_list->item(i)->data(Qt::UserRole).toString()]);
@@ -606,7 +618,8 @@ void CustomAssignDialog::doPileCardAssign() {
     dialog->exec();
 }
 
-void CustomAssignDialog::getPileCard(int card_id) {
+void CustomAssignDialog::getPileCard(int card_id)
+{
     if (m_settedPile.contains(card_id))
         return;
 
@@ -616,40 +629,42 @@ void CustomAssignDialog::getPileCard(int card_id) {
     m_removePileButton->setEnabled(true);
 }
 
-void CustomAssignDialog::updateNumber(int num) {
+void CustomAssignDialog::updateNumber(int num)
+{
     int count = m_numComboBox->itemData(num).toInt();
     if (count < m_list->count()) {
         for (int i = m_list->count() - 1; i >= count; i--)
             m_list->takeItem(i);
-    }
-    else {
+    } else {
         for (int i = m_list->count(); i < count; i++)
             m_list->addItem(m_itemMap[i]);
     }
 }
 
-void CustomAssignDialog::setNationalityEnable(bool toggled) {
+void CustomAssignDialog::setNationalityEnable(bool toggled)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_settedNationality[name] = toggled;
     if (toggled == true) {
         QString kingdom = nationalitiesComboBox->itemData(nationalitiesComboBox->currentIndex()).toString();
         m_assignedNationality[name] = kingdom;
         setListText(name, kingdom, m_list->currentRow());
-    }
-    else {
+    } else {
         m_assignedNationality[name] = "default";
         setListText(name, "default", m_list->currentRow());
     }
 }
 
-void CustomAssignDialog::setNationality(int index) {
+void CustomAssignDialog::setNationality(int index)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     QString kingdom = nationalitiesComboBox->itemData(index).toString();
     m_assignedNationality[name] = kingdom;
     setListText(name, kingdom, m_list->currentRow());
 }
 
-void CustomAssignDialog::updatePlayerInfo(QString name) {
+void CustomAssignDialog::updatePlayerInfo(QString name)
+{
     m_equipList->clear();
     m_handList->clear();
     m_judgeList->clear();
@@ -713,7 +728,8 @@ void CustomAssignDialog::updatePlayerInfo(QString name) {
     }
 }
 
-void CustomAssignDialog::updatePileInfo(int row) {
+void CustomAssignDialog::updatePileInfo(int row)
+{
     if (row >= 0) {
         if (m_movePileCheck->isChecked()) {
             m_moveListUpButton->setEnabled(row != 0);
@@ -747,25 +763,25 @@ void CustomAssignDialog::updatePileInfo(int row) {
 
 }
 
-void CustomAssignDialog::updatePlayerHpInfo(QString name) {
+void CustomAssignDialog::updatePlayerHpInfo(QString name)
+{
     if (m_playersHp.value(name, 0) != 0) {
         m_hpSpin->setValue(m_playersHp[name]);
         m_hpPrompt->setChecked(true);
-    }
-    else {
+    } else {
         m_hpPrompt->setChecked(false);
     }
 
     if (m_playersMaxHp.value(name, 0) != 0) {
         m_maxHpSpin->setValue(m_playersMaxHp[name]);
         m_maxHpPrompt->setChecked(true);
-    }
-    else {
+    } else {
         m_maxHpPrompt->setChecked(false);
     }
 }
 
-void CustomAssignDialog::updateAllKingdoms(bool) {
+void CustomAssignDialog::updateAllKingdoms(bool)
+{
     for (int i = 0; i < m_list->count(); i++) {
         QString name = m_playerMap[i];
         QString kingdom = m_assignedNationality[name];
@@ -779,13 +795,15 @@ void CustomAssignDialog::getPlayerHp(int hp)
     m_playersHp[name] = hp;
 }
 
-void CustomAssignDialog::getPlayerMaxHp(int maxhp) {
+void CustomAssignDialog::getPlayerMaxHp(int maxhp)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_playersMaxHp[name] = maxhp;
     m_hpSpin->setRange(1, maxhp);
 }
 
-void CustomAssignDialog::setPlayerHpEnabled(bool toggled) {
+void CustomAssignDialog::setPlayerHpEnabled(bool toggled)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     if (!toggled)
         m_playersHp.remove(name);
@@ -793,7 +811,8 @@ void CustomAssignDialog::setPlayerHpEnabled(bool toggled) {
         m_playersHp[name] = m_hpSpin->value();
 }
 
-void CustomAssignDialog::setPlayerMaxHpEnabled(bool toggled) {
+void CustomAssignDialog::setPlayerMaxHpEnabled(bool toggled)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     if (!toggled)
         m_playersMaxHp.remove(name);
@@ -801,19 +820,22 @@ void CustomAssignDialog::setPlayerMaxHpEnabled(bool toggled) {
         m_playersMaxHp[name] = m_maxHpSpin->value();
 }
 
-void CustomAssignDialog::setPlayerStartDraw(int draw_num) {
+void CustomAssignDialog::setPlayerStartDraw(int draw_num)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_playerDrawNumWhenStarts[name] = draw_num;
 }
 
-void CustomAssignDialog::setStarter(bool toggled) {
+void CustomAssignDialog::setStarter(bool toggled)
+{
     if (toggled)
         m_starter = m_list->currentItem()->data(Qt::UserRole).toString();
     else
         m_starter.clear();
 }
 
-void CustomAssignDialog::setPlayerMarks(int value) {
+void CustomAssignDialog::setPlayerMarks(int value)
+{
     QString mark_name = m_marksComboBox->itemData(m_marksComboBox->currentIndex()).toString();
     QString player_name = m_list->item(m_list->currentRow())->data(Qt::UserRole).toString();
     m_playersMarks[player_name][mark_name] = value;
@@ -829,7 +851,8 @@ void CustomAssignDialog::setPlayerMarks(int value) {
     }
 }
 
-void CustomAssignDialog::getPlayerMarks(int index) {
+void CustomAssignDialog::getPlayerMarks(int index)
+{
     QString mark_name = m_marksComboBox->itemData(index).toString();
     QString player_name = m_list->item(m_list->currentRow())->data(Qt::UserRole).toString();
 
@@ -837,14 +860,16 @@ void CustomAssignDialog::getPlayerMarks(int index) {
     m_marksCount->setValue(m_playersMarks[player_name][mark_name]);
 }
 
-void CustomAssignDialog::updateKingdom(int index) {
+void CustomAssignDialog::updateKingdom(int index)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     QString kingdom = m_settedNationality[name] == true ? nationalitiesComboBox->itemData(index).toString() : "default";
     setListText(name, kingdom, m_list->currentRow());
     m_assignedNationality[name] = kingdom;
 }
 
-void CustomAssignDialog::removeEquipCard() {
+void CustomAssignDialog::removeEquipCard()
+{
     int card_id = m_equipList->currentItem()->data(Qt::UserRole).toInt();
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     if (m_playersEquips[name].contains(card_id)) {
@@ -858,7 +883,8 @@ void CustomAssignDialog::removeEquipCard() {
     }
 }
 
-void CustomAssignDialog::removeHandCard() {
+void CustomAssignDialog::removeHandCard()
+{
     int card_id = m_handList->currentItem()->data(Qt::UserRole).toInt();
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     if (m_playersHandcards[name].contains(card_id)) {
@@ -872,7 +898,8 @@ void CustomAssignDialog::removeHandCard() {
     }
 }
 
-void CustomAssignDialog::removeJudgeCard() {
+void CustomAssignDialog::removeJudgeCard()
+{
     int card_id = m_judgeList->currentItem()->data(Qt::UserRole).toInt();
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     if (m_playersJudges[name].contains(card_id)) {
@@ -886,7 +913,8 @@ void CustomAssignDialog::removeJudgeCard() {
     }
 }
 
-void CustomAssignDialog::removePileCard() {
+void CustomAssignDialog::removePileCard()
+{
     int card_id = m_pileList->currentItem()->data(Qt::UserRole).toInt();
     if (m_settedPile.contains(card_id)) {
         int row = m_pileList->currentRow();
@@ -902,7 +930,8 @@ void CustomAssignDialog::removePileCard() {
     }
 }
 
-void CustomAssignDialog::doGeneralAssign() {
+void CustomAssignDialog::doGeneralAssign()
+{
     m_enableGeneral2 = false;
     GeneralAssignDialog *dialog = new GeneralAssignDialog(this);
 
@@ -911,7 +940,8 @@ void CustomAssignDialog::doGeneralAssign() {
     dialog->exec();
 }
 
-void CustomAssignDialog::doGeneralAssign2() {
+void CustomAssignDialog::doGeneralAssign2()
+{
     m_enableGeneral2 = true;
     GeneralAssignDialog *dialog = new GeneralAssignDialog(this, true);
 
@@ -921,7 +951,8 @@ void CustomAssignDialog::doGeneralAssign2() {
     dialog->exec();
 }
 
-void CustomAssignDialog::setMoveButtonAvaliable(bool toggled) {
+void CustomAssignDialog::setMoveButtonAvaliable(bool toggled)
+{
     if (sender()->objectName() == "list check") {
         m_movePileCheck->setChecked(false);
         m_moveListCheck->setChecked(toggled);
@@ -929,8 +960,7 @@ void CustomAssignDialog::setMoveButtonAvaliable(bool toggled) {
             m_moveListUpButton->setEnabled(m_list->currentRow() != 0);
             m_moveListDownButton->setEnabled(m_list->currentRow() != m_list->count() - 1);
         }
-    }
-    else {
+    } else {
         m_moveListCheck->setChecked(false);
         m_movePileCheck->setChecked(toggled);
         if (toggled) {
@@ -945,7 +975,8 @@ void CustomAssignDialog::setMoveButtonAvaliable(bool toggled) {
     }
 }
 
-void CustomAssignDialog::accept() {
+void CustomAssignDialog::accept()
+{
     if (save("etc/customScenes/custom_scenario.txt")) {
         const Scenario *scene = Sanguosha->getScenario("custom_scenario");
         MiniSceneRule *rule = qobject_cast<MiniSceneRule *>(scene->getRule());
@@ -956,18 +987,21 @@ void CustomAssignDialog::accept() {
     }
 }
 
-void CustomAssignDialog::reject() {
+void CustomAssignDialog::reject()
+{
     QDialog::reject();
 }
 
-void CustomAssignDialog::clearGeneral2() {
+void CustomAssignDialog::clearGeneral2()
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_generalMap2[name].clear();
 
     m_generalLabel2->setPixmap(QPixmap("image/system/disabled.png"));
 }
 
-void CustomAssignDialog::getChosenGeneral(QString generalName) {
+void CustomAssignDialog::getChosenGeneral(QString generalName)
+{
     if (m_enableGeneral2) {
         const General *general2 = Sanguosha->getGeneral(generalName);
         QPixmap pixmap = G_ROOM_SKIN.getGeneralPixmap(general2->objectName(), QSanRoomSkin::S_GENERAL_ICON_SIZE_TINY);
@@ -984,27 +1018,32 @@ void CustomAssignDialog::getChosenGeneral(QString generalName) {
     }
 }
 
-void CustomAssignDialog::freeChoose(bool toggled) {
+void CustomAssignDialog::freeChoose(bool toggled)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_canChooseGeneralFreely[name] = toggled;
 }
 
-void CustomAssignDialog::freeChoose2(bool toggled) {
+void CustomAssignDialog::freeChoose2(bool toggled)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_canChooseGeneral2Freely[name] = toggled;
 }
 
-void CustomAssignDialog::doPlayerChains(bool toggled) {
+void CustomAssignDialog::doPlayerChains(bool toggled)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_playerIsChained[name] = toggled;
 }
 
-void CustomAssignDialog::doPlayerTurns(bool toggled) {
+void CustomAssignDialog::doPlayerTurns(bool toggled)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_playerIsTurned[name] = toggled;
 }
 
-void CustomAssignDialog::doSkillSelect() {
+void CustomAssignDialog::doSkillSelect()
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     SkillAssignDialog *dialog = new SkillAssignDialog(this, name, m_playersExtraSkills[name]);
 
@@ -1012,13 +1051,15 @@ void CustomAssignDialog::doSkillSelect() {
     dialog->exec();
 }
 
-void CustomAssignDialog::updatePlayerExSkills(QStringList updatedSkills) {
+void CustomAssignDialog::updatePlayerExSkills(QStringList updatedSkills)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_playersExtraSkills[name].clear();
     m_playersExtraSkills[name].append(updatedSkills);
 }
 
-void CustomAssignDialog::exchangeListItem() {
+void CustomAssignDialog::exchangeListItem()
+{
     int first_index = -1, second_index = -1;
     if (m_moveListCheck->isChecked())
         first_index = m_list->currentRow();
@@ -1041,8 +1082,7 @@ void CustomAssignDialog::exchangeListItem() {
         for (int i = 0; i < row; i++)
             m_list->addItem(m_itemMap[i]);
         m_list->setCurrentRow(second_index);
-    }
-    else if (m_movePileCheck->isChecked()) {
+    } else if (m_movePileCheck->isChecked()) {
         int id1 = m_pileList->item(first_index)->data(Qt::UserRole).toInt();
         int id2 = m_pileList->item(second_index)->data(Qt::UserRole).toInt();
 
@@ -1052,7 +1092,8 @@ void CustomAssignDialog::exchangeListItem() {
     }
 }
 
-void CustomAssignDialog::on_list_itemSelectionChanged(QListWidgetItem *current) {
+void CustomAssignDialog::on_list_itemSelectionChanged(QListWidgetItem *current)
+{
     if (m_list->count() == 0 || current == NULL) return;
 
     QString player_name = current->data(Qt::UserRole).toString();
@@ -1060,8 +1101,7 @@ void CustomAssignDialog::on_list_itemSelectionChanged(QListWidgetItem *current) 
         QPixmap pixmap = G_ROOM_SKIN.getGeneralPixmap(m_generalMap.value(player_name), QSanRoomSkin::S_GENERAL_ICON_SIZE_TINY);
         pixmap = pixmap.scaled(G_COMMON_LAYOUT.m_tinyAvatarSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         m_generalLabel->setPixmap(pixmap);
-    }
-    else
+    } else
         m_generalLabel->setPixmap(QPixmap(QString("image/system/disabled.png")));
 
 
@@ -1069,8 +1109,7 @@ void CustomAssignDialog::on_list_itemSelectionChanged(QListWidgetItem *current) 
         QPixmap pixmap = G_ROOM_SKIN.getGeneralPixmap(m_generalMap2.value(player_name), QSanRoomSkin::S_GENERAL_ICON_SIZE_TINY);
         pixmap = pixmap.scaled(G_COMMON_LAYOUT.m_tinyAvatarSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         m_generalLabel2->setPixmap(pixmap);
-    }
-    else
+    } else
         m_generalLabel2->setPixmap(QPixmap(QString("image/system/disabled.png")));
 
     if (!m_assignedNationality[player_name].isEmpty()) {
@@ -1123,7 +1162,8 @@ void CustomAssignDialog::on_list_itemSelectionChanged(QListWidgetItem *current) 
     updatePlayerHpInfo(player_name);
 }
 
-void CustomAssignDialog::checkBeforeNextBox(bool toggled) {
+void CustomAssignDialog::checkBeforeNextBox(bool toggled)
+{
     if (toggled) {
         m_beforeNextCheckBox->setChecked(false);
         m_isBeforeNext = false;
@@ -1132,8 +1172,7 @@ void CustomAssignDialog::checkBeforeNextBox(bool toggled) {
         m_singleTurnText->show();
         m_singleTurnText2->show();
         m_singleTurnBox->show();
-    }
-    else {
+    } else {
         m_isSingleTurn = false;
 
         m_singleTurnText->hide();
@@ -1142,7 +1181,8 @@ void CustomAssignDialog::checkBeforeNextBox(bool toggled) {
     }
 }
 
-void CustomAssignDialog::checkSingleTurnBox(bool toggled) {
+void CustomAssignDialog::checkSingleTurnBox(bool toggled)
+{
     if (toggled) {
         m_singleTurnCheckBox->setChecked(false);
         m_isBeforeNext = true;
@@ -1151,8 +1191,7 @@ void CustomAssignDialog::checkSingleTurnBox(bool toggled) {
         m_beforeNextText->show();
         m_beforeNextText2->show();
         m_beforeNextBox->show();
-    }
-    else {
+    } else {
         m_isBeforeNext = false;
 
         m_beforeNextText->hide();
@@ -1161,15 +1200,15 @@ void CustomAssignDialog::checkSingleTurnBox(bool toggled) {
     }
 }
 
-void CustomAssignDialog::checkEndedByPileBox(bool toggled) {
+void CustomAssignDialog::checkEndedByPileBox(bool toggled)
+{
     if (toggled) {
         m_isEndedByPile = true;
 
         m_endedByPileText->show();
         m_endedByPileText2->show();
         m_endedByPileBox->show();
-    }
-    else {
+    } else {
         m_isEndedByPile = false;
 
         m_endedByPileText->hide();
@@ -1178,7 +1217,8 @@ void CustomAssignDialog::checkEndedByPileBox(bool toggled) {
     }
 }
 
-void CustomAssignDialog::load() {
+void CustomAssignDialog::load()
+{
     QString filename;
     if (sender()->objectName() == "default_load") filename = "etc/customScenes/custom_scenario.txt";
     else filename = QFileDialog::getOpenFileName(this,
@@ -1241,11 +1281,10 @@ void CustomAssignDialog::load() {
 
         if (line.startsWith("setPile:")) {
             QStringList list = line.remove("setPile:").split(",");
-            foreach (const QString &id, list)
+            foreach(const QString &id, list)
                 m_settedPile.prepend(id.toInt());
             continue;
-        }
-        else if (line.startsWith("extraOptions:")) {
+        } else if (line.startsWith("extraOptions:")) {
             line.remove("extraOptions:");
 
             foreach (const QString &option, line.split(" ")) {
@@ -1300,13 +1339,12 @@ void CustomAssignDialog::load() {
         if (player["nationality"] != QString()) {
             m_assignedNationality[name] = player["nationality"];
             m_settedNationality[name] = true;
-        }
-        else {
+        } else {
             m_settedNationality[name] = false;
         }
         if (player["acquireSkills"] != QString()) {
             QStringList skills;
-            foreach (const QString &skill_name, player["acquireSkills"].split(","))
+            foreach(const QString &skill_name, player["acquireSkills"].split(","))
                 skills << skill_name;
 
             m_playersExtraSkills[name].append(skills);
@@ -1342,8 +1380,7 @@ void CustomAssignDialog::load() {
                             break;
                         }
                     }
-                }
-                else
+                } else
                     m_playersHandcards[name].prepend(num);
             }
         }
@@ -1359,8 +1396,7 @@ void CustomAssignDialog::load() {
                             break;
                         }
                     }
-                }
-                else
+                } else
                     m_playersEquips[name].prepend(num);
             }
         }
@@ -1376,8 +1412,7 @@ void CustomAssignDialog::load() {
                             break;
                         }
                     }
-                }
-                else
+                } else
                     m_playersJudges[name].prepend(num);
             }
         }
@@ -1404,11 +1439,13 @@ void CustomAssignDialog::load() {
     file.close();
 }
 
-bool CustomAssignDialog::save() {
+bool CustomAssignDialog::save()
+{
     return save(QString());
 }
 
-bool CustomAssignDialog::save(const QString &path) {
+bool CustomAssignDialog::save(const QString &path)
+{
     if (m_starter.isEmpty()) {
         QMessageBox::warning(NULL, tr("Warning"), tr("There is not a starter"));
         return false;
@@ -1497,8 +1534,7 @@ bool CustomAssignDialog::save(const QString &path) {
             if (m_isSingleTurn) {
                 QString winner = m_singleTurnBox->itemData(m_singleTurnBox->currentIndex()).toString();
                 line.append(QString("singleTurn:%1 ").arg(winner));
-            }
-            else if (m_isBeforeNext) {
+            } else if (m_isBeforeNext) {
                 QString winner = m_beforeNextBox->itemData(m_beforeNextBox->currentIndex()).toString();
                 line.append(QString("beforeNext:%1 ").arg(winner));
             }
@@ -1508,21 +1544,24 @@ bool CustomAssignDialog::save(const QString &path) {
 
         if (m_playersEquips[name].length()) {
             line.append("equip:");
-            foreach (int equip, m_playersEquips[name]) line.append(QString("%1,").arg(equip));
+            foreach (int equip, m_playersEquips[name])
+                line.append(QString("%1,").arg(equip));
             line.chop(1);
             line.append(" ");
         }
 
         if (m_playersHandcards[name].length()) {
             line.append("hand:");
-            foreach (int hand, m_playersHandcards[name]) line.append(QString("%1,").arg(hand));
+            foreach (int hand, m_playersHandcards[name])
+                line.append(QString("%1,").arg(hand));
             line.chop(1);
             line.append(" ");
         }
 
         if (m_playersJudges[name].length()) {
             line.append("judge:");
-            foreach (int judge, m_playersJudges[name]) line.append(QString("%1,").arg(judge));
+            foreach (int judge, m_playersJudges[name])
+                line.append(QString("%1,").arg(judge));
             line.chop(1);
             line.append(" ");
         }
@@ -1551,7 +1590,8 @@ bool CustomAssignDialog::save(const QString &path) {
 //---------------------------------------
 
 GeneralAssignDialog::GeneralAssignDialog(QWidget *parent, bool canBan)
-    : FlatDialog(parent) {
+    : FlatDialog(parent)
+{
     setWindowTitle(tr("Mini choose generals"));
 
     QTabWidget *tab_widget = new QTabWidget;
@@ -1601,7 +1641,8 @@ GeneralAssignDialog::GeneralAssignDialog(QWidget *parent, bool canBan)
     group->buttons().first()->click();
 }
 
-QWidget *GeneralAssignDialog::createTab(const QList<const General *> &generals) {
+QWidget *GeneralAssignDialog::createTab(const QList<const General *> &generals)
+{
     QWidget *tab = new QWidget;
 
     QGridLayout *layout = new QGridLayout;
@@ -1638,14 +1679,16 @@ QWidget *GeneralAssignDialog::createTab(const QList<const General *> &generals) 
     return tab;
 }
 
-void GeneralAssignDialog::chooseGeneral() {
+void GeneralAssignDialog::chooseGeneral()
+{
     QAbstractButton *button = group->checkedButton();
     if (button)
         emit generalChosen(button->objectName());
     this->reject();
 }
 
-void GeneralAssignDialog::clearGeneral() {
+void GeneralAssignDialog::clearGeneral()
+{
     emit generalCleared();
     this->reject();
 }
@@ -1679,7 +1722,8 @@ CardAssignDialog::CardAssignDialog(QWidget *parent, QString cardType, QString cl
     connect(CustomInstance, &CustomAssignDialog::card_addin, this, &CardAssignDialog::updateExcluded);
 }
 
-void CardAssignDialog::addCard(const Card *card) {
+void CardAssignDialog::addCard(const Card *card)
+{
     QString name = Sanguosha->translate(card->objectName());
     QIcon suit_icon = QIcon(QString("image/system/suit/%1.png").arg(card->getSuitString()));
     QString point = card->getNumberString();
@@ -1690,7 +1734,8 @@ void CardAssignDialog::addCard(const Card *card) {
     name_item->setData(Qt::UserRole, card->getId());
 }
 
-void CardAssignDialog::askCard() {
+void CardAssignDialog::askCard()
+{
     QListWidgetItem *card_item = m_cardList->currentItem();
     int card_id = card_item->data(Qt::UserRole).toInt();
     emit cardChosen(card_id);
@@ -1702,11 +1747,13 @@ void CardAssignDialog::askCard() {
     m_cardList->setCurrentRow(row >= m_cardList->count() ? row - 1 : row);
 }
 
-void CardAssignDialog::updateExcluded(int cardId) {
+void CardAssignDialog::updateExcluded(int cardId)
+{
     m_excludedCards.removeOne(cardId);
 }
 
-void CardAssignDialog::updateCardList() {
+void CardAssignDialog::updateCardList()
+{
     m_cardList->clear();
 
     int n = Sanguosha->getCardCount();
@@ -1722,8 +1769,7 @@ void CardAssignDialog::updateCardList() {
             if (card->getType() == m_cardType || card->isKindOf(m_className.toStdString().c_str()))
                 reasonable_cards << card;
         }
-    }
-    else {
+    } else {
         for (int i = 0; i < n; i++) {
             if (m_excludedCards.contains(i))
                 continue;
@@ -1800,28 +1846,32 @@ SkillAssignDialog::SkillAssignDialog(QDialog *parent, QString playerName, QStrin
     connect(cancelButton, &QPushButton::clicked, this, &SkillAssignDialog::reject);
 }
 
-void SkillAssignDialog::updateSkillInfo() {
+void SkillAssignDialog::updateSkillInfo()
+{
     QString skillName = m_skillList->currentItem()->data(Qt::UserRole).toString();
     m_skillInfo->clear();
 
     m_skillInfo->setText(Sanguosha->getSkill(skillName)->getDescription(false));
 }
 
-void SkillAssignDialog::selectSkill() {
+void SkillAssignDialog::selectSkill()
+{
     GeneralAssignDialog *dialog = new GeneralAssignDialog(this);
 
     connect(dialog, &GeneralAssignDialog::generalChosen, this, &SkillAssignDialog::getSkillFromGeneral);
     dialog->exec();
 }
 
-void SkillAssignDialog::deleteSkill() {
+void SkillAssignDialog::deleteSkill()
+{
     QString skill_name = m_skillList->currentItem()->data(Qt::UserRole).toString();
     m_updatedSkills.removeOne(skill_name);
 
     updateSkillList();
 }
 
-void SkillAssignDialog::getSkillFromGeneral(QString general_name) {
+void SkillAssignDialog::getSkillFromGeneral(QString general_name)
+{
     QDialog *select_dialog = new QDialog(this);
     select_dialog->setWindowTitle(tr("Skill Chosen"));
     QVBoxLayout *layout = new QVBoxLayout;
@@ -1843,7 +1893,8 @@ void SkillAssignDialog::getSkillFromGeneral(QString general_name) {
     select_dialog->exec();
 }
 
-void SkillAssignDialog::addSkill() {
+void SkillAssignDialog::addSkill()
+{
     QString name = sender()->objectName();
     if (name == "inline_add") {
         name = m_skillInput->text();
@@ -1863,7 +1914,8 @@ void SkillAssignDialog::addSkill() {
     m_skillInput->clear();
 }
 
-void SkillAssignDialog::updateSkillList() {
+void SkillAssignDialog::updateSkillList()
+{
     int index = m_skillList->count() > 0 ? m_skillList->currentRow() : 0;
 
     m_skillList->clear();
@@ -1881,22 +1933,24 @@ void SkillAssignDialog::updateSkillList() {
     if (m_skillList->count() > 0) {
         updateSkillInfo();
         m_deleteSkillButton->setEnabled(true);
-    }
-    else
+    } else
         m_deleteSkillButton->setEnabled(false);
 }
 
-void SkillAssignDialog::accept() {
+void SkillAssignDialog::accept()
+{
     emit skillUpdated(m_updatedSkills);
     QDialog::accept();
 }
 
-void CustomAssignDialog::doPlayerShows(bool toggled) {
+void CustomAssignDialog::doPlayerShows(bool toggled)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_playerHasShownHead[name] = toggled;
 }
 
-void CustomAssignDialog::doPlayerShows2(bool toggled) {
+void CustomAssignDialog::doPlayerShows2(bool toggled)
+{
     QString name = m_list->currentItem()->data(Qt::UserRole).toString();
     m_playerHasShownDeputy[name] = toggled;
 }

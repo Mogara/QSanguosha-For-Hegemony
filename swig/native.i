@@ -35,7 +35,9 @@
 %native(Alert) int Alert(lua_State *lua);
 
 %{
-static int GetFileNames(lua_State *lua) {
+
+static int GetFileNames(lua_State *lua)
+{
     const char *dirname = luaL_checkstring(lua, 1);
     QDir dir(dirname);
     QStringList filenames = dir.entryList(QDir::Files);
@@ -50,14 +52,16 @@ static int GetFileNames(lua_State *lua) {
     return 1;
 }
 
-static int Print(lua_State *lua) {
+static int Print(lua_State *lua)
+{
     const char *msg = luaL_checkstring(lua, 1);
     qDebug("%s", msg);
 
     return 0;
 }
 
-static int AddTranslationEntry(lua_State *lua) {
+static int AddTranslationEntry(lua_State *lua)
+{
     const char *key = luaL_checkstring(lua, 1);
     const char *value = luaL_checkstring(lua, 2);
 
@@ -66,7 +70,8 @@ static int AddTranslationEntry(lua_State *lua) {
     return 0;
 }
 
-static int GetConfig(lua_State *lua) {
+static int GetConfig(lua_State *lua)
+{
     const char *key = luaL_checkstring(lua, 1);
     int type = lua_type(lua, 2);
     switch (type) {
@@ -100,7 +105,8 @@ static int GetConfig(lua_State *lua) {
     return 1;
 }
 
-static int SetConfig(lua_State *lua) {
+static int SetConfig(lua_State *lua)
+{
     const char *key = luaL_checkstring(lua, 1);
     int type = lua_type(lua, 2);
 
@@ -134,7 +140,8 @@ static int SetConfig(lua_State *lua) {
     return 0;
 }
 
-static int GetProperty(lua_State *lua) {
+static int GetProperty(lua_State *lua)
+{
     void *udata;
     int result = SWIG_ConvertPtr(lua, 1, &udata, SWIGTYPE_p_QObject, 0);
     luaL_argcheck(lua, SWIG_IsOK(result), 1, "QObject *");
@@ -163,7 +170,8 @@ static int GetProperty(lua_State *lua) {
     return 1;
 }
 
-static int Alert(lua_State *lua) {
+static int Alert(lua_State *lua)
+{
     const char *msg = luaL_checkstring(lua, 1);
 
     QMessageBox::warning(NULL, "Lua warning", msg);

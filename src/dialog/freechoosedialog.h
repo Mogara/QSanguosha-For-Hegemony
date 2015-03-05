@@ -27,12 +27,16 @@ class General;
 class QButtonGroup;
 class QAbstractButton;
 
-class FreeChooseDialog : public FlatDialog {
+class FreeChooseDialog : public FlatDialog
+{
     Q_OBJECT
     Q_ENUMS(ButtonGroupType)
 
 public:
-    enum ButtonGroupType { Exclusive, Pair, Multi };
+    enum ButtonGroupType
+    {
+        Exclusive, Pair, Multi
+    };
 
     explicit FreeChooseDialog(QWidget *parent, ButtonGroupType type = Exclusive);
 

@@ -25,7 +25,8 @@
 
 #include <QGraphicsObject>
 
-class IndicatorItem : public QGraphicsObject {
+class IndicatorItem : public QGraphicsObject
+{
     Q_OBJECT
     Q_PROPERTY(QPointF finish READ getFinish WRITE setFinish)
 

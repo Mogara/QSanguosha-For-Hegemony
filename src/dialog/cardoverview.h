@@ -30,7 +30,8 @@ namespace Ui {
     class CardOverview;
 }
 
-class CardOverview : public FlatDialog {
+class CardOverview : public FlatDialog
+{
     Q_OBJECT
 
 public:

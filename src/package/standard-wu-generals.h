@@ -25,7 +25,8 @@
 #include "card.h"
 #include "skill.h"
 
-class Yingzi : public DrawCardsSkill {
+class Yingzi : public DrawCardsSkill
+{
 public:
     explicit Yingzi(const QString &owner = "zhouyu", bool can_preshow = true);
 
@@ -37,7 +38,8 @@ private:
     bool m_canPreshow;
 };
 
-class Yinghun : public PhaseChangeSkill {
+class Yinghun : public PhaseChangeSkill
+{
 public:
     explicit Yinghun(const QString &owner = "sunjian");
 
@@ -48,7 +50,8 @@ public:
 
 };
 
-class ZhihengCard : public SkillCard {
+class ZhihengCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -56,7 +59,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class KurouCard : public SkillCard {
+class KurouCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -65,7 +69,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class FanjianCard : public SkillCard {
+class FanjianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -73,7 +78,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class LiuliCard : public SkillCard {
+class LiuliCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -83,7 +89,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class JieyinCard : public SkillCard {
+class JieyinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -92,7 +99,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class TianxiangCard : public SkillCard {
+class TianxiangCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -101,7 +109,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class TianyiCard : public SkillCard {
+class TianyiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -112,7 +121,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class HaoshiCard : public SkillCard {
+class HaoshiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -122,7 +132,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class DimengCard : public SkillCard {
+class DimengCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -133,7 +144,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ZhijianCard : public SkillCard {
+class ZhijianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -144,7 +156,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class FenxunCard : public SkillCard {
+class FenxunCard : public SkillCard
+{
     Q_OBJECT
 
 public:

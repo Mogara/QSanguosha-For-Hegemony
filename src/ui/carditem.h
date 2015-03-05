@@ -34,10 +34,11 @@ class FilterSkill;
 class General;
 class QGraphicsDropShadowEffect;
 
-class TransferButton : public QSanButton {
+class TransferButton : public QSanButton
+{
     Q_OBJECT
 
-    friend class CardItem;
+        friend class CardItem;
 public:
     int getCardId() const;
     CardItem *getCardItem() const;
@@ -56,7 +57,8 @@ signals:
     void _deactivated();
 };
 
-class CardItem : public QSanSelectableItem {
+class CardItem : public QSanSelectableItem
+{
     Q_OBJECT
 
 public:
@@ -69,7 +71,10 @@ public:
 
     const Card *getCard() const;
     void setCard(const Card *card);
-    inline int getId() const{ return m_cardId; }
+    inline int getId() const
+    {
+        return m_cardId;
+    }
 
     // For move card animation
     void setHomePos(QPointF home_pos);
@@ -77,12 +82,19 @@ public:
     QAbstractAnimation *getGoBackAnimation(bool doFadeEffect, bool smoothTransition = false,
         int duration = Config.S_MOVE_CARD_ANIMATION_DURATION);
     void goBack(bool playAnimation, bool doFade = true);
-    inline QAbstractAnimation *getCurrentAnimation(bool doFade) {
+    inline QAbstractAnimation *getCurrentAnimation(bool doFade)
+    {
         Q_UNUSED(doFade);
         return m_currentAnimation;
     }
-    inline void setHomeOpacity(double opacity) { m_opacityAtHome = opacity; }
-    inline double getHomeOpacity() { return m_opacityAtHome; }
+    inline void setHomeOpacity(double opacity)
+    {
+        m_opacityAtHome = opacity;
+    }
+    inline double getHomeOpacity()
+    {
+        return m_opacityAtHome;
+    }
 
     void showFrame(const QString &frame);
     void hideFrame();
@@ -91,23 +103,42 @@ public:
     void setAutoBack(bool auto_back);
     void setFootnote(const QString &desc);
 
-    inline bool isSelected() const{ return m_isSelected; }
-    inline void setSelected(bool selected) { m_isSelected = selected; }
+    inline bool isSelected() const
+    {
+        return m_isSelected;
+    }
+    inline void setSelected(bool selected)
+    {
+        m_isSelected = selected;
+    }
     bool isEquipped() const;
 
     virtual void setFrozen(bool is_frozen, bool update_movable = true);
-    inline bool isFrozen() { return frozen; }
+    inline bool isFrozen()
+    {
+        return frozen;
+    }
 
-    inline void showFootnote() { _m_showFootnote = true; }
-    inline void hideFootnote() { _m_showFootnote = false; }
+    inline void showFootnote()
+    {
+        _m_showFootnote = true;
+    }
+    inline void hideFootnote()
+    {
+        _m_showFootnote = false;
+    }
 
     static CardItem *FindItem(const QList<CardItem *> &items, int card_id);
 
-    struct UiHelper {
+    struct UiHelper
+    {
         int tablePileClearTimeStamp;
     } m_uiHelper;
 
-    void clickItem() { emit clicked(); }
+    void clickItem()
+    {
+        emit clicked();
+    }
 
     void setOuterGlowEffectEnabled(const bool &willPlay);
     bool isOuterGlowEffectEnabled() const;

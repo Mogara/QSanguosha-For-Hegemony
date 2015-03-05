@@ -30,9 +30,11 @@
 #include <QGroupBox>
 #include <QPushButton>
 
-class DistanceViewDialogUI {
+class DistanceViewDialogUI
+{
 public:
-    DistanceViewDialogUI() {
+    DistanceViewDialogUI()
+    {
         from = new QComboBox;
         to = new QComboBox;
 
@@ -123,11 +125,13 @@ DistanceViewDialog::DistanceViewDialog(QWidget *parent)
     showDistance();
 }
 
-DistanceViewDialog::~DistanceViewDialog() {
+DistanceViewDialog::~DistanceViewDialog()
+{
     delete ui;
 }
 
-void DistanceViewDialog::showDistance() {
+void DistanceViewDialog::showDistance()
+{
     QString from_name = ui->from->itemData(ui->from->currentIndex()).toString();
     QString to_name = ui->to->itemData(ui->to->currentIndex()).toString();
 

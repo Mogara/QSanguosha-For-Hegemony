@@ -33,14 +33,16 @@ class Recorder;
 class Replayer;
 class QTextDocument;
 
-class Client : public QObject {
+class Client : public QObject
+{
     Q_OBJECT
     Q_PROPERTY(Client::Status status READ getStatus WRITE setStatus)
 
     Q_ENUMS(Status)
 
 public:
-    enum Status {
+    enum Status
+    {
         NotActive = 0x010000,
         Responding = 0x000001,
         Playing = 0x000002,
@@ -89,7 +91,10 @@ public:
     void requestServer(QSanProtocol::CommandType command, const QVariant &arg = QVariant());
     void notifyServer(QSanProtocol::CommandType command, const QVariant &arg = QVariant());
     void request(const QByteArray &raw);
-    inline void request(const QString &unicode){ request(unicode.toUtf8()); }
+    inline void request(const QString &unicode)
+    {
+        request(unicode.toUtf8());
+    }
     void onPlayerResponseCard(const Card *card, const QList<const Player *> &targets = QList<const Player *>());
     void setStatus(Status status);
     Status getStatus() const;
@@ -201,25 +206,36 @@ public:
 
     void attachSkill(const QVariant &skill);
 
-    inline virtual RoomState *getRoomState() { return &_m_roomState; }
-    inline virtual Card *getCard(int cardId) const{ return _m_roomState.getCard(cardId); }
+    inline virtual RoomState *getRoomState()
+    {
+        return &_m_roomState;
+    }
+    inline virtual Card *getCard(int cardId) const
+    {
+        return _m_roomState.getCard(cardId);
+    }
 
     void moveFocus(const QString &focus, QSanProtocol::CommandType command);
 
-    inline void setCountdown(const QSanProtocol::Countdown &countdown) {
+    inline void setCountdown(const QSanProtocol::Countdown &countdown)
+    {
         m_mutexCountdown.lock();
         m_countdown = countdown;
         m_mutexCountdown.unlock();
     }
 
-    inline QSanProtocol::Countdown getCountdown() {
+    inline QSanProtocol::Countdown getCountdown()
+    {
         m_mutexCountdown.lock();
         QSanProtocol::Countdown countdown = m_countdown;
         m_mutexCountdown.unlock();
         return countdown;
     }
 
-    inline QList<int> getAvailableCards() const{ return available_cards; }
+    inline QList<int> getAvailableCards() const
+    {
+        return available_cards;
+    }
 
     // public fields
     bool m_isDiscardActionRefusable;

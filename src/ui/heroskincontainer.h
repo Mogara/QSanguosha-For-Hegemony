@@ -34,13 +34,17 @@ public:
     HeroSkinContainer(const QString &generalName,
         const QString &kingdom, QGraphicsItem *parent = 0);
 
-    ~HeroSkinContainer() {
+    ~HeroSkinContainer()
+    {
         if (this == m_currentTopMostContainer) {
             m_currentTopMostContainer = NULL;
         }
     }
 
-    const QString &getGeneralName() const { return m_generalName; }
+    const QString &getGeneralName() const
+    {
+        return m_generalName;
+    }
 
     void bringToTopMost();
 

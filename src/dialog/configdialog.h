@@ -29,7 +29,8 @@ namespace Ui {
     class ConfigDialog;
 }
 
-class ConfigDialog : public FlatDialog {
+class ConfigDialog : public FlatDialog
+{
     Q_OBJECT
 public:
     ConfigDialog(QWidget *parent = 0);

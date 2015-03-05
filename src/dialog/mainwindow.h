@@ -40,7 +40,8 @@ class ConnectionDialog;
 class ConfigDialog;
 class Window;
 
-class BroadcastBox : public QDialog {
+class BroadcastBox : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -54,12 +55,14 @@ private:
     QTextEdit *text_edit;
 };
 
-class BackLoader {
+class BackLoader
+{
 public:
     static void preload();
 };
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow
+{
     Q_OBJECT
 
 public:
@@ -83,7 +86,10 @@ public:
 
     static const int S_PADDING = 4;
     static const int S_CORNER_SIZE = 5;
-    enum Direction { Up, Down, Left, Right, LeftTop, LeftBottom, RightTop, RightBottom, None = -1 };
+    enum Direction
+    {
+        Up, Down, Left, Right, LeftTop, LeftBottom, RightTop, RightBottom, None = -1
+    };
 
     bool isZoomReady;
     Direction direction;

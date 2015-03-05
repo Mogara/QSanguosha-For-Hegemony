@@ -27,7 +27,8 @@ class Button;
 class QSanCommandProgressBar;
 class QGraphicsProxyWidget;
 
-class ChooseOptionsBox : public GraphicsBox {
+class ChooseOptionsBox : public GraphicsBox
+{
     Q_OBJECT
 
 public:
@@ -35,7 +36,10 @@ public:
 
     QRectF boundingRect() const;
 
-    inline void setSkillName(const QString &skillName) { this->skillName = skillName; }
+    inline void setSkillName(const QString &skillName)
+    {
+        this->skillName = skillName;
+    }
     void clear();
 
 public slots:

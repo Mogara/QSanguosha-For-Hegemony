@@ -22,7 +22,8 @@
 #include <QRegExp>
 #include <QStringList>
 
-QSanVersionNumber::QSanVersionNumber(const QString &str){
+QSanVersionNumber::QSanVersionNumber(const QString &str)
+{
     if (!tryParse(str))
         Q_ASSERT(false);
 }
@@ -33,9 +34,10 @@ QSanVersionNumber::QSanVersionNumber(int major, int minor, int sub, VersionType 
 
 }
 
-bool QSanVersionNumber::tryParse(const QString &str){
+bool QSanVersionNumber::tryParse(const QString &str)
+{
     QRegExp regexp("(\\d+)\\.(\\d+)\\.(\\d+)\\-([a-z]+)(\\d+)?");
-    if (regexp.exactMatch(str)){
+    if (regexp.exactMatch(str)) {
         QStringList l = regexp.capturedTexts();
         m_major = l[1].toInt();
         m_minor = l[2].toInt();
@@ -59,10 +61,11 @@ bool QSanVersionNumber::tryParse(const QString &str){
     return false;
 }
 
-QString QSanVersionNumber::toString() const{
+QString QSanVersionNumber::toString() const
+{
     QString str = "%1.%2.%3-%4";
     QString type_str;
-    switch (m_type){
+    switch (m_type) {
     case alpha:
         type_str = "alpha";
         break;
@@ -86,19 +89,22 @@ QString QSanVersionNumber::toString() const{
     return str;
 }
 
-QSanVersionNumber::operator QString() const{
+QSanVersionNumber::operator QString() const
+{
     return toString();
 }
 
-bool QSanVersionNumber::operator ==(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator ==(const QSanVersionNumber &arg2) const
+{
     return (m_major == arg2.m_major
-            && m_minor == arg2.m_minor
-            && m_sub == arg2.m_sub
-            && m_type == arg2.m_type
-            && m_step == arg2.m_step);
+        && m_minor == arg2.m_minor
+        && m_sub == arg2.m_sub
+        && m_type == arg2.m_type
+        && m_step == arg2.m_step);
 }
 
-bool QSanVersionNumber::operator <(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator <(const QSanVersionNumber &arg2) const
+{
     if (m_major < arg2.m_major) {
         return true;
     } else if (m_major == arg2.m_major) {
@@ -107,7 +113,7 @@ bool QSanVersionNumber::operator <(const QSanVersionNumber &arg2) const{
         } else if (m_minor == arg2.m_minor) {
             if (m_sub < arg2.m_sub) {
                 return true;
-            } else if (m_sub == arg2.m_sub){
+            } else if (m_sub == arg2.m_sub) {
                 if (m_type < arg2.m_type)
                     return true;
                 else
@@ -118,22 +124,26 @@ bool QSanVersionNumber::operator <(const QSanVersionNumber &arg2) const{
     return false;
 }
 
-bool QSanVersionNumber::operator >(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator >(const QSanVersionNumber &arg2) const
+{
     const QSanVersionNumber &arg1 = *this;
     return !(arg1 == arg2 || arg1 < arg2);
 }
 
-bool QSanVersionNumber::operator !=(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator !=(const QSanVersionNumber &arg2) const
+{
     const QSanVersionNumber &arg1 = *this;
     return !(arg1 == arg2);
 }
 
-bool QSanVersionNumber::operator <=(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator <=(const QSanVersionNumber &arg2) const
+{
     const QSanVersionNumber &arg1 = *this;
     return (arg1 == arg2 || arg1 < arg2);
 }
 
-bool QSanVersionNumber::operator >=(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator >=(const QSanVersionNumber &arg2) const
+{
     const QSanVersionNumber &arg1 = *this;
     return !(arg1 < arg2);
 }

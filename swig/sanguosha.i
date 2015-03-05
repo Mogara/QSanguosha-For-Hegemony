@@ -1573,7 +1573,9 @@ public:
 
 %{
 
-void Room::doScript(const QString &script) {
+
+void Room::doScript(const QString &script)
+{
     SWIG_NewPointerObj(L, this, SWIGTYPE_p_Room, 0);
     lua_setglobal(L, "R");
 
@@ -1581,7 +1583,7 @@ void Room::doScript(const QString &script) {
     lua_setglobal(L, "P");
 
     int err = luaL_dostring(L, script.toLatin1());
-    if (err){
+    if (err) {
         QString err_str = lua_tostring(L, -1);
         lua_pop(L, 1);
         output(err_str);

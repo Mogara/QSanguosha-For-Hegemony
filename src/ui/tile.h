@@ -32,8 +32,14 @@ public:
     explicit Tile(const QString &label, qreal scale = 1.0);
     explicit Tile(const QString &label, const QSizeF &size);
 
-    void setAutoHideTitle(bool hide) { auto_hide_title = hide; title->setVisible(!hide); }
-    bool autoHideTitle() const { return auto_hide_title; }
+    void setAutoHideTitle(bool hide)
+    {
+        auto_hide_title = hide; title->setVisible(!hide);
+    }
+    bool autoHideTitle() const
+    {
+        return auto_hide_title;
+    }
 
     void setIcon(QString path);
     void addScrollTexts(const QStringList &texts);
@@ -43,7 +49,8 @@ protected slots:
     void scrollToNextContent();
 
 protected:
-    enum MouseArea {
+    enum MouseArea
+    {
         Right,
         Left,
         Top,
@@ -65,9 +72,18 @@ protected:
     void doTransform(const QPointF &pos);
     void reset();
 
-    virtual QColor edgeColor() const { return QColor(255, 255, 255, 77); }
-    virtual QColor backgroundColor() const { return QColor(120, 212, 120); }
-    virtual int edgeWidth() const { return 1; }
+    virtual QColor edgeColor() const
+    {
+        return QColor(255, 255, 255, 77);
+    }
+    virtual QColor backgroundColor() const
+    {
+        return QColor(120, 212, 120);
+    }
+    virtual int edgeWidth() const
+    {
+        return 1;
+    }
 
     bool down;
     bool auto_hide_title;

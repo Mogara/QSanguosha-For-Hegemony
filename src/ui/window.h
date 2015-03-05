@@ -25,7 +25,8 @@
 #include <QGraphicsObject>
 #include "button.h"
 
-class Window : public QGraphicsObject {
+class Window : public QGraphicsObject
+{
     Q_OBJECT
 
 public:

@@ -27,7 +27,8 @@
 
 class ClientSocket;
 
-class ServerSocket : public QObject {
+class ServerSocket : public QObject
+{
     Q_OBJECT
 
 public:
@@ -38,7 +39,8 @@ signals:
     void new_connection(ClientSocket *connection);
 };
 
-class ClientSocket : public QObject {
+class ClientSocket : public QObject
+{
     Q_OBJECT
 
 public:

@@ -21,7 +21,8 @@
 #include "package.h"
 #include "skill.h"
 
-void Package::insertRelatedSkills(const QString &main_skill, int n, ...) {
+void Package::insertRelatedSkills(const QString &main_skill, int n, ...)
+{
     va_list ap;
     va_start(ap, n);
     for (int i = 0; i < n; ++i) {
@@ -31,7 +32,8 @@ void Package::insertRelatedSkills(const QString &main_skill, int n, ...) {
     va_end(ap);
 }
 
-Package::~Package() {
+Package::~Package()
+{
     foreach (const Skill *skill, skills)
         delete skill;
 
@@ -40,7 +42,8 @@ Package::~Package() {
 }
 
 Q_GLOBAL_STATIC(PackageHash, Packages)
-PackageHash &PackageAdder::packages() {
+PackageHash &PackageAdder::packages()
+{
     return *(::Packages());
 }
 

@@ -27,7 +27,8 @@ class Server;
 class QListWidget;
 class ServerPlayer;
 
-class BanIpDialog : public FlatDialog {
+class BanIpDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:

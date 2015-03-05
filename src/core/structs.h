@@ -32,8 +32,10 @@ class Slash;
 
 #include <QVariant>
 
-struct DamageStruct {
-    enum Nature {
+struct DamageStruct
+{
+    enum Nature
+    {
         Normal, // normal slash, duel and most damage caused by skill
         Fire,  // fire slash, fire attack and few damage skill (Yeyan, etc)
         Thunder // lightning, thunder slash, and few damage skill (Leiji, etc)
@@ -58,7 +60,8 @@ struct DamageStruct {
     QString getReason() const;
 };
 
-struct CardEffectStruct {
+struct CardEffectStruct
+{
     CardEffectStruct();
 
     const Card *card;
@@ -67,11 +70,12 @@ struct CardEffectStruct {
     ServerPlayer *to;
 
     bool multiple; // helper to judge whether the card has multiple targets
-                   // does not make sense if the card inherits SkillCard
+    // does not make sense if the card inherits SkillCard
     bool nullified;
 };
 
-struct SlashEffectStruct {
+struct SlashEffectStruct
+{
     SlashEffectStruct();
 
     int jink_num;
@@ -89,8 +93,10 @@ struct SlashEffectStruct {
     bool nullified;
 };
 
-struct CardUseStruct {
-    enum CardUseReason {
+struct CardUseStruct
+{
+    enum CardUseReason
+    {
         CARD_USE_REASON_UNKNOWN = 0x00,
         CARD_USE_REASON_PLAY = 0x01,
         CARD_USE_REASON_RESPONSE = 0x02,
@@ -113,7 +119,8 @@ struct CardUseStruct {
     QStringList nullified_list;
 };
 
-class CardMoveReason {
+class CardMoveReason
+{
 public:
     int m_reason;
     QString m_playerId; // the cause (not the source) of the movement, such as "lusu" when "dimeng", or "zhanghe" when "qiaobian"
@@ -122,20 +129,26 @@ public:
     // judgement!!! It will not accurately reflect the real reason.
     QString m_skillName; // skill that triggers movement of the cards, such as "longdang", "dimeng"
     QString m_eventName; // additional arg such as "lebusishu" on top of "S_REASON_JUDGE"
-    inline CardMoveReason() { m_reason = S_REASON_UNKNOWN; }
-    inline CardMoveReason(int moveReason, QString playerId) {
+    inline CardMoveReason()
+    {
+        m_reason = S_REASON_UNKNOWN;
+    }
+    inline CardMoveReason(int moveReason, QString playerId)
+    {
         m_reason = moveReason;
         m_playerId = playerId;
     }
 
-    inline CardMoveReason(int moveReason, QString playerId, QString skillName, QString eventName) {
+    inline CardMoveReason(int moveReason, QString playerId, QString skillName, QString eventName)
+    {
         m_reason = moveReason;
         m_playerId = playerId;
         m_skillName = skillName;
         m_eventName = eventName;
     }
 
-    inline CardMoveReason(int moveReason, QString playerId, QString targetId, QString skillName, QString eventName) {
+    inline CardMoveReason(int moveReason, QString playerId, QString targetId, QString skillName, QString eventName)
+    {
         m_reason = moveReason;
         m_playerId = playerId;
         m_targetId = targetId;
@@ -146,7 +159,8 @@ public:
     bool tryParse(const QVariant &);
     QVariant toVariant() const;
 
-    inline bool operator == (const CardMoveReason &other) const{
+    inline bool operator == (const CardMoveReason &other) const
+    {
         return m_reason == other.m_reason
             && m_playerId == other.m_playerId && m_targetId == other.m_targetId
             && m_skillName == other.m_skillName
@@ -206,7 +220,8 @@ public:
     static const int S_MASK_BASIC_REASON = 0x0F;
 };
 
-struct CardsMoveOneTimeStruct {
+struct CardsMoveOneTimeStruct
+{
     QList<int> card_ids;
     QList<Player::Place> from_places;
     Player::Place to_place;
@@ -225,8 +240,10 @@ struct CardsMoveOneTimeStruct {
     bool is_last_handcard;
 };
 
-struct CardsMoveStruct {
-    inline CardsMoveStruct() {
+struct CardsMoveStruct
+{
+    inline CardsMoveStruct()
+    {
         from_place = Player::PlaceUnknown;
         to_place = Player::PlaceUnknown;
         from = NULL;
@@ -235,7 +252,8 @@ struct CardsMoveStruct {
     }
 
     inline CardsMoveStruct(const QList<int> &ids, Player *from, Player *to, Player::Place from_place,
-        Player::Place to_place, CardMoveReason reason) {
+        Player::Place to_place, CardMoveReason reason)
+    {
         this->card_ids = ids;
         this->from_place = from_place;
         this->to_place = to_place;
@@ -247,7 +265,8 @@ struct CardsMoveStruct {
         if (to) this->to_player_name = to->objectName();
     }
 
-    inline CardsMoveStruct(const QList<int> &ids, Player *to, Player::Place to_place, CardMoveReason reason) {
+    inline CardsMoveStruct(const QList<int> &ids, Player *to, Player::Place to_place, CardMoveReason reason)
+    {
         this->card_ids = ids;
         this->from_place = Player::PlaceUnknown;
         this->to_place = to_place;
@@ -259,7 +278,8 @@ struct CardsMoveStruct {
     }
 
     inline CardsMoveStruct(int id, Player *from, Player *to, Player::Place from_place,
-        Player::Place to_place, CardMoveReason reason) {
+        Player::Place to_place, CardMoveReason reason)
+    {
         this->card_ids << id;
         this->from_place = from_place;
         this->to_place = to_place;
@@ -271,7 +291,8 @@ struct CardsMoveStruct {
         if (to) this->to_player_name = to->objectName();
     }
 
-    inline CardsMoveStruct(int id, Player *to, Player::Place to_place, CardMoveReason reason) {
+    inline CardsMoveStruct(int id, Player *to, Player::Place to_place, CardMoveReason reason)
+    {
         this->card_ids << id;
         this->from_place = Player::PlaceUnknown;
         this->to_place = to_place;
@@ -282,12 +303,14 @@ struct CardsMoveStruct {
         if (to) this->to_player_name = to->objectName();
     }
 
-    inline bool operator == (const CardsMoveStruct &other) const{
+    inline bool operator == (const CardsMoveStruct &other) const
+    {
         return from == other.from && from_place == other.from_place
             && from_pile_name == other.from_pile_name && from_player_name == other.from_player_name;
     }
 
-    inline bool operator < (const CardsMoveStruct &other) const{
+    inline bool operator < (const CardsMoveStruct &other) const
+    {
         return from < other.from || from_place < other.from_place
             || from_pile_name < other.from_pile_name || from_player_name < other.from_player_name;
     }
@@ -307,26 +330,30 @@ struct CardsMoveStruct {
 
     bool tryParse(const QVariant &arg);
     QVariant toVariant() const;
-    inline bool isRelevant(const Player *player) {
+    inline bool isRelevant(const Player *player)
+    {
         return player != NULL && (from == player || (to == player && to_place != Player::PlaceSpecial));
     }
 };
 
-struct DyingStruct {
+struct DyingStruct
+{
     DyingStruct();
 
     ServerPlayer *who; // who is ask for help
     DamageStruct *damage; // if it is NULL that means the dying is caused by losing hp
 };
 
-struct DeathStruct {
+struct DeathStruct
+{
     DeathStruct();
 
     ServerPlayer *who; // who is dead
     DamageStruct *damage; // if it is NULL that means the dying is caused by losing hp
 };
 
-struct RecoverStruct {
+struct RecoverStruct
+{
     RecoverStruct();
 
     int recover;
@@ -334,7 +361,8 @@ struct RecoverStruct {
     const Card *card;
 };
 
-struct PindianStruct {
+struct PindianStruct
+{
     PindianStruct();
     bool isSuccess() const;
 
@@ -348,7 +376,8 @@ struct PindianStruct {
     bool success;
 };
 
-struct JudgeStruct {
+struct JudgeStruct
+{
     JudgeStruct();
     bool isGood() const;
     bool isBad() const;
@@ -367,21 +396,25 @@ struct JudgeStruct {
     bool play_animation;
 
 private:
-    enum TrialResult {
+    enum TrialResult
+    {
         TRIAL_RESULT_UNKNOWN,
         TRIAL_RESULT_GOOD,
         TRIAL_RESULT_BAD
     } _m_result;
 };
 
-struct PhaseChangeStruct {
+struct PhaseChangeStruct
+{
     PhaseChangeStruct();
     Player::Phase from;
     Player::Phase to;
 };
 
-struct PhaseStruct {
-    inline PhaseStruct() {
+struct PhaseStruct
+{
+    inline PhaseStruct()
+    {
         phase = Player::PhaseNone;
         finished = false;
     }
@@ -390,36 +423,42 @@ struct PhaseStruct {
     bool finished;
 };
 
-struct CardResponseStruct {
-    inline CardResponseStruct() {
+struct CardResponseStruct
+{
+    inline CardResponseStruct()
+    {
         m_card = NULL;
         m_who = NULL;
         m_isUse = false;
         m_isRetrial = false;
     }
 
-    inline CardResponseStruct(const Card *card) {
+    inline CardResponseStruct(const Card *card)
+    {
         m_card = card;
         m_who = NULL;
         m_isUse = false;
         m_isRetrial = false;
     }
 
-    inline CardResponseStruct(const Card *card, ServerPlayer *who) {
+    inline CardResponseStruct(const Card *card, ServerPlayer *who)
+    {
         m_card = card;
         m_who = who;
         m_isUse = false;
         m_isRetrial = false;
     }
 
-    inline CardResponseStruct(const Card *card, bool isUse) {
+    inline CardResponseStruct(const Card *card, bool isUse)
+    {
         m_card = card;
         m_who = NULL;
         m_isUse = isUse;
         m_isRetrial = false;
     }
 
-    inline CardResponseStruct(const Card *card, ServerPlayer *who, bool isUse) {
+    inline CardResponseStruct(const Card *card, ServerPlayer *who, bool isUse)
+    {
         m_card = card;
         m_who = who;
         m_isUse = isUse;
@@ -433,29 +472,34 @@ struct CardResponseStruct {
     bool m_isRetrial;
 };
 
-struct PlayerNumStruct {
-    inline PlayerNumStruct() {
+struct PlayerNumStruct
+{
+    inline PlayerNumStruct()
+    {
         m_num = 0;
         m_toCalculate = QString();
         m_type = MaxCardsType::Max;
         m_reason = QString();
     }
 
-    inline PlayerNumStruct(int num, const QString &toCalculate) {
+    inline PlayerNumStruct(int num, const QString &toCalculate)
+    {
         m_num = num;
         m_toCalculate = toCalculate;
         m_type = MaxCardsType::Max;
         m_reason = QString();
     }
 
-    inline PlayerNumStruct(int num, const QString &toCalculate, MaxCardsType::MaxCardsCount type) {
+    inline PlayerNumStruct(int num, const QString &toCalculate, MaxCardsType::MaxCardsCount type)
+    {
         m_num = num;
         m_toCalculate = toCalculate;
         m_type = type;
         m_reason = QString();
     }
 
-    inline PlayerNumStruct(int num, const QString &toCalculate, MaxCardsType::MaxCardsCount type, const QString &reason) {
+    inline PlayerNumStruct(int num, const QString &toCalculate, MaxCardsType::MaxCardsCount type, const QString &reason)
+    {
         m_num = num;
         m_toCalculate = toCalculate;
         m_type = type;
@@ -468,7 +512,8 @@ struct PlayerNumStruct {
     QString m_reason;
 };
 
-enum TriggerEvent {
+enum TriggerEvent
+{
     NonTrigger,
 
     GameStart,
@@ -567,7 +612,8 @@ enum TriggerEvent {
     NumOfEvents
 };
 
-struct LogMessage {
+struct LogMessage
+{
     LogMessage();
     QString toString() const;
     QVariant toVariant() const;
