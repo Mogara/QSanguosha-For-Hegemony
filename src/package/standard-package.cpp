@@ -28,22 +28,24 @@
 
 class GlobalFakeMoveSkill : public TriggerSkill { 
 public:
-	GlobalFakeMoveSkill()
-		:TriggerSkill(QString("global-fake-move"))
-	{
+	GlobalFakeMoveSkill() : TriggerSkill("global-fake-move") {
 		events << BeforeCardsMove << CardsMoveOneTime;
 		global = true;
 	}
 
 	virtual int getPriority() const{
-		return 15;
+		return 10;
 	}
+
 	virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &) const{
 		return (target != NULL) ? QStringList(objectName()) : QStringList();
 	}
+
 	virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const{
-		foreach (ServerPlayer *p, room->getAllPlayers())
-			if (p->hasFlag("Global_InTempMoving")) return true;
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (p->hasFlag("Global_InTempMoving"))
+                return true;
+        }
 
 		return false;
 	}
