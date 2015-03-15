@@ -248,7 +248,7 @@ QByteArray clearComment(const QByteArray &src)
 
                 int length = i + 2 - offset;
                 result.remove(offset, length);
-                i = offset;
+                i = offset - 1;
                 max -= length;
 
             } else if (result.at(i + 1) == '/') { // single-line comment
@@ -260,7 +260,7 @@ QByteArray clearComment(const QByteArray &src)
 
                 int length = i + 1 - offset;
                 result.remove(offset, length);
-                i = offset;
+                i = offset - 1;
                 max -= length;
             }
             break;
