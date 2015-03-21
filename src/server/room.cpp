@@ -3163,6 +3163,8 @@ bool Room::useCard(const CardUseStruct &use, bool add_history)
         if (!slash_not_record) {
             card_use.m_addHistory = true;
             addPlayerHistory(card_use.from, key);
+            if(!card->getSkillName().isEmpty())
+                addPlayerHistory(card_use.from,card->getSkillName());
         }
         addPlayerHistory(NULL, "pushPile");
     }
