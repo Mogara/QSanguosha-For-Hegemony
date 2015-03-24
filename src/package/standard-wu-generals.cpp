@@ -467,7 +467,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->usedTimes("DuoshiAE") < 4;
+        return player->usedTimes("ViewAsSkill_duoshiCard") < 4;
     }
 
     virtual const Card *viewAs(const Card *originalcard) const

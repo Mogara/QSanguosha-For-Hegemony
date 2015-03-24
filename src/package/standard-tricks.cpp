@@ -853,9 +853,6 @@ void AwaitExhausted::onUse(Room *room, const CardUseStruct &card_use) const
         }
     }
 
-    if (getSkillName() == "duoshi")
-        room->addPlayerHistory(new_use.from, "DuoshiAE", 1);
-
     TrickCard::onUse(room, new_use);
 }
 
