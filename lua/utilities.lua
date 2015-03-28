@@ -26,6 +26,56 @@ function sgs.insertRelatedSkills(Package, main_skill, ...)
 	end
 end
 
+sgs.isBigKingdom = function(player,skill_name)
+    if not player:hasShownOneGeneral() then
+        return false
+    end
+    local big_kingdoms = player:getBigKingdoms(skill_name,sgs.Max)
+    local invoke = #big_kingdoms > 0
+    if invoke then
+        if #big_kingdoms == 1 and big_kingdoms[1]:startsWith("sgs") then
+            invoke = table.contains(big_kingdoms,player:objectName())
+        elseif player:getRole() == "careerist" then
+            invoke = false
+        else
+            invoke = table.contains(big_kingdoms,player:getKingdom())
+        end
+    end
+    return invoke
+end
+
+sgs.addSkillToEngine = function(skill)
+    local skill_list = sgs.SkillList()
+	if type(skill) == "table" then
+	    for _,ski in pairs(skill)do
+		    if not sgs.Sanguosha:getSkill(ski:objectName()) then
+				skill_list:append(ski)
+			end
+		end
+		sgs.Sanguosha:addSkills(skill_list)
+		return true
+	end
+    if not sgs.Sanguosha:getSkill(skill:objectName()) then
+		skill_list:append(skill)
+		sgs.Sanguosha:addSkills(skill_list)
+		return true
+	end
+	return false
+end
+
+sgs.addNewKingdom = function(kingdom_name,color)
+	assert(type(kingdom_name) == "string")
+	assert(type(color) == "string")
+	require "lua.config"
+	if not table.contains(config.kingdoms,kingdom_name) then
+		table.insert(config.kingdoms,kingdom_name)
+		config.kingdom_colors[kingdom_name] = string.upper(color)
+		return true
+	else
+		return false
+	end
+end
+
 -- utilities, i.e: convert QList<const Card> to Lua's native table
 function sgs.QList2Table(qlist)
 	local t = {}
