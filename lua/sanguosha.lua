@@ -66,6 +66,9 @@ function load_extensions(just_require)
 	sgs.SetConfig("LuaPackages", lua_packages)
 end
 ]]
+
+global_packages = {}
+
 function load_extensions()
 	local scripts = sgs.GetFileNames("extensions")
 	local package_names = {}
@@ -79,6 +82,7 @@ function load_extensions()
 				local name = extension:objectName()
 				table.insert(package_names, name)
 				sgs.Sanguosha:addPackage(extension)
+				table.insert(global_packages, extension)
 			end
 		end
 	end
