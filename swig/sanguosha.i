@@ -812,7 +812,8 @@ struct ServerInfoStruct {
 
 extern ServerInfoStruct ServerInfo;
 
-enum TriggerEvent {
+enum TriggerEvent
+{
     NonTrigger,
 
     GameStart,
@@ -906,7 +907,7 @@ enum TriggerEvent {
     GeneralHidden, // For Official Hegemony mode
     GeneralRemoved, // For Official Hegemony mode
 
-    DFDebut,
+    DFDebut, // for Dragon Phoenix Debut
 
     NumOfEvents
 };
@@ -1307,9 +1308,11 @@ public:
 class QThread: public QObject {
 };
 
-struct LogMessage {
+struct LogMessage
+{
     LogMessage();
     QString toString() const;
+    QVariant toVariant() const;
 
     QString type;
     ServerPlayer *from;
