@@ -69,6 +69,7 @@ sgs.ai_slash_prohibit = 	{}
 sgs.ai_trick_prohibit = 	{}
 sgs.ai_view_as = 			{}
 sgs.ai_cardsview = 			{}
+sgs.ai_cardsview_value =    {}
 sgs.dynamic_value = 		{
 	damage_card = 			{},
 	control_usecard = 		{},
@@ -3464,17 +3465,45 @@ local function getPlayerSkillList(player)
 end
 
 local function cardsView(self, class_name, player, cards)
+    local returnList = {}
 	for _, skill in ipairs(getPlayerSkillList(player)) do
 		local askill = skill:objectName()
 		if player:hasSkill(askill) or player:hasLordSkill(askill) then
 			local callback = sgs.ai_cardsview[askill]
 			if type(callback) == "function" then
 				local ret = callback(self, class_name, player, cards)
-				if ret then return ret end
+				if ret then 
+                    if type(ret) == "table" then
+                        table.insertTable(returnList,ret)
+                    else
+                        table.insert(returnList,ret)
+                    end
+                end
 			end
 		end
 	end
-	return {}
+	return returnList
+end
+
+local function cardsViewValue(self, class_name, player,reason) -- 优先权最高的ViewCards。
+    local returnList = {}
+	for _, skill in ipairs(getPlayerSkillList(player)) do
+		local askill = skill:objectName()
+		if player:hasSkill(askill) or player:hasLordSkill(askill) then
+			local callback = sgs.ai_cardsview_value[askill]
+			if type(callback) == "function" then
+				local ret = callback(self, class_name, player,reason)
+				if ret then 
+                    if type(ret) == "table" then
+                        table.insertTable(returnList,ret)
+                    else
+                        table.insert(returnList,ret)
+                    end
+                end
+			end
+		end
+	end
+	return returnList
 end
 
 local function getSkillViewCard(card, class_name, player, card_place)
@@ -3668,6 +3697,16 @@ function SmartAI:getCardId(class_name, acard)
 		end
 	end
 
+    local cardsViewFirst = cardsViewValue(self, class_name, self.player,"getCardId")
+    if #cardsViewFirst > 0 then
+        table.sort(cardsViewFirst,
+        function(a,b)
+            return self:getUsePriority(sgs.Card_Parse(a)) > self:getUsePriority(sgs.Card_Parse(b))
+        end
+        )
+        return cardsViewFirst[1]
+    end
+    
 	local viewArr, cardArr = {}, {}
 
 	for _, card in ipairs(cards) do
@@ -3746,6 +3785,20 @@ function SmartAI:getCards(class_name, flag)
 	local cards, other = {}, {}
 	local card_place, card_str
 
+    local cardsViewFirst = cardsViewValue(self, class_name, self.player,"getCards")
+    if #cardsViewFirst > 0 then
+        table.sort(cardsViewFirst,
+        function(a,b)
+            return self:getUsePriority(sgs.Card_Parse(a)) > self:getUsePriority(sgs.Card_Parse(b))
+        end
+        )
+        for _, str in ipairs(cardsViewFirst) do
+			local c = sgs.Card_Parse(str)
+			assert(c)
+			table.insert(cards, c)
+		end
+    end
+    
 	for _, card in sgs.qlist(all_cards) do
 		card_place = room:getCardPlace(card:getEffectiveId())
 
@@ -3896,7 +3949,7 @@ function getCardsNum(class_name, player, from)
 			clubcard = clubcard + 1
 		end
 	end
-
+    num = num + #cardsViewValue(sgs.ais[player:objectName()], class_name, player,"getCardsNum")
 	num = num + #cardsView(sgs.ais[player:objectName()], class_name, player, other)
 
 	if not from or player:objectName() ~= from:objectName() then
