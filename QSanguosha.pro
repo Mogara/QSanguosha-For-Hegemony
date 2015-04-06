@@ -237,6 +237,12 @@ FORMS += \
     src/dialog/generaloverview.ui
     
 
+
+CONFIG(buildbot) {
+    DEFINES += USE_BUILDBOT
+    SOURCES += src/bot_version.cpp
+}
+
 win32 {
     FORMS += src/dialog/mainwindow.ui
 }

@@ -65,3 +65,4 @@ libGLESv2.dll
 /etc
 OGLdpf.log
 QtQuick.2/
+src/bot_version.cpp
