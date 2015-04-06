@@ -29,6 +29,7 @@ class QSpinBox;
 class QCheckBox;
 class QButtonGroup;
 class QAbstractButton;
+class QComboBox;
 
 class ServerDialog : public FlatDialog
 {
@@ -149,6 +150,8 @@ private:
     //QCheckBox *convert_zhangjiao_to_lord;
 
     QCheckBox *ai_chat_checkbox;
+
+    QComboBox *scenario_ComboBox;
 
 private slots:
     void onOkButtonClicked();

@@ -343,6 +343,31 @@ public:
     LuaFunction on_uninstall;
 };
 
+class LuaScenario : public Scenario
+{
+    Q_OBJECT
+
+public:
+    explicit LuaScenario(const char *name,LuaTriggerSkill *origin);
+
+    bool exposeRoles() const;
+    int getPlayerCount() const;
+    QString getRoles() const;
+    void assign(QStringList &generals, QStringList &generals2, QStringList &roles, Room *room) const;
+    AI::Relation relationTo(const ServerPlayer *a, const ServerPlayer *b) const;
+    void onTagSet(Room *room, const QString &key) const = 0;
+    bool generalSelection() const;
+    void setRandomSeat(bool random);
+
+    bool expose_role;
+    int player_count;
+    bool general_selection;
+
+    LuaFunction on_assign;
+    LuaFunction relation;
+    LuaFunction om_tag_set;
+};
+
 %{
 
 #include "lua-wrapper.h"

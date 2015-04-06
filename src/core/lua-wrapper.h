@@ -503,4 +503,59 @@ private:
     QString class_name;
 };
 
+#include "ai.h"
+#include "scenario.h"
+
+class LuaScenario : public Scenario
+{
+    Q_OBJECT
+
+public:
+    explicit LuaScenario(const char *name,LuaTriggerSkill *origin);
+
+    inline virtual bool exposeRoles() const
+    {
+        return expose_role;
+    }
+    inline virtual int getPlayerCount() const
+    {
+        return player_count;
+    }
+    virtual QString getRoles() const;
+    virtual void assign(QStringList &generals, QStringList &generals2, QStringList &roles, Room *room) const;
+    virtual AI::Relation relationTo(const ServerPlayer *a, const ServerPlayer *b) const;
+    virtual void onTagSet(Room *room, const QString &key) const = 0;
+    inline virtual bool generalSelection() const
+    {
+        return general_selection;
+    }
+
+    inline void setRandomSeat(bool random)
+    {
+        random_seat = random;
+    }
+
+    bool expose_role;
+    int player_count;
+    bool general_selection;
+
+    LuaFunction on_assign;
+    LuaFunction relation;
+    LuaFunction om_tag_set;
+};
+
+class LuaSceneRule : public ScenarioRule
+{
+public:
+    LuaSceneRule(LuaScenario *parent,TriggerSkill *t);
+    virtual int getPriority() const
+    {
+        return origin->getPriority();
+    }
+    virtual bool effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+
+protected:
+    TriggerSkill *origin;
+};
+
 #endif
