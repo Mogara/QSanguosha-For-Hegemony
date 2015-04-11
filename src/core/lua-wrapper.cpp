@@ -344,7 +344,7 @@ LuaTreasure *LuaTreasure::clone(Card::Suit suit, int number) const
 
 LuaScenario::LuaScenario(const char *name,LuaTriggerSkill *origin)
     : Scenario(name),expose_role(false),general_selection(false),player_count(0),
-    on_assign(0),om_tag_set(0),relation(0)
+    on_assign(0),on_tag_set(0),relation(0)
 {
     rule = new LuaSceneRule(this,origin);
 }
