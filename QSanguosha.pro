@@ -517,12 +517,12 @@ CONFIG(opengl){
 TRANSLATIONS += builds/sanguosha.ts
 
 !build_pass{
-    system("lrelease builds/sanguosha.ts -qm $$PWD/sanguosha.qm")
+    system("lrelease $$_PRO_FILE_PWD_/builds/sanguosha.ts -qm $$_PRO_FILE_PWD_/sanguosha.qm")
 
     SWIG_bin = "swig"
-    win32: SWIG_bin = "$$PWD/tools/swig/swig.exe"
+    win32: SWIG_bin = "$$_PRO_FILE_PWD_/tools/swig/swig.exe"
 
-    system("$$SWIG_bin -c++ -lua $$PWD/swig/sanguosha.i")
+    system("$$SWIG_bin -c++ -lua $$_PRO_FILE_PWD_/swig/sanguosha.i")
 }
 
 OTHER_FILES += \
@@ -534,7 +534,7 @@ OTHER_FILES += \
 CONFIG(debug, debug|release): LIBS += -lfreetype_D
 else:LIBS += -lfreetype
 
-INCLUDEPATH += $$PWD/include/freetype
-DEPENDPATH += $$PWD/include/freetype
+INCLUDEPATH += $$_PRO_FILE_PWD_/include/freetype
+DEPENDPATH += $$_PRO_FILE_PWD_/include/freetype
 
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/resource/android
+ANDROID_PACKAGE_SOURCE_DIR = $$_PRO_FILE_PWD_/resource/android
