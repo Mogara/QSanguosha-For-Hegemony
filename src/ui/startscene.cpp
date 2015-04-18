@@ -246,6 +246,20 @@ void StartScene::onSceneRectChanged(const QRectF &rect)
     connect(this, &StartScene::sceneRectChanged, this, &StartScene::onSceneRectChanged);
 }
 
+static bool isLanAddress(const QString &address)
+{
+    if (address.startsWith("192.168.") || address.startsWith("10."))
+        return true;
+    else if (address.startsWith("172.")) {
+        bool ok = false;
+        int n = address.split(".").value(1).toInt(&ok);
+        if (ok && (n >= 16 && n < 32))
+            return true;
+    }
+
+    return false;
+}
+
 void StartScene::printServerInfo()
 {
     QStringList items;
@@ -259,7 +273,7 @@ void StartScene::printServerInfo()
     items.sort();
 
     foreach (const QString &item, items) {
-        if (item.startsWith("192.168.") || item.startsWith("10."))
+        if (isLanAddress(item))
             serverLog->append(tr("Your LAN address: %1, this address is available only for hosts that in the same LAN").arg(item));
         else if (item == "127.0.0.1")
             serverLog->append(tr("Your loopback address %1, this address is available only for your host").arg(item));
