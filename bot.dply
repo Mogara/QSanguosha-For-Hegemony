@@ -3,7 +3,6 @@ ai-selector
 audio
 diy
 dmp
-doc
 etc
 extension-doc
 font
@@ -12,7 +11,6 @@ image
 lang
 lua
 rule
-scenarios
 skins
 style-sheet
 ui-script
@@ -22,7 +20,7 @@ CC BY-NC-ND 4.0
 fmodex.dll
 LICENCE
 qt_zh_CN.qm
-builds/sanguosha.qm -> sanguosha.qm
+sanguosha.qm
 
 <Qt Libraries>
 Qt5Core.dll
