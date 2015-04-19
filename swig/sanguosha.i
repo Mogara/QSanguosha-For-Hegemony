@@ -290,6 +290,8 @@ public:
     QString getSkillDescription(bool inToolTip = true) const;
     QString getHeadSkillDescription() const;
     QString getDeputySkillDescription() const;
+    
+    QStringList getAcquiredSkills(const char *flags) const;
 
     virtual bool isProhibited(const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
     bool canSlashWithoutCrossbow(const Card *slash = NULL) const;
@@ -371,6 +373,10 @@ public:
     void removeTag(const char *tag_name) {
         $self->tag.remove(tag_name);
     }
+    bool operator==(Player *other) {
+        return $self->objectName() == other->objectName();
+    }
+    
 };
 
 class ServerPlayer: public Player {

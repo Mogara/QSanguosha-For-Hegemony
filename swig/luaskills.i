@@ -218,6 +218,7 @@ public:
     void setTargetFixed(bool target_fixed);
     void setWillThrow(bool will_throw);
     void setCanRecast(bool can_recast);
+    void setMute(bool isMute);
     void setHandlingMethod(Card::HandlingMethod handling_method);
     LuaSkillCard *clone() const;
 
@@ -343,10 +344,41 @@ public:
     LuaFunction on_uninstall;
 };
 
+
+class Scenario : public Package
+{
+};
+
+class LuaScenario : public Scenario
+{
+public:
+    LuaScenario(const char *name);
+
+    void setRule(LuaTriggerSkill *rule);
+    
+    bool exposeRoles() const;
+    int getPlayerCount() const;
+    QString getRoles() const;
+    void assign(QStringList &generals, QStringList &generals2, QStringList &roles, Room *room) const;
+    AI::Relation relationTo(const ServerPlayer *a, const ServerPlayer *b) const;
+    void onTagSet(Room *room, const char *key) const;
+    bool generalSelection() const;
+    void setRandomSeat(bool random);
+
+    bool expose_role;
+    int player_count;
+    bool general_selection;
+
+    LuaFunction on_assign;
+    LuaFunction relation;
+    LuaFunction on_tag_set;
+};
+
 %{
 
 #include "lua-wrapper.h"
 #include "clientplayer.h"
+#include "scenario.h"
 
 TriggerList LuaTriggerSkill::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
 {
@@ -1844,6 +1876,88 @@ void LuaTreasure::onUninstall(ServerPlayer *player) const
         lua_pop(L, 1);
         Room *room = player->getRoom();
         room->output(error_msg);
+    }
+}
+
+void LuaScenario::assign(QStringList &generals, QStringList &generals2, QStringList &kingdom, Room *room) const
+{
+    if (on_assign == 0)
+        return Scenario::assign(generals,generals2,kingdom,room);
+    lua_State *L = room->getLuaState();
+    
+    lua_rawgeti(L, LUA_REGISTRYINDEX, on_assign);
+    
+    LuaScenario *self = const_cast<LuaScenario *>(this);
+    SWIG_NewPointerObj(L, self, SWIGTYPE_p_LuaScenario, 0);
+
+    SWIG_NewPointerObj(L, room, SWIGTYPE_p_Room, 0);
+    
+    int error = lua_pcall(L, 2, 3, 0);
+    if (error) {
+        const char *error_msg = lua_tostring(L, -1);
+        lua_pop(L, 1);
+        room->output(error_msg);
+        return Scenario::assign(generals,generals2,kingdom,room);
+    } else {
+        kingdom = QString(lua_tostring(L, -1)).split("+");
+        generals2 = QString(lua_tostring(L, -2)).split("+");
+        generals = QString(lua_tostring(L, -3)).split("+");
+        lua_pop(L, 3);
+        return;
+    }
+    
+}
+
+AI::Relation LuaScenario::relationTo(const ServerPlayer *a, const ServerPlayer *b) const
+{
+    if(relation == 0)
+        return Scenario::relationTo(a,b);
+
+	Room *room = a->getRoom();
+    
+    lua_State *L = room->getLuaState();
+    lua_rawgeti(L, LUA_REGISTRYINDEX, relation);
+    
+    LuaScenario *self = const_cast<LuaScenario *>(this);
+    SWIG_NewPointerObj(L, self, SWIGTYPE_p_LuaScenario, 0);
+    
+    SWIG_NewPointerObj(L, a, SWIGTYPE_p_ServerPlayer, 0);
+    SWIG_NewPointerObj(L, b, SWIGTYPE_p_ServerPlayer, 0);
+    
+    int error = lua_pcall(L, 3, 1, 0);
+    if (error) {
+        const char *error_msg = lua_tostring(L, -1);
+        lua_pop(L, 1);
+        room->output(error_msg);
+        return Scenario::relationTo(a,b);
+    } else {
+        int result = lua_tointeger(L,-1);
+        lua_pop(L, 1);
+        return AI::Relation(result);
+    }
+}
+
+void LuaScenario::onTagSet(Room *room, const char *key) const
+{
+    if(on_tag_set == 0)
+        return;
+    lua_State *L = room->getLuaState();
+    
+    lua_rawgeti(L, LUA_REGISTRYINDEX, on_tag_set);
+    
+    LuaScenario *self = const_cast<LuaScenario *>(this);
+    SWIG_NewPointerObj(L, self, SWIGTYPE_p_LuaScenario, 0);
+
+    SWIG_NewPointerObj(L, room, SWIGTYPE_p_Room, 0);
+    
+    lua_pushstring(L,key);
+    
+    int error = lua_pcall(L, 3, 0, 0);
+    if (error) {
+        const char *error_msg = lua_tostring(L, -1);
+        lua_pop(L, 1);
+        room->output(error_msg);
+        return;
     }
 }
 

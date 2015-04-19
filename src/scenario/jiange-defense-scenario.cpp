@@ -135,9 +135,6 @@ QString JiangeDefenseScenario::getRoles() const
     return "ZNNNNNNN";
 }
 
-void JiangeDefenseScenario::onTagSet(Room *, const QString &) const
-{
-}
 
 QString JiangeDefenseScenario::getRandomWeiGhost() const
 {

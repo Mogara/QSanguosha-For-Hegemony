@@ -1160,6 +1160,17 @@ QSet<QString> Player::getAcquiredSkills() const
     return head_acquired_skills + deputy_acquired_skills;
 }
 
+QStringList Player::getAcquiredSkills(const QString &flags) const
+{
+    if (flags == "all")
+        return getAcquiredSkills().toList();
+    if (flags == "head")
+        return head_acquired_skills.toList();
+    if (flags == "deputy")
+        return deputy_acquired_skills.toList();
+    return QStringList();
+}
+
 QString Player::getSkillDescription(bool inToolTip) const
 {
     QString description = QString();

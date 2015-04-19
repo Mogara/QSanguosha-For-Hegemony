@@ -41,6 +41,11 @@ bool Scenario::exposeRoles() const
     return true;
 }
 
+void Scenario::onTagSet(Room *, const QString &) const
+{
+
+}
+
 QString Scenario::getRoles() const
 {
     QString roles = "Z";

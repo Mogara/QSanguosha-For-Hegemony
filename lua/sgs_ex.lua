@@ -251,6 +251,9 @@ function sgs.CreateSkillCard(spec)
 	if type(spec.can_recast) == "boolean" then
 		card:setCanRecast(spec.can_recast)
 	end
+	if type(spec.mute) == "boolean" then
+		card:setMute(spec.mute)
+	end
 
 	if type(spec.handling_method) == "number" then
 		card:setHandlingMethod(spec.handling_method)
@@ -741,4 +744,28 @@ function sgs.LoadSkinTransltionTable(t)
 	for key, value in pairs(t) do
 		sgs.AddTranslationEntry(f(key), value)
 	end
+end
+
+function sgs.CreateLuaScenario(spec)
+	assert(type(spec.name) == "string")
+	assert(type(spec.rule == "userdata") and spec.rule:inherits("LuaTriggerSkill"))
+	assert(type(spec.player_count) == "number")
+	local scenario = sgs.LuaScenario(spec.name)
+	scenario:setRule(spec.rule)
+	if type(spec.expose_role) == "boolean" then
+		scenario.expose_role = spec.expose_role
+	end
+	scenario.player_count = spec.player_count
+	if spec.on_assign then
+		scenario.general_selection = false
+		function scenario:on_assign(room)
+			local general1,general2,kingdom = spec.on_assign(self,room)
+			return table.concat(general1,"+"),table.concat(general2,"+"),table.concat(general3,"+")
+		end
+	else
+		scenario.general_selection = true
+	end
+	scenario.relation = spec.relation or 0
+	scenario.on_tag_set = spec.on_tag_set or 0
+	return scenario
 end

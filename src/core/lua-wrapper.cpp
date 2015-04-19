@@ -341,3 +341,31 @@ LuaTreasure *LuaTreasure::clone(Card::Suit suit, int number) const
 
     return new_card;
 }
+
+LuaScenario::LuaScenario(const char *name)
+    : Scenario(name),expose_role(false),general_selection(false),player_count(0),
+    on_assign(0),on_tag_set(0),relation(0)
+{
+}
+void LuaScenario::setRule(LuaTriggerSkill *rule){
+    this->rule = new LuaSceneRule(this,rule);
+}
+QString LuaScenario::getRoles() const
+{
+    QString result("Z");
+    for (int i = 2;i <= player_count;i++)
+        result.append("N");
+    return result;
+}
+
+LuaSceneRule::LuaSceneRule(LuaScenario *parent,TriggerSkill *t)
+    :ScenarioRule(parent)
+{
+    this->origin = t;
+    events.append(origin->getTriggerEvents());
+}
+
+bool LuaSceneRule::effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+{
+    return origin->effect(event,room,player,data,ask_who);
+}

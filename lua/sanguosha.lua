@@ -81,7 +81,11 @@ function load_extensions()
 			for _, extension in ipairs(extensions) do
 				local name = extension:objectName()
 				table.insert(package_names, name)
-				sgs.Sanguosha:addPackage(extension)
+				if extension:inherits("LuaScenario") then
+					sgs.Sanguosha:addScenario(extension)
+				elseif extension:inherits("Package") then
+					sgs.Sanguosha:addPackage(extension)
+				end
 				table.insert(global_packages, extension)
 			end
 		end
