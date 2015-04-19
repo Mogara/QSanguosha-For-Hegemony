@@ -2226,7 +2226,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 				if to:getHp() - to:getHandcardNum() >= 2 then return nil end
 				if to:hasShownSkill("tuxi") and to:getHp() > 2 then return nil end
 				if to:hasShownSkill("qiaobian") and not to:isKongcheng() then return nil end
-				if to:containsTrick("supply_shortage") and null_num == 1 and self:getOverflow(to) > 1 then return nil end
+				if (to:containsTrick("supply_shortage") or self:willSkipDrawPhase(to)) and null_num <= 1 and self:getOverflow(to) < -1 then return nil end
 				return null_card
 			end
 		elseif trick:isKindOf("SupplyShortage") then
@@ -2235,7 +2235,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 					and (global_room:alivePlayerCount() > 4 or to:hasShownSkill("yizhi")) then return end
 				if to:hasShownSkills("guidao|tiandu") then return nil end
 				if to:hasShownSkill("qiaobian") and not to:isKongcheng() then return nil end
-				if to:containsTrick("indulgence") and null_num == 1 and self:getOverflow(to) < -1 then return nil end
+				if (to:containsTrick("indulgence") or self:willSkipPlayPhase(to)) and null_num <= 1 and self:getOverflow(to) > 1 then return nil end
 				return null_card
 			end
 
@@ -4648,7 +4648,7 @@ function SmartAI:useEquipCard(card, use)
 			use.card = card
 		end
 	elseif card:isKindOf("Treasure") then
-		if not card:isKindOf("wooden_ox") and not self.player:getTreasure()then
+		if not card:isKindOf("WoodenOx") and not self.player:getTreasure()then
 			for _, friend in ipairs(self.friends) do
 				if (friend:getTreasure() and friend:getPile("wooden_ox"):length() > 1) then
 					return
