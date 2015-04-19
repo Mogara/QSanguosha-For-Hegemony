@@ -136,7 +136,7 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 			end
 		end
 
-		local maxEquipNum = 9
+		local maxEquipNum = 99
 		local insertEquipNum = 0
 		if self.player:hasSkill("xiaoji") then maxEquipNum = 1 end
 
@@ -292,6 +292,7 @@ kurou_skill.getTurnUseCard = function(self, inclusive)
 		return nil
 	end
 
+	if self.player:getHp() < 1 then return nil end
 	if self.player:getMark("Global_TurnCount") < 2 and not self.player:hasShownOneGeneral() then return nil end
 
 	if ((self.player:getHp() > 3 and self.player:getLostHp() <= 1 and self:getOverflow(self.player, false) < 2) or self:getOverflow(self.player, false) < -1) then
