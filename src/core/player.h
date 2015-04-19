@@ -270,6 +270,10 @@ public:
     QSet<const Skill *> getVisibleSkills(bool include_equip = false) const;
     QList<const Skill *> getVisibleSkillList(bool include_equip = false) const;
     QSet<QString> getAcquiredSkills() const;
+
+    //Xusine:
+    QStringList getAcquiredSkills(const QString &flags) const;
+
     QString getSkillDescription(bool inToolTip = true) const;
     QString getHeadSkillDescription() const;
     QString getDeputySkillDescription() const;

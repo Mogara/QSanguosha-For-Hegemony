@@ -228,6 +228,10 @@ public:
     {
         this->handling_method = handling_method;
     }
+    inline void setMute(bool isMute)
+    {
+        this->mute = isMute;
+    }
 
     // member functions that do not expose to Lua interpreter
     static LuaSkillCard *Parse(const QString &str);
@@ -511,7 +515,9 @@ class LuaScenario : public Scenario
     Q_OBJECT
 
 public:
-    explicit LuaScenario(const char *name,LuaTriggerSkill *origin);
+    LuaScenario(const char *name);
+
+    void setRule(LuaTriggerSkill *rule);
 
     inline virtual bool exposeRoles() const
     {
@@ -524,7 +530,7 @@ public:
     virtual QString getRoles() const;
     virtual void assign(QStringList &generals, QStringList &generals2, QStringList &roles, Room *room) const;
     virtual AI::Relation relationTo(const ServerPlayer *a, const ServerPlayer *b) const;
-    virtual void onTagSet(Room *room, const char *key) const = 0;
+    virtual void onTagSet(Room *room, const char *key) const;
     inline virtual bool generalSelection() const
     {
         return general_selection;

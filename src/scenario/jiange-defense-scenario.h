@@ -15,7 +15,6 @@ public:
     virtual void assign(QStringList &generals, QStringList &generals2, QStringList &kingdoms, Room *room) const;
     virtual int getPlayerCount() const;
     virtual QString getRoles() const;
-    virtual void onTagSet(Room *room, const QString &key) const;
 
     QString getRandomWeiGhost() const;
     QString getRandomWeiMachine() const;

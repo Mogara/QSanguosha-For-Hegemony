@@ -469,13 +469,14 @@ QGroupBox *ServerDialog::createGameModeBox()
     item_list << scenario_button;
 
     scenario_ComboBox = new QComboBox;
+    scenario_ComboBox->setFocusPolicy(Qt::WheelFocus);
     scenario_ComboBox->setEnabled(scenario_button->isDown());
     connect(scenario_button,&QRadioButton::toggled,scenario_ComboBox,&QComboBox::setEnabled);
     QStringList names = Sanguosha->getModScenarioNames();
     foreach (QString name, names) {
         QString scenario_name = Sanguosha->translate(name);
         const Scenario *scenario = Sanguosha->getScenario(name);
-        QString text = tr("%1 (%2 persons)").arg(scenario_name).arg(scenario->getPlayerCount());
+        QString text = tr("%1 (%2 persons)").arg(Sanguosha->translate(scenario_name)).arg(scenario->getPlayerCount());
         scenario_ComboBox->addItem(text,name);
     }
     item_list << scenario_ComboBox;
@@ -485,7 +486,8 @@ QGroupBox *ServerDialog::createGameModeBox()
         if (index != -1) {
             scenario_button->setChecked(true);
             scenario_ComboBox->setCurrentIndex(index);
-        }
+        } else 
+            mode_group->buttons().first()->setChecked(true); // for Lua Scenario.
     }
     
     // ============
