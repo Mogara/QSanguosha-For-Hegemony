@@ -136,32 +136,38 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 			end
 		end
 
-		local maxEquipNum = 99
-		local insertEquipNum = 0
-		if self.player:hasSkill("xiaoji") then maxEquipNum = 1 end
-
-		if self.player:getWeapon() and self.player:getHandcardNum() < 3 and insertEquipNum < maxEquipNum then
+		if self.player:getWeapon() and self.player:getHandcardNum() < 3 then
 			table.insert(unpreferedCards, self.player:getWeapon():getId())
-			insertEquipNum = insertEquipNum + 1
 		end
 
-		if self:needToThrowArmor() and insertEquipNum < maxEquipNum then
+		if self:needToThrowArmor() then
 			table.insert(unpreferedCards, self.player:getArmor():getId())
-			insertEquipNum = insertEquipNum + 1
 		end
 
-		if self.player:getOffensiveHorse() and self.player:getWeapon() and insertEquipNum < maxEquipNum then
+		if self.player:getOffensiveHorse() and self.player:getWeapon() then
 			table.insert(unpreferedCards, self.player:getOffensiveHorse():getId())
-			insertEquipNum = insertEquipNum + 1
-		end
-
-		if self.player:getDefensiveHorse() and self.player:hasSkill("xiaoji") and insertEquipNum < maxEquipNum then
-			table.insert(unpreferedCards, self.player:getDefensiveHorse():getId())
-			insertEquipNum = insertEquipNum + 1
 		end
 
 	end
-
+	
+	for index = #unpreferedCards, 1, -1 do
+		if sgs.Sanguosha:getCard(unpreferedCards[index]):isKindOf("WoodenOx") and self.player:getPile("wooden_ox"):length() > 1 then
+			table.removeOne(unpreferedCards, unpreferedCards[index])
+		end
+	end
+	
+	local has_equip = {}
+	if self.player:hasSkill("xiaoji") then
+		for index = #unpreferedCards, 1, -1 do
+			if self.player:hasEquip(sgs.Sanguosha:getCard(unpreferedCards[index])) then
+				table.insert(has_equip, unpreferedCards[index])
+				if #has_equip > 1 then
+					table.removeOne(unpreferedCards, unpreferedCards[index])
+				end
+			end	
+		end
+	end	
+	
 	local use_cards = {}
 	for index = #unpreferedCards, 1, -1 do
 		if not self.player:isJilei(sgs.Sanguosha:getCard(unpreferedCards[index])) then
