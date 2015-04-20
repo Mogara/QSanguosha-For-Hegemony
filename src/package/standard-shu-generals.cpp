@@ -1079,7 +1079,7 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("SavageAssault")) {
                 ServerPlayer *menghuo = room->findPlayerBySkillName(objectName());
-                if (TriggerSkill::triggerable(menghuo)) {
+                if (TriggerSkill::triggerable(menghuo) && use.from != menghuo) {
                     ask_who = menghuo;
                     return QStringList(objectName());
                 }
