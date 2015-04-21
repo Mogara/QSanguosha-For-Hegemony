@@ -556,8 +556,11 @@ const Card *Card::Parse(const QString &str)
 
         if (!show_skill.isEmpty())
             card->setShowSkill(show_skill);
+/*
         else if (!skillName.isEmpty())
             card->setShowSkill(skillName);
+*/  // The deletion of this code is extremely dangerous, for all the card in server is created in this way.
+    // I(Fs) deleted this in 2015/4/21, for it causes a bug that one cannot use the skill card as the cost.
 
         if (!user_string.isEmpty()) {
             user_string.remove(0, 1);
