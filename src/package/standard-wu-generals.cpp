@@ -1455,13 +1455,49 @@ public:
     }
 };
 
+GuzhengCard::GuzhengCard()
+{
+    target_fixed = true;
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+void GuzhengCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    source->tag["guzheng_card"] = subcards.first();
+}
+
+class GuzhengVS : public OneCardViewAsSkill
+{
+public:
+    GuzhengVS() : OneCardViewAsSkill("guzheng")
+    {
+        response_pattern = "@@guzheng";
+    }
+
+    virtual bool viewFilter(const Card *to_select) const
+    {
+        QStringList l = Self->property("guzheng_toget").toString().split("+");
+        QList<int> li = StringList2IntList(l);
+        return li.contains(to_select->getId());
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        GuzhengCard *gz = new GuzhengCard;
+        gz->addSubcard(originalCard);
+        // gz->setShowSkill("guzheng");  // Don't setShowSkill here!!!!!!!!!!!! This is the cost of the skill
+        return gz;
+    }
+};
+
 class Guzheng : public TriggerSkill
 {
 public:
     Guzheng() : TriggerSkill("guzheng")
     {
         events << EventPhaseEnd;
-        frequency = Frequent;
+        view_as_skill = new GuzhengVS;
     }
 
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
@@ -1525,20 +1561,40 @@ public:
         QList<int> cards = cardsToGet + cardsOther;
         erzhang->tag.remove("GuzhengToGet");
         erzhang->tag.remove("GuzhengOther");
-        if (erzhang->askForSkillInvoke(this, cards.length())) {
-            room->broadcastSkillInvoke(objectName(), erzhang);
-            room->fillAG(cards, erzhang, cardsOther);
 
-            int to_back = room->askForAG(erzhang, cardsToGet, false, objectName());
-            player->obtainCard(Sanguosha->getCard(to_back));
+        QString cardsList = IntList2StringList(cards).join("+");
+        room->setPlayerProperty(erzhang, "guzheng_allCards", cardsList);
+        QString toGetList = IntList2StringList(cardsToGet).join("+");
+        room->setPlayerProperty(erzhang, "guzheng_toget", toGetList);
 
-            cards.removeOne(to_back);
+        erzhang->tag.remove("guzheng_card");
+        room->setPlayerFlag(erzhang, "guzheng_InTempMoving");
+        CardMoveReason r(CardMoveReason::S_REASON_UNKNOWN, erzhang->objectName());
+        CardsMoveStruct fake_move(cards, NULL, erzhang, Player::DiscardPile, Player::PlaceHand, r);
+        QList<CardsMoveStruct> moves;
+        moves << fake_move;
+        QList<ServerPlayer *> _erzhang;
+        _erzhang << erzhang;
+        room->notifyMoveCards(true, moves, true, _erzhang);
+        room->notifyMoveCards(false, moves, true, _erzhang);
+        bool invoke = room->askForUseCard(erzhang, "@@guzheng", "@guzheng:" + player->objectName(), -1, Card::MethodNone);
+        CardsMoveStruct fake_move2(cards, erzhang, NULL, Player::PlaceHand, Player::DiscardPile, r);
+        QList<CardsMoveStruct> moves2;
+        moves2 << fake_move2;
+        room->notifyMoveCards(true, moves2, true, _erzhang);
+        room->notifyMoveCards(false, moves2, true, _erzhang);
+        room->setPlayerFlag(erzhang, "-guzheng_InTempMoving");
 
-            room->clearAG(erzhang);
-            erzhang->tag["GuzhengCards"] = IntList2VariantList(cards);
-            return true;
+        if (invoke && erzhang->tag.contains("guzheng_card")) {
+            bool ok = false;
+            int to_back = erzhang->tag["guzheng_card"].toInt(&ok);
+            if (ok) {
+                player->obtainCard(Sanguosha->getCard(to_back));
+                cards.removeOne(to_back);
+                erzhang->tag["GuzhengCards"] = IntList2VariantList(cards);
+                return true;
+            }
         }
-
         return false;
     }
 
@@ -1727,4 +1783,5 @@ void StandardPackage::addWuGenerals()
     addMetaObject<DimengCard>();
     addMetaObject<ZhijianCard>();
     addMetaObject<FenxunCard>();
+    addMetaObject<GuzhengCard>();
 }
