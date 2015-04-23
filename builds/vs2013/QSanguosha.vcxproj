@@ -32,6 +32,7 @@
     <IntermediateDirectory>debug\</IntermediateDirectory>
     <PrimaryOutput>QSanguosha</PrimaryOutput>
     <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <OutputDirectory>debug\</OutputDirectory>
@@ -41,6 +42,7 @@
     <IntermediateDirectory>debug\</IntermediateDirectory>
     <PrimaryOutput>QSanguosha</PrimaryOutput>
     <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <OutputDirectory>release\</OutputDirectory>
