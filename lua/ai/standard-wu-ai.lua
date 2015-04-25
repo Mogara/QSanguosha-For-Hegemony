@@ -1779,21 +1779,22 @@ sgs.ai_card_intention.ZhijianCard = -80
 sgs.ai_use_priority.ZhijianCard = sgs.ai_use_priority.RendeCard + 0.1
 sgs.ai_cardneed.zhijian = sgs.ai_cardneed.equip
 
-sgs.ai_skill_invoke.guzheng = function(self, data)
+sgs.ai_skill_use["@@guzheng"] = function(self, data)
+	local card_ids = self.player:property("guzheng_allCards"):toString():split("+")
+	local who = self.room:getCurrent()
+	
 	if not self.player:hasShownOneGeneral() then
-		if not  (self:willShowForAttack() or self:willShowForDefence())  and data:toInt() < 3  then
-			return false
+		if not (self:willShowForAttack() or self:willShowForDefence()) and #card_ids < 3  then
+			return "."
 		end
 	end
-	local player = self.room:getCurrent()
-	local invoke = (self:isFriend(player) and not self:needKongcheng(player, true))
-					or (data:toInt() >= 3 or (data:toInt() == 2 and not player:hasShownSkills(sgs.cardneed_skill)))
-					or (self:isEnemy(player) and self:needKongcheng(player, true))
-	return invoke
-end
-
-sgs.ai_skill_askforag.guzheng = function(self, card_ids)
-	local who = self.room:getCurrent()
+	
+	if self:isLihunTarget(self.player, #card_ids - 1) then return "." end
+	local invoke = (self:isFriend(who) and not (who:hasSkill("kongcheng") and who:isKongcheng()))
+					or (#card_ids >= 3 and not self.player:hasSkill("manjuan"))
+					or (#card_ids == 2 and not self:hasSkills(sgs.cardneed_skill, who) and not self.player:hasSkill("manjuan"))
+					or (self:isEnemy(who) and who:hasSkill("kongcheng") and who:isKongcheng())
+	if not invoke then return "." end
 
 	local cards, except_Equip, except_Key = {}, {}, {}
 	for _, card_id in ipairs(card_ids) do
@@ -1819,35 +1820,47 @@ sgs.ai_skill_askforag.guzheng = function(self, card_ids)
 		if peach then
 			if peach_num > 1
 				or (self:getCardsNum("Peach") >= self.player:getMaxCards())
-				or who:getHp() < self.player:getHp() then
-					return peach
+				or (who:getHp() < getBestHp(who) and who:getHp() < self.player:getHp()) then
+					return "@GuzhengCard="..peach
 			end
 		end
 		if self:isWeak(who) and (jink or analeptic) then
-			return jink or analeptic
+			if jink then
+				return "@GuzhengCard="..jink 
+			elseif analeptic then
+				return "@GuzhengCard="..analeptic
+			end
 		end
 
 		for _, card in ipairs(cards) do
 			if not card:isKindOf("EquipCard") then
-				for _, askill in sgs.qlist(who:getVisibleSkillList()) do
+				for _, askill in sgs.qlist(who:getVisibleSkillList(true)) do
 					local callback = sgs.ai_cardneed[askill:objectName()]
 					if type(callback)=="function" and callback(who, card, self) then
-						return card:getEffectiveId()
+						return "@GuzhengCard="..card:getEffectiveId()
 					end
 				end
 			end
 		end
 
 		if jink or analeptic or slash then
-			return jink or analeptic or slash
+			if jink then
+				return "@GuzhengCard="..jink 
+			elseif analeptic then
+				return "@GuzhengCard="..analeptic
+			elseif slash then
+				return "@GuzhengCard="..slash
+			end
 		end
 
 		for _, card in ipairs(cards) do
 			if not card:isKindOf("EquipCard") and not card:isKindOf("Peach") then
-				return card:getEffectiveId()
+				return "@GuzhengCard="..card:getEffectiveId()
 			end
 		end
+
 	else
+
 		for _, card in ipairs(cards) do
 			if card:isKindOf("EquipCard") and self.player:hasSkill("zhijian") then
 				local Cant_Zhijian = true
@@ -1857,7 +1870,7 @@ sgs.ai_skill_askforag.guzheng = function(self, card_ids)
 					end
 				end
 				if Cant_Zhijian then
-					return card:getEffectiveId()
+					return "@GuzhengCard="..card:getEffectiveId()
 				end
 			end
 		end
@@ -1866,17 +1879,17 @@ sgs.ai_skill_askforag.guzheng = function(self, card_ids)
 
 		self:sortByKeepValue(new_cards)
 		local valueless, slash
-		for _, card in ipairs(new_cards) do
-			if card:isKindOf("Lightning") and not who:hasShownSkills(sgs.wizard_harm_skill) then
-				return card:getEffectiveId()
+		for _, card in ipairs (new_cards) do
+			if card:isKindOf("Lightning") and not self:hasSkills(sgs.wizard_harm_skill, who) then
+				return "@GuzhengCard="..card:getEffectiveId()
 			end
 
 			if card:isKindOf("Slash") then slash = card:getEffectiveId() end
 
 			if not valueless and not card:isKindOf("Peach") then
-				for _, askill in sgs.qlist(who:getVisibleSkillList()) do
+				for _, askill in sgs.qlist(who:getVisibleSkillList(true)) do
 					local callback = sgs.ai_cardneed[askill:objectName()]
-					if (type(callback) == "function" and not callback(who, card, self)) or not callback then
+					if (type(callback)=="function" and not callback(who, card, self)) or not callback then
 						valueless = card:getEffectiveId()
 						break
 					end
@@ -1885,13 +1898,15 @@ sgs.ai_skill_askforag.guzheng = function(self, card_ids)
 		end
 
 		if slash or valueless then
-			return slash or valueless
+			if slash then
+				return "@GuzhengCard="..slash 
+			elseif valueless then
+				return "@GuzhengCard="..valueless
+			end
 		end
 
-		return new_cards[1]:getEffectiveId()
+		return "@GuzhengCard="..new_cards[1]:getEffectiveId()
 	end
-
-	return card_ids[1]
 end
 
 sgs.ai_skill_invoke["_Guzheng"] = function(self, data)
