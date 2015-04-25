@@ -508,10 +508,9 @@ duoshi_skill.getTurnUseCard = function(self, inclusive)
 		end
 	end
 
-	if (self.player:usedTimes("ViewAsSkill_duoshiCard") >= DuoTime and self:getOverflow() <= 0) or self.player:usedTimes("ViewAsSkill_duoshiCard") >= 4 	then return end
-
-
-
+	if self.player:usedTimes("ViewAsSkill_duoshiCard") >= DuoTime and self:getOverflow() <= 0 then return end
+	if self.player:usedTimes("ViewAsSkill_duoshiCard") >= 4 then return end
+	
 	if sgs.turncount <= 1 and #self.friends_noself == 0 and not self:isWeak() and self:getOverflow() <= 0 then return end
 	local cards = self.player:getCards("h")
 	cards = sgs.QList2Table(cards)
