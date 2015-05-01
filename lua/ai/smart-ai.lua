@@ -375,10 +375,17 @@ end
 function SmartAI:objectiveLevel(player)
 	if not player then self.room:writeToConsole(debug.traceback()) return 0 end
 	if self.player:objectName() == player:objectName() then return -2 end
-	if self.room:getMode() == "jiange_defense" and self.player:getKingdom() == player:getKingdom() then return -2 end
 	if self.player:isFriendWith(player) then return -2 end
 	if self.room:alivePlayerCount() == 2 then return 5 end
 
+	if sgs.isRoleExpose() or global_room:getScenario() then
+		if self.lua_ai:isFriend(player) then return -2
+		elseif self.lua_ai:isEnemy(player) then return 5
+		elseif self.lua_ai:relationTo(player) == sgs.AI_Neutrality then
+			if self.lua_ai:getEnemies():isEmpty() then return 4 else return 0 end
+		else return 0 end
+	end
+	
 	local self_kingdom = self.player:getKingdom()
 	local player_kingdom_evaluate = self:evaluateKingdom(player)
 	local player_kingdom_explicit = sgs.ai_explicit[player:objectName()]
@@ -519,10 +526,9 @@ end
 function SmartAI:evaluateKingdom(player, other)
 	if not player then self.room:writeToConsole(debug.traceback()) return "unknown" end
 	other = other or self.player
-	if self.room:getMode() == "custom_scenario" then
+	if sgs.isRoleExpose() then
 		return player:getRole() == "careerist" and "careerist" or player:getKingdom()
 	end
-	if self.room:getMode() == "jiange_defense" then return player:getKingdom() end
 	if sgs.ai_explicit[player:objectName()] ~= "unknown" then return sgs.ai_explicit[player:objectName()] end
 	if player:getMark(string.format("KnownBoth_%s_%s", other:objectName(), player:objectName())) > 0 then
 		local upperlimit = player:getLord() and 99 or math.floor( self.room:getPlayers():length() / 2)
@@ -664,6 +670,40 @@ function SmartAI:updatePlayers(update, resetAI)
 
 	if update then
 		sgs.gameProcess(true)
+	end
+	
+	if (sgs.isRoleExpose() or global_room:getScenario()) then
+		self.friends = {}
+		self.friends_noself = {}
+		local friends = sgs.QList2Table(self.lua_ai:getFriends())
+		for i = 1, #friends, 1 do
+			if friends[i]:isAlive() and friends[i]:objectName() ~= self.player:objectName() then
+				table.insert(self.friends, friends[i])
+				table.insert(self.friends_noself, friends[i])
+			end
+		end
+		table.insert(self.friends, self.player)
+
+		local enemies = sgs.QList2Table(self.lua_ai:getEnemies())
+		for i = 1, #enemies, 1 do
+			if enemies[i]:isDead() or enemies[i]:objectName() == self.player:objectName() then table.remove(enemies, i) end
+		end
+		self.enemies = enemies
+
+		self.retain = 2
+		self.harsh_retain = false
+		if #self.enemies == 0 then
+			local neutrality = {}
+			for _, aplayer in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+				if self.lua_ai:relationTo(aplayer) == sgs.AI_Neutrality and not aplayer:isDead() then table.insert(neutrality, aplayer) end
+			end
+			local function compare_func(a, b)
+				return self:objectiveLevel(a) > self:objectiveLevel(b)
+			end
+			table.sort(neutrality, compare_func)
+			table.insert(self.enemies, neutrality[1])
+		end
+		return
 	end
 
 	if not sgs.isAnjiang(self.player) then
@@ -1473,6 +1513,7 @@ function SmartAI:isFriend(other, another)
 		end
 		return false
 	end
+	if (sgs.isRoleExpose() or global_room:getScenario()) and self.lua_ai:relationTo(other) ~= sgs.AI_Neutrality then return self.lua_ai:isFriend(other) end
 	if self.player:objectName() == other:objectName() then return true end
 	if self.player:isFriendWith(other) then return true end
 	local level = self:objectiveLevel(other)
@@ -1491,6 +1532,7 @@ function SmartAI:isEnemy(other, another)
 		end
 		return false
 	end
+	if (sgs.isRoleExpose() or global_room:getScenario()) and self.lua_ai:relationTo(other) ~= sgs.AI_Neutrality then return self.lua_ai:isEnemy(other) end
 	if self.player:objectName() == other:objectName() then return false end
 	local level = self:objectiveLevel(other)
 	if level > 0 then return true
@@ -5274,7 +5316,7 @@ function SmartAI:setSkillsPreshowed()
 end
 
 function SmartAI:willShowForAttack()
-	if self.room:getMode() == "jiange_defense" then return true end
+	if sgs.isRoleExpose() then return true end
 	if self.player:hasShownOneGeneral() then return true end
 	if self.room:alivePlayerCount() < 3 then return true end
 
@@ -5311,7 +5353,7 @@ return true
 end
 
 function SmartAI:willShowForDefence()
-	if self.room:getMode() == "jiange_defense" then return true end
+	if sgs.isRoleExpose() then return true end
 	if self.player:hasShownOneGeneral() then return true end
 	if self.room:alivePlayerCount() < 3 then return true end
 	if self:isWeak() then return true end
@@ -5348,7 +5390,7 @@ function SmartAI:willShowForDefence()
 end
 
 function SmartAI:willShowForMasochism()
-	if self.room:getMode() == "jiange_defense" then return true end
+	if sgs.isRoleExpose() then return true end
 	if self.player:hasShownOneGeneral() then return true end
 	if self.room:alivePlayerCount() < 3 then return true end
 
@@ -5446,6 +5488,12 @@ end
 function hasNiepanEffect(player)
 	if player:hasShownSkill("niepan") and player:getMark("@nirvana") > 0 then return true end
 	if player:hasShownSkill("jizhao") and player:getMark("@jizhao") > 0 then return true end
+end
+
+function sgs.isRoleExpose()
+	--if self.room:getMode() == "custom_scenario" then return true end
+	if global_room:getScenario() and global_room:getScenario():exposeRoles() then return true end
+	return false
 end
 
 dofile "lua/ai/debug-ai.lua"

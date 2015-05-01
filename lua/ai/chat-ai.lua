@@ -346,7 +346,7 @@ sgs.ai_chat_func[sgs.CardFinished].duoshi = function(self, player, data)
 end
 
 sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
-	if self.room:getMode() == "jiange_defense" then return end
+	if (sgs.isRoleExpose() or global_room:getScenario()) then return end
 	local name1 =  sgs.Sanguosha:translate(self.player:getGeneralName())
 	local name2 =  sgs.Sanguosha:translate(self.player:getGeneral2Name())
 	local kingdom = sgs.Sanguosha:translate(self.player:getKingdom())
@@ -368,7 +368,7 @@ sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
 		end
 	end
 	if shown == 1 then
-		table.insert(chat,"首亮一时爽，全家火葬场")
+		table.insert(chat,"首亮一时爽")
 		if sgs.GetConfig("RewardTheFirstShowingPlayer", true) then
 			table.insert(chat1,"我来摸两张")
 		end
@@ -407,7 +407,7 @@ sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
 end
 
 sgs.ai_chat_func[sgs.DamageCaused].attackAnjiang = function(self, player, data)
-	if self.room:getMode() == "jiange_defense" then return end
+	if (sgs.isRoleExpose() or global_room:getScenario()) then return end
 	local damage = data:toDamage()
 	local chat = {
 			"看看局势再说",
