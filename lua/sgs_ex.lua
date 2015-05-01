@@ -750,7 +750,8 @@ function sgs.CreateLuaScenario(spec)
 	assert(type(spec.name) == "string")
 	assert(type(spec.rule == "userdata") and spec.rule:inherits("LuaTriggerSkill"))
 	assert(type(spec.player_count) == "number")
-	local scenario = sgs.LuaScenario(spec.name)
+	assert(type(spec.random_seat) == "boolean")
+	local scenario = sgs.LuaScenario(spec.name,spec.random_seat)
 	scenario:setRule(spec.rule)
 	if type(spec.expose_role) == "boolean" then
 		scenario.expose_role = spec.expose_role

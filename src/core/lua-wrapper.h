@@ -515,7 +515,7 @@ class LuaScenario : public Scenario
     Q_OBJECT
 
 public:
-    LuaScenario(const char *name);
+    LuaScenario::LuaScenario(const char *name,bool random_seat = true);
 
     void setRule(LuaTriggerSkill *rule);
 

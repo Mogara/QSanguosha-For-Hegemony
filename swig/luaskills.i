@@ -347,12 +347,16 @@ public:
 
 class Scenario : public Package
 {
+public:
+    bool exposeRoles() const;
+    int getPlayerCount() const;
+    QString getRoles() const;
 };
 
 class LuaScenario : public Scenario
 {
 public:
-    LuaScenario(const char *name);
+    LuaScenario(const char *name,bool random_seat = true);
 
     void setRule(LuaTriggerSkill *rule);
     
