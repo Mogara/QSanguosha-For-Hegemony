@@ -684,14 +684,14 @@ class Shengxi : public TriggerSkill
 public:
     Shengxi() : TriggerSkill("shengxi")
     {
-        events << DamageDone << EventPhaseEnd;
+        events << DamageDone << EventPhaseStart;
         frequency = Frequent;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (triggerEvent == EventPhaseEnd) {
-            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play) {
+        if (triggerEvent == EventPhaseStart) {
+            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Discard) {
                 if (!player->hasFlag("ShengxiDamageInPlayPhase"))
                     return QStringList(objectName());
                 else

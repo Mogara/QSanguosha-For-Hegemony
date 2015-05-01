@@ -2,6 +2,7 @@
 #include "skill.h"
 #include "engine.h"
 #include "room.h"
+#include "banpair.h"
 
 class JiangeDefenseScenarioRule : public ScenarioRule
 {
@@ -40,6 +41,7 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
     QStringList wei_generals, shu_generals;
     foreach (const QString &general, Sanguosha->getLimitedGeneralNames()) {
         if (general.startsWith("lord_")) continue;
+        if  (BanPair::isBanned(general)) continue;
         QString kingdom = Sanguosha->getGeneral(general)->getKingdom();
         if (kingdom == "wei")
             wei_generals << general;
