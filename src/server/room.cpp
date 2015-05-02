@@ -2256,6 +2256,62 @@ void Room::changeHero(ServerPlayer *player, const QString &new_general, bool ful
     resetAI(player);
 }
 
+void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,const QString &general2_name, bool full_state,const QString &kingdom, bool sendLog, const QString &show_flags)
+{
+    if (player->isAlive())
+        return;
+    if (player->getGeneral())
+        player->removeGeneral(true);
+    if (player->getGeneral2())
+        player->removeGeneral(false);
+    QStringList names;
+    if (!general1_name.isEmpty()){
+        foreach (const Skill *skill, Sanguosha->getGeneral(general1_name)->getSkillList(true, true)) {
+            player->addSkill(skill->objectName());
+            JsonArray args;
+            args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
+            args << player->objectName();
+            args << skill->objectName();
+            args << true;
+            doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+        }
+        changeHero(player, general1_name, full_state, true, false, sendLog);
+        player->setGeneralName("anjiang");
+        notifyProperty(player, player, "actual_general1");
+        if(!show_flags.contains("h"))
+            foreach(ServerPlayer *p, getOtherPlayers(player))
+                notifyProperty(p, player, "general");
+        names.append(general1_name);
+    }
+    if (!general2_name.isEmpty()){
+        foreach (const Skill *skill, Sanguosha->getGeneral(general2_name)->getSkillList(true, true)) {
+            player->addSkill(skill->objectName());
+            JsonArray args;
+            args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
+            args << player->objectName();
+            args << skill->objectName();
+            args << false;
+            doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+        }
+        changeHero(player, general2_name, full_state, true, false, sendLog);
+        player->setGeneralName("anjiang");
+        notifyProperty(player, player, "actual_general2");
+        if(!show_flags.contains("d"))
+            foreach(ServerPlayer *p, getOtherPlayers(player))
+                notifyProperty(p, player, "general");
+        names.append(general2_name);
+    }
+    revivePlayer(player);
+    setPlayerFlag(player, "Global_DFDebut");
+    setTag(player->objectName(), names);
+    setPlayerProperty(player, "kingdom", kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() :kingdom);
+    setPlayerProperty(player, "role", HegemonyMode::GetMappedRole(kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() :kingdom));
+    if (show_flags.contains("h"))
+        player->showGeneral(true,false);
+    if (show_flags.contains("d"))
+        player->showGeneral(false,false);
+}
+
 lua_State *Room::getLuaState() const
 {
     return L;
