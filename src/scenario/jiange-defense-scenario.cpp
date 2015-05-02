@@ -51,7 +51,7 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
     qShuffle(wei_generals);
     qShuffle(shu_generals);
     Q_ASSERT(wei_generals.length() >= 10 && shu_generals.length() >= 10);
-    TriggerList human_map; // Rara said, human couldn't get ghost or machine as its general.
+    QMap<ServerPlayer *,QString> human_map; // Rara said, human couldn't get ghost or machine as its general.
     QList<ServerPlayer *> players = room->getPlayers();
     for (int i = 0; i < 8; i++) {
         if (players[i]->getState() == "online") {
@@ -64,37 +64,44 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
             role_list.removeOne("human");
             roles[choice] = role_list;
             if (choice == "wei") {
-                QStringList weijiangs;
+                //QStringList weijiangs;
                 for (int j = 0; j < 5; j++)
-                    weijiangs << wei_generals.takeFirst();
-                QStringList answer = room->askForGeneral(players[i], weijiangs, QString(), false).split("+");
-                if (answer.size() < 2) {
-                    weijiangs.removeOne(answer.first());
-                    answer.append(weijiangs.at(qrand() % weijiangs.size()));
-                }
-                answer.prepend("wei");
-                human_map.insert(players[i], answer);
+                    //weijiangs << wei_generals.takeFirst();
+                    players[i]->addToSelected(wei_generals.takeFirst());
+//                QStringList answer = room->askForGeneral(players[i], weijiangs, QString(), false).split("+");
+//                if (answer.size() < 2) {
+//                    weijiangs.removeOne(answer.first());
+//                    answer.append(weijiangs.at(qrand() % weijiangs.size()));
+//                }
+//                human_map.prepend();
+//                human_map.insert(players[i], answer);
+                human_map.insert(players[i], "wei");
             } else if (choice == "shu") {
-                QStringList shujiangs;
+                //QStringList shujiangs;
                 for (int j = 0; j < 5; j++)
-                    shujiangs << shu_generals.takeFirst();
-                QStringList answer = room->askForGeneral(players[i], shujiangs, QString(), false).split("+");
-                if (answer.size() < 2) {
-                    shujiangs.removeOne(answer.first());
-                    answer.append(shujiangs.at(qrand() % shujiangs.size()));
-                }
-                answer.prepend("shu");
-                human_map.insert(players[i], answer);
+                    //shujiangs << shu_generals.takeFirst();
+                    players[i]->addToSelected(shu_generals.takeFirst());
+//                QStringList answer = room->askForGeneral(players[i], shujiangs, QString(), false).split("+");
+//                if (answer.size() < 2) {
+//                    shujiangs.removeOne(answer.first());
+//                    answer.append(shujiangs.at(qrand() % shujiangs.size()));
+//                }
+//                answer.prepend("shu");
+//                human_map.insert(players[i], answer);
+                human_map.insert(players[i], "wei");
             }
         }
     }
 
+    room->chooseGenerals(human_map.keys(),true,true);
+
     for (int i = 0; i < 8; i++) {
         if (human_map.contains(players[i])) {
-            QStringList answer = human_map[players[i]];
-            kingdoms << answer.takeFirst();
-            generals << answer.takeFirst();
-            generals2 << answer.takeFirst();
+//            QStringList answer = human_map[players[i]];
+//            kingdoms << answer.takeFirst();
+            kingdoms << human_map[players[i]];
+            generals << players[i]->getGeneralName();
+            generals2 << players[i]->getGeneral2Name();
         } else {
             QStringList kingdom_choices;
             foreach(const QString &kingdom, roles.keys())

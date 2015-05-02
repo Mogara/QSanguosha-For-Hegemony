@@ -2702,11 +2702,10 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign)
     }
 }
 
-void Room::chooseGenerals()
+void Room::chooseGenerals(QList<ServerPlayer *> &to_assign,bool has_assign,bool is_scenario)
 {
-    QList<ServerPlayer *> to_assign = m_players;
-
-    assignGeneralsForPlayers(to_assign);
+    if(!has_assign)
+        assignGeneralsForPlayers(to_assign);
 
     foreach (ServerPlayer *player, to_assign) {
         JsonArray args;
@@ -2735,6 +2734,10 @@ void Room::chooseGenerals()
     }
 
     m_generalSelector->resetValues();
+
+    if(is_scenario)
+        return; // the following code need wtrting in Scenario::assien.
+    //I consider writing a function to wrap it.
 
     foreach (ServerPlayer *player, m_players) {
         QStringList names;
@@ -2801,7 +2804,7 @@ void Room::run()
     if (scenario && !scenario->generalSelection())
         startGame();
     else {
-        chooseGenerals();
+        chooseGenerals(m_players);
         startGame();
     }
 }

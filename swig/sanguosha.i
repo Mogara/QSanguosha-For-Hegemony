@@ -1551,6 +1551,9 @@ public:
     inline void resetCard(int cardId);
     void updateCardsOnLose(const CardsMoveStruct &move);
     void updateCardsOnGet(const CardsMoveStruct &move);
+    
+    // this function must be called in Scenario::assign ONLY.
+   void chooseGenerals(QList<ServerPlayer *> &assign_players,bool has_assign = false,bool is_scenario = false);
 
     // these 2 functions puts here, for convenience
     static void cancelTarget(CardUseStruct &use, const char *name);

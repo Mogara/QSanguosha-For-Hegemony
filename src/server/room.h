@@ -425,6 +425,8 @@ public:
     void updateCardsOnLose(const CardsMoveStruct &move);
     void updateCardsOnGet(const CardsMoveStruct &move);
 
+    void chooseGenerals(QList<ServerPlayer *> &assign_players,bool has_assign = false,bool is_scenario = false);
+
 protected:
     virtual void run();
     int _m_Id;
@@ -585,7 +587,6 @@ private:
     static QString generatePlayerName();
     void prepareForStart();
     void assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign);
-    void chooseGenerals();
     AI *cloneAI(ServerPlayer *player);
     void broadcast(const QByteArray &message, ServerPlayer *except = NULL);
     void initCallbacks();
