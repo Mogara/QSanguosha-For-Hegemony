@@ -1352,6 +1352,7 @@ public:
     bool canPause(ServerPlayer *p) const;
     void tryPause();
     QString getMode() const;
+    const Scenario *getScenario() const;
     RoomThread *getThread() const;
     ServerPlayer *getCurrent() const;
     void setCurrent(ServerPlayer *current);
