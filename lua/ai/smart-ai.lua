@@ -5491,6 +5491,8 @@ function hasNiepanEffect(player)
 end
 
 function sgs.isRoleExpose()
+	local mode = string.lower(global_room:getMode()
+        if mode:find("0") then return false end
 	if global_room:getMode() == "jiange_defense" then return true end
 	if global_room:getScenario() and global_room:getScenario():exposeRoles() then return true end
 	return false
