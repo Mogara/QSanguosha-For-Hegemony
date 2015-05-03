@@ -344,11 +344,10 @@ LuaTreasure *LuaTreasure::clone(Card::Suit suit, int number) const
     return new_card;
 }
 
-LuaScenario::LuaScenario(const char *name,bool random)
+LuaScenario::LuaScenario(const char *name)
     : Scenario(name),expose_role(false),general_selection(false),player_count(0),
     on_assign(0),on_tag_set(0),relation(0)
 {
-    random_seat = random;
 }
 void LuaScenario::setRule(LuaTriggerSkill *rule){
     this->rule = new LuaSceneRule(this,rule);

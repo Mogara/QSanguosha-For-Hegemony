@@ -356,7 +356,7 @@ public:
 class LuaScenario : public Scenario
 {
 public:
-    LuaScenario(const char *name,bool random_seat = true);
+    LuaScenario(const char *name);
 
     void setRule(LuaTriggerSkill *rule);
     

@@ -751,17 +751,18 @@ function sgs.CreateLuaScenario(spec)
 	assert(type(spec.rule == "userdata") and spec.rule:inherits("LuaTriggerSkill"))
 	assert(type(spec.player_count) == "number")
 	assert(type(spec.random_seat) == "boolean")
-	local scenario = sgs.LuaScenario(spec.name,spec.random_seat)
+	local scenario = sgs.LuaScenario(spec.name)
+	scenario:setRandomSeat(spec.random_seat)
 	scenario:setRule(spec.rule)
 	if type(spec.expose_role) == "boolean" then
 		scenario.expose_role = spec.expose_role
 	end
 	scenario.player_count = spec.player_count
-	if spec.on_assign then
+	if type(spec.on_assign) == "function" then
 		scenario.general_selection = false
-		function scenario:on_assign(room)
+		scenario.on_assign = function(self,room)
 			local general1,general2,kingdom = spec.on_assign(self,room)
-			return table.concat(general1,"+"),table.concat(general2,"+"),table.concat(general3,"+")
+			return table.concat(general1,"+"),table.concat(general2,"+"),table.concat(kingdom,"+")
 		end
 	else
 		scenario.general_selection = true
