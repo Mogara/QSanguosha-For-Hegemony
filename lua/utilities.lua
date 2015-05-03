@@ -27,35 +27,35 @@ function sgs.insertRelatedSkills(Package, main_skill, ...)
 end
 
 sgs.isBigKingdom = function(player,skill_name)
-    if not player:hasShownOneGeneral() then
-        return false
-    end
-    local big_kingdoms = player:getBigKingdoms(skill_name,sgs.Max)
-    local invoke = #big_kingdoms > 0
-    if invoke then
-        if #big_kingdoms == 1 and big_kingdoms[1]:startsWith("sgs") then
-            invoke = table.contains(big_kingdoms,player:objectName())
-        elseif player:getRole() == "careerist" then
-            invoke = false
-        else
-            invoke = table.contains(big_kingdoms,player:getKingdom())
-        end
-    end
-    return invoke
+	if not player:hasShownOneGeneral() then
+		return false
+	end
+	local big_kingdoms = player:getBigKingdoms(skill_name,sgs.Max)
+	local invoke = #big_kingdoms > 0
+	if invoke then
+		if #big_kingdoms == 1 and big_kingdoms[1]:startsWith("sgs") then
+			invoke = table.contains(big_kingdoms,player:objectName())
+		elseif player:getRole() == "careerist" then
+			invoke = false
+		else
+			invoke = table.contains(big_kingdoms,player:getKingdom())
+		end
+	end
+	return invoke
 end
 
 sgs.addSkillToEngine = function(skill)
-    local skill_list = sgs.SkillList()
+	local skill_list = sgs.SkillList()
 	if type(skill) == "table" then
-	    for _,ski in pairs(skill)do
-		    if not sgs.Sanguosha:getSkill(ski:objectName()) then
+		for _,ski in pairs(skill)do
+			if not sgs.Sanguosha:getSkill(ski:objectName()) then
 				skill_list:append(ski)
 			end
 		end
 		sgs.Sanguosha:addSkills(skill_list)
 		return true
 	end
-    if not sgs.Sanguosha:getSkill(skill:objectName()) then
+	if not sgs.Sanguosha:getSkill(skill:objectName()) then
 		skill_list:append(skill)
 		sgs.Sanguosha:addSkills(skill_list)
 		return true

@@ -5,7 +5,7 @@ return {
 
 	-- Test
 	["test"] = "测试",
-	
+
 	["#sujiang"] = "我是男的",
 	["sujiang"] = "士兵",
 	["illustrator:sujiang"] = "官方",

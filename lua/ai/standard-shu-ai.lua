@@ -19,12 +19,12 @@
 *********************************************************************]]
 
 function SmartAI:shouldUseRende()
-	if (self:hasCrossbowEffect() or self:getCardsNum("Crossbow") > 0 or self.player:hasSkill("paoxiao") ) and self:getCardsNum("Slash") > 0 	then
+	if (self:hasCrossbowEffect() or self:getCardsNum("Crossbow") > 0 or self.player:hasSkill("paoxiao") ) and self:getCardsNum("Slash") > 0     then
 		self:sort(self.enemies, "defense")
 		for _, enemy in ipairs(self.enemies) do
 			local inAttackRange = self.player:distanceTo(enemy) == 1 or self.player:distanceTo(enemy) == 2
 									and self:getCardsNum("OffensiveHorse") > 0 and not self.player:getOffensiveHorse()
-			local inPaoxiaoAttackRange =  self.player:distanceTo(enemy) <= self.player:getAttackRange()	and	self.player:hasSkill("paoxiao")
+			local inPaoxiaoAttackRange =  self.player:distanceTo(enemy) <= self.player:getAttackRange() and self.player:hasSkill("paoxiao")
 			if (inAttackRange or inPaoxiaoAttackRange) and sgs.isGoodTarget(enemy, self.enemies, self) then
 				local slashes = self:getCards("Slash")
 				local slash_count = 0
@@ -328,19 +328,19 @@ function sgs.ai_cardneed.jizhi(to, card)
 end
 
 sgs.jizhi_keep_value = {
-	Peach 		= 6,
-	Analeptic 	= 5.9,
-	Jink 		= 5.8,
-	ExNihilo	= 5.7,
-	Snatch 		= 5.7,
+	Peach       = 6,
+	Analeptic   = 5.9,
+	Jink        = 5.8,
+	ExNihilo    = 5.7,
+	Snatch      = 5.7,
 	Dismantlement = 5.6,
-	IronChain 	= 5.5,
+	IronChain   = 5.5,
 	SavageAssault=5.4,
-	Duel 		= 5.3,
+	Duel        = 5.3,
 	ArcheryAttack = 5.2,
 	AmazingGrace = 5.1,
-	Collateral 	= 5,
-	FireAttack	=4.9
+	Collateral  = 5,
+	FireAttack  =4.9
 }
 
 

@@ -149,13 +149,13 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 		end
 
 	end
-	
+
 	for index = #unpreferedCards, 1, -1 do
 		if sgs.Sanguosha:getCard(unpreferedCards[index]):isKindOf("WoodenOx") and self.player:getPile("wooden_ox"):length() > 1 then
 			table.removeOne(unpreferedCards, unpreferedCards[index])
 		end
 	end
-	
+
 	local has_equip = {}
 	if self.player:hasSkill("xiaoji") then
 		for index = #unpreferedCards, 1, -1 do
@@ -164,10 +164,10 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 				if #has_equip > 1 then
 					table.removeOne(unpreferedCards, unpreferedCards[index])
 				end
-			end	
+			end
 		end
-	end	
-	
+	end
+
 	local use_cards = {}
 	for index = #unpreferedCards, 1, -1 do
 		if not self.player:isJilei(sgs.Sanguosha:getCard(unpreferedCards[index])) then
@@ -510,7 +510,7 @@ duoshi_skill.getTurnUseCard = function(self, inclusive)
 
 	if self.player:usedTimes("ViewAsSkill_duoshiCard") >= DuoTime and self:getOverflow() <= 0 then return end
 	if self.player:usedTimes("ViewAsSkill_duoshiCard") >= 4 then return end
-	
+
 	if sgs.turncount <= 1 and #self.friends_noself == 0 and not self:isWeak() and self:getOverflow() <= 0 then return end
 	local cards = self.player:getCards("h")
 	cards = sgs.QList2Table(cards)
@@ -806,8 +806,8 @@ sgs.guose_suit_value = { diamond = 3.9 }
 
 function SmartAI:getWoundedFriend(maleOnly)
 	self:sort(self.friends, "hp")
-	local list1 = {}	-- need help
-	local list2 = {}	-- do not need help
+	local list1 = {}    -- need help
+	local list2 = {}    -- do not need help
 	local addToList = function(p,index)
 		if ( (not maleOnly) or (maleOnly and p:isMale()) ) and p:isWounded() then
 			table.insert(index ==1 and list1 or list2, p)
@@ -1782,13 +1782,13 @@ sgs.ai_cardneed.zhijian = sgs.ai_cardneed.equip
 sgs.ai_skill_use["@@guzheng"] = function(self, data)
 	local card_ids = self.player:property("guzheng_allCards"):toString():split("+")
 	local who = self.room:getCurrent()
-	
+
 	if not self.player:hasShownOneGeneral() then
 		if not (self:willShowForAttack() or self:willShowForDefence()) and #card_ids < 3  then
 			return "."
 		end
 	end
-	
+
 	if self:isLihunTarget(self.player, #card_ids - 1) then return "." end
 	local invoke = (self:isFriend(who) and not (who:hasSkill("kongcheng") and who:isKongcheng()))
 					or (#card_ids >= 3 and not self.player:hasSkill("manjuan"))
@@ -1826,7 +1826,7 @@ sgs.ai_skill_use["@@guzheng"] = function(self, data)
 		end
 		if self:isWeak(who) and (jink or analeptic) then
 			if jink then
-				return "@GuzhengCard="..jink 
+				return "@GuzhengCard="..jink
 			elseif analeptic then
 				return "@GuzhengCard="..analeptic
 			end
@@ -1845,7 +1845,7 @@ sgs.ai_skill_use["@@guzheng"] = function(self, data)
 
 		if jink or analeptic or slash then
 			if jink then
-				return "@GuzhengCard="..jink 
+				return "@GuzhengCard="..jink
 			elseif analeptic then
 				return "@GuzhengCard="..analeptic
 			elseif slash then
@@ -1899,7 +1899,7 @@ sgs.ai_skill_use["@@guzheng"] = function(self, data)
 
 		if slash or valueless then
 			if slash then
-				return "@GuzhengCard="..slash 
+				return "@GuzhengCard="..slash
 			elseif valueless then
 				return "@GuzhengCard="..valueless
 			end

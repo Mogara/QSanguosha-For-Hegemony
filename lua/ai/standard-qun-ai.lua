@@ -110,8 +110,8 @@ sgs.ai_skill_invoke.wushuang = function(self, data)
 	local current_trigger = data:toPlayer()
 	local index = use.to:indexOf(current_trigger)
 	local left_trigger = sgs.SPlayerList()
-	for i = index, use.to:length() - 1, 1 do 
-		left_trigger:append(use.to:at(i):objectName()) 
+	for i = index, use.to:length() - 1, 1 do
+		left_trigger:append(use.to:at(i):objectName())
 	end
 	if use.card then
 		if use.card:isKindOf("Duel") then
@@ -577,7 +577,7 @@ sgs.ai_skill_invoke.weimu = function(self, data)
 		end
 	end
 	if self:isWeak() then return true end
-	if not self:willShowForDefence() then return false end	
+	if not self:willShowForDefence() then return false end
 	return true
 end
 

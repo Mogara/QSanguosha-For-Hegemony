@@ -108,7 +108,7 @@ return {
 	["guzheng"] = "固政",
 	[":guzheng"] = "其他角色的弃牌阶段结束时，你可以将弃牌堆里的一张其于此阶段内因其弃置而失去过的手牌交给该角色，若如此做，你可以获得弃牌堆里的其余于此阶段内弃置的牌。",
 	["$ZhijianEquip"] = "%from 被装备了 %card",
-	["_Guzheng:GuzhengObtain"] = "你可以获得弃牌堆里的其余于此阶段内弃置的牌", 
+	["_Guzheng:GuzhengObtain"] = "你可以获得弃牌堆里的其余于此阶段内弃置的牌",
 
 	["#dingfeng"] = "清侧重臣",
 	["dingfeng"] = "丁奉",
