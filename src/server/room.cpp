@@ -2256,7 +2256,7 @@ void Room::changeHero(ServerPlayer *player, const QString &new_general, bool ful
     resetAI(player);
 }
 
-void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,const QString &general2_name, bool full_state,const QString &kingdom, bool sendLog, const QString &show_flags)
+void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,const QString &general2_name, bool full_state,const QString &kingdom, bool sendLog, const QString &show_flags, bool resetHp)
 {
     if (player->isAlive())
         return;
@@ -2265,6 +2265,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
     if (player->getGeneral2())
         player->removeGeneral(false);
     QStringList names;
+    int max_hp = 0;
     if (!general1_name.isEmpty()){
         foreach (const Skill *skill, Sanguosha->getGeneral(general1_name)->getSkillList(true, true)) {
             player->addSkill(skill->objectName());
@@ -2273,33 +2274,46 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
             args << player->objectName();
             args << skill->objectName();
             args << true;
-            doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+            doNotify(player,QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
         changeHero(player, general1_name, full_state, true, false, sendLog);
+        max_hp += Sanguosha->getGeneral(general1_name)->getDoubleMaxHp();
         player->setGeneralName("anjiang");
         notifyProperty(player, player, "actual_general1");
         if(!show_flags.contains("h"))
             foreach(ServerPlayer *p, getOtherPlayers(player))
                 notifyProperty(p, player, "general");
         names.append(general1_name);
+        setPlayerProperty(player, "general1_showed", show_flags.contains("h"));
     }
     if (!general2_name.isEmpty()){
-        foreach (const Skill *skill, Sanguosha->getGeneral(general2_name)->getSkillList(true, true)) {
+        foreach (const Skill *skill, Sanguosha->getGeneral(general2_name)->getSkillList(true, false)) {
             player->addSkill(skill->objectName());
             JsonArray args;
             args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
             args << player->objectName();
             args << skill->objectName();
             args << false;
-            doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+            doNotify(player,QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
-        changeHero(player, general2_name, full_state, true, false, sendLog);
-        player->setGeneralName("anjiang");
+        max_hp += Sanguosha->getGeneral(general2_name)->getDoubleMaxHp();
+        changeHero(player, general2_name, full_state, true, true, sendLog);
+        player->setGeneral2Name("anjiang");
         notifyProperty(player, player, "actual_general2");
         if(!show_flags.contains("d"))
             foreach(ServerPlayer *p, getOtherPlayers(player))
-                notifyProperty(p, player, "general");
+                notifyProperty(p, player, "general2");
         names.append(general2_name);
+        setPlayerProperty(player, "general2_showed", show_flags.contains("d"));
+    }
+    if(resetHp){
+        if(general1_name.isEmpty() || general2_name.isEmpty())
+            max_hp *= 2;
+        setPlayerMark(player, "HalfMaxHpLeft", max_hp % 2);
+        player->setMaxHp(max_hp / 2);
+        foreach (ServerPlayer *player, m_players) {
+            broadcastProperty(player, "maxhp");
+        }
     }
     revivePlayer(player);
     setPlayerFlag(player, "Global_DFDebut");
@@ -2346,35 +2360,36 @@ void Room::prepareForStart()
     if (scenario) {
         if (scenario->isRandomSeat() && Config.RandomSeat && mode != "custom_scenario")
             qShuffle(m_players);
-        QStringList generals, generals2, kingdoms;
-        scenario->assign(generals, generals2, kingdoms, this);
+        //The process of the followings is moved to Room::run.
+        //QStringList generals, generals2, kingdoms;
+        //scenario->assign(generals, generals2, kingdoms, this);
 
-        for (int i = 0; i < m_players.length(); i++) {
-            ServerPlayer *player = m_players[i];
-            if (generals.size() > i && !generals[i].isNull() && !generals2[i].isNull()) {
-                QStringList names;
-                names.append(generals[i]);
-                names.append(generals2[i]);
-                this->setTag(player->objectName(), QVariant::fromValue(names));
-                player->setGeneralName("anjiang");
-                player->setActualGeneral1Name(generals[i]);
-                notifyProperty(player, player, "actual_general1");
-                foreach(ServerPlayer *p, getOtherPlayers(player))
-                    notifyProperty(p, player, "general");
-                notifyProperty(player, player, "general", generals[i]);
-                if (generals[i] != generals2[i] || mode == "custom_scenario") {
-                    player->setGeneral2Name("anjiang");
-                    player->setActualGeneral2Name(generals2[i]);
-                    notifyProperty(player, player, "actual_general2");
-                    foreach(ServerPlayer *p, getOtherPlayers(player))
-                        notifyProperty(p, player, "general2");
-                    notifyProperty(player, player, "general2", generals2[i]);
-                }
-                setPlayerProperty(player, "kingdom", kingdoms[i]);
-                setPlayerProperty(player, "role", HegemonyMode::GetMappedRole(kingdoms[i]));
-                setPlayerProperty(player, "scenario_role_shown", true);
-            }
-        }
+        //for (int i = 0; i < m_players.length(); i++) {
+        //    ServerPlayer *player = m_players[i];
+        //    if (generals.size() > i && !generals[i].isNull() && !generals2[i].isNull()) {
+        //        QStringList names;
+        //        names.append(generals[i]);
+        //        names.append(generals2[i]);
+        //        this->setTag(player->objectName(), QVariant::fromValue(names));
+        //        player->setGeneralName("anjiang");
+        //        player->setActualGeneral1Name(generals[i]);
+        //        notifyProperty(player, player, "actual_general1");
+        //        foreach(ServerPlayer *p, getOtherPlayers(player))
+        //            notifyProperty(p, player, "general");
+        //        notifyProperty(player, player, "general", generals[i]);
+        //        if (generals[i] != generals2[i] || mode == "custom_scenario") {
+        //            player->setGeneral2Name("anjiang");
+        //            player->setActualGeneral2Name(generals2[i]);
+        //            notifyProperty(player, player, "actual_general2");
+        //            foreach(ServerPlayer *p, getOtherPlayers(player))
+        //                notifyProperty(p, player, "general2");
+        //            notifyProperty(player, player, "general2", generals2[i]);
+        //        }
+        //        setPlayerProperty(player, "kingdom", kingdoms[i]);
+        //        setPlayerProperty(player, "role", HegemonyMode::GetMappedRole(kingdoms[i]));
+        //        setPlayerProperty(player, "scenario_role_shown", true);
+        //    }
+        //}
     } else {
         if (Config.RandomSeat)
             qShuffle(m_players);
@@ -2857,9 +2872,37 @@ void Room::run()
         doBroadcastNotify(S_COMMAND_START_IN_X_SECONDS, QVariant(0));
 
 
-    if (scenario && !scenario->generalSelection())
+    if (scenario && !scenario->generalSelection()) {
+        QStringList generals,generals2, kingdoms;
+        scenario->assign(generals, generals2, kingdoms, this);
+        for (int i = 0; i < m_players.length(); i++) {
+            ServerPlayer *player = m_players[i];
+            if (generals.size() > i && !generals[i].isNull() && !generals2[i].isNull()) {
+                QStringList names;
+                names.append(generals[i]);
+                names.append(generals2[i]);
+                this->setTag(player->objectName(), QVariant::fromValue(names));
+                player->setGeneralName("anjiang");
+                player->setActualGeneral1Name(generals[i]);
+                notifyProperty(player, player, "actual_general1");
+                foreach(ServerPlayer *p, getOtherPlayers(player))
+                    notifyProperty(p, player, "general");
+                notifyProperty(player, player, "general", generals[i]);
+                if (generals[i] != generals2[i] || mode == "custom_scenario") {
+                    player->setGeneral2Name("anjiang");
+                    player->setActualGeneral2Name(generals2[i]);
+                    notifyProperty(player, player, "actual_general2");
+                    foreach(ServerPlayer *p, getOtherPlayers(player))
+                        notifyProperty(p, player, "general2");
+                    notifyProperty(player, player, "general2", generals2[i]);
+                }
+                setPlayerProperty(player, "kingdom", kingdoms[i]);
+                setPlayerProperty(player, "role", HegemonyMode::GetMappedRole(kingdoms[i]));
+                setPlayerProperty(player, "scenario_role_shown", scenario->exposeRoles());
+            }
+        }
         startGame();
-    else {
+    } else {
         chooseGenerals(m_players);
         startGame();
     }

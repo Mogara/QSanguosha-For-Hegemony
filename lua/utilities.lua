@@ -75,7 +75,15 @@ sgs.addNewKingdom = function(kingdom_name,color)
 		return false
 	end
 end
-
+function table.Shuffle(list)
+	local result = {}
+	while #list > 0 do
+		local value = list[math.random(1,#list)]
+		table.insert(result,value)
+		table.removeOne(list,value)
+	end
+	return result
+end
 -- utilities, i.e: convert QList<const Card> to Lua's native table
 function sgs.QList2Table(qlist)
 	local t = {}
