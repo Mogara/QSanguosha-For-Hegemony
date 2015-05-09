@@ -427,7 +427,7 @@ public:
     void updateCardsOnLose(const CardsMoveStruct &move);
     void updateCardsOnGet(const CardsMoveStruct &move);
 
-    void chooseGenerals(QList<ServerPlayer *> &assign_players,bool has_assign = false,bool is_scenario = false);
+    void chooseGenerals(QList<ServerPlayer *> &assign_players, bool has_assign = false, bool is_scenario = false);
 
 protected:
     virtual void run();

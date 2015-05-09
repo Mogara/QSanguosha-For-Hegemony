@@ -485,20 +485,20 @@ sgs.ai_chat_func[sgs.GeneralShown].show_jiange = function(self, player, data)
 		table.insert(chat1, "众将官，剑阁去者！")
 		table.insert(chat1, "此战若胜，大业必成！")
 		table.insert(chat2, "蓝色！")
-	end	
-	if string.find(self.player:getGeneral():objectName(), "baihu") then 
+	end
+	if string.find(self.player:getGeneral():objectName(), "baihu") then
 		table.insert(chat2, "喵~！")
 	end
-	if string.find(self.player:getGeneral():objectName(), "jiangwei") then 
+	if string.find(self.player:getGeneral():objectName(), "jiangwei") then
 		table.insert(chat1, "白水地狭路多，非征战之所，不如且退，去救剑阁。若剑阁一失，是绝路也。")
-		table.insert(chat1, "今四面受敌，粮道不同，不如退守剑阁，再作良图。")	
-	elseif string.find(self.player:getGeneral():objectName(), "dengai") then 
+		table.insert(chat1, "今四面受敌，粮道不同，不如退守剑阁，再作良图。")
+	elseif string.find(self.player:getGeneral():objectName(), "dengai") then
 		table.insert(chat1, "剑阁之守必还赴涪，则会方轨而进；剑阁之军不还，则应涪之兵寡矣。")
 		table.insert(chat1, "以愚意度之，可引一军从阴平小路出汉中德阳亭，用奇兵径取成都，姜维必撤兵来救，将军乘虚就取剑阁，可获全功。")
-	end	
+	end
 	for _, p in ipairs(sgs.robot) do
 		if p:objectName() == self.player:objectName() and (string.find(self.player:getGeneral():objectName(), "jg_") or math.random() < 0.1) then
-			if string.find(self.player:getGeneral():objectName(), "machine") then 
+			if string.find(self.player:getGeneral():objectName(), "machine") then
 			p:speak(chat2[math.random(1, #chat2)])
 			else
 			p:speak(chat1[math.random(1, #chat1)])

@@ -2,7 +2,7 @@
 
 return {
 	["jiange_defense"] = "守卫剑阁",
-	
+
 	["#jg_liubei"] = "蜀汉英魂",
 	["jg_liubei"] = "烈帝玄德",
 	["jgjizhen"] = "激阵",

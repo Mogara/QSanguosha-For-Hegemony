@@ -410,22 +410,22 @@ function sgs.ai_cardneed.luoyi(to, card, self)
 end
 
 sgs.luoyi_keep_value = {
-	Peach 			= 6,
-	Analeptic 		= 5.8,
-	Jink 			= 5.2,
-	Duel			= 5.5,
-	FireSlash 		= 5.6,
-	Slash 			= 5.4,
-	ThunderSlash 	= 5.5,
-	Axe				= 5,
-	Blade 			= 4.9,
-	Spear 			= 4.9,
-	Fan				= 4.8,
-	KylinBow		= 4.7,
-	Halberd			= 4.6,
-	MoonSpear		= 4.5,
+	Peach           = 6,
+	Analeptic       = 5.8,
+	Jink            = 5.2,
+	Duel            = 5.5,
+	FireSlash       = 5.6,
+	Slash           = 5.4,
+	ThunderSlash    = 5.5,
+	Axe             = 5,
+	Blade           = 4.9,
+	Spear           = 4.9,
+	Fan             = 4.8,
+	KylinBow        = 4.7,
+	Halberd         = 4.6,
+	MoonSpear       = 4.5,
 	SPMoonSpear = 4.5,
-	DefensiveHorse 	= 4
+	DefensiveHorse  = 4
 }
 
 

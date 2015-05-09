@@ -40,85 +40,85 @@ function CloneAI(player)
 	return SmartAI(player).lua_ai
 end
 
-sgs.ais = 					{}
-sgs.ai_card_intention = 	{}
+sgs.ais =                   {}
+sgs.ai_card_intention =     {}
 sgs.ai_playerchosen_intention = {}
-sgs.ai_Yiji_intention = 	{}
-sgs.ai_keep_value = 		{}
-sgs.ai_use_value = 			{}
-sgs.ai_use_priority = 		{}
-sgs.ai_suit_priority = 		{}
-sgs.ai_skill_invoke = 		{}
-sgs.ai_skill_suit = 		{}
-sgs.ai_skill_cardask = 		{}
-sgs.ai_skill_choice = 		{}
-sgs.ai_skill_askforag = 	{}
-sgs.ai_skill_askforyiji = 	{}
-sgs.ai_skill_pindian = 		{}
+sgs.ai_Yiji_intention =     {}
+sgs.ai_keep_value =         {}
+sgs.ai_use_value =          {}
+sgs.ai_use_priority =       {}
+sgs.ai_suit_priority =      {}
+sgs.ai_skill_invoke =       {}
+sgs.ai_skill_suit =         {}
+sgs.ai_skill_cardask =      {}
+sgs.ai_skill_choice =       {}
+sgs.ai_skill_askforag =     {}
+sgs.ai_skill_askforyiji =   {}
+sgs.ai_skill_pindian =      {}
 sgs.ai_skill_playerchosen = {}
-sgs.ai_skill_discard = 		{}
-sgs.ai_cardshow = 			{}
-sgs.ai_nullification = 		{}
-sgs.ai_skill_cardchosen = 	{}
-sgs.ai_skill_use = 			{}
-sgs.ai_cardneed = 			{}
-sgs.ai_skill_use_func = 	{}
-sgs.ai_skills = 			{}
+sgs.ai_skill_discard =      {}
+sgs.ai_cardshow =           {}
+sgs.ai_nullification =      {}
+sgs.ai_skill_cardchosen =   {}
+sgs.ai_skill_use =          {}
+sgs.ai_cardneed =           {}
+sgs.ai_skill_use_func =     {}
+sgs.ai_skills =             {}
 sgs.ai_slash_weaponfilter = {}
-sgs.ai_slash_prohibit = 	{}
-sgs.ai_trick_prohibit = 	{}
-sgs.ai_view_as = 			{}
-sgs.ai_cardsview = 			{}
+sgs.ai_slash_prohibit =     {}
+sgs.ai_trick_prohibit =     {}
+sgs.ai_view_as =            {}
+sgs.ai_cardsview =          {}
 sgs.ai_cardsview_value =    {}
-sgs.dynamic_value = 		{
-	damage_card = 			{},
-	control_usecard = 		{},
-	control_card = 			{},
-	lucky_chance = 			{},
-	benefit = 				{}
+sgs.dynamic_value =         {
+	damage_card =           {},
+	control_usecard =       {},
+	control_card =          {},
+	lucky_chance =          {},
+	benefit =               {}
 }
-sgs.ai_choicemade_filter = 	{
-	cardUsed = 				{},
-	cardResponded = 		{},
-	skillInvoke = 			{},
-	skillChoice = 			{},
-	Nullification =			{},
-	playerChosen =			{},
-	cardChosen =			{},
-	Yiji = 					{},
-	viewCards = 			{},
-	guanxingViewCards = 	{},
-	pindian = 				{}
+sgs.ai_choicemade_filter =  {
+	cardUsed =              {},
+	cardResponded =         {},
+	skillInvoke =           {},
+	skillChoice =           {},
+	Nullification =         {},
+	playerChosen =          {},
+	cardChosen =            {},
+	Yiji =                  {},
+	viewCards =             {},
+	guanxingViewCards =     {},
+	pindian =               {}
 }
 
-sgs.card_lack =				{}
-sgs.ai_need_damaged =		{}
-sgs.ai_debug_func =			{}
-sgs.ai_chat_func =			{}
-sgs.ai_event_callback =		{}
-sgs.ai_NeedPeach =			{}
-sgs.shown_kingdom = 		{
+sgs.card_lack =             {}
+sgs.ai_need_damaged =       {}
+sgs.ai_debug_func =         {}
+sgs.ai_chat_func =          {}
+sgs.ai_event_callback =     {}
+sgs.ai_NeedPeach =          {}
+sgs.shown_kingdom =         {
 	wei = 0,
 	shu = 0,
 	wu = 0,
 	qun = 0
 }
-sgs.ai_damage_effect = 		{}
-sgs.ai_explicit = 			{}
-sgs.ai_loyalty = 			{
+sgs.ai_damage_effect =      {}
+sgs.ai_explicit =           {}
+sgs.ai_loyalty =            {
 	wei = {},
 	shu = {},
 	wu = {},
 	qun = {}
 }
-sgs.RolesTable =			{
+sgs.RolesTable =            {
 	"lord",
 	"loyalist",
 	"renegade",
 	"rebel",
 	"careerist"
 }
-sgs.KingdomsTable = 		{
+sgs.KingdomsTable =         {
 	"wei",
 	"shu",
 	"wu",
@@ -146,25 +146,25 @@ for i = sgs.NonTrigger, sgs.NumOfEvents, 1 do
 end
 
 function setInitialTables()
-	sgs.ai_type_name = 			{"Skill", "Basic", "Trick", "Equip"}
+	sgs.ai_type_name =          {"Skill", "Basic", "Trick", "Equip"}
 	sgs.lose_equip_skill = "xiaoji"
 	sgs.lose_one_equip_skill = ""
 	sgs.need_kongcheng = "kongcheng"
-	sgs.masochism_skill = 		"yiji|fankui|jieming|ganglie|fangzhu|hengjiang|qianhuan"
-	sgs.wizard_skill = 		"guicai|guidao|tiandu"
-	sgs.wizard_harm_skill = 	"guicai|guidao"
-	sgs.priority_skill = 		"dimeng|haoshi|qingnang|jizhi|guzheng|qixi|jieyin|guose|duanliang|fanjian|lijian|tuxi|qiaobian|zhiheng|luoshen|rende|wansha|qingcheng|shuangren"
-	sgs.save_skill = 		"jijiu"
-	sgs.exclusive_skill = 		"duanchang|buqu"
-	sgs.Active_cardneed_skill =		"paoxiao|tianyi|shuangxiong|jizhi|guose|duanliang|qixi|qingnang|luoyi|" ..
+	sgs.masochism_skill =       "yiji|fankui|jieming|ganglie|fangzhu|hengjiang|qianhuan"
+	sgs.wizard_skill =      "guicai|guidao|tiandu"
+	sgs.wizard_harm_skill =     "guicai|guidao"
+	sgs.priority_skill =        "dimeng|haoshi|qingnang|jizhi|guzheng|qixi|jieyin|guose|duanliang|fanjian|lijian|tuxi|qiaobian|zhiheng|luoshen|rende|wansha|qingcheng|shuangren"
+	sgs.save_skill =        "jijiu"
+	sgs.exclusive_skill =       "duanchang|buqu"
+	sgs.Active_cardneed_skill =     "paoxiao|tianyi|shuangxiong|jizhi|guose|duanliang|qixi|qingnang|luoyi|" ..
 								"jieyin|zhiheng|rende|luanji|qiaobian|lirang"
-	sgs.notActive_cardneed_skill =		"kanpo|guicai|guidao|beige|xiaoguo|liuli|tianxiang|jijiu"
+	sgs.notActive_cardneed_skill =      "kanpo|guicai|guidao|beige|xiaoguo|liuli|tianxiang|jijiu"
 	sgs.cardneed_skill =  sgs.Active_cardneed_skill .. "|" .. sgs.notActive_cardneed_skill
-	sgs.drawpeach_skill =		"tuxi|qiaobian"
-	sgs.recover_skill =		"rende|kuanggu|zaiqi|jieyin|qingnang|yinghun|hunzi|shenzhi|buqu"
-	sgs.use_lion_skill =		 "duanliang|qixi|guidao|lijian|zhiheng|fenxun|qingcheng"
-	sgs.need_equip_skill = 		"shensu|beige|huyuan|qingcheng"
-	sgs.judge_reason =		"bazhen|EightDiagram|supply_shortage|tuntian|qianxi|indulgence|lightning|leiji|tieqi|luoshen|ganglie"
+	sgs.drawpeach_skill =       "tuxi|qiaobian"
+	sgs.recover_skill =     "rende|kuanggu|zaiqi|jieyin|qingnang|yinghun|hunzi|shenzhi|buqu"
+	sgs.use_lion_skill =         "duanliang|qixi|guidao|lijian|zhiheng|fenxun|qingcheng"
+	sgs.need_equip_skill =      "shensu|beige|huyuan|qingcheng"
+	sgs.judge_reason =      "bazhen|EightDiagram|supply_shortage|tuntian|qianxi|indulgence|lightning|leiji|tieqi|luoshen|ganglie"
 
 	sgs.Friend_All = 0
 	sgs.Friend_Draw = 1
@@ -385,7 +385,7 @@ function SmartAI:objectiveLevel(player)
 			if self.lua_ai:getEnemies():isEmpty() then return 4 else return 0 end
 		else return 0 end
 	end
-	
+
 	local self_kingdom = self.player:getKingdom()
 	local player_kingdom_evaluate = self:evaluateKingdom(player)
 	local player_kingdom_explicit = sgs.ai_explicit[player:objectName()]
@@ -671,7 +671,7 @@ function SmartAI:updatePlayers(update, resetAI)
 	if update then
 		sgs.gameProcess(true)
 	end
-	
+
 	if (sgs.isRoleExpose() or global_room:getScenario()) then
 		self.friends = {}
 		self.friends_noself = {}
@@ -851,9 +851,9 @@ function sgs.getDefense(player)
 	if not player:faceUp() then defense = defense - 0.5 end
 	if player:containsTrick("indulgence") then defense = defense - 0.5 end
 	if player:containsTrick("supply_shortage") then defense = defense - 0.5 end
-	
-	if player:hasShownSkills("qingguo+yiji|duoshi+xiaoji|jijiu+qianhuan|yiji+ganglie") then defense = defense + 2 end 
-	if player:hasShownSkills("yiji+qiaobian|xiaoji+zhiheng|buqu+yinghun_sunjian|luoshen+guicai") then defense = defense + 1.5 end 
+
+	if player:hasShownSkills("qingguo+yiji|duoshi+xiaoji|jijiu+qianhuan|yiji+ganglie") then defense = defense + 2 end
+	if player:hasShownSkills("yiji+qiaobian|xiaoji+zhiheng|buqu+yinghun_sunjian|luoshen+guicai") then defense = defense + 1.5 end
 
 	if global_room:getCurrent() then
 		defense = defense + (player:aliveCount() - (player:getSeat() - global_room:getCurrent():getSeat()) % player:aliveCount()) / 4
@@ -1050,7 +1050,7 @@ function SmartAI:writeKeepValue(card)
 
 		if i > 0 then value_number = value_number / i end
 			newvalue = maxvalue + value_suit + value_number
-			if not card:isKindOf(mostvaluable_class) then 	newvalue = newvalue + 0.1 end
+			if not card:isKindOf(mostvaluable_class) then   newvalue = newvalue + 0.1 end
 		newvalue = self:adjustKeepValue(card, newvalue)
 			return newvalue
 	else
@@ -1119,7 +1119,7 @@ function SmartAI:adjustKeepValue(card, v)
 			end
 		end
 	end
-	
+
 	local suits_value = {}
 	for index,suit in ipairs(suits) do
 		suits_value[suit] = index * 2
@@ -1879,7 +1879,7 @@ function SmartAI:filterEvent(event, player, data)
 		local move = data:toMoveOneTime()
 		if move.to and move.to:objectName() == player:objectName() and (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip) then
 			self:assignKeep()
-		-- elseif move.from and move.from:objectName() == player:objectName() 	and (move.from_places:contains(sgs.Player_PlaceHand) or move.from_places:contains(sgs.Player_PlaceEquip)) then
+		-- elseif move.from and move.from:objectName() == player:objectName()   and (move.from_places:contains(sgs.Player_PlaceHand) or move.from_places:contains(sgs.Player_PlaceEquip)) then
 			-- self:assignKeep()
 		end
 	end
@@ -3507,20 +3507,20 @@ local function getPlayerSkillList(player)
 end
 
 local function cardsView(self, class_name, player, cards)
-    local returnList = {}
+	local returnList = {}
 	for _, skill in ipairs(getPlayerSkillList(player)) do
 		local askill = skill:objectName()
 		if player:hasSkill(askill) or player:hasLordSkill(askill) then
 			local callback = sgs.ai_cardsview[askill]
 			if type(callback) == "function" then
 				local ret = callback(self, class_name, player, cards)
-				if ret then 
-                    if type(ret) == "table" then
-                        table.insertTable(returnList,ret)
-                    else
-                        table.insert(returnList,ret)
-                    end
-                end
+				if ret then
+					if type(ret) == "table" then
+						table.insertTable(returnList,ret)
+					else
+						table.insert(returnList,ret)
+					end
+				end
 			end
 		end
 	end
@@ -3528,20 +3528,20 @@ local function cardsView(self, class_name, player, cards)
 end
 
 local function cardsViewValue(self, class_name, player,reason) -- 优先权最高的ViewCards。
-    local returnList = {}
+	local returnList = {}
 	for _, skill in ipairs(getPlayerSkillList(player)) do
 		local askill = skill:objectName()
 		if player:hasSkill(askill) or player:hasLordSkill(askill) then
 			local callback = sgs.ai_cardsview_value[askill]
 			if type(callback) == "function" then
 				local ret = callback(self, class_name, player,reason)
-				if ret then 
-                    if type(ret) == "table" then
-                        table.insertTable(returnList,ret)
-                    else
-                        table.insert(returnList,ret)
-                    end
-                end
+				if ret then
+					if type(ret) == "table" then
+						table.insertTable(returnList,ret)
+					else
+						table.insert(returnList,ret)
+					end
+				end
 			end
 		end
 	end
@@ -3739,16 +3739,16 @@ function SmartAI:getCardId(class_name, acard)
 		end
 	end
 
-    local cardsViewFirst = cardsViewValue(self, class_name, self.player,"getCardId")
-    if #cardsViewFirst > 0 then
-        table.sort(cardsViewFirst,
-        function(a,b)
-            return self:getUsePriority(sgs.Card_Parse(a)) > self:getUsePriority(sgs.Card_Parse(b))
-        end
-        )
-        return cardsViewFirst[1]
-    end
-    
+	local cardsViewFirst = cardsViewValue(self, class_name, self.player,"getCardId")
+	if #cardsViewFirst > 0 then
+		table.sort(cardsViewFirst,
+		function(a,b)
+			return self:getUsePriority(sgs.Card_Parse(a)) > self:getUsePriority(sgs.Card_Parse(b))
+		end
+		)
+		return cardsViewFirst[1]
+	end
+
 	local viewArr, cardArr = {}, {}
 
 	for _, card in ipairs(cards) do
@@ -3827,20 +3827,20 @@ function SmartAI:getCards(class_name, flag)
 	local cards, other = {}, {}
 	local card_place, card_str
 
-    local cardsViewFirst = cardsViewValue(self, class_name, self.player,"getCards")
-    if #cardsViewFirst > 0 then
-        table.sort(cardsViewFirst,
-        function(a,b)
-            return self:getUsePriority(sgs.Card_Parse(a)) > self:getUsePriority(sgs.Card_Parse(b))
-        end
-        )
-        for _, str in ipairs(cardsViewFirst) do
+	local cardsViewFirst = cardsViewValue(self, class_name, self.player,"getCards")
+	if #cardsViewFirst > 0 then
+		table.sort(cardsViewFirst,
+		function(a,b)
+			return self:getUsePriority(sgs.Card_Parse(a)) > self:getUsePriority(sgs.Card_Parse(b))
+		end
+		)
+		for _, str in ipairs(cardsViewFirst) do
 			local c = sgs.Card_Parse(str)
 			assert(c)
 			table.insert(cards, c)
 		end
-    end
-    
+	end
+
 	for _, card in sgs.qlist(all_cards) do
 		card_place = room:getCardPlace(card:getEffectiveId())
 
@@ -3991,7 +3991,7 @@ function getCardsNum(class_name, player, from)
 			clubcard = clubcard + 1
 		end
 	end
-    num = num + #cardsViewValue(sgs.ais[player:objectName()], class_name, player,"getCardsNum")
+	num = num + #cardsViewValue(sgs.ais[player:objectName()], class_name, player,"getCardsNum")
 	num = num + #cardsView(sgs.ais[player:objectName()], class_name, player, other)
 
 	if not from or player:objectName() ~= from:objectName() then
@@ -4560,7 +4560,7 @@ function SmartAI:getSameEquip(card, player)
 	elseif card:isKindOf("Armor") then return player:getArmor()
 	elseif card:isKindOf("DefensiveHorse") then return player:getDefensiveHorse()
 	elseif card:isKindOf("OffensiveHorse") then return player:getOffensiveHorse()
-	elseif card:isKindOf("Treasure") then return player:getTreasure() 
+	elseif card:isKindOf("Treasure") then return player:getTreasure()
 	end
 end
 
@@ -5009,7 +5009,7 @@ function SmartAI:dontRespondPeachInJudge(judge)
 	end
 
 	if (judge.reason == "EightDiagram" or judge.reason == "bazhen") and
-		self:isFriend(judge.who) and not self:isWeak(judge.who) then return true
+		self:isFriend(judge.who) and (not self:isWeak(judge.who) or judge.who:hasShownSkills(sgs.masochism_skill)) then return true
 	elseif judge.reason == "tieqi" then return true
 	elseif judge.reason == "qianxi" then return true
 	elseif judge.reason == "beige" then return true

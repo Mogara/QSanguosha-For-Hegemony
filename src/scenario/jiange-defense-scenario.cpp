@@ -93,7 +93,8 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
         }
     }
 
-    room->chooseGenerals(human_map.keys(),true,true);
+    QList<ServerPlayer *> humans = human_map.keys();
+    room->chooseGenerals(humans, true, true);
 
     for (int i = 0; i < 8; i++) {
         if (human_map.contains(players[i])) {

@@ -55,7 +55,7 @@ return {
 	["huangzhong"] = "黄忠",
 	["liegong"] = "烈弓",
 	[":liegong"] = "每当你于出牌阶段内使用【杀】指定一个目标后，若其手牌数不小于你的体力值或不大于你的攻击范围，你可以令其不能使用【闪】响应此【杀】。",
-	
+
 	["#weiyan"] = "嗜血的独狼",
 	["weiyan"] = "魏延",
 	["illustrator:weiyan"] = "SoniaTang",
