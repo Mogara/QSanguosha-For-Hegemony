@@ -2005,7 +2005,7 @@
     <message>
         <location filename="../src/dialog/generaloverview_ios.ui" line="312"/>
         <source>Package</source>
-        <translation type="unfinished">包</translation>
+        <translation>包</translation>
     </message>
 </context>
 <context>
