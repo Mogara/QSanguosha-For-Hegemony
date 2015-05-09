@@ -2322,10 +2322,22 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
     setTag(player->objectName(), names);
     setPlayerProperty(player, "kingdom", kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() :kingdom);
     setPlayerProperty(player, "role", HegemonyMode::GetMappedRole(kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() :kingdom));
+    if(full_state){
+        foreach (const Skill *skill, player->getSkillList(false,true)) {
+            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
+                player->setMark(skill->getLimitMark(), 1);
+        }
+        player->setChained(false);
+        broadcastProperty(player, "chained");
+
+        player->setFaceUp(true);
+        broadcastProperty(player, "faceup");
+    }
     if (show_flags.contains("h"))
         player->showGeneral(true,false);
     if (show_flags.contains("d"))
         player->showGeneral(false,false);
+    resetAI(player);
 }
 
 lua_State *Room::getLuaState() const

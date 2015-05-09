@@ -88,7 +88,7 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
 //                }
 //                answer.prepend("shu");
 //                human_map.insert(players[i], answer);
-                human_map.insert(players[i], "wei");
+                human_map.insert(players[i], "shu");
             }
         }
     }

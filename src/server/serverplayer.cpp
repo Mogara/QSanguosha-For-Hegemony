@@ -1389,7 +1389,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
             room->notifyProperty(p, this, "head_skin_id");
 
         if (!hasShownGeneral2()) {
-            QString kingdom = room->getMode() == "custom_scenario" ? getKingdom() : getGeneral()->getKingdom();
+            QString kingdom = getKingdom() != getGeneral()->getKingdom() ? getKingdom() : getGeneral()->getKingdom();
             room->setPlayerProperty(this, "kingdom", kingdom);
 
             QString role = HegemonyMode::GetMappedRole(kingdom);
@@ -1460,7 +1460,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
             room->notifyProperty(p, this, "deputy_skin_id");
 
         if (!hasShownGeneral1()) {
-            QString kingdom = room->getMode() == "custom_scenario" ? getKingdom() : getGeneral2()->getKingdom();
+            QString kingdom = getKingdom() != getGeneral()->getKingdom() ? getKingdom() : getGeneral()->getKingdom();
             room->setPlayerProperty(this, "kingdom", kingdom);
 
             QString role = HegemonyMode::GetMappedRole(kingdom);
