@@ -2279,6 +2279,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
         changeHero(player, general1_name, full_state, true, false, sendLog);
         max_hp += Sanguosha->getGeneral(general1_name)->getDoubleMaxHp();
         player->setGeneralName("anjiang");
+        player->setActualGeneral1Name(general1_name);
         notifyProperty(player, player, "actual_general1");
         if(!show_flags.contains("h"))
             foreach(ServerPlayer *p, getOtherPlayers(player))
@@ -2288,7 +2289,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
     }
     if (!general2_name.isEmpty()){
         foreach (const Skill *skill, Sanguosha->getGeneral(general2_name)->getSkillList(true, false)) {
-            player->addSkill(skill->objectName());
+            player->addSkill(skill->objectName(),false);
             JsonArray args;
             args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
             args << player->objectName();
@@ -2299,6 +2300,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
         max_hp += Sanguosha->getGeneral(general2_name)->getDoubleMaxHp();
         changeHero(player, general2_name, full_state, true, true, sendLog);
         player->setGeneral2Name("anjiang");
+        player->setActualGeneral2Name(general2_name);
         notifyProperty(player, player, "actual_general2");
         if(!show_flags.contains("d"))
             foreach(ServerPlayer *p, getOtherPlayers(player))
@@ -2306,6 +2308,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
         names.append(general2_name);
         setPlayerProperty(player, "general2_showed", show_flags.contains("d"));
     }
+    revivePlayer(player);
     if(resetHp){
         if(general1_name.isEmpty() || general2_name.isEmpty())
             max_hp *= 2;
@@ -2315,7 +2318,6 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
             broadcastProperty(player, "maxhp");
         }
     }
-    revivePlayer(player);
     setPlayerFlag(player, "Global_DFDebut");
     setTag(player->objectName(), names);
     setPlayerProperty(player, "kingdom", kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() :kingdom);
