@@ -53,7 +53,7 @@ return {
 	["&jiangwanfeiyi"] = "蒋琬费祎",
 	["illustrator:jiangwanfeiyi"] = "cometrue",
 	["shengxi"] = "生息",
-	[":shengxi"] = "出牌阶段结束时，若你未于此阶段内造成过伤害，你可以摸两张牌。",
+	[":shengxi"] = "弃牌阶段开始时，若你未于此回合内造成过伤害，你可以摸两张牌。",
 	["shoucheng"] = "守成",
 	[":shoucheng"] = "每当与你势力相同的一名角色于其回合外失去所有手牌后，你可以令其摸一张牌。",
 
