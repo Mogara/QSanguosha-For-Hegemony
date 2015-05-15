@@ -86,7 +86,7 @@ class TrustAI : public AI
 
 public:
     TrustAI(ServerPlayer *player);
-    ~TrustAI();
+    virtual ~TrustAI();
 
     virtual void activate(CardUseStruct &card_use);
     virtual Card::Suit askForSuit(const QString &);
