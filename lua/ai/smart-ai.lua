@@ -2973,7 +2973,7 @@ function SmartAI:getCardNeedPlayer(cards, friends_table, skillname)
 		end
 	end
 
-	if skillname ~= "transfer" then
+	if skillname ~= "WoodenOx" then
 		self:sort(self.enemies, "defense")
 		if #self.enemies > 0 and self.enemies[1]:isKongcheng() and self.enemies[1]:hasShownSkill("kongcheng") then
 			for _, acard in ipairs(cardtogive) do

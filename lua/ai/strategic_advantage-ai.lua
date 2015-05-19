@@ -883,7 +883,7 @@ wooden_ox_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("WoodenOxCard") or self.player:isKongcheng() or not self.player:hasTreasure("WoodenOx") then return end
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByUseValue(cards, true)
-	local card, friend = self:getCardNeedPlayer(cards)
+	local card, friend = self:getCardNeedPlayer(cards, self.friends_noself)
 	if card and friend and friend:objectName() ~= self.player:objectName() and (self:getOverflow() > 0 or self:isWeak(friend)) then
 		self.wooden_ox_assist = friend
 		return sgs.Card_Parse("@WoodenOxCard=" .. card:getEffectiveId())
