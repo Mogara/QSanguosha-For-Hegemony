@@ -374,7 +374,7 @@ function SmartAI:objectiveLevel(player)
 	if self.player:isFriendWith(player) then return -2 end
 	if self.room:alivePlayerCount() == 2 then return 5 end
 
-	if sgs.isRoleExpose() or global_room:getScenario() then
+	if sgs.isRoleExpose() then
 		if self.lua_ai:isFriend(player) then return -2
 		elseif self.lua_ai:isEnemy(player) then return 5
 		elseif self.lua_ai:relationTo(player) == sgs.AI_Neutrality then
@@ -668,7 +668,7 @@ function SmartAI:updatePlayers(update, resetAI)
 		sgs.gameProcess(true)
 	end
 
-	if (sgs.isRoleExpose() or global_room:getScenario()) then
+	if sgs.isRoleExpose() then
 		self.friends = {}
 		self.friends_noself = {}
 		local friends = sgs.QList2Table(self.lua_ai:getFriends())
@@ -1488,7 +1488,7 @@ function SmartAI:isFriend(other, another)
 		end
 		return false
 	end
-	if (sgs.isRoleExpose() or global_room:getScenario()) and self.lua_ai:relationTo(other) ~= sgs.AI_Neutrality then return self.lua_ai:isFriend(other) end
+	if sgs.isRoleExpose() and self.lua_ai:relationTo(other) ~= sgs.AI_Neutrality then return self.lua_ai:isFriend(other) end
 	if self.player:objectName() == other:objectName() then return true end
 	if self.player:isFriendWith(other) then return true end
 	local level = self:objectiveLevel(other)
@@ -1507,7 +1507,7 @@ function SmartAI:isEnemy(other, another)
 		end
 		return false
 	end
-	if (sgs.isRoleExpose() or global_room:getScenario()) and self.lua_ai:relationTo(other) ~= sgs.AI_Neutrality then return self.lua_ai:isEnemy(other) end
+	if sgs.isRoleExpose() and self.lua_ai:relationTo(other) ~= sgs.AI_Neutrality then return self.lua_ai:isEnemy(other) end
 	if self.player:objectName() == other:objectName() then return false end
 	local level = self:objectiveLevel(other)
 	if level > 0 then return true

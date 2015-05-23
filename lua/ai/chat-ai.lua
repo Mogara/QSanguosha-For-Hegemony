@@ -346,7 +346,7 @@ sgs.ai_chat_func[sgs.CardFinished].duoshi = function(self, player, data)
 end
 
 sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
-	if (sgs.isRoleExpose() or global_room:getScenario()) then return end
+	if sgs.isRoleExpose() then return end
 	local name1 =  sgs.Sanguosha:translate(self.player:getGeneralName())
 	local name2 =  sgs.Sanguosha:translate(self.player:getGeneral2Name())
 	local kingdom = sgs.Sanguosha:translate(self.player:getKingdom())
@@ -407,7 +407,7 @@ sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
 end
 
 sgs.ai_chat_func[sgs.DamageCaused].attackAnjiang = function(self, player, data)
-	if (sgs.isRoleExpose() or global_room:getScenario()) then return end
+	if sgs.isRoleExpose() then return end
 	local damage = data:toDamage()
 	local chat = {
 			"看看局势再说",
