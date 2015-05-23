@@ -155,19 +155,12 @@ sgs.ai_card_intention.RendeCard = function(self, card, from, tos)
 end
 
 sgs.dynamic_value.benefit.RendeCard = true
-local isInPile = function(player,id)
-	for _,pile in sgs.list(player:getPileNames())do
-		if pile:startsWith("&") or pile == "wooden_ox" then
-			if player:getPile(pile):contains(id) then return true end
-		end
-	end
-	return false
-end
+
 sgs.ai_view_as.wusheng = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	if (card_place ~= sgs.Player_PlaceSpecial or isInPile(player,card_id)) and (player:getLord() and player:getLord():hasShownSkill("shouyue") or card:isRed()) and not card:isKindOf("Peach") and not card:hasFlag("using") then
+	if (card_place ~= sgs.Player_PlaceSpecial or player:getHandPile():contains(card_id)) and (player:getLord() and player:getLord():hasShownSkill("shouyue") or card:isRed()) and not card:isKindOf("Peach") and not card:hasFlag("using") then
 		return ("slash:wusheng[%s:%s]=%d&wusheng"):format(suit, number, card_id)
 	end
 end
@@ -191,12 +184,8 @@ wusheng_skill.getTurnUseCard = function(self, inclusive)
 	if self:getCardsNum("Slash") < 2 or self.player:hasSkill("paoxiao") then disCrossbow = true end
 
 	local hecards = self.player:getCards("he")
-	for _,pile in sgs.list(self.player:getPileNames())do
-		if pile:startsWith("&") or pile == "wooden_ox" then
-			for _, id in sgs.qlist(self.player:getPile(pile)) do
-				hecards:prepend(sgs.Sanguosha:getCard(id))
-			end
-		end
+	for _, id in sgs.qlist(self.player:getHandPile()) do
+		hecards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	local cards = {}
 	for _, card in sgs.qlist(hecards) do
@@ -290,7 +279,7 @@ sgs.ai_view_as.longdan = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	if card_place == sgs.Player_PlaceHand or isInPile(player,card_id) then
+	if card_place == sgs.Player_PlaceHand or player:getHandPile():contains(card_id) then
 		if card:isKindOf("Jink") then
 			return ("slash:longdan[%s:%s]=%d&longdan"):format(suit, number, card_id)
 		elseif card:isKindOf("Slash") then
@@ -435,12 +424,8 @@ huoji_skill.name = "huoji"
 table.insert(sgs.ai_skills, huoji_skill)
 huoji_skill.getTurnUseCard = function(self)
 	local cards = self.player:getCards("h")
-	for _,pile in sgs.list(self.player:getPileNames())do
-		if pile:startsWith("&") or pile == "wooden_ox" then
-			for _, id in sgs.qlist(self.player:getPile(pile)) do
-				cards:prepend(sgs.Sanguosha:getCard(id))
-			end
-		end
+	for _, id in sgs.qlist(self.player:getHandPile()) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
 
@@ -502,7 +487,7 @@ sgs.ai_view_as.kanpo = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	if card_place == sgs.Player_PlaceHand or isInPile(player,card_id) then
+	if card_place == sgs.Player_PlaceHand or playe:getHandPile():contains(card_id) then
 		if card:isBlack() and not card:isKindOf("HegNullification") and not (player:hasSkill("jizhi") and card:isKindOf("Nullification")) then
 			return ("nullification:kanpo[%s:%s]=%d%s"):format(suit, number, card_id, "&kanpo")
 		end

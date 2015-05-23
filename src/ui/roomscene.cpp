@@ -2238,8 +2238,7 @@ void RoomScene::useSelectedCard()
     if (skill)
         dashboard->stopPending();
     else
-        foreach (const QString &pile, Self->getPileNames()) {
-        if (pile.startsWith("&") || pile == "wooden_ox")
+        foreach (const QString &pile, Self->getHandPileList(false)) {
             dashboard->retractPileCards(pile);
     }
 }

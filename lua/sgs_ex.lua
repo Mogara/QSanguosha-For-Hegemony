@@ -567,6 +567,8 @@ function sgs.CreateOneCardViewAsSkill(spec)
 			if string.endsWith(pat, "!") then
 				if sgs.Self:isJilei(to_select) then return false end
 				pat = string.sub(pat, 1, -2)
+			elseif spec.response_or_use and string.find(pat,"hand") then
+				pat = string.gsub(pat,"hand", table.concat(sgs.Self:getHandPileList(),","))
 			end
 			return sgs.Sanguosha:matchExpPattern(pat, sgs.Self, to_select)
 		end

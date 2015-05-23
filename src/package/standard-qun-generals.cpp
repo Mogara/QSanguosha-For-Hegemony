@@ -737,7 +737,7 @@ public:
         if (!TriggerSkill::triggerable(target))
             return QStringList();
 
-        if (target->isKongcheng() && target->getPile("wooden_ox").isEmpty()) {
+        if (target->isKongcheng() && target->getHandPile().isEmpty()) {
             bool has_black = false;
             for (int i = 0; i < 4; i++) {
                 const EquipCard *equip = target->getEquip(i);

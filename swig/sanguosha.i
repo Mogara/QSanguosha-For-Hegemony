@@ -275,6 +275,7 @@ public:
 	
 	//Xusine:
     QList<int> getHandPile() const;
+    QStringList getHandPileList(bool view_as_skill = true) const;
 
     void addHistory(const char *name, int times = 1);
     void clearHistory(const char *name = "");

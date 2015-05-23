@@ -1779,6 +1779,41 @@ sgs.ai_card_intention.ZhijianCard = -80
 sgs.ai_use_priority.ZhijianCard = sgs.ai_use_priority.RendeCard + 0.1
 sgs.ai_cardneed.zhijian = sgs.ai_cardneed.equip
 
+function SmartAI:isLihunTarget(player, drawCardNum)
+	player = player or self.player
+	drawCardNum = drawCardNum or 1
+	if type(player) == "table" then
+		if #player == 0 then return false end
+		for _, ap in ipairs(player) do
+			if self:isLihunTarget(ap, drawCardNum) then return true end
+		end
+		return false
+	end
+
+	local handCardNum = player:getHandcardNum() + drawCardNum
+	if not player:isMale() then return false end
+
+	local sb_diaochan = self.room:findPlayerBySkillName("lihun")
+	local lihun = sb_diaochan and not sb_diaochan:hasUsed("LihunCard") and not self:isFriend(sb_diaochan)
+
+	if not lihun then return false end
+
+	if sb_diaochan:getPhase() == sgs.Player_Play then
+		if (handCardNum - player:getHp() >= 2)
+			or (handCardNum > 0 and handCardNum - player:getHp() >= -1 and not sb_diaochan:faceUp()) then
+			return true
+		end
+	else
+		if sb_diaochan:faceUp() and not self:willSkipPlayPhase(sb_diaochan)
+			and self:playerGetRound(player) > self:playerGetRound(sb_diaochan) and handCardNum >= player:getHp() + 2 then
+			return true
+		end
+	end
+
+	return false
+end
+
+
 sgs.ai_skill_use["@@guzheng"] = function(self, data)
 	local card_ids = self.player:property("guzheng_allCards"):toString():split("+")
 	local who = self.room:getCurrent()

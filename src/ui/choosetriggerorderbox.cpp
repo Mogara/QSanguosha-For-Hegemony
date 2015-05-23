@@ -193,7 +193,8 @@ QString TriggerOptionButton::displayedTextOf(const QString &str)
             .arg(Sanguosha->translate(targetName));
     }
     if (time > 1)
-        text += " " + tr("*") + time;
+        //text += " " + tr("*") + time;
+        text += QString(" × %1").arg(time);
 
     return text;
 }

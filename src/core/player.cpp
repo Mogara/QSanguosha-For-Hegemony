@@ -1003,14 +1003,24 @@ QString Player::getPileName(int card_id) const
 QList<int> Player::getHandPile() const
 {
     QList<int> result;
-    foreach (const QString &pile, getPileNames()) {
-        if (pile.startsWith("&") || pile == "wooden_ox") {
+    foreach (const QString &pile, getHandPileList(false)) {
             foreach (int id, getPile(pile)) {
                 result.append(id);
             }
-        }
     }
     return result;
+}
+
+QStringList Player::getHandPileList(bool view_as_skill) const
+{
+    QStringList handlist;
+    if(view_as_skill)
+        handlist.append("hand");
+    foreach (const QString &pile, this->getPileNames()) {
+        if (pile.startsWith("&") || pile == "wooden_ox")
+            handlist.append(pile);
+    }
+    return handlist;
 }
 
 bool Player::pileOpen(const QString &pile_name, const QString &player) const
@@ -1637,6 +1647,10 @@ bool Player::isFriendWith(const Player *player) const
 
     if (this == player)
         return true;
+    if(!player->property("change_hero_list").toStringList().isEmpty())
+        if(Sanguosha->getGeneral(player->property("change_hero_list").toStringList().last())->getKingdom() == kingdom)
+            return kingdom == player->kingdom;
+
 
     if (role == "careerist" || player->role == "careerist")
         return false;

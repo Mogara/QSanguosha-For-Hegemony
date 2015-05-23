@@ -780,10 +780,8 @@ void Dashboard::skillButtonDeactivated()
 
 void Dashboard::selectAll()
 {
-    foreach (const QString &pile, Self->getPileNames()) {
-        if (pile.startsWith("&") || pile == "wooden_ox")
+    foreach (const QString &pile, Self->getHandPileList(false))
             retractPileCards(pile);
-    }
     selectCards(".");
 }
 
@@ -1236,10 +1234,9 @@ void Dashboard::disableAllCards()
 void Dashboard::enableCards()
 {
     m_mutexEnableCards.lock();
-    foreach (const QString &pile, Self->getPileNames()) {
-        if (pile.startsWith("&") || pile == "wooden_ox")
-            expandPileCards(pile);
-    }
+    foreach (const QString &pile, Self->getHandPileList(false))
+        expandPileCards(pile);
+
     foreach (CardItem *card_item, m_handCards) {
         const bool frozen = !card_item->getCard()->isAvailable(Self);
         card_item->setFrozen(frozen, false);
@@ -1276,15 +1273,11 @@ void Dashboard::startPending(const ViewAsSkill *skill)
 
     retractAllSkillPileCards();
     if (expand) {
-        foreach (const QString &pile, Self->getPileNames()) {
-            if (pile.startsWith("&") || pile == "wooden_ox")
-                expandPileCards(pile);
-        }
+        foreach (const QString &pile, Self->getHandPileList(false))
+            expandPileCards(pile);
     } else {
-        foreach (const QString &pile, Self->getPileNames()) {
-            if (pile.startsWith("&") || pile == "wooden_ox")
-                retractPileCards(pile);
-        }
+       foreach (const QString &pile, Self->getHandPileList(false))
+            retractPileCards(pile);
         if (skill && !skill->getExpandPile().isEmpty()) {
             foreach(const QString &pile_name, skill->getExpandPile().split(","))
                 expandPileCards(pile_name);
@@ -1311,10 +1304,9 @@ void Dashboard::stopPending()
 
     viewAsSkill = NULL;
     pendingCard = NULL;
-    foreach (const QString &pile, Self->getPileNames()) {
-        if (pile.startsWith("&") || pile == "wooden_ox")
-            retractPileCards(pile);
-    }
+    foreach (const QString &pile, Self->getHandPileList())
+        retractPileCards(pile);
+
     emit card_selected(NULL);
 
     foreach(CardItem *item, m_handCards)
@@ -1394,7 +1386,7 @@ void Dashboard::retractPileCards(const QString &pile_name)
 void Dashboard::retractAllSkillPileCards()
 {
     foreach (const QString &pileName, _m_pile_expanded) {
-        if (!(pileName.startsWith("&") || pileName == "wooden_ox"))
+        if (!Self->getHandPileList(false).contains(pileName))
             retractPileCards(pileName);
     }
 }

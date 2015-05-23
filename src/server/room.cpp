@@ -2265,6 +2265,8 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
     if (player->getGeneral2())
         player->removeGeneral(false);
     QStringList names;
+    QStringList change_list = player->property("change_hero_list").toStringList();
+    QStringList duanchang = player->property("Duanchang").toStringList();
     int max_hp = 0;
     if (!general1_name.isEmpty()){
         foreach (const Skill *skill, Sanguosha->getGeneral(general1_name)->getSkillList(true, true)) {
@@ -2286,6 +2288,9 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
                 notifyProperty(p, player, "general");
         names.append(general1_name);
         setPlayerProperty(player, "general1_showed", show_flags.contains("h"));
+        if(duanchang.contains("head"))
+            duanchang.removeAll("head");
+
     }
     if (!general2_name.isEmpty()){
         foreach (const Skill *skill, Sanguosha->getGeneral(general2_name)->getSkillList(true, false)) {
@@ -2307,37 +2312,60 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name,co
                 notifyProperty(p, player, "general2");
         names.append(general2_name);
         setPlayerProperty(player, "general2_showed", show_flags.contains("d"));
+        if(duanchang.contains("deputy"))
+            duanchang.removeAll("deputy");
     }
+    setPlayerProperty(player,"Duanchang",duanchang);
     revivePlayer(player);
     if(resetHp){
         if(general1_name.isEmpty() || general2_name.isEmpty())
             max_hp *= 2;
         setPlayerMark(player, "HalfMaxHpLeft", max_hp % 2);
         player->setMaxHp(max_hp / 2);
-        foreach (ServerPlayer *player, m_players) {
-            broadcastProperty(player, "maxhp");
-        }
+        broadcastProperty(player, "maxhp");
     }
     setPlayerFlag(player, "Global_DFDebut");
     setTag(player->objectName(), names);
-    setPlayerProperty(player, "kingdom", kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() :kingdom);
-    setPlayerProperty(player, "role", HegemonyMode::GetMappedRole(kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() :kingdom));
+    QString role = HegemonyMode::GetMappedRole(kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() :kingdom);
+    if (role.isEmpty())
+        role = player->getGeneral()->getKingdom();
+    if(show_flags.contains("h") || show_flags.contains("d") || !kingdom.isEmpty()){
+        setPlayerProperty(player, "kingdom", kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() :kingdom);
+        foreach (ServerPlayer *p,getAlivePlayers())
+            notifyProperty(p,player,"role",role);
+    } else {
+//        foreach (ServerPlayer *p,getOtherPlayers(player))
+//            notifyProperty(p,player,"kingdom","god");
+        //player->setKingdom();
+        notifyProperty(player,player,"role",role);
+        player->setRole(role);
+    }
     if(full_state){
         foreach (const Skill *skill, player->getSkillList(false,true)) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
-                player->setMark(skill->getLimitMark(), 1);
+            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()){
+                player->addMark(skill->getLimitMark());
+                JsonArray arg;
+                arg << player->objectName();
+                arg << skill->getLimitMark();
+                arg << 1;
+                doNotify(player,S_COMMAND_SET_MARK, arg);
+            }
         }
         player->setChained(false);
         broadcastProperty(player, "chained");
 
         player->setFaceUp(true);
         broadcastProperty(player, "faceup");
+        if (Sanguosha->getGeneral(general1_name)->isCompanionWith(general2_name))
+            addPlayerMark(player, "CompanionEffect");
     }
     if (show_flags.contains("h"))
         player->showGeneral(true,false);
     if (show_flags.contains("d"))
         player->showGeneral(false,false);
     resetAI(player);
+    change_list.append(names.join("+"));
+    setPlayerProperty(player,"change_hero_list",change_list);
 }
 
 lua_State *Room::getLuaState() const
@@ -2910,8 +2938,18 @@ void Room::run()
                         notifyProperty(p, player, "general2");
                     notifyProperty(player, player, "general2", generals2[i]);
                 }
-                setPlayerProperty(player, "kingdom", kingdoms[i]);
-                setPlayerProperty(player, "role", HegemonyMode::GetMappedRole(kingdoms[i]));
+                QString role = HegemonyMode::GetMappedRole(kingdoms[i]);
+                if (role.isEmpty())
+                    role = player->getGeneral()->getKingdom();
+                if(scenario->exposeRoles()){
+                    setPlayerProperty(player, "kingdom", kingdoms[i]);
+                    setPlayerProperty(player, "role", role);
+                } else {
+//                    foreach (ServerPlayer *p,getOtherPlayers(player))
+//                        notifyProperty(p,player,"kingdom","god");
+                    notifyProperty(player,player,"role",role);
+                    player->setRole(role);
+                }
                 setPlayerProperty(player, "scenario_role_shown", scenario->exposeRoles());
             }
         }

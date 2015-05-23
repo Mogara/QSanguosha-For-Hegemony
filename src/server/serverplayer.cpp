@@ -583,12 +583,10 @@ bool ServerPlayer::hasNullification() const
         if (card->isKindOf("Nullification"))
             return true;
     }
-    foreach (const QString &pile, getPileNames()) {
-        if (pile.startsWith("&") || pile == "wooden_ox") {
-            foreach (int id, getPile(pile)) {
-                if (Sanguosha->getCard(id)->isKindOf("Nullification"))
-                    return true;
-            }
+    foreach (const QString &pile, getHandPileList(false)) {
+        foreach (int id, getPile(pile)) {
+            if (Sanguosha->getCard(id)->isKindOf("Nullification"))
+                return true;
         }
     }
     foreach (const Skill *skill, getVisibleSkillList(true)) {

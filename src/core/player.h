@@ -251,6 +251,7 @@ public:
 
     //Xusine:
     QList<int> getHandPile() const;
+    QStringList getHandPileList(bool view_as_skill = true) const;
 
     bool pileOpen(const QString &pile_name, const QString &player) const;
     void setPileOpen(const QString &pile_name, const QString &player);
