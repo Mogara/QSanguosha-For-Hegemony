@@ -6003,11 +6003,13 @@ void Room::sendLog(const LogMessage &log)
 
 void Room::sendCompulsoryTriggerLog(ServerPlayer *player, const QString &skill_name, bool notify_skill)
 {
-    LogMessage log;
-    log.type = "#TriggerSkill";
-    log.arg = skill_name;
-    log.from = player;
-    sendLog(log);
+    if (player->tag.value("JustShownSkill", QString()) != skill_name) {
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.arg = skill_name;
+        log.from = player;
+        sendLog(log);
+    }
     if (notify_skill)
         notifySkillInvoked(player, skill_name);
 }

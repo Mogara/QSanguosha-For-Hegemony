@@ -1325,17 +1325,17 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (player->hasShownSkill(this)) {
-            room->sendCompulsoryTriggerLog(player, objectName());
-        } else if (!player->askForSkillInvoke(this, data))
-            return false;
+        if (player->hasShownSkill(this) || player->askForSkillInvoke(this, data)) {
+            room->broadcastSkillInvoke(objectName(), player);
+            return true;
+        }
 
-        room->broadcastSkillInvoke(objectName(), player);
-        return true;
+        return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *liushan, QVariant &data, ServerPlayer *) const
     {
+        room->sendCompulsoryTriggerLog(liushan, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
 
         QVariant dataforai = QVariant::fromValue(liushan);
