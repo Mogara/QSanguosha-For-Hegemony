@@ -181,7 +181,9 @@ public:
 
     virtual const Card *viewAs() const
     {
-        return new KurouCard;
+        KurouCard *kr = new KurouCard;
+        kr->setShowSkill(objectName());
+        return kr;
     }
 };
 
