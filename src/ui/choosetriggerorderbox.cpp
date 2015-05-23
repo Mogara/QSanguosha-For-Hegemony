@@ -194,7 +194,7 @@ QString TriggerOptionButton::displayedTextOf(const QString &str)
     }
     if (time > 1)
         //text += " " + tr("*") + time;
-        text += QString(" × %1").arg(time);
+        text += QString(" %1 %2").arg(tr("*")).arg(time);
 
     return text;
 }
