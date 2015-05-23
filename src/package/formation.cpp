@@ -492,23 +492,14 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who /* = NULL */) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who /* = NULL */) const
     {
         if (ask_who == NULL)
             ask_who = player;
 
         if (ask_who->hasShownSkill("heyi"))
-            return true;
+            room->broadcastSkillInvoke("heyi", ask_who);
 
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who /* = NULL */) const
-    {
-        if (ask_who == NULL)
-            ask_who = player;
-
-        room->broadcastSkillInvoke("heyi", ask_who);
         return false;
     }
 };
