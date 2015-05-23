@@ -246,6 +246,8 @@ sgs.paoxiao_keep_value = {
 	ExNihilo = 4.7
 }
 
+sgs.ai_skill_choice["paoxiaoVsCrossbow"] = "Crossbow"
+
 
 local longdan_skill = {}
 longdan_skill.name = "longdan"
