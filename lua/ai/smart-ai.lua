@@ -2948,7 +2948,7 @@ function SmartAI:getCardNeedPlayer(cards, friends_table, skillname)
 		end
 	end
 
-	if skillname ~= "transfer" then
+	if skillname ~= "WoodenOx" then
 		self:sort(self.enemies, "defense")
 		if #self.enemies > 0 and self.enemies[1]:isKongcheng() and self.enemies[1]:hasShownSkill("kongcheng") then
 			for _, acard in ipairs(cardtogive) do
@@ -5438,9 +5438,9 @@ function hasNiepanEffect(player)
 end
 
 function sgs.isRoleExpose()
-	local mode = string.lower(global_room:getMode())
-    if mode:find("0") then return false end
-	if global_room:getMode() == "jiange_defense" then return true end
+	--local mode = string.lower(global_room:getMode())
+    --if mode:find("0") then return false end
+	--if global_room:getMode() == "jiange_defense" then return true end
 	if global_room:getScenario() and global_room:getScenario():exposeRoles() then return true end
 	return false
 end

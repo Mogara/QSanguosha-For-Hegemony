@@ -1824,10 +1824,9 @@ sgs.ai_skill_use["@@guzheng"] = function(self, data)
 		end
 	end
 
-	if self:isLihunTarget(self.player, #card_ids - 1) then return "." end
 	local invoke = (self:isFriend(who) and not (who:hasSkill("kongcheng") and who:isKongcheng()))
-					or (#card_ids >= 3 and not self.player:hasSkill("manjuan"))
-					or (#card_ids == 2 and not self:hasSkills(sgs.cardneed_skill, who) and not self.player:hasSkill("manjuan"))
+					or #card_ids >= 3
+					or (#card_ids == 2 and not self:hasSkills(sgs.cardneed_skill, who))
 					or (self:isEnemy(who) and who:hasSkill("kongcheng") and who:isKongcheng())
 	if not invoke then return "." end
 

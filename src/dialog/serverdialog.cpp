@@ -255,7 +255,7 @@ QWidget *ServerDialog::createAdvancedTab()
 
     port_edit = new QLineEdit;
     port_edit->setText(QString::number(Config.ServerPort));
-    port_edit->setValidator(new QIntValidator(1, 9999, port_edit));
+    port_edit->setValidator(new QIntValidator(1000, 65535, port_edit));
 
     layout->addLayout(HLay(forbid_same_ip_checkbox, disable_chat_checkbox));
     layout->addWidget(random_seat_checkbox);
