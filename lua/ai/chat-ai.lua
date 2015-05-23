@@ -223,7 +223,7 @@ end
 
 sgs.ai_chat_func[sgs.CardFinished].analeptic = function(self, player, data)
 	local use = data:toCardUse()
-	if use.card:isKindOf("Analeptic") and use.card:getSkillName() ~= "zhendu" then
+	if use.card and use.card:isKindOf("Analeptic") and use.card:getSkillName() ~= "zhendu" then
 		local to = use.to:first()
 		if to:getMark("drank") == 0 then return end
 		local suit = { "spade", "heart", "club", "diamond" }
