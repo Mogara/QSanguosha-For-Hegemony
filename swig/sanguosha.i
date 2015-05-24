@@ -360,6 +360,8 @@ public:
     QList<const Player *> getFormation() const;
 
     virtual QStringList getBigKingdoms(const char *reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const = 0;
+
+    QStringList getAcquiredSkills(const QString &flags) const;
 };
 
 %extend Player {
