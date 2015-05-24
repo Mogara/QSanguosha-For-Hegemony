@@ -1646,10 +1646,6 @@ bool Player::isFriendWith(const Player *player) const
 
     if (this == player)
         return true;
-    if (!player->property("change_hero_list").toStringList().isEmpty())
-        if (Sanguosha->getGeneral(player->property("change_hero_list").toStringList().last())->getKingdom() == kingdom)
-            return kingdom == player->kingdom;
-
 
     if (role == "careerist" || player->role == "careerist")
         return false;
