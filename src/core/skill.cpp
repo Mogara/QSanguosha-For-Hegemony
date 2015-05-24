@@ -72,8 +72,7 @@ QString Skill::getDescription(bool inToolTip) const
     if (des_src == ":" + skill_name)
         return desc;
 
-    foreach(const QString &skill_type, Sanguosha->getSkillColorMap().keys())
-    {
+    foreach (const QString &skill_type, Sanguosha->getSkillColorMap().keys()) {
         QString to_replace = Sanguosha->translate(skill_type);
         if (to_replace == skill_type) continue;
         QString color_str = Sanguosha->getSkillColor(skill_type).name();

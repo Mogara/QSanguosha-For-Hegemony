@@ -740,7 +740,7 @@ bool Player::hasTreasure(const QString &treasure_name) const
 QList<const Card *> Player::getJudgingArea() const
 {
     QList<const Card *>cards;
-    foreach (int card_id, judging_area)
+    foreach(int card_id, judging_area)
         cards.append(Sanguosha->getCard(card_id));
     return cards;
 }
@@ -991,7 +991,7 @@ QStringList Player::getPileNames() const
 
 QString Player::getPileName(int card_id) const
 {
-    foreach (const QString &pile_name, piles.keys())  {
+    foreach (const QString &pile_name, piles.keys()) {
         QList<int> pile = piles[pile_name];
         if (pile.contains(card_id))
             return pile_name;
@@ -1004,9 +1004,8 @@ QList<int> Player::getHandPile() const
 {
     QList<int> result;
     foreach (const QString &pile, getHandPileList(false)) {
-            foreach (int id, getPile(pile)) {
-                result.append(id);
-            }
+        foreach(int id, getPile(pile))
+            result.append(id);
     }
     return result;
 }
@@ -1014,7 +1013,7 @@ QList<int> Player::getHandPile() const
 QStringList Player::getHandPileList(bool view_as_skill) const
 {
     QStringList handlist;
-    if(view_as_skill)
+    if (view_as_skill)
         handlist.append("hand");
     foreach (const QString &pile, this->getPileNames()) {
         if (pile.startsWith("&") || pile == "wooden_ox")
@@ -1115,9 +1114,10 @@ QList<const Skill *> Player::getSkillList(bool include_equip, bool visible_only)
                 skillList << skill;
             if (skill->isVisible() && !visible_only) {
                 QList<const Skill *> related_skill = Sanguosha->getRelatedSkills(skill->objectName());
-                foreach(const Skill *s, related_skill)
+                foreach (const Skill *s, related_skill) {
                     if (!skillList.contains(s) && !s->isVisible())
                         skillList << s;
+                }
             }
         }
     }
@@ -1186,8 +1186,7 @@ QString Player::getSkillDescription(bool inToolTip) const
     QString description = QString();
     QString color = inToolTip ? Config.SkillDescriptionInToolTipColor.name() : Config.SkillDescriptionInOverviewColor.name();
 
-    foreach(const Skill *skill, getVisibleSkillList())
-    {
+    foreach (const Skill *skill, getVisibleSkillList()) {
         QString skill_name = Sanguosha->translate(skill->objectName());
         QString desc = skill->getDescription(inToolTip);
         desc.replace("\n", "<br/>");
@@ -1647,8 +1646,8 @@ bool Player::isFriendWith(const Player *player) const
 
     if (this == player)
         return true;
-    if(!player->property("change_hero_list").toStringList().isEmpty())
-        if(Sanguosha->getGeneral(player->property("change_hero_list").toStringList().last())->getKingdom() == kingdom)
+    if (!player->property("change_hero_list").toStringList().isEmpty())
+        if (Sanguosha->getGeneral(player->property("change_hero_list").toStringList().last())->getKingdom() == kingdom)
             return kingdom == player->kingdom;
 
 
@@ -1719,9 +1718,10 @@ QString Player::getNextName() const
 
 Player *Player::getLast(bool ignoreRemoved) const
 {
-    foreach (Player *p, parent()->findChildren<Player *>())
+    foreach (Player *p, parent()->findChildren<Player *>()) {
         if (p->getNext(ignoreRemoved) == this)
             return p;
+    }
     return NULL;
 }
 

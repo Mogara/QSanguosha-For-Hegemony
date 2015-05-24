@@ -553,11 +553,13 @@ public:
 class LuaSceneRule : public ScenarioRule
 {
 public:
-    LuaSceneRule(LuaScenario *parent,TriggerSkill *t);
+    LuaSceneRule(LuaScenario *parent, TriggerSkill *t);
+
     virtual int getPriority() const
     {
         return origin->getPriority();
     }
+
     virtual bool effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
 
 protected:

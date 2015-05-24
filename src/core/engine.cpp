@@ -87,15 +87,15 @@ Engine::Engine()
     DoLuaScript(lua, "lua/config.lua");
 
     QStringList stringlist_sp_convert = GetConfigFromLuaState(lua, "convert_pairs").toStringList();
-    foreach (const QString &cv_pair, stringlist_sp_convert)  {
+    foreach (const QString &cv_pair, stringlist_sp_convert) {
         QStringList pairs = cv_pair.split("->");
         QStringList cv_to = pairs.at(1).split("|");
-        foreach (const QString &to, cv_to)
+        foreach(const QString &to, cv_to)
             sp_convert_pairs.insertMulti(pairs.at(0), to);
     }
 
     QStringList package_names = GetConfigFromLuaState(lua, "package_names").toStringList();
-    foreach (const QString &name, package_names)
+    foreach(const QString &name, package_names)
         addPackage(name);
 
     metaobjects.insert("TransferCard", &TransferCard::staticMetaObject);
@@ -183,7 +183,7 @@ void Engine::addSkills(const QList<const Skill *> &all_skills)
         if (!skill) {
             QMessageBox::warning(NULL, "", tr("The engine tries to add an invalid skill"));
             continue;
-         }
+        }
         if (skills.contains(skill->objectName()))
             QMessageBox::warning(NULL, "", tr("Duplicated skill : %1").arg(skill->objectName()));
 
@@ -294,7 +294,7 @@ void Engine::addPackage(Package *package)
         addSkills(general->findChildren<const Skill *>());
         foreach (const QString &skill_name, general->getExtraSkillSet()) {
             if (skill_name.startsWith("#")) continue;
-            foreach (const Skill *related, getRelatedSkills(skill_name))
+            foreach(const Skill *related, getRelatedSkills(skill_name))
                 general->addSkill(related->objectName());
         }
         generalList << general;
@@ -304,7 +304,7 @@ void Engine::addPackage(Package *package)
     }
 
     QList<const QMetaObject *> metas = package->getMetaObjects();
-    foreach (const QMetaObject *meta, metas)
+    foreach(const QMetaObject *meta, metas)
         metaobjects.insert(meta->className(), meta);
 }
 
@@ -330,7 +330,7 @@ QString Engine::translate(const QString &toTranslate) const
 {
     QStringList list = toTranslate.split("\\");
     QString res;
-    foreach (const QString &str, list)
+    foreach(const QString &str, list)
         res.append(translations.value(str, str));
     return res;
 }
@@ -379,7 +379,7 @@ Card::HandlingMethod Engine::getCardHandlingMethod(const QString &method_name) c
 QList<const Skill *> Engine::getRelatedSkills(const QString &skill_name) const
 {
     QList<const Skill *> skills;
-    foreach (const QString &name, related_skills.values(skill_name))
+    foreach(const QString &name, related_skills.values(skill_name))
         skills << getSkill(name);
 
     return skills;
@@ -390,7 +390,7 @@ const Skill *Engine::getMainSkill(const QString &skill_name) const
     const Skill *skill = getSkill(skill_name);
     if (!skill || skill->isVisible() || related_skills.contains(skill_name)) return skill;
     foreach (const QString &key, related_skills.keys()) {
-        foreach (const QString &name, related_skills.values(key))
+        foreach(const QString &name, related_skills.values(key))
             if (name == skill_name) return getSkill(key);
     }
     return skill;
@@ -602,7 +602,7 @@ Card *Engine::cloneCard(const QString &name, Card::Suit suit, int number, const 
     if (!card) return NULL;
     card->clearFlags();
     if (!flags.isEmpty()) {
-        foreach (const QString &flag, flags)
+        foreach(const QString &flag, flags)
             card->setFlags(flag);
     }
     return card;
@@ -843,9 +843,8 @@ int Engine::getCardCount() const
 QStringList Engine::getGeneralNames() const
 {
     QStringList generalNames;
-    foreach (const General *general, generalList) {
+    foreach (const General *general, generalList)
         generalNames << general->objectName();
-    }
     return generalNames;
 }
 
@@ -866,9 +865,8 @@ QStringList Engine::getLimitedGeneralNames() const
     }
 
     QStringList banned_generals = Config.value("Banlist/Generals", "").toStringList();
-    foreach (const QString &banned, banned_generals) {
+    foreach (const QString &banned, banned_generals)
         general_names.removeOne(banned);
-    }
 
     return general_names;
 }
@@ -1010,9 +1008,8 @@ int Engine::correctDistance(const Player *from, const Player *to) const
 {
     int correct = 0;
 
-    foreach (const DistanceSkill *skill, distance_skills) {
+    foreach (const DistanceSkill *skill, distance_skills)
         correct += skill->getCorrect(from, to);
-    }
 
     return correct;
 }
