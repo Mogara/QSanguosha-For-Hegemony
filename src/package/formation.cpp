@@ -1622,7 +1622,6 @@ public:
             QString to_change = room->askForGeneral(player, avaliable_generals, QString(), true, "DragonPhoenix", dfowner->getKingdom());
 
             if (!to_change.isEmpty()) {
-//                player->removeGeneral(false);
                 room->doDragonPhoenix(player, to_change, QString(), false, dfowner->getKingdom(), true, "h");
 //                QStringList change_list;
 //                change_list << to_change;
@@ -1663,11 +1662,6 @@ public:
 
 //                room->setPlayerProperty(player, "kingdom", dfowner->getKingdom());
 //                room->setPlayerProperty(player, "role", HegemonyMode::GetMappedRole(dfowner->getKingdom()));
-
-                foreach (const Skill *skill, Sanguosha->getGeneral(to_change)->getSkillList(true, true)) {
-                    if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
-                        room->setPlayerMark(player, skill->getLimitMark(), 1);
-                }
 
                 player->drawCards(1);
             }

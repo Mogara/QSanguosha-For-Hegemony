@@ -2235,40 +2235,64 @@ void Room::changeHero(ServerPlayer *player, const QString &new_general, bool ful
     QList<const TriggerSkill *> game_start;
     const General *gen = isSecondaryHero ? player->getGeneral2() : player->getGeneral();
     if (gen) {
-        foreach(const Skill *skill, gen->getSkillList(true, !isSecondaryHero))
-        {
+        foreach (const Skill *skill, gen->getSkillList(true, !isSecondaryHero)) {
             if (skill->inherits("TriggerSkill")) {
                 const TriggerSkill *trigger = qobject_cast<const TriggerSkill *>(skill);
                 thread->addTriggerSkill(trigger);
-                if (invokeStart && trigger->getTriggerEvents().contains(GameStart)
-                    && !trigger->triggerable(GameStart, this, player, void_data).isEmpty())
-                    game_start << trigger;
             }
             if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
                 setPlayerMark(player, skill->getLimitMark(), 1);
         }
     }
     if (invokeStart) {
-        foreach(const TriggerSkill *skill, game_start)
-            skill->effect(GameStart, this, player, void_data, player); //temp change for this
+        foreach (const TriggerSkill *skill, game_start) {
+            if (skill->cost(GameStart, this, player, void_data, player))
+                skill->effect(GameStart, this, player, void_data, player); //temp change for this
+        }
     }
     resetAI(player);
 }
 
 void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, const QString &general2_name, bool full_state, const QString &kingdom, bool sendLog, const QString &show_flags, bool resetHp)
 {
+    QStringList names;
+    names << player->getActualGeneral1Name() << player->getActualGeneral2Name();
+    QStringList names_orig = names;
+    names_orig.removeAll("sujiang");
+    names_orig.removeAll("sujiangf");
     if (player->isAlive())
         return;
     if (player->getGeneral())
         player->removeGeneral(true);
     if (player->getGeneral2())
         player->removeGeneral(false);
-    QStringList names;
-    QStringList change_list = player->property("change_hero_list").toStringList();
+
+    QVariant void_data;
+    QList<const TriggerSkill *> game_start;
+
     QStringList duanchang = player->property("Duanchang").toStringList();
     int max_hp = 0;
     if (!general1_name.isEmpty()) {
+        if (duanchang.contains("head"))
+            duanchang.removeAll("head");
+
+        JsonArray arg;
+        arg << (int)S_GAME_EVENT_CHANGE_HERO;
+        arg << player->objectName();
+        arg << general1_name;
+        arg << false;
+        arg << false;
+        doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
+
         foreach (const Skill *skill, Sanguosha->getGeneral(general1_name)->getSkillList(true, true)) {
+            if (skill->inherits("TriggerSkill")) {
+                const TriggerSkill *tr = qobject_cast<const TriggerSkill *>(skill);
+                if (tr != NULL) {
+                    thread->addTriggerSkill(tr);
+                    if (tr->getTriggerEvents().contains(GameStart) && !tr->triggerable(GameStart, this, player, void_data).isEmpty())
+                        game_start << tr;
+                }
+            }
             player->addSkill(skill->objectName());
             JsonArray args;
             args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
@@ -2277,46 +2301,61 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
             args << true;
             doNotify(player, QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
-        changeHero(player, general1_name, full_state, true, false, sendLog);
-        max_hp += Sanguosha->getGeneral(general1_name)->getDoubleMaxHp();
-        player->setGeneralName("anjiang");
+
+        changePlayerGeneral(player, "anjiang");
         player->setActualGeneral1Name(general1_name);
         notifyProperty(player, player, "actual_general1");
-        if (!show_flags.contains("h")) {
-            foreach(ServerPlayer *p, getOtherPlayers(player))
-                notifyProperty(p, player, "general");
-        }
-        names.append(general1_name);
-        setPlayerProperty(player, "general1_showed", show_flags.contains("h"));
-        if (duanchang.contains("head"))
-            duanchang.removeAll("head");
+        notifyProperty(player, player, "general", general1_name);
 
+        max_hp += Sanguosha->getGeneral(general1_name)->getDoubleMaxHp();
+        names[0] = general1_name;
+        setPlayerProperty(player, "general1_showed", false);
     }
     if (!general2_name.isEmpty()) {
-        foreach (const Skill *skill, Sanguosha->getGeneral(general2_name)->getSkillList(true, false)) {
-            player->addSkill(skill->objectName(), false);
+        if (duanchang.contains("deputy"))
+            duanchang.removeAll("deputy");
+
+        JsonArray arg;
+        arg << (int)S_GAME_EVENT_CHANGE_HERO;
+        arg << player->objectName();
+        arg << general2_name;
+        arg << true;
+        arg << false;
+        doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
+
+
+        foreach (const Skill *skill, Sanguosha->getGeneral(general2_name)->getSkillList(true, true)) {
+            if (skill->inherits("TriggerSkill")) {
+                const TriggerSkill *tr = qobject_cast<const TriggerSkill *>(skill);
+                if (tr != NULL) {
+                    thread->addTriggerSkill(tr);
+                    if (tr->getTriggerEvents().contains(GameStart) && !tr->triggerable(GameStart, this, player, void_data).isEmpty())
+                        game_start << tr;
+                }
+            }
+            player->addSkill(skill->objectName());
             JsonArray args;
             args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
             args << player->objectName();
             args << skill->objectName();
-            args << false;
+            args << true;
             doNotify(player, QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
-        max_hp += Sanguosha->getGeneral(general2_name)->getDoubleMaxHp();
-        changeHero(player, general2_name, full_state, true, true, sendLog);
-        player->setGeneral2Name("anjiang");
+
+        changePlayerGeneral2(player, "anjiang");
         player->setActualGeneral2Name(general2_name);
         notifyProperty(player, player, "actual_general2");
-        if (!show_flags.contains("d"))
-            foreach(ServerPlayer *p, getOtherPlayers(player))
-            notifyProperty(p, player, "general2");
-        names.append(general2_name);
-        setPlayerProperty(player, "general2_showed", show_flags.contains("d"));
-        if (duanchang.contains("deputy"))
-            duanchang.removeAll("deputy");
+        notifyProperty(player, player, "general2", general2_name);
+
+        max_hp += Sanguosha->getGeneral(general2_name)->getDoubleMaxHp();
+        names[1] = general1_name;
+        setPlayerProperty(player, "general2_showed", false);
     }
+
     setPlayerProperty(player, "Duanchang", duanchang);
+
     revivePlayer(player);
+
     if (resetHp) {
         if (general1_name.isEmpty() || general2_name.isEmpty())
             max_hp *= 2;
@@ -2324,33 +2363,42 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         player->setMaxHp(max_hp / 2);
         broadcastProperty(player, "maxhp");
     }
+
     setPlayerFlag(player, "Global_DFDebut");
+
     setTag(player->objectName(), names);
+
+    player->setKingdom(Sanguosha->getGeneral(general1_name)->getKingdom());
+    if (show_flags.isEmpty())
+        notifyProperty(player, player, "kingdom");
+    else
+        broadcastProperty(player, "kingdom");
     QString role = HegemonyMode::GetMappedRole(kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() : kingdom);
     if (role.isEmpty())
         role = player->getGeneral()->getKingdom();
-    if (show_flags.contains("h") || show_flags.contains("d") || !kingdom.isEmpty()) {
-        setPlayerProperty(player, "kingdom", kingdom.isEmpty() ? Sanguosha->getGeneral(general1_name)->getKingdom() : kingdom);
-        foreach(ServerPlayer *p, getAlivePlayers())
-            notifyProperty(p, player, "role", role);
-    } else {
-//        foreach (ServerPlayer *p,getOtherPlayers(player))
-//            notifyProperty(p,player,"kingdom","god");
-        //player->setKingdom();
-        notifyProperty(player, player, "role", role);
-        player->setRole(role);
-    }
-    if (full_state) {
-        foreach (const Skill *skill, player->getSkillList(false, true)) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()) {
-                player->setMark(skill->getLimitMark(), 1);
-                JsonArray arg;
-                arg << player->objectName();
-                arg << skill->getLimitMark();
-                arg << 1;
-                doNotify(player, S_COMMAND_SET_MARK, arg);
-            }
+    player->setRole(role);
+    if (show_flags.isEmpty())
+        notifyProperty(player, player, "role");
+    else
+        broadcastProperty(player, "role");
+
+    foreach (const Skill *skill, player->getSkillList(false, true)) {
+        if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()) {
+            player->setMark(skill->getLimitMark(), 1);
+            JsonArray arg;
+            arg << player->objectName();
+            arg << skill->getLimitMark();
+            arg << 1;
+            doNotify(player, S_COMMAND_SET_MARK, arg);
         }
+    }
+
+    foreach (const TriggerSkill *skill, game_start) {
+        if (skill->cost(GameStart, this, player, void_data, player))
+            skill->effect(GameStart, this, player, void_data, player);
+    }
+
+    if (full_state) {
         player->setChained(false);
         broadcastProperty(player, "chained");
 
@@ -2359,13 +2407,28 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         if (Sanguosha->getGeneral(general1_name)->isCompanionWith(general2_name))
             setPlayerMark(player, "CompanionEffect", 1);
     }
-    if (show_flags.contains("h"))
-        player->showGeneral(true, false);
-    if (show_flags.contains("d"))
-        player->showGeneral(false, false);
+
+    if (sendLog) {
+        LogMessage l;
+        l.type = "#DragonPhoenixRevive" + QString::number(names_orig.length());
+        l.from = player;
+        l.to << player;
+        if (names_orig.length() > 0)
+            l.arg = names_orig.first();
+        if (names_orig.length() > 1)
+            l.arg2 = names_orig.last();
+
+        this->sendLog(l);
+    }
+
     resetAI(player);
-    change_list.append(names.join("+"));
-    setPlayerProperty(player, "change_hero_list", change_list);
+
+    player->setSkillsPreshowed();
+
+    if (show_flags.contains("h"))
+        player->showGeneral(true, false, false);
+    if (show_flags.contains("d"))
+        player->showGeneral(false, false, false);
 }
 
 lua_State *Room::getLuaState() const

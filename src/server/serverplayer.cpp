@@ -1370,14 +1370,15 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
 
         sendSkillsToOthers();
 
-        if (!property("Duanchang").toStringList().contains("head"))
+        if (!property("Duanchang").toStringList().contains("head")) {
             foreach (const Skill *skill, getHeadSkillList()) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && hasShownSkill(skill)) {
-                JsonArray arg;
-                arg << objectName();
-                arg << skill->getLimitMark();
-                arg << getMark(skill->getLimitMark());
-                room->doBroadcastNotify(QSanProtocol::S_COMMAND_SET_MARK, arg);
+                if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && hasShownSkill(skill)) {
+                    JsonArray arg;
+                    arg << objectName();
+                    arg << skill->getLimitMark();
+                    arg << getMark(skill->getLimitMark());
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_SET_MARK, arg);
+                }
             }
         }
 
@@ -1473,8 +1474,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
                 }
             }
 
-            if ((!has_lord && i > (room->getPlayers().length() / 2))
-                || (has_lord && getLord(true)->isDead()))
+            if ((!has_lord && i > (room->getPlayers().length() / 2)) || (has_lord && getLord(true)->isDead()))
                 role = "careerist";
 
             room->setPlayerProperty(this, "role", role);
