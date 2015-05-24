@@ -788,9 +788,8 @@ void ShangyiCard::onEffect(const CardEffectStruct &effect) const
     log.from = effect.from;
     log.to << effect.to;
     log.arg = choice;
-    foreach (ServerPlayer *p, room->getOtherPlayers(effect.from, true)) {
+    foreach (ServerPlayer *p, room->getOtherPlayers(effect.from, true))
         room->doNotify(p, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
-    }
 
     if (choice == "handcards") {
         room->broadcastSkillInvoke("shangyi", 1, effect.from);
@@ -997,9 +996,10 @@ public:
         if (player == NULL) return skill_list;
         QList<ServerPlayer *> yujis = room->findPlayersBySkillName(objectName());
         if (triggerEvent == Damaged && player->isAlive()) {
-            foreach(ServerPlayer *yuji, yujis)
+            foreach (ServerPlayer *yuji, yujis) {
                 if (yuji->willBeFriendWith(player))
                     skill_list.insert(yuji, QStringList(objectName()));
+            }
         } else if (triggerEvent == TargetConfirming) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (!use.card || use.card->getTypeId() == Card::TypeEquip
@@ -1623,7 +1623,7 @@ public:
 
             if (!to_change.isEmpty()) {
 //                player->removeGeneral(false);
-                room->doDragonPhoenix(player,to_change,NULL,false,dfowner->getKingdom(),true,"h");
+                room->doDragonPhoenix(player, to_change, NULL, false, dfowner->getKingdom(), true, "h");
 //                QStringList change_list;
 //                change_list << to_change;
 
