@@ -294,8 +294,6 @@ public:
     ServerPlayer *findPlayerBySkillName(const QString &skill_name) const;
     void installEquip(ServerPlayer *player, const QString &equip_name);
     void resetAI(ServerPlayer *player);
-    void changeHero(ServerPlayer *player, const QString &new_general, bool full_state, bool invoke_start = true,
-        bool isSecondaryHero = false, bool sendLog = true);
     void doDragonPhoenix(ServerPlayer *target, const QString &general1_name, const QString &general2_name, bool full_state = true,
                          const QString &kingdom = QString(), bool sendLog = true, const QString &show_flags = QString(), bool resetHp = false);
     void swapSeat(ServerPlayer *a, ServerPlayer *b);

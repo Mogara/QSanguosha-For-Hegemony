@@ -2211,48 +2211,6 @@ void Room::resetAI(ServerPlayer *player)
         ais.insert(index, new_ai);
 }
 
-void Room::changeHero(ServerPlayer *player, const QString &new_general, bool full_state, bool invokeStart, bool isSecondaryHero, bool sendLog)
-{
-    JsonArray arg;
-    arg << (int)S_GAME_EVENT_CHANGE_HERO;
-    arg << player->objectName();
-    arg << new_general;
-    arg << isSecondaryHero;
-    arg << sendLog;
-    doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
-
-    if (isSecondaryHero)
-        changePlayerGeneral2(player, new_general);
-    else
-        changePlayerGeneral(player, new_general);
-
-    if (full_state)
-        player->setHp(player->getMaxHp());
-    broadcastProperty(player, "hp");
-    broadcastProperty(player, "maxhp");
-
-    QVariant void_data;
-    QList<const TriggerSkill *> game_start;
-    const General *gen = isSecondaryHero ? player->getGeneral2() : player->getGeneral();
-    if (gen) {
-        foreach (const Skill *skill, gen->getSkillList(true, !isSecondaryHero)) {
-            if (skill->inherits("TriggerSkill")) {
-                const TriggerSkill *trigger = qobject_cast<const TriggerSkill *>(skill);
-                thread->addTriggerSkill(trigger);
-            }
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
-                setPlayerMark(player, skill->getLimitMark(), 1);
-        }
-    }
-    if (invokeStart) {
-        foreach (const TriggerSkill *skill, game_start) {
-            if (skill->cost(GameStart, this, player, void_data, player))
-                skill->effect(GameStart, this, player, void_data, player); //temp change for this
-        }
-    }
-    resetAI(player);
-}
-
 void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, const QString &general2_name, bool full_state, const QString &kingdom, bool sendLog, const QString &show_flags, bool resetHp)
 {
     QStringList names;

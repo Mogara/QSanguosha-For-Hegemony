@@ -1623,33 +1623,6 @@ public:
 
             if (!to_change.isEmpty()) {
                 room->doDragonPhoenix(player, to_change, QString(), false, dfowner->getKingdom(), true, "h");
-//                QStringList change_list;
-//                change_list << to_change;
-
-//                player->removeGeneral(false);
-//                foreach (const Skill *skill, player->getSkills())
-//                    player->loseSkill(skill->objectName());
-//                player->detachAllSkills();
-//                room->setPlayerProperty(player, "general1_showed", true);
-//                foreach (const Skill *skill, Sanguosha->getGeneral(to_change)->getSkillList(true, true)) {
-//                    player->addSkill(skill->objectName());
-//                    JsonArray args;
-//                    args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
-//                    args << player->objectName();
-//                    args << skill->objectName();
-//                    args << true;
-//                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-//                }
-//                room->changeHero(player, to_change, false, true, false, true);
-//                player->setSkillsPreshowed("h");
-
-//                room->setPlayerProperty(player, "actual_general1", to_change);
-
-//                change_list << player->getActualGeneral2Name();
-
-//                room->revivePlayer(player);
-//                room->setPlayerFlag(player, "Global_DFDebut");
-
                 room->setPlayerProperty(player, "hp", 2);
 
                 player->setChained(false);
@@ -1657,11 +1630,6 @@ public:
 
                 player->setFaceUp(true);
                 room->broadcastProperty(player, "faceup");
-
-//                room->setTag(player->objectName(), change_list);
-
-//                room->setPlayerProperty(player, "kingdom", dfowner->getKingdom());
-//                room->setPlayerProperty(player, "role", HegemonyMode::GetMappedRole(dfowner->getKingdom()));
 
                 player->drawCards(1);
             }
