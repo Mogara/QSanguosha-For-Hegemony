@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _ENGINE_H
@@ -82,7 +82,7 @@ public:
     // Last Updated By Fsu0413
     // To update version number
     //
-    // QSanguosha-Rara
+    // Mogara
     // June 2 2014
     //************************************
     QSanVersionNumber getVersionNumber() const;
@@ -147,7 +147,7 @@ public:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     QStringList getRandomGenerals(int count, const QSet<QString> &ban_set = QSet<QString>()) const;
@@ -162,7 +162,7 @@ public:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     QList<int> getRandomCards() const;
@@ -178,7 +178,7 @@ public:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     QStringList getLimitedGeneralNames() const;

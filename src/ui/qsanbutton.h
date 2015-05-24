@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _QSAN_BUTTON_H
@@ -45,7 +45,7 @@ public:
     // Last Updated By Yanguam Siliagim
     // To optimize performance
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 14 2014
     //************************************
     QSanButton(QGraphicsItem *parent);
@@ -65,7 +65,7 @@ public:
     // Last Updated By Yanguam Siliagim
     // To optimize performance
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 14 2014
     //************************************
     QSanButton(const QString &groupName, const QString &buttonName, QGraphicsItem *parent, const bool &multi_state = false);
