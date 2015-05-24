@@ -2306,7 +2306,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         notifyProperty(player, player, "general2", general2_name);
 
         max_hp += Sanguosha->getGeneral(general2_name)->getDoubleMaxHp();
-        names[1] = general1_name;
+        names[1] = general2_name;
         setPlayerProperty(player, "general2_showed", false);
     }
 
