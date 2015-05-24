@@ -1390,7 +1390,7 @@ public:
         if (player->askForSkillInvoke(this, data)) {
             player->broadcastSkillInvoke(objectName());
             room->doSuperLightbox("lord_liubei", objectName());
-            player->loseMark(limit_mark);
+            room->setPlayerMark(player, limit_mark, 0);
             return true;
         }
         return false;
@@ -1623,7 +1623,7 @@ public:
 
             if (!to_change.isEmpty()) {
 //                player->removeGeneral(false);
-                room->doDragonPhoenix(player, to_change, NULL, false, dfowner->getKingdom(), true, "h");
+                room->doDragonPhoenix(player, to_change, QString(), false, dfowner->getKingdom(), true, "h");
 //                QStringList change_list;
 //                change_list << to_change;
 

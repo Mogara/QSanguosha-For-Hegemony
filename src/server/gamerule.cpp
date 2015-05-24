@@ -291,8 +291,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                 }
                 */
                 foreach (const Skill *skill, player->getVisibleSkillList()) {
-                    if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                        && (!skill->isLordSkill() || player->hasLordSkill(skill->objectName()))) {
+                    if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || player->hasLordSkill(skill->objectName()))) {
                         JsonArray arg;
                         arg << player->objectName();
                         arg << skill->getLimitMark();

@@ -1372,9 +1372,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
 
         if (!property("Duanchang").toStringList().contains("head"))
             foreach (const Skill *skill, getHeadSkillList()) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                && hasShownSkill(skill)) {
+            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && hasShownSkill(skill)) {
                 JsonArray arg;
                 arg << objectName();
                 arg << skill->getLimitMark();
@@ -1442,9 +1440,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
 
         if (!property("Duanchang").toStringList().contains("deputy")) {
             foreach (const Skill *skill, getDeputySkillList()) {
-                if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                    && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                    && hasShownSkill(skill)) {
+                if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && hasShownSkill(skill)) {
                     JsonArray arg;
                     arg << objectName();
                     arg << skill->getLimitMark();
@@ -1530,9 +1526,7 @@ void ServerPlayer::hideGeneral(bool head_general)
         disconnectSkillsFromOthers();
 
         foreach (const Skill *skill, getVisibleSkillList()) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
+            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
                 JsonArray arg;
                 arg << objectName();
                 arg << skill->getLimitMark();
@@ -1569,9 +1563,7 @@ void ServerPlayer::hideGeneral(bool head_general)
         disconnectSkillsFromOthers(false);
 
         foreach (const Skill *skill, getVisibleSkillList()) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
+            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
                 JsonArray arg;
                 arg << objectName();
                 arg << skill->getLimitMark();

@@ -2211,8 +2211,7 @@ void Room::resetAI(ServerPlayer *player)
         ais.insert(index, new_ai);
 }
 
-void Room::changeHero(ServerPlayer *player, const QString &new_general, bool full_state, bool invokeStart,
-    bool isSecondaryHero, bool sendLog)
+void Room::changeHero(ServerPlayer *player, const QString &new_general, bool full_state, bool invokeStart, bool isSecondaryHero, bool sendLog)
 {
     JsonArray arg;
     arg << (int)S_GAME_EVENT_CHANGE_HERO;
@@ -2344,7 +2343,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
     if (full_state) {
         foreach (const Skill *skill, player->getSkillList(false, true)) {
             if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()) {
-                player->addMark(skill->getLimitMark());
+                player->setMark(skill->getLimitMark(), 1);
                 JsonArray arg;
                 arg << player->objectName();
                 arg << skill->getLimitMark();
@@ -2358,7 +2357,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         player->setFaceUp(true);
         broadcastProperty(player, "faceup");
         if (Sanguosha->getGeneral(general1_name)->isCompanionWith(general2_name))
-            addPlayerMark(player, "CompanionEffect");
+            setPlayerMark(player, "CompanionEffect", 1);
     }
     if (show_flags.contains("h"))
         player->showGeneral(true, false);

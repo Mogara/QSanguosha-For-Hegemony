@@ -896,6 +896,7 @@ public:
         if (pangtong->askForSkillInvoke(this, data)) {
             room->broadcastSkillInvoke(objectName(), pangtong);
             room->doSuperLightbox("pangtong", objectName());
+            room->setPlayerMark(pangtong, "@nirvana", 0);
             return true;
         }
         return false;
@@ -903,7 +904,6 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *pangtong, QVariant &, ServerPlayer *) const
     {
-        room->removePlayerMark(pangtong, "@nirvana");
         pangtong->throwAllHandCardsAndEquips();
         QList<const Card *> tricks = pangtong->getJudgingArea();
         foreach (const Card *trick, tricks) {
