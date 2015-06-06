@@ -161,6 +161,9 @@ QStringList Engine::getModScenarioNames() const
 void Engine::addScenario(Scenario *scenario)
 {
     QString key = scenario->objectName();
+    if (m_scenarios.contains(key))
+        return;
+
     m_scenarios[key] = scenario;
     addPackage(scenario);
 }
