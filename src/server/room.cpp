@@ -2313,14 +2313,17 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
     setPlayerProperty(player, "Duanchang", duanchang);
 
     revivePlayer(player);
-
+    player->setHp(1);
     if (resetHp) {
         if (general1_name.isEmpty() || general2_name.isEmpty())
             max_hp *= 2;
         setPlayerMark(player, "HalfMaxHpLeft", max_hp % 2);
         player->setMaxHp(max_hp / 2);
         broadcastProperty(player, "maxhp");
+        player->setHp(max_hp);
     }
+
+    broadcastProperty(player,"hp");
 
     setPlayerFlag(player, "Global_DFDebut");
 
