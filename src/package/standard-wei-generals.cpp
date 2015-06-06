@@ -1098,10 +1098,12 @@ public:
     {
         if (cards.isEmpty()) {
             QiangxiCard *card = new QiangxiCard;
+            card->setShowSkill(objectName());
             return card;
         } else if (cards.length() == 1) {
             QiangxiCard *card = new QiangxiCard;
             card->addSubcards(cards);
+            card->setShowSkill(objectName());
             return card;
         } else
             return NULL;

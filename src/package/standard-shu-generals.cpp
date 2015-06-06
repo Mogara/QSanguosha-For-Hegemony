@@ -1383,7 +1383,7 @@ public:
     {
         FangquanCard *fangquan = new FangquanCard;
         fangquan->addSubcard(originalCard);
-        fangquan->setShowSkill(objectName());
+        //fangquan->setShowSkill(objectName());
         return fangquan;
     }
 };

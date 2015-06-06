@@ -335,7 +335,7 @@ public:
     {
         LiuliCard *liuli_card = new LiuliCard;
         liuli_card->addSubcard(originalCard);
-        liuli_card->setShowSkill(objectName());
+        //liuli_card->setShowSkill(objectName());
         return liuli_card;
     }
 };
@@ -657,7 +657,7 @@ public:
     {
         TianxiangCard *tianxiangCard = new TianxiangCard;
         tianxiangCard->addSubcard(originalCard);
-        tianxiangCard->setShowSkill(objectName());
+        //tianxiangCard->setShowSkill(objectName());
         return tianxiangCard;
     }
 
