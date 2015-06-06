@@ -476,8 +476,10 @@ QGroupBox *ServerDialog::createGameModeBox()
     foreach (QString name, names) {
         QString scenario_name = Sanguosha->translate(name);
         const Scenario *scenario = Sanguosha->getScenario(name);
-        QString text = tr("%1 (%2 persons)").arg(Sanguosha->translate(scenario_name)).arg(scenario->getPlayerCount());
-        scenario_ComboBox->addItem(text,name);
+        if (scenario){ //crash,sometimes.
+            QString text = tr("%1 (%2 persons)").arg(Sanguosha->translate(scenario_name)).arg(scenario->getPlayerCount());
+            scenario_ComboBox->addItem(text,name);
+        }
     }
     item_list << scenario_ComboBox;
 
