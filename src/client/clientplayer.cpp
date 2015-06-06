@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "clientplayer.h"
@@ -42,7 +42,7 @@ int ClientPlayer::aliveCount(bool includeRemoved) const
     if (!includeRemoved) {
         if (isRemoved())
             n--;
-        foreach (const Player *p, getAliveSiblings())
+        foreach(const Player *p, getAliveSiblings())
             if (p->isRemoved())
                 n--;
     }
@@ -137,7 +137,7 @@ QList<const Card *> ClientPlayer::getHandcards() const
 void ClientPlayer::setCards(const QList<int> &card_ids)
 {
     known_cards.clear();
-    foreach (int cardId, card_ids)
+    foreach(int cardId, card_ids)
         known_cards.append(Sanguosha->getCard(cardId));
 }
 

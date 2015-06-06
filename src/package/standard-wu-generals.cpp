@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "standard-wu-generals.h"
@@ -181,7 +181,9 @@ public:
 
     virtual const Card *viewAs() const
     {
-        return new KurouCard;
+        KurouCard *kr = new KurouCard;
+        kr->setShowSkill(objectName());
+        return kr;
     }
 };
 

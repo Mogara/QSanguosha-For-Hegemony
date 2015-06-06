@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef SERVERDIALOG_H
@@ -48,7 +48,7 @@ public:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     ServerDialog(QWidget *parent);
@@ -63,7 +63,7 @@ public:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     bool config();
@@ -86,7 +86,7 @@ private:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     QWidget *createAdvancedTab();
@@ -101,7 +101,7 @@ private:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     QWidget *createConversionTab();

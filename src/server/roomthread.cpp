@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "roomthread.h"
@@ -409,8 +409,10 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         bool do_effect = false;
                         if (result_skill->cost(triggerEvent, room, skill_target, data, p)) {
                             do_effect = true;
-                            if (p && p->ownSkill(result_skill) && !p->hasShownSkill(result_skill))
+                            if (p && p->ownSkill(result_skill) && !p->hasShownSkill(result_skill)) {
                                 p->showGeneral(p->inHeadSkills(result_skill));
+                                p->tag["JustShownSkill"] = result_skill->objectName();
+                            }
                         }
                         if (p && p->hasFlag("Global_askForSkillCost"))          // for next time
                             p->setFlags("-Global_askForSkillCost");
@@ -423,6 +425,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                 break;
                         }
                         //-----------------------------------------------
+
+                        p->tag.remove("JustShownSkill");
 
                         trigger_who.clear();
                         foreach (const TriggerSkill *skill, triggered) {

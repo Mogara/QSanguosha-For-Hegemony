@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "lua-wrapper.h"
@@ -134,7 +134,7 @@ LuaSkillCard *LuaSkillCard::clone() const
     new_card->on_validate = on_validate;
     new_card->on_validate_in_response = on_validate_in_response;
     new_card->extra_cost = extra_cost;
-    
+
     new_card->mute = mute;
 
     return new_card;
@@ -345,22 +345,25 @@ LuaTreasure *LuaTreasure::clone(Card::Suit suit, int number) const
 }
 
 LuaScenario::LuaScenario(const char *name)
-    : Scenario(name),expose_role(false),general_selection(false),player_count(0),
-    on_assign(0),on_tag_set(0),relation(0)
+    : Scenario(name), expose_role(false), general_selection(false), player_count(0),
+    on_assign(0), on_tag_set(0), relation(0)
 {
 }
-void LuaScenario::setRule(LuaTriggerSkill *rule){
-    this->rule = new LuaSceneRule(this,rule);
+
+void LuaScenario::setRule(LuaTriggerSkill *rule)
+{
+    this->rule = new LuaSceneRule(this, rule);
 }
+
 QString LuaScenario::getRoles() const
 {
     QString result("Z");
-    for (int i = 2;i <= player_count;i++)
+    for (int i = 2; i <= player_count; i++)
         result.append("N");
     return result;
 }
 
-LuaSceneRule::LuaSceneRule(LuaScenario *parent,TriggerSkill *t)
+LuaSceneRule::LuaSceneRule(LuaScenario *parent, TriggerSkill *t)
     :ScenarioRule(parent)
 {
     this->origin = t;
@@ -369,5 +372,5 @@ LuaSceneRule::LuaSceneRule(LuaScenario *parent,TriggerSkill *t)
 
 bool LuaSceneRule::effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
 {
-    return origin->effect(event,room,player,data,ask_who);
+    return origin->effect(event, room, player, data, ask_who);
 }

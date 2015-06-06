@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "client.h"
@@ -497,7 +497,7 @@ void Client::getCards(const QVariant &arg)
             if (to != NULL)
                 to->changePile(move.to_pile_name, true, move.card_ids);
         } else {
-            foreach (int card_id, move.card_ids)
+            foreach(int card_id, move.card_ids)
                 _getSingleCard(card_id, move); // DDHEJ->DDHEJ, DDH/EJ->EJ
         }
         moves.append(move);
@@ -524,7 +524,7 @@ void Client::loseCards(const QVariant &arg)
             if (from != NULL)
                 from->changePile(move.from_pile_name, false, move.card_ids);
         } else {
-            foreach (int card_id, move.card_ids)
+            foreach(int card_id, move.card_ids)
                 _loseSingleCard(card_id, move); // DDHEJ->DDHEJ, DDH/EJ->EJ
         }
         moves.append(move);
@@ -614,7 +614,7 @@ void Client::onPlayerResponseCard(const Card *card, const QList<const Player *> 
     } else {
         JsonArray targetNames;
         if (!card->targetFixed()) {
-            foreach (const Player *target, targets)
+            foreach(const Player *target, targets)
                 targetNames << target->objectName();
         }
 
@@ -650,9 +650,8 @@ void Client::arrangeSeats(const QVariant &seats_arr)
     QStringList player_names;
     if (seats_arr.canConvert<JsonArray>()) {
         JsonArray seats = seats_arr.value<JsonArray>();
-        foreach (const QVariant &seat, seats) {
+        foreach (const QVariant &seat, seats)
             player_names << seat.toString();
-        }
     }
     players.clear();
 
@@ -829,9 +828,9 @@ void Client::exchangeKnownCards(const QVariant &players)
     if (args.size() != 2 || !JsonUtils::isString(args[0]) || !JsonUtils::isString(args[1])) return;
     ClientPlayer *a = getPlayer(args[0].toString()), *b = getPlayer(args[1].toString());
     QList<int> a_known, b_known;
-    foreach (const Card *card, a->getHandcards())
+    foreach(const Card *card, a->getHandcards())
         a_known << card->getId();
-    foreach (const Card *card, b->getHandcards())
+    foreach(const Card *card, b->getHandcards())
         b_known << card->getId();
     a->setCards(b_known);
     b->setCards(a_known);
@@ -1378,9 +1377,8 @@ void Client::gameOver(const QVariant &arg)
 
     QString winner = args[0].toString();
     QStringList roles;
-    foreach (const QVariant &role, args[1].value<JsonArray>()) {
+    foreach (const QVariant &role, args[1].value<JsonArray>())
         roles << role.toString();
-    }
 
     Q_ASSERT(roles.length() == players.length());
 
@@ -1858,7 +1856,7 @@ void Client::askForYiji(const QVariant &ask_str)
 
     //@todo: use cards directly rather than the QString
     QStringList card_str;
-    foreach (const QVariant &card, card_list)
+    foreach(const QVariant &card, card_list)
         card_str << QString::number(card.toInt());
 
     JsonArray players = ask[3].value<JsonArray>();
@@ -2014,9 +2012,8 @@ void Client::moveFocus(const QVariant &focus)
         JsonUtils::tryParse(json_players, players);
     } else {
         foreach (const ClientPlayer *player, this->players) {
-            if (player->isAlive()) {
+            if (player->isAlive())
                 players << player->objectName();
-            }
         }
     }
 

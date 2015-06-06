@@ -1,3 +1,23 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
+
 -- translation for Standard General Package
 
 return {
@@ -18,6 +38,7 @@ return {
 	[":paoxiao"] = "你使用【杀】无次数限制。",
 	["#paoxiao-null"] = "咆哮（无视防具）",
 	["paoxiao:armor_nullify"] = "场上有君刘备，你现在可以亮将令【杀】无视 %src 的防具效果。" ,
+    ["paoxiaoVsCrossbow"] = "选择发动“咆哮”或“诸葛连弩”" ,
 
 	["#zhugeliang"] = "迟暮的丞相",
 	["zhugeliang"] = "诸葛亮",

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "serverplayer.h"
@@ -1370,16 +1370,15 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
 
         sendSkillsToOthers();
 
-        if (!property("Duanchang").toStringList().contains("head"))
+        if (!property("Duanchang").toStringList().contains("head")) {
             foreach (const Skill *skill, getHeadSkillList()) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                && hasShownSkill(skill)) {
-                JsonArray arg;
-                arg << objectName();
-                arg << skill->getLimitMark();
-                arg << getMark(skill->getLimitMark());
-                room->doBroadcastNotify(QSanProtocol::S_COMMAND_SET_MARK, arg);
+                if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && hasShownSkill(skill)) {
+                    JsonArray arg;
+                    arg << objectName();
+                    arg << skill->getLimitMark();
+                    arg << getMark(skill->getLimitMark());
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_SET_MARK, arg);
+                }
             }
         }
 
@@ -1442,9 +1441,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
 
         if (!property("Duanchang").toStringList().contains("deputy")) {
             foreach (const Skill *skill, getDeputySkillList()) {
-                if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                    && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                    && hasShownSkill(skill)) {
+                if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && hasShownSkill(skill)) {
                     JsonArray arg;
                     arg << objectName();
                     arg << skill->getLimitMark();
@@ -1477,8 +1474,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
                 }
             }
 
-            if ((!has_lord && i > (room->getPlayers().length() / 2))
-                || (has_lord && getLord(true)->isDead()))
+            if ((!has_lord && i > (room->getPlayers().length() / 2)) || (has_lord && getLord(true)->isDead()))
                 role = "careerist";
 
             room->setPlayerProperty(this, "role", role);
@@ -1530,9 +1526,7 @@ void ServerPlayer::hideGeneral(bool head_general)
         disconnectSkillsFromOthers();
 
         foreach (const Skill *skill, getVisibleSkillList()) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
+            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
                 JsonArray arg;
                 arg << objectName();
                 arg << skill->getLimitMark();
@@ -1569,9 +1563,7 @@ void ServerPlayer::hideGeneral(bool head_general)
         disconnectSkillsFromOthers(false);
 
         foreach (const Skill *skill, getVisibleSkillList()) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
+            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
                 JsonArray arg;
                 arg << objectName();
                 arg << skill->getLimitMark();
@@ -1750,8 +1742,7 @@ void ServerPlayer::sendSkillsToOthers(bool head_skill /* = true */)
 
 void ServerPlayer::disconnectSkillsFromOthers(bool head_skill /* = true */)
 {
-    foreach(const QString &skill, head_skill ? head_skills.keys() : deputy_skills.keys())
-    {
+    foreach (const QString &skill, head_skill ? head_skills.keys() : deputy_skills.keys()) {
         QVariant _skill = skill;
         room->getThread()->trigger(EventLoseSkill, room, this, _skill);
         JsonArray args;

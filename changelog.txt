@@ -1,7 +1,40 @@
-﻿QSanguosha-Hegemony (QSGSH) Version 1.1.0
+﻿QSanguosha-Hegemony (QSGSH) Version 1.2.0
 
 
   Change Log / Release Notes
+
+1.2.0
+-----------------------------
+  Bugs Fixed:
+  +Lua将扩展包析构变为野指针，多扩展包无法载入
+
+  +端泄已经横置的角色
+
+  +Json注释无法解析
+  
+  +自己使用南蛮可以亮孟获
+
+  +端口号无法使用5位数
+
+  +内存泄漏
+
+  +AI把木牛给诸葛亮
+  
+  +无法识别172开头的局域网地址
+
+  API Changes：
+  +开放Lua场景，详见Extension-doc文件夹内的文档
+
+  +Linux编译后将动态库放入/lib/linux/x86(x64)后，直接点击QSanguosha即可打开游戏，带齐plugin后可以直接进行传播
+
+  +加入Buildbot支持，目前支持Win和Linux双平台
+
+  +更新 fmod 至 4.44.53
+
+  New Features/Enhancements:
+  +添加何太后配音，修改曹洪配音
+  
+  +修改AI聊天
 
 1.1.0
 -----------------------------

@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
 
 function SmartAI:shouldUseRende()
@@ -245,6 +245,8 @@ sgs.paoxiao_keep_value = {
 	ThunderSlash = 5.5,
 	ExNihilo = 4.7
 }
+
+sgs.ai_skill_choice["paoxiaoVsCrossbow"] = "Crossbow"
 
 
 local longdan_skill = {}

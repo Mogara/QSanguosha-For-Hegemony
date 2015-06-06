@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "standard-basics.h"
@@ -205,16 +205,6 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
         room->setPlayerFlag(player, "-slashNoDistanceLimit");
     if (player->hasFlag("slashDisableExtraTarget"))
         room->setPlayerFlag(player, "-slashDisableExtraTarget");
-    // for Paoxiao
-    if (player->getPhase() == Player::Play && player->hasFlag("Global_MoreSlashInOneTurn")) {
-        if (player->hasSkill("paoxiao")) {
-            if (!player->hasShownSkill("paoxiao"))
-                player->showGeneral(player->inHeadSkills("paoxiao"));
-            player->setFlags("-Global_MoreSlashInOneTurn");
-            room->broadcastSkillInvoke("paoxiao", player);
-            room->notifySkillInvoked(player, "paoxiao");
-        }
-    }
     // for Tianyi
     if ((use.to.size() > 1 + player->getMark("halberd_count")
         || (player->hasFlag("Global_MoreSlashInOneTurn") && player->getSlashCount() == 2))
@@ -222,6 +212,51 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
         if (player->hasFlag("Global_MoreSlashInOneTurn")) // Tianyi just let player could use one more Slash
             room->setPlayerFlag(player, "-Global_MoreSlashInOneTurn");
         room->broadcastSkillInvoke("tianyi", 1, player);
+    }
+    // for Paoxiao and Crossbow
+    if (player->getPhase() == Player::Play && player->hasFlag("Global_MoreSlashInOneTurn")) {
+        bool isPaoxiao = false;
+        bool isCrossbow = false;
+        if (player->hasShownSkill("paoxiao"))
+            isPaoxiao = true;
+        else {
+            bool canSelectCrossbow = player->hasWeapon("Crossbow");
+            bool canSelectPaoxiao = player->hasSkill("paoxiao");
+            if (canSelectCrossbow && canSelectPaoxiao) {
+                QStringList q;
+                q << "Crossbow" << "paoxiao";
+                SPlayerDataMap m;
+                m.insert(player, q);
+                QString r = room->askForTriggerOrder(player, "paoxiaoVsCrossbow", m, false);
+                if (r.endsWith("Crossbow"))
+                    isCrossbow = true;
+                else if (r.endsWith("paoxiao"))
+                    isPaoxiao = true;
+                else {
+                    // shenmegui??
+                }
+            } else if (!canSelectCrossbow && canSelectPaoxiao)
+                isPaoxiao = true;
+            else if (!canSelectPaoxiao && canSelectCrossbow)
+                isCrossbow = true;
+            else {
+                // shenmegui??
+            }
+        }
+
+
+        if (isPaoxiao) {
+            if (!player->hasShownSkill("paoxiao"))
+                player->showGeneral(player->inHeadSkills("paoxiao"));
+            player->setFlags("-Global_MoreSlashInOneTurn");
+            room->broadcastSkillInvoke("paoxiao", player);
+            room->notifySkillInvoked(player, "paoxiao");
+        } else if (isCrossbow) {
+            room->setEmotion(player, "weapon/crossbow");
+            player->setFlags("-Global_MoreSlashInOneTurn");
+        } else {
+            //shenmegui?
+        }
     }
     // for Duanbing
     if (use.to.size() > 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, player, this)
@@ -253,13 +288,6 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
         use.card->setFlags("halberd_slash");
     }
 
-    if (player->getPhase() == Player::Play
-        && player->hasFlag("Global_MoreSlashInOneTurn")
-        && player->hasWeapon("Crossbow")
-        && !player->hasSkill("paoxiao")) {
-        player->setFlags("-Global_MoreSlashInOneTurn");
-        room->setEmotion(player, "weapon/crossbow");
-    }
     if (use.card->isKindOf("ThunderSlash"))
         room->setEmotion(player, "thunder_slash");
     else if (use.card->isKindOf("FireSlash"))

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "standard-qun-generals.h"
@@ -534,7 +534,7 @@ LuanwuCard::LuanwuCard()
 
 void LuanwuCard::onUse(Room *room, const CardUseStruct &card_use) const
 {
-    room->removePlayerMark(card_use.from, "@chaos");
+    room->setPlayerMark(card_use.from, "@chaos", 0);
     room->broadcastSkillInvoke("luanwu", card_use.from);
     room->doSuperLightbox("jiaxu", "luanwu");
 
@@ -986,7 +986,7 @@ XiongyiCard::XiongyiCard()
 
 void XiongyiCard::onUse(Room *room, const CardUseStruct &card_use) const
 {
-    room->removePlayerMark(card_use.from, "@arise");
+    room->setPlayerMark(card_use.from, "@arise", 0);
     room->broadcastSkillInvoke("xiongyi", card_use.from);
     room->doSuperLightbox("mateng", "xiongyi");
     SkillCard::onUse(room, card_use);

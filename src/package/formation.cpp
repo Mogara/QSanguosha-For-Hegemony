@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "formation.h"
@@ -492,23 +492,14 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who /* = NULL */) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who /* = NULL */) const
     {
         if (ask_who == NULL)
             ask_who = player;
 
         if (ask_who->hasShownSkill("heyi"))
-            return true;
+            room->broadcastSkillInvoke("heyi", ask_who);
 
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who /* = NULL */) const
-    {
-        if (ask_who == NULL)
-            ask_who = player;
-
-        room->broadcastSkillInvoke("heyi", ask_who);
         return false;
     }
 };
@@ -797,9 +788,8 @@ void ShangyiCard::onEffect(const CardEffectStruct &effect) const
     log.from = effect.from;
     log.to << effect.to;
     log.arg = choice;
-    foreach (ServerPlayer *p, room->getOtherPlayers(effect.from, true)) {
+    foreach (ServerPlayer *p, room->getOtherPlayers(effect.from, true))
         room->doNotify(p, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
-    }
 
     if (choice == "handcards") {
         room->broadcastSkillInvoke("shangyi", 1, effect.from);
@@ -1006,9 +996,10 @@ public:
         if (player == NULL) return skill_list;
         QList<ServerPlayer *> yujis = room->findPlayersBySkillName(objectName());
         if (triggerEvent == Damaged && player->isAlive()) {
-            foreach(ServerPlayer *yuji, yujis)
+            foreach (ServerPlayer *yuji, yujis) {
                 if (yuji->willBeFriendWith(player))
                     skill_list.insert(yuji, QStringList(objectName()));
+            }
         } else if (triggerEvent == TargetConfirming) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (!use.card || use.card->getTypeId() == Card::TypeEquip
@@ -1399,7 +1390,7 @@ public:
         if (player->askForSkillInvoke(this, data)) {
             player->broadcastSkillInvoke(objectName());
             room->doSuperLightbox("lord_liubei", objectName());
-            player->loseMark(limit_mark);
+            room->setPlayerMark(player, limit_mark, 0);
             return true;
         }
         return false;
@@ -1631,35 +1622,7 @@ public:
             QString to_change = room->askForGeneral(player, avaliable_generals, QString(), true, "DragonPhoenix", dfowner->getKingdom());
 
             if (!to_change.isEmpty()) {
-//                player->removeGeneral(false);
-                room->doDragonPhoenix(player,to_change,NULL,false,dfowner->getKingdom(),true,"h");
-//                QStringList change_list;
-//                change_list << to_change;
-
-//                player->removeGeneral(false);
-//                foreach (const Skill *skill, player->getSkills())
-//                    player->loseSkill(skill->objectName());
-//                player->detachAllSkills();
-//                room->setPlayerProperty(player, "general1_showed", true);
-//                foreach (const Skill *skill, Sanguosha->getGeneral(to_change)->getSkillList(true, true)) {
-//                    player->addSkill(skill->objectName());
-//                    JsonArray args;
-//                    args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
-//                    args << player->objectName();
-//                    args << skill->objectName();
-//                    args << true;
-//                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-//                }
-//                room->changeHero(player, to_change, false, true, false, true);
-//                player->setSkillsPreshowed("h");
-
-//                room->setPlayerProperty(player, "actual_general1", to_change);
-
-//                change_list << player->getActualGeneral2Name();
-
-//                room->revivePlayer(player);
-//                room->setPlayerFlag(player, "Global_DFDebut");
-
+                room->doDragonPhoenix(player, to_change, QString(), false, dfowner->getKingdom(), true, "h");
                 room->setPlayerProperty(player, "hp", 2);
 
                 player->setChained(false);
@@ -1667,16 +1630,6 @@ public:
 
                 player->setFaceUp(true);
                 room->broadcastProperty(player, "faceup");
-
-//                room->setTag(player->objectName(), change_list);
-
-//                room->setPlayerProperty(player, "kingdom", dfowner->getKingdom());
-//                room->setPlayerProperty(player, "role", HegemonyMode::GetMappedRole(dfowner->getKingdom()));
-
-                foreach (const Skill *skill, Sanguosha->getGeneral(to_change)->getSkillList(true, true)) {
-                    if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
-                        room->setPlayerMark(player, skill->getLimitMark(), 1);
-                }
 
                 player->drawCards(1);
             }
