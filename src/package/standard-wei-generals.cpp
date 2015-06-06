@@ -1074,9 +1074,8 @@ void QiangxiCard::extraCost(Room *room, const CardUseStruct &card_use) const
 
 void QiangxiCard::onEffect(const CardEffectStruct &effect) const
 {
-    effect.from->showGeneral(effect.from->inHeadSkills("qiangxi"));
     effect.to->getRoom()->damage(DamageStruct("qiangxi", effect.from, effect.to));
-
+    effect.from->showGeneral(effect.from->inHeadSkills("qiangxi"));
 }
 
 class Qiangxi : public ViewAsSkill
