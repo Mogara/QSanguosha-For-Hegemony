@@ -2224,6 +2224,8 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         player->removeGeneral(true);
     if (player->getGeneral2())
         player->removeGeneral(false);
+    setPlayerMark(player, "drank", 0);
+    player->throwAllMarks(); // necessary.
 
     QVariant void_data;
     QList<const TriggerSkill *> game_start;
@@ -2296,7 +2298,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
             args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
             args << player->objectName();
             args << skill->objectName();
-            args << true;
+            args << false;
             doNotify(player, QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
 
@@ -2320,7 +2322,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         setPlayerMark(player, "HalfMaxHpLeft", max_hp % 2);
         player->setMaxHp(max_hp / 2);
         broadcastProperty(player, "maxhp");
-        player->setHp(max_hp);
+        player->setHp(player->getMaxHp());
     }
 
     broadcastProperty(player,"hp");
