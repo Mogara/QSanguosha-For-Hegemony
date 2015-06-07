@@ -6,7 +6,7 @@
 
 --CreateTriggerSkill需要以下参数：
 
---name, relate_to_place, can_preshow, frequency, limit_mark, guhuo_type, is_battle_array, battle_array_type, events, view_as_skill, can_trigger, on_cost, on_effect, priority
+--name, relate_to_place, can_preshow, frequency, limit_mark, guhuo_type, is_battle_array, battle_array_type, events, view_as_skill, can_trigger, on_cost, on_effect, on_turn_broken, priority
 
 --name和relate_to_place不再说明。
 
@@ -86,6 +86,14 @@ return self:objectName().."->"..table.concat(targets,"+")
 --传入参数为：self,event,room,player,data,ask_who，与on_cost一致。
 --如果需要区分不同的事件执行不同效果，请根据event参数使用条件语句。
 --通常需要将事件数据(data)转为具体的游戏结构对象才能进行操作。你可以在源码的swig/qvariant.i文件中看到定义。
+--无默认值。
+
+--on_turn_broken:
+--lua函数，无返回值。
+--用于处理抛出异常（TurnBroken）时处理的一些部分。
+--传入参数为self,function_name,event,room,player,data,ask_who
+--其中function_name是捕获到异常的函数名，可以是can_trigger、on_cost、on_effect这三个。
+--其余的几个参数则是捕获异常的函数的参数。如果捕获函数是can_tigger，那么最后一个ask_who将是nil空值。
 --无默认值。
 
 --priority:

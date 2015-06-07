@@ -80,7 +80,10 @@ function sgs.CreateTriggerSkill(spec)
 	if type(spec.priority) == "number" then
 		skill.priority = spec.priority
 	end
-
+	if spec.on_turn_broken then
+		skill.on_turn_broken = spec.on_turn_broken
+	end
+	
 	return skill
 end
 
