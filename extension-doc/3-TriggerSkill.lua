@@ -92,7 +92,7 @@ return self:objectName().."->"..table.concat(targets,"+")
 --lua函数，无返回值。
 --用于处理抛出异常（TurnBroken）时处理的一些部分。
 --传入参数为self,function_name,event,room,player,data,ask_who
---其中function_name是捕获到异常的函数名，可以是can_trigger、on_cost、on_effect这三个。
+--其中function_name为字符串类型，是捕获到异常的函数名，可以是"can_trigger"、"on_cost"、"on_effect"中的一个。
 --其余的几个参数则是捕获异常的函数的参数。如果捕获函数是can_tigger，那么最后一个ask_who将是nil空值。
 --无默认值。
 
