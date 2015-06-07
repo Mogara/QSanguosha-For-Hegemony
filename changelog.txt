@@ -21,9 +21,21 @@
   +AI把木牛给诸葛亮
   
   +无法识别172开头的局域网地址
+  
+  +典韦强袭不亮将问题
+  
+  +红颜出牌阶段点击闪退问题（临时处理方法）
+  
+  +结算流程优化
 
   API Changes：
   +开放Lua场景，详见Extension-doc文件夹内的文档
+  
+  +给触发技添加处理异常（TurnBroken）的函数，具体的参见extension-doc中有关触发技的文档
+  
+  +添加VS2012的项目文件
+  
+  +增加Room::doDragonPhoenix函数，一举解决所有类似飞龙夺冠变身的问题，具体的请参考Extension-doc下的相关文档
 
   +Linux编译后将动态库放入/lib/linux/x86(x64)后，直接点击QSanguosha即可打开游戏，带齐plugin后可以直接进行传播
 
