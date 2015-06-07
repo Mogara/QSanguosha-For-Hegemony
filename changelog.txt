@@ -8,7 +8,7 @@
   Bugs Fixed:
   +Lua将扩展包析构变为野指针，多扩展包无法载入
 
-  +端泄已经横置的角色
+  +断绁已经横置的角色
 
   +Json注释无法解析
   
@@ -35,7 +35,7 @@
   
   +添加VS2012的项目文件
   
-  +增加Room::doDragonPhoenix函数，一举解决所有类似飞龙夺冠变身的问题，具体的请参考Extension-doc下的相关文档
+  +增加Room::doDragonPhoenix函数，一举解决所有类似飞龙夺凤变身的问题，具体的请参考Extension-doc下的相关文档
 
   +Linux编译后将动态库放入/lib/linux/x86(x64)后，直接点击QSanguosha即可打开游戏，带齐plugin后可以直接进行传播
 
