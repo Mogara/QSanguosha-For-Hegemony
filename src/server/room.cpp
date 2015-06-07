@@ -2284,7 +2284,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 
 
-        foreach (const Skill *skill, Sanguosha->getGeneral(general2_name)->getSkillList(true, true)) {
+        foreach (const Skill *skill, Sanguosha->getGeneral(general2_name)->getSkillList(true, false)) {
             if (skill->inherits("TriggerSkill")) {
                 const TriggerSkill *tr = qobject_cast<const TriggerSkill *>(skill);
                 if (tr != NULL) {
@@ -2293,7 +2293,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
                         game_start << tr;
                 }
             }
-            player->addSkill(skill->objectName());
+            player->addSkill(skill->objectName(),false);
             JsonArray args;
             args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
             args << player->objectName();
