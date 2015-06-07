@@ -514,6 +514,7 @@ void ChooseGeneralBox::reply()
     if (progress_bar != NULL) {
         progress_bar->hide();
         progress_bar->deleteLater();
+        progress_bar = NULL;
     }
     ClientInstance->onPlayerChooseGeneral(generals);
 }
