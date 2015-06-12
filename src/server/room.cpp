@@ -2267,7 +2267,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         notifyProperty(player, player, "actual_general1");
         notifyProperty(player, player, "general", general1_name);
 
-        max_hp += Sanguosha->getGeneral(general1_name)->getDoubleMaxHp();
+        max_hp += Sanguosha->getGeneral(general1_name)->getMaxHpHead();
         names[0] = general1_name;
         setPlayerProperty(player, "general1_showed", false);
     }
@@ -2307,7 +2307,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         notifyProperty(player, player, "actual_general2");
         notifyProperty(player, player, "general2", general2_name);
 
-        max_hp += Sanguosha->getGeneral(general2_name)->getDoubleMaxHp();
+        max_hp += Sanguosha->getGeneral(general2_name)->getMaxHpDeputy();
         names[1] = general2_name;
         setPlayerProperty(player, "general2_showed", false);
     }
