@@ -901,6 +901,7 @@ enum TriggerEvent
     TargetConfirmed,
     CardEffect,
     CardEffected,
+    CardEffectConfirmed,
     PostCardEffected,
     CardFinished,
     TrickCardCanceling,
