@@ -170,7 +170,7 @@ LuaWangxi = sgs.CreateTriggerSkill{
 		for i = 1, damage.damage, 1 do
 			table.insert(trigger_list, self:objectName()) --在LUA表中插入一个元素
 		end
-		return table.concat(trigger_list, "+") --table.concat用于所有元素均为字符串的情况，返回字符串的连接，中间用由第二个参数指定的字符分割
+		return table.concat(trigger_list, ",") --table.concat用于所有元素均为字符串的情况，返回字符串的连接，中间用由第二个参数指定的字符分割
 	end ,
 	on_cost = function(self, event, room, player, data)
 		local damage = data:toDamage()
