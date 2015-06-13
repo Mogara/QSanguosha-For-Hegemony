@@ -440,7 +440,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                 continue; // dont assign them to some person.
                             } else {
                                 room->tryPause();
-                                if (skill->getPriority() == triggered.first()->getPriority()) {
+                                if (skill->getDynamicPriority(triggerEvent) == triggered.first()->getDynamicPriority(triggerEvent)) {
                                     TriggerList triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
                                     foreach (ServerPlayer *player, room->getAllPlayers(true)) {
                                         if (triggerSkillList.contains(player) && !triggerSkillList.value(player).isEmpty()) {
