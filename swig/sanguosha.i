@@ -1300,6 +1300,11 @@ public:
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
 
     bool isGlobal() const;
+    
+    virtual double getDynamicPriority(TriggerEvent e) const;
+    
+    // for Lua 
+    void insertPriority(TriggerEvent e,double value);
 
     virtual ~TriggerSkill();
 };

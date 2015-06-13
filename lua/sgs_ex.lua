@@ -83,7 +83,11 @@ function sgs.CreateTriggerSkill(spec)
 	if spec.on_turn_broken then
 		skill.on_turn_broken = spec.on_turn_broken
 	end
-	
+	if spec.dynamic_priority and type(spec.dynamic_priority) == "table" then
+		for e,v in pairs(spec.dynamic_priority)do
+			skill:insertPriority(e,v)
+		end
+	end
 	return skill
 end
 

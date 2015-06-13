@@ -354,8 +354,9 @@ FilterSkill::FilterSkill(const QString &name)
 }
 
 TriggerSkill::TriggerSkill(const QString &name)
-    : Skill(name), view_as_skill(NULL), global(false), dynamic_priority(0.0)
+    : Skill(name), view_as_skill(NULL), global(false), current_priority(0.0)
 {
+    priority.clear();
 }
 
 const ViewAsSkill *TriggerSkill::getViewAsSkill() const
@@ -371,6 +372,14 @@ QList<TriggerEvent> TriggerSkill::getTriggerEvents() const
 int TriggerSkill::getPriority() const
 {
     return 3;
+}
+
+double TriggerSkill::getDynamicPriority(TriggerEvent e) const
+{
+    if(priority.keys().contains(e))
+        return priority.key(e);
+    else
+        return this->getPriority();
 }
 
 /*!
@@ -400,6 +409,11 @@ TriggerList TriggerSkill::triggerable(TriggerEvent triggerEvent, Room *room, Ser
 bool TriggerSkill::triggerable(const ServerPlayer *target) const
 {
     return target != NULL && target->isAlive() && target->hasSkill(objectName());
+}
+
+void TriggerSkill::insertPriority(TriggerEvent e, double value)
+{
+    priority.insert(e,value);
 }
 
 QStringList TriggerSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer* &) const
