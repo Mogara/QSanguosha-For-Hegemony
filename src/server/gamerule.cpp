@@ -666,7 +666,8 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                 effect.to->setFlags("Global_NonSkillNullify");
                 return true;
             }
-            room->getThread()->trigger(CardEffectConfirmed,room,effect.to,QVariant::fromValue(effect));
+            QVariant _effect = QVariant::fromValue(effect);
+            room->getThread()->trigger(CardEffectConfirmed, room, effect.to, _effect);
             if (effect.to->isAlive() || effect.card->isKindOf("Slash"))
                 effect.card->onEffect(effect);
         }
