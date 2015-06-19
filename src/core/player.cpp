@@ -902,9 +902,9 @@ void Player::setRemoved(bool removed)
 
 bool Player::isDuanchang(const bool head) const
 {
-    if (head && property("Duanchang").toStringList().contains("head"))
+    if (head && property("Duanchang").toString().split(",").contains("head"))
         return true;
-    else if (!head && property("Duanchang").toStringList().contains("deputy"))
+    else if (!head && property("Duanchang").toString().split(",").contains("deputy"))
         return true;
     else
         return false;

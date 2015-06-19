@@ -2230,7 +2230,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
     QVariant void_data;
     QList<const TriggerSkill *> game_start;
 
-    QStringList duanchang = player->property("Duanchang").toStringList();
+    QStringList duanchang = player->property("Duanchang").toString().split(",");
     int max_hp = 0;
     if (!general1_name.isEmpty()) {
         if (duanchang.contains("head"))
@@ -2312,7 +2312,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         setPlayerProperty(player, "general2_showed", false);
     }
 
-    setPlayerProperty(player, "Duanchang", duanchang);
+    setPlayerProperty(player, "Duanchang", duanchang.join(","));
 
     revivePlayer(player);
     player->setHp(1);
@@ -4734,12 +4734,12 @@ void Room::preparePlayers()
 {
     foreach (ServerPlayer *player, m_players) {
         QString general1_name = tag[player->objectName()].toStringList().at(0);
-        if (!player->property("Duanchang").toStringList().contains("head")) {
+        if (!player->property("Duanchang").toString().split(",").contains("head")) {
             foreach(const Skill *skill, Sanguosha->getGeneral(general1_name)->getVisibleSkillList(true, true))
                 player->addSkill(skill->objectName());
         }
         QString general2_name = tag[player->objectName()].toStringList().at(1);
-        if (!player->property("Duanchang").toStringList().contains("deputy")) {
+        if (!player->property("Duanchang").toString().split(",").contains("deputy")) {
             foreach(const Skill *skill, Sanguosha->getGeneral(general2_name)->getVisibleSkillList(true, false))
                 player->addSkill(skill->objectName(), false);
         }
