@@ -64,6 +64,10 @@ function sgs.CreateTriggerSkill(spec)
 
 	if (not spec.is_battle_array) and (type(spec.global) == "boolean") then skill:setGlobal(spec.global) end
 
+	if spec.on_record then
+		skill.on_record = spec.on_record
+	end
+	
 	if spec.on_effect then
 		skill.on_effect = spec.on_effect
 	end

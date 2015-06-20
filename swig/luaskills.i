@@ -34,7 +34,9 @@ public:
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     void onTurnBroken(const char *function_name,TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
+    LuaFunction on_record;
     LuaFunction can_trigger;
     LuaFunction on_cost;
     LuaFunction on_effect;
@@ -65,7 +67,9 @@ public:
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     void onTurnBroken(const char *function_name,TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
+    LuaFunction on_record;
     LuaFunction can_trigger;
     LuaFunction on_cost;
     LuaFunction on_effect;
@@ -388,6 +392,45 @@ public:
 #include "clientplayer.h"
 #include "scenario.h"
 
+void LuaTriggerSkill::record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+{
+    if (on_record == 0)
+        return;
+    try {
+        lua_State *l = room->getLuaState();
+        lua_rawgeti(l, LUA_REGISTRYINDEX, on_record);
+
+        LuaTriggerSkill *self = const_cast<LuaTriggerSkill *>(this);
+        SWIG_NewPointerObj(l, self, SWIGTYPE_p_LuaTriggerSkill, 0);
+
+        int e = static_cast<int>(triggerEvent);
+
+        lua_pushinteger(l, e);
+
+        SWIG_NewPointerObj(l, room, SWIGTYPE_p_Room, 0);
+
+        // the third argument: player
+        SWIG_NewPointerObj(l, player, SWIGTYPE_p_ServerPlayer, 0);
+
+        // the last event: data
+        SWIG_NewPointerObj(l, &data, SWIGTYPE_p_QVariant, 0);
+
+        int error = lua_pcall(l, 5, 0, 0);
+        if (error) {
+            const char *msg = lua_tostring(l, -1);
+            lua_pop(l, 1);
+            room->output(msg);
+            return;
+        }
+            
+    }
+    catch (TriggerEvent e) {
+        if (e == TurnBroken || e == StageChange)
+            onTurnBroken("on_record",triggerEvent,room,player,data,NULL);
+        throw e;
+    }
+}
+
 TriggerList LuaTriggerSkill::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
 {
     if (can_trigger == 0)
@@ -592,6 +635,45 @@ void LuaTriggerSkill::onTurnBroken(const char *function_name,TriggerEvent trigge
         const char *error_msg = lua_tostring(L, -1);
         lua_pop(L, 1);
         room->output(error_msg);
+    }
+}
+
+void LuaBattleArraySkill::record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+{
+    if (on_record == 0)
+        return;
+    try {
+        lua_State *l = room->getLuaState();
+
+        lua_rawgeti(l, LUA_REGISTRYINDEX, on_record);
+
+        LuaBattleArraySkill *self = const_cast<LuaBattleArraySkill *>(this);
+        SWIG_NewPointerObj(l, self, SWIGTYPE_p_LuaBattleArraySkill, 0);
+
+        int e = static_cast<int>(triggerEvent);
+
+        lua_pushinteger(l, e);
+
+        SWIG_NewPointerObj(l, room, SWIGTYPE_p_Room, 0);
+
+        // the third argument: player
+        SWIG_NewPointerObj(l, player, SWIGTYPE_p_ServerPlayer, 0);
+
+        // the last event: data
+        SWIG_NewPointerObj(l, &data, SWIGTYPE_p_QVariant, 0);
+
+        int error = lua_pcall(l, 5, 0, 0);
+        if (error) {
+            const char *msg = lua_tostring(l, -1);
+            lua_pop(l, 1);
+            room->output(msg);
+            return;
+        }
+    }
+    catch (TriggerEvent e) {
+        if (e == TurnBroken || e == StageChange)
+            onTurnBroken("on_record",triggerEvent,room,player,data,NULL);
+        throw e;
     }
 }
 
