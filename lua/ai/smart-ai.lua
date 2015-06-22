@@ -2258,7 +2258,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 
 		elseif trick:isKindOf("ArcheryAttack") then
 			if self:isFriend(to) then
-				local heg_null_card = self:getCardId("HegNullification")
+				local heg_null_card = self:getCard("HegNullification")
 				if heg_null_card then
 					for _, friend in ipairs(self.friends) do
 						if self:playerGetRound(to) < self:playerGetRound(friend) and (self:aoeIsEffective(trick, to, from) or self:getDamagedEffects(to, from)) then
@@ -2282,7 +2282,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 				for _, p in sgs.qlist(self.room:getAlivePlayers()) do
 					if p:hasShownSkill("huoshou") then menghuo = p break end
 				end
-				local heg_null_card = self:getCardId("HegNullification")
+				local heg_null_card = self:getCard("HegNullification")
 				if heg_null_card then
 					for _, friend in ipairs(self.friends) do
 						if self:playerGetRound(to) < self:playerGetRound(friend)
