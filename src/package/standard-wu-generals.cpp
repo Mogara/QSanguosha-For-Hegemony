@@ -697,9 +697,9 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *xiaoqiao, QVariant &data, ServerPlayer *) const
     {
-        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+        foreach (ServerPlayer *p, room->getAlivePlayers())
             p->setFlags("-tianxiang_target");
-        }
+
         xiaoqiao->setFlags("-tianxiang_invoke");
         xiaoqiao->tag["TianxiangDamage"] = data;
         room->askForUseCard(xiaoqiao, "@@tianxiang", "@tianxiang-card", -1, Card::MethodDiscard);
@@ -772,8 +772,7 @@ public:
     virtual bool viewFilter(const Card *to_select) const
     {
         Room *room = Sanguosha->currentRoom();
-        if(room != NULL) // Server
-        {
+        if (room != NULL) { // Server
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->ownSkill(objectName()) && p->hasShownSkill(objectName()))
                     return to_select->getSuit() == Card::Spade;
@@ -784,7 +783,7 @@ public:
                     return to_select->getSuit() == Card::Spade;
             }
         }
-        
+
         return false;
     }
 
@@ -1512,7 +1511,7 @@ public:
     }
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *erzhang, QVariant &data) const
     {
-        if (!erzhang || !erzhang->isAlive() || !erzhang->hasSkill("guzheng")  || triggerEvent != CardsMoveOneTime) return;
+        if (!erzhang || !erzhang->isAlive() || !erzhang->hasSkill("guzheng") || triggerEvent != CardsMoveOneTime) return;
         ServerPlayer *current = room->getCurrent();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 
