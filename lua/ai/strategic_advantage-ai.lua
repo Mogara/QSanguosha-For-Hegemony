@@ -484,11 +484,13 @@ function SmartAI:useCardFightTogether(card, use)
 					table.insert(bigs, p)
 					if p:objectName() == self.player:objectName() then isBig = true end
 				else
-					table.insert(smalls, p)
-					if p:objectName() == self.player:objectName() then isSmall = true end
+					if not p:hasArmorEffect("IronArmor") then
+						table.insert(smalls, p)
+						if p:objectName() == self.player:objectName() then isSmall = true end
+					end
 				end
 			else
-				if not p:hasShownOneGeneral() then
+				if not p:hasShownOneGeneral() and not p:hasArmorEffect("IronArmor") then
 					if p:objectName() == self.player:objectName() then isSmall = true end
 					table.insert(smalls, p)
 					continue
@@ -501,8 +503,10 @@ function SmartAI:useCardFightTogether(card, use)
 					if p:objectName() == self.player:objectName() then isBig = true end
 					table.insert(bigs, p)
 				else
-					if p:objectName() == self.player:objectName() then isSmall = true end
-					table.insert(smalls, p)
+					if not p:hasArmorEffect("IronArmor") then
+						if p:objectName() == self.player:objectName() then isSmall = true end
+						table.insert(smalls, p)
+					end
 				end
 			end
 		end
@@ -552,6 +556,16 @@ function SmartAI:useCardFightTogether(card, use)
 				end
 			end
 		end
+	end
+	if (self.FightTogether_choice == "big" and #bigs == 1) or (self.FightTogether_choice == "small" and #smalls == 1) then
+		local check
+		for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+			if p:isChained() and self:isEnemy(p) then
+				check = true
+				break
+			end
+		end
+		if not check then self.FightTogether_choice = nil end
 	end
 
 	if not self.FightTogether_choice and not self.player:isCardLimited(card, sgs.Card_MethodRecast) then
