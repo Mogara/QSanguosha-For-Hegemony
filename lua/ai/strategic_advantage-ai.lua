@@ -484,13 +484,13 @@ function SmartAI:useCardFightTogether(card, use)
 					table.insert(bigs, p)
 					if p:objectName() == self.player:objectName() then isBig = true end
 				else
-					if not p:hasArmorEffect("IronArmor") then
+					if not(p:hasArmorEffect("IronArmor") and not p:isChained()) then
 						table.insert(smalls, p)
 						if p:objectName() == self.player:objectName() then isSmall = true end
 					end
 				end
 			else
-				if not p:hasShownOneGeneral() and not p:hasArmorEffect("IronArmor") then
+				if not p:hasShownOneGeneral() and not(p:hasArmorEffect("IronArmor") and not p:isChained()) then
 					if p:objectName() == self.player:objectName() then isSmall = true end
 					table.insert(smalls, p)
 					continue
@@ -503,7 +503,7 @@ function SmartAI:useCardFightTogether(card, use)
 					if p:objectName() == self.player:objectName() then isBig = true end
 					table.insert(bigs, p)
 				else
-					if not p:hasArmorEffect("IronArmor") then
+					if not(p:hasArmorEffect("IronArmor") and not p:isChained()) then
 						if p:objectName() == self.player:objectName() then isSmall = true end
 						table.insert(smalls, p)
 					end
