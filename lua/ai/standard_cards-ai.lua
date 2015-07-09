@@ -1451,6 +1451,161 @@ sgs.ai_use_value.SavageAssault = 3.9
 sgs.ai_use_priority.SavageAssault = 3.5
 sgs.ai_keep_value.SavageAssault = 3.34
 
+sgs.ai_nullification.ArcheryAttack = function(self, card, from, to, positive, keep)
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. card:toString()):toList()
+	for _, q in sgs.qlist(players) do
+		targets:append(q:toPlayer())
+	end
+
+	if positive then
+		if self:isFriend(to) then
+			if keep then
+				for _, p in sgs.qlist(targets) do
+					if self:isFriend(p) and self:aoeIsEffective(card, p, from) and not p:hasArmorEffect("bazhen")
+						and not p:hasArmorEffect("EightDiagram") and self:getDamagedEffects(p, from) and self:isWeak(p)
+						and getKnownCard(p, self.player, "Jink", true, "he") == 0 then
+						keep = false
+					end
+				end
+			end
+			if keep then return false end
+
+			local heg_null_card = self:getCard("HegNullification") or (self.room:getTag("NullifyingTimes"):toInt() > 0 and self.room:getTag("NullificatonType"):toBool())
+			if heg_null_card and self:aoeIsEffective(card, to, from) then
+				targets:removeOne(to)
+				for _, p in sgs.qlist(targets) do
+					if to:isFriendWith(p) and self:aoeIsEffective(card, p, from) then return true, false end
+				end
+			end
+
+			if not self:aoeIsEffective(card, to, from) then
+				return
+			elseif self:getDamagedEffects(to, from) then
+				return
+			elseif to:objectName() == self.player:objectName() and self:canAvoidAOE(card) then
+				return
+			elseif (getKnownCard(to, self.player, "Jink", true, "he") >= 1 or to:hasArmorEffect("bazhen") or to:hasArmorEffect("EightDiagram")) and to:getHp() > 1 then
+				return
+			elseif not self:isFriendWith(to) and self:playerGetRound(to) < self:playerGetRound(self.player) and self:isWeak() then
+				return
+			else
+				return true, true
+			end
+		end
+	else
+		if not self:isFriend(from) or not(self:isEnemy(to) and from:isFriendWith(to)) then return false end
+		if keep then
+			for _, p in sgs.qlist(targets) do
+				if self:isEnemy(p) and self:aoeIsEffective(card, p, from) and not p:hasArmorEffect("bazhen")
+					and not p:hasArmorEffect("EightDiagram") and self:getDamagedEffects(p, from) and self:isWeak(p)
+					and getKnownCard(p, self.player, "Jink", true, "he") == 0 then
+					keep = false
+				end
+			end
+		end
+		if keep or not self:isEnemy(to) then return false end
+		local nulltype = self.room:getTag("NullificatonType"):toBool()
+		if nulltype then
+			targets:removeOne(to)
+			local num = 0
+			local weak
+			for _, p in sgs.qlist(targets) do
+				if to:isFriendWith(p) and self:aoeIsEffective(card, p, from) then
+					num = num + 1
+				end
+				if self:isWeak(to) or self:isWeak(p) then
+					weak = true
+				end
+			end
+			return num > 1 or weak, true
+		else
+			if self:isWeak(to) then return true, true end
+		end		
+	end
+	return
+end
+
+sgs.ai_nullification.SavageAssault = function(self, card, from, to, positive, keep)
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. card:toString()):toList()
+	for _, q in sgs.qlist(players) do
+		targets:append(q:toPlayer())
+	end
+
+	if positive then
+		if self:isFriend(to) then
+			local menghuo = sgs.findPlayerByShownSkillName("huoshou")
+			local zhurong = sgs.findPlayerByShownSkillName("juxiang")
+			if menghuo then targets:removeOne(menghuo) end
+			if zhurong then targets:removeOne(zhurong) end
+
+			if keep then
+				for _, p in sgs.qlist(targets) do
+					if self:isFriend(p) and self:aoeIsEffective(card, p, menghuo or from)
+						and self:getDamagedEffects(p, menghuo or from) and self:isWeak(p)
+						and getKnownCard(p, self.player, "Slash", true, "he") == 0 then
+						keep = false
+					end
+				end
+			end
+			if keep then return false end
+
+			local heg_null_card = self:getCard("HegNullification") or (self.room:getTag("NullifyingTimes"):toInt() > 0 and self.room:getTag("NullificatonType"):toBool())
+			if heg_null_card and self:aoeIsEffective(card, to, menghuo or from) then
+				targets:removeOne(to)
+				for _, p in sgs.qlist(targets) do
+					if to:isFriendWith(p) and self:aoeIsEffective(card, p, menghuo or from) then return true, false end
+				end
+			end
+
+			if not self:aoeIsEffective(card, to, menghuo or from) then
+				return
+			elseif self:getDamagedEffects(to, menghuo or from) then
+				return
+			elseif to:objectName() == self.player:objectName() and self:canAvoidAOE(card) then
+				return
+			elseif getKnownCard(to, self.player, "Slash", true, "he") >= 1 and to:getHp() > 1 then
+				return
+			elseif not self:isFriendWith(to) and self:playerGetRound(to) < self:playerGetRound(self.player) and self:isWeak() then
+				return
+			else
+				return true, true
+			end
+		end
+	else
+		if not self:isFriend(from) or not(self:isEnemy(to) and from:isFriendWith(to)) then return false end
+		if keep then
+			for _, p in sgs.qlist(targets) do
+				if self:isEnemy(p) and self:aoeIsEffective(card, p, menghuo or from)
+					and self:getDamagedEffects(p, menghuo or from) and self:isWeak(p)
+					and getKnownCard(p, self.player, "Slash", true, "he") == 0 then
+					keep = false
+				end
+			end
+		end
+		if keep or not self:isEnemy(to) then return false end
+		local nulltype = self.room:getTag("NullificatonType"):toBool()
+		if nulltype then
+			targets:removeOne(to)
+			local num = 0
+			local weak
+			for _, p in sgs.qlist(targets) do
+				if to:isFriendWith(p) and self:aoeIsEffective(card, p, menghuo or from) then
+					num = num + 1
+				end
+				if self:isWeak(to) or self:isWeak(p) then
+					weak = true
+				end
+			end
+			return num > 1 or weak, true
+		else
+			if self:isWeak(to) then return true, true end
+		end		
+	end
+	return
+end
+
 sgs.ai_skill_cardask.aoe = function(self, data, pattern, target, name)
 	if sgs.ai_skill_cardask.nullfilter(self, data, pattern, target) then return "." end
 
