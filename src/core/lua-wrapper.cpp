@@ -105,7 +105,9 @@ static QHash<QString, QString> LuaSkillCardsSkillName;
 
 LuaSkillCard::LuaSkillCard(const char *name, const char *skillName)
     : SkillCard(), filter(0), feasible(0),
-    about_to_use(0), on_use(0), on_effect(0), on_validate(0), on_validate_in_response(0), extra_cost(0)
+    about_to_use(0), on_use(0), on_effect(0),
+    on_validate(0), on_validate_in_response(0),
+    extra_cost(0), on_turn_broken(0)
 {
     if (name) {
         LuaSkillCards.insert(name, this);

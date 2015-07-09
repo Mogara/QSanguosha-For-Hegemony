@@ -1531,6 +1531,9 @@ public:
     bool isCanceled(const CardEffectStruct &effect);
     int askForCardChosen(ServerPlayer *player, ServerPlayer *who, const char *flags, const char *reason,
         bool handcard_visible = false, Card::HandlingMethod method = Card::MethodNone, const QList<int> &disabled_ids = QList<int>());
+        
+    QList<const Card*> askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee, const char *handle_string, const char *reason);
+    
     const Card *askForCard(ServerPlayer *player, const char *pattern, const char *prompt, const QVariant &data, const char *skill_name);
     const Card *askForCard(ServerPlayer *player, const char *pattern, const char *prompt, const QVariant &data = QVariant(),
         Card::HandlingMethod method = Card::MethodDiscard, ServerPlayer *to = NULL, bool isRetrial = false,

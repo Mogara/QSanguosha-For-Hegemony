@@ -360,6 +360,10 @@ public:
     bool isCanceled(const CardEffectStruct &effect);
     int askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QString &flags, const QString &reason,
         bool handcard_visible = false, Card::HandlingMethod method = Card::MethodNone, const QList<int> &disabled_ids = QList<int>());
+
+    QList<int> askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee, const QStringList &handle_list,const QString &reason);
+    QList<const Card*> askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee, const QString &handle_string, const QString &reason);
+
     const Card *askForCard(ServerPlayer *player, const QString &pattern, const QString &prompt, const QVariant &data, const QString &skill_name);
     const Card *askForCard(ServerPlayer *player, const QString &pattern, const QString &prompt, const QVariant &data = QVariant(),
         Card::HandlingMethod method = Card::MethodDiscard, ServerPlayer *to = NULL, bool isRetrial = false,

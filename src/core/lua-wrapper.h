@@ -257,6 +257,7 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
     virtual void extraCost(Room *room, const CardUseStruct &card_use) const;
+    void onTurnBroken(const char *function_name, Room *room, QVariant &value) const;
 
     // the lua callbacks
     LuaFunction filter;
@@ -267,6 +268,7 @@ public:
     LuaFunction on_validate;
     LuaFunction on_validate_in_response;
     LuaFunction extra_cost;
+    LuaFunction on_turn_broken;
 };
 
 class LuaBasicCard : public BasicCard

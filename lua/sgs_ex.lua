@@ -289,6 +289,18 @@ function sgs.CreateSkillCard(spec)
 
 	if spec.extra_cost then assert(type(spec.extra_cost) == "function") end
 	card.extra_cost = spec.extra_cost or 0
+	
+	if spec.on_turn_broken and type(spec.on_turn_broken) == "function" then
+		function card:on_turn_broken(func,room,value)
+			if func == "about_to_use" or func == "on_use" or func == "on_validate" or func == "extra_cost" then
+				spec.on_turn_broken(self,func,room,value:toCardUse())
+			elseif func == "on_validate_in_response" then
+				spec.on_turn_broken(self,func,room,value:toPlayer())
+			elseif func == "on_effect" then
+				spec.on_turn_broken(self,func,room,value:toCardEffect())
+			end
+		end
+	end
 
 	return card
 end

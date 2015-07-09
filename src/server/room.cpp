@@ -1304,13 +1304,35 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     return result;
 }
 
+static bool checkCard(ServerPlayer *to_check,const QString &flags)
+{
+    if (to_check && to_check->isAlive() && !flags.isEmpty()){
+        if(flags.length() == 1){
+            if(flags == "h" && !to_check->isKongcheng())
+                return true;
+            else if (flags == "e" && !to_check->getEquips().isEmpty())
+                return true;
+            else if (flags == "j" && !to_check->getJudgingArea().isEmpty())
+                return true;
+        } else {
+            for (int i = 0; i < flags.length(); ++i)
+            {
+                QString flag = flags.at(i);
+                if (checkCard(to_check,flag))
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
 int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QString &flags, const QString &reason,
     bool handcard_visible, Card::HandlingMethod method, const QList<int> &disabled_ids)
 {
     tryPause();
     notifyMoveFocus(player, S_COMMAND_CHOOSE_CARD);
-
-    if (handcard_visible && !who->isKongcheng()) {
+    Q_ASSERT(checkCard(who,flags)); //a very six solution...
+    if ((handcard_visible && !who->isKongcheng())) {
         QList<int> handcards = who->handCards();
         JsonArray arg;
         arg << who->objectName();
@@ -1370,6 +1392,43 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
         .arg(player->objectName()).arg(who->objectName()));
     thread->trigger(ChoiceMade, this, player, decisionData);
     return card_id;
+}
+
+QList<int> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee, const QStringList &handle_list, const QString &reason)
+{
+    QMap<int,Player::Place> records;
+    records.clear();
+    if(chooser && chooser->isAlive() && choosee && choosee->isAlive() && !choosee->isAllNude())
+    {
+        setPlayerFlag(choosee,"Global_InTempMoving");
+        foreach(const QString &src,handle_list)
+        {
+            QStringList handle = src.split("^");
+            Q_ASSERT(handle.length() == 4);
+            if (!checkCard(choosee,handle[1])) continue;
+            QList<int> ids;
+            foreach(const QString &id,handle[4].split("+"))
+                ids.append(id.toInt());
+            int id = askForCardChosen(chooser,choosee,handle[1],reason,handle[2] == "true",
+                    Sanguosha->getCardHandlingMethod(handle[3]),ids);
+            records[id] = getCardPlace(id);
+            choosee->addToPile("#"+reason,id,false);
+
+        }
+        foreach(int id,records.keys())
+            moveCardTo(Sanguosha->getCard(id), choosee, records[id], false);
+        setPlayerFlag(choosee,"-Global_InTempMoving");
+    }
+    return records.keys();
+}
+
+QList<const Card *> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee, const QString &handle_string, const QString &reason)
+{
+    QList<int> value = askForCardsChosen(chooser,choosee,handle_string.split("|"),reason);
+    QList<const Card *> result;
+    foreach (int id,value)
+        result.append(getCard(id));
+    return result;
 }
 
 const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const QString &prompt,

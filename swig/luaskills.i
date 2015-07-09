@@ -228,7 +228,9 @@ public:
     void setCanRecast(bool can_recast);
     void setMute(bool isMute);
     void setHandlingMethod(Card::HandlingMethod handling_method);
+    void onTurnBroken(const char *function_name, Room *room, QVariant &value);
     LuaSkillCard *clone() const;
+    
 
     LuaFunction filter;
     LuaFunction feasible;
@@ -238,6 +240,7 @@ public:
     LuaFunction on_validate;
     LuaFunction on_validate_in_response;
     LuaFunction extra_cost;
+    LuaFunction on_turn_broken;
 };
 
 class LuaBasicCard: public BasicCard {
@@ -1387,22 +1390,30 @@ void LuaSkillCard::onUse(Room *room, const CardUseStruct &card_use) const
 {
     if (about_to_use == 0)
         return SkillCard::onUse(room, card_use);
+    try {
+        lua_State *L = Sanguosha->getLuaState();
 
-    lua_State *L = Sanguosha->getLuaState();
+        // the callback
+        lua_rawgeti(L, LUA_REGISTRYINDEX, about_to_use);
 
-    // the callback
-    lua_rawgeti(L, LUA_REGISTRYINDEX, about_to_use);
+        pushSelf(L);
 
-    pushSelf(L);
+        SWIG_NewPointerObj(L, room, SWIGTYPE_p_Room, 0);
+        SWIG_NewPointerObj(L, &card_use, SWIGTYPE_p_CardUseStruct, 0);
 
-    SWIG_NewPointerObj(L, room, SWIGTYPE_p_Room, 0);
-    SWIG_NewPointerObj(L, &card_use, SWIGTYPE_p_CardUseStruct, 0);
-
-    int error = lua_pcall(L, 3, 0, 0);
-    if (error) {
-        const char *error_msg = lua_tostring(L, -1);
-        lua_pop(L, 1);
-        room->output(error_msg);
+        int error = lua_pcall(L, 3, 0, 0);
+        if (error) {
+            const char *error_msg = lua_tostring(L, -1);
+            lua_pop(L, 1);
+            room->output(error_msg);
+        }
+    }
+    catch (TriggerEvent e) {
+        if (e == TurnBroken || e == StageChange) {
+            QVariant data = QVariant::fromValue(card_use);
+            onTurnBroken("about_to_use",room,data);
+        }
+        throw e;
     }
 }
 
@@ -1410,28 +1421,37 @@ void LuaSkillCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
 {
     if (on_use == 0)
         return SkillCard::use(room, source, targets);
+    try {
+        lua_State *L = Sanguosha->getLuaState();
 
-    lua_State *L = Sanguosha->getLuaState();
+        // the callback
+        lua_rawgeti(L, LUA_REGISTRYINDEX, on_use);
 
-    // the callback
-    lua_rawgeti(L, LUA_REGISTRYINDEX, on_use);
+        pushSelf(L);
 
-    pushSelf(L);
+        SWIG_NewPointerObj(L, room, SWIGTYPE_p_Room, 0);
+        SWIG_NewPointerObj(L, source, SWIGTYPE_p_ServerPlayer, 0);
 
-    SWIG_NewPointerObj(L, room, SWIGTYPE_p_Room, 0);
-    SWIG_NewPointerObj(L, source, SWIGTYPE_p_ServerPlayer, 0);
+        lua_createtable(L, targets.length(), 0);
+        for (int i = 0; i < targets.length(); ++i) {
+            SWIG_NewPointerObj(L, targets.at(i), SWIGTYPE_p_ServerPlayer, 0);
+            lua_rawseti(L, -2, i + 1);
+        }
 
-    lua_createtable(L, targets.length(), 0);
-    for (int i = 0; i < targets.length(); ++i) {
-        SWIG_NewPointerObj(L, targets.at(i), SWIGTYPE_p_ServerPlayer, 0);
-        lua_rawseti(L, -2, i + 1);
+        int error = lua_pcall(L, 4, 0, 0);
+        if (error) {
+            const char *error_msg = lua_tostring(L, -1);
+            lua_pop(L, 1);
+            room->output(error_msg);
+        }
     }
-
-    int error = lua_pcall(L, 4, 0, 0);
-    if (error) {
-        const char *error_msg = lua_tostring(L, -1);
-        lua_pop(L, 1);
-        room->output(error_msg);
+    catch (TriggerEvent e) {
+        if (e == TurnBroken || e == StageChange) {
+            CardUseStruct card_use(this,source,targets);
+            QVariant data = QVariant::fromValue(card_use);
+            onTurnBroken("on_use",room,data);
+        }
+        throw e;
     }
 }
 
@@ -1440,21 +1460,30 @@ void LuaSkillCard::onEffect(const CardEffectStruct &effect) const
     if (on_effect == 0)
         return SkillCard::onEffect(effect);
 
-    lua_State *L = Sanguosha->getLuaState();
+    try {
+        lua_State *L = Sanguosha->getLuaState();
 
-    // the callback
-    lua_rawgeti(L, LUA_REGISTRYINDEX, on_effect);
+        // the callback
+        lua_rawgeti(L, LUA_REGISTRYINDEX, on_effect);
 
-    pushSelf(L);
+        pushSelf(L);
 
-    SWIG_NewPointerObj(L, &effect, SWIGTYPE_p_CardEffectStruct, 0);
+        SWIG_NewPointerObj(L, &effect, SWIGTYPE_p_CardEffectStruct, 0);
 
-    int error = lua_pcall(L, 2, 0, 0);
-    if (error) {
-        const char *error_msg = lua_tostring(L, -1);
-        lua_pop(L, 1);
-        Room *room = effect.to->getRoom();
-        room->output(error_msg);
+        int error = lua_pcall(L, 2, 0, 0);
+        if (error) {
+            const char *error_msg = lua_tostring(L, -1);
+            lua_pop(L, 1);
+            Room *room = effect.to->getRoom();
+            room->output(error_msg);
+        }
+    }
+    catch (TriggerEvent e) {
+        if (e == TurnBroken || e == StageChange) {
+            QVariant data = QVariant::fromValue(effect);
+            onTurnBroken("on_effect",effect.from->getRoom(),data);
+        }
+        throw e;
     }
 }
 
@@ -1462,60 +1491,81 @@ const Card *LuaSkillCard::validate(CardUseStruct &cardUse) const
 {
     if (on_validate == 0)
         return SkillCard::validate(cardUse);
+    try {
+        lua_State *L = Sanguosha->getLuaState();
 
-    lua_State *L = Sanguosha->getLuaState();
+        // the callback
+        lua_rawgeti(L, LUA_REGISTRYINDEX, on_validate);
 
-    // the callback
-    lua_rawgeti(L, LUA_REGISTRYINDEX, on_validate);
+        pushSelf(L);
 
-    pushSelf(L);
+        SWIG_NewPointerObj(L, &cardUse, SWIGTYPE_p_CardUseStruct, 0);
 
-    SWIG_NewPointerObj(L, &cardUse, SWIGTYPE_p_CardUseStruct, 0);
+        int error = lua_pcall(L, 2, 1, 0);
+        if (error) {
+            const char *error_msg = lua_tostring(L, -1);
+            lua_pop(L, 1);
+            cardUse.from->getRoom()->output(error_msg);
+            return SkillCard::validate(cardUse);
+        }
 
-    int error = lua_pcall(L, 2, 1, 0);
-    if (error) {
-        Error(L);
-        return SkillCard::validate(cardUse);
+        void *card_ptr;
+        int result = SWIG_ConvertPtr(L, -1, &card_ptr, SWIGTYPE_p_Card, 0);
+        lua_pop(L, 1);
+        if (SWIG_IsOK(result)) {
+            const Card *card = static_cast<const Card *>(card_ptr);
+            return card;
+        } else
+            return SkillCard::validate(cardUse);
     }
-
-    void *card_ptr;
-    int result = SWIG_ConvertPtr(L, -1, &card_ptr, SWIGTYPE_p_Card, 0);
-    lua_pop(L, 1);
-    if (SWIG_IsOK(result)) {
-        const Card *card = static_cast<const Card *>(card_ptr);
-        return card;
-    } else
-        return SkillCard::validate(cardUse);
+    catch (TriggerEvent e) {
+        if (e == TurnBroken || e == StageChange) {
+            QVariant data = QVariant::fromValue(cardUse);
+            onTurnBroken("on_validate",cardUse.from->getRoom(),data);
+        }
+        throw e;
+    }
 }
 
 const Card *LuaSkillCard::validateInResponse(ServerPlayer *user) const
 {
     if (on_validate_in_response == 0)
         return SkillCard::validateInResponse(user);
+    try {
+        lua_State *L = Sanguosha->getLuaState();
 
-    lua_State *L = Sanguosha->getLuaState();
+        // the callback
+        lua_rawgeti(L, LUA_REGISTRYINDEX, on_validate_in_response);
 
-    // the callback
-    lua_rawgeti(L, LUA_REGISTRYINDEX, on_validate_in_response);
+        pushSelf(L);
 
-    pushSelf(L);
+        SWIG_NewPointerObj(L, user, SWIGTYPE_p_ServerPlayer, 0);
 
-    SWIG_NewPointerObj(L, user, SWIGTYPE_p_ServerPlayer, 0);
+        int error = lua_pcall(L, 2, 1, 0);
+        if (error) {
+            const char *error_msg = lua_tostring(L, -1);
+            lua_pop(L, 1);
+            user->getRoom()->output(error_msg);
+            return SkillCard::validateInResponse(user);
+        }
 
-    int error = lua_pcall(L, 2, 1, 0);
-    if (error) {
-        Error(L);
-        return SkillCard::validateInResponse(user);
+        void *card_ptr;
+        int result = SWIG_ConvertPtr(L, -1, &card_ptr, SWIGTYPE_p_Card, 0);
+        lua_pop(L, 1);
+        if (SWIG_IsOK(result)) {
+            const Card *card = static_cast<const Card *>(card_ptr);
+            return card;
+        } else 
+            return SkillCard::validateInResponse(user);
+        
     }
-
-    void *card_ptr;
-    int result = SWIG_ConvertPtr(L, -1, &card_ptr, SWIGTYPE_p_Card, 0);
-    lua_pop(L, 1);
-    if (SWIG_IsOK(result)) {
-        const Card *card = static_cast<const Card *>(card_ptr);
-        return card;
-    } else
-        return SkillCard::validateInResponse(user);
+    catch (TriggerEvent e) {
+        if (e == TurnBroken || e == StageChange) {
+            QVariant data = QVariant::fromValue(user);
+            onTurnBroken("on_validate_in_response",user->getRoom(),data);
+        }
+        throw e;
+    }
 }
 
 void LuaSkillCard::extraCost(Room *room, const CardUseStruct &card_use) const
@@ -1523,18 +1573,51 @@ void LuaSkillCard::extraCost(Room *room, const CardUseStruct &card_use) const
     if (extra_cost == 0)
         return SkillCard::extraCost(room, card_use);
 
+    try{
+        lua_State *L = Sanguosha->getLuaState();
 
-    lua_State *L = Sanguosha->getLuaState();
+        // the callback
+        lua_rawgeti(L, LUA_REGISTRYINDEX, extra_cost);
 
-    // the callback
-    lua_rawgeti(L, LUA_REGISTRYINDEX, extra_cost);
+        pushSelf(L);
 
+        SWIG_NewPointerObj(L, room, SWIGTYPE_p_Room, 0);
+        SWIG_NewPointerObj(L, &card_use, SWIGTYPE_p_CardUseStruct, 0);
+
+        int error = lua_pcall(L, 3, 0, 0);
+        if (error) {
+            const char *error_msg = lua_tostring(L, -1);
+            lua_pop(L, 1);
+            room->output(error_msg);
+        }
+    }
+    catch (TriggerEvent e) {
+        if (e == TurnBroken || e == StageChange) {
+            QVariant data = QVariant::fromValue(card_use);
+            onTurnBroken("extra_cost",room,data);
+        }
+        throw e;
+    }
+}
+
+void LuaSkillCard::onTurnBroken(const char *function_name, Room *room, QVariant &value) const
+{
+    if (on_turn_broken == 0)
+        return;
+    lua_State *L = room->getLuaState();
+    
+    lua_rawgeti(L, LUA_REGISTRYINDEX, on_turn_broken);
+    
     pushSelf(L);
-
+    
+    lua_pushstring(L,function_name);
+    
     SWIG_NewPointerObj(L, room, SWIGTYPE_p_Room, 0);
-    SWIG_NewPointerObj(L, &card_use, SWIGTYPE_p_CardUseStruct, 0);
-
-    int error = lua_pcall(L, 3, 0, 0);
+    
+    
+    SWIG_NewPointerObj(L, &value, SWIGTYPE_p_QVariant, 0);
+    
+    int error = lua_pcall(L, 4, 0, 0);
     if (error) {
         const char *error_msg = lua_tostring(L, -1);
         lua_pop(L, 1);
