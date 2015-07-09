@@ -183,14 +183,14 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 	if value < 8 then return "throw" else return "damage" end
 end
 
-sgs.ai_nullification.Drowning = function(self, card, from, to, positive)
+sgs.ai_nullification.Drowning = function(self, card, from, to, positive, keep)
 	if positive then
 		if self:isFriend(to) then
 			if self:needToThrowArmor(to) then return end
-			if to:getEquips():length() >= 2 then return true end
+			if to:getEquips():length() >= 2 then return true, true end
 		end
 	else
-		if self:isFriend(from) and (self:getOverflow() > 0 or self:getCardsNum("Nullification") > 1) then return true end
+		if self:isFriend(from) and (self:getOverflow() > 0 or self:getCardsNum("Nullification") > 1) then return true, true end
 	end
 	return
 end
@@ -248,11 +248,81 @@ function SmartAI:useCardBurningCamps(card, use)
 	end
 end
 
-sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive)
+sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, keep)
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. card:toString()):toList()
+	for _, q in sgs.qlist(players) do
+		targets:append(q:toPlayer())
+	end
 	if positive then
-		if self:isFriendWith(to) and self:isEnemy(from) then return true end
+		if from:objectName() == self.player:objectName() then return false end
+		local chained = {}
+		local dangerous
+		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasShownSkill("jueqing") then
+			for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
+				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isFriend(p) then
+					table.insert(chained, p)
+					if self:isWeak(p) then dangerous = true end
+				end
+			end
+		end
+		if to:hasArmorEffect("Vine") and #chained > 0 then dangerous = true end
+		local friends = {}
+		if self:isFriend(to) then
+			for _, p in sgs.qlist(targets) do
+				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
+					table.insert(friends, p)
+					if self:isWeak(p) or p:hasArmorEffect("Vine") then dangerous = true end
+				end
+			end
+		end
+		if #chained + #friends > 2 or dangerous then return true, #friends <= 1 end
+		if keep then return false end
+		if self:isFriendWith(to) and self:isEnemy(from) then return true, #friends <= 1 end
 	else
-		if self:isFriend(from) and self:isEnemy(to) then return true end
+		if not self:isFriend(from) then return false end
+		local chained = {}
+		local dangerous
+		local enemies = {}
+		local good
+		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasShownSkill("jueqing") then
+			for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
+				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isFriend(p) then
+					table.insert(chained, p)
+					if self:isWeak(p) then dangerous = true end
+				end
+				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isEnemy(p) then
+					table.insert(enemies, p)
+					if self:isWeak(p) then good = true end
+				end
+			end
+		end
+		if to:hasArmorEffect("Vine") and #chained > 0 then dangerous = true end
+		if to:hasArmorEffect("Vine") and #enemies > 0 then good = true end
+		local friends = {}
+		if self:isFriend(to) then
+			for _, p in sgs.qlist(targets) do
+				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
+					table.insert(friends, p)
+					if self:isWeak(p) or p:hasArmorEffect("Vine") then dangerous = true end
+				end
+			end
+		end
+		if self:isEnemy(to) then
+			for _, p in sgs.qlist(targets) do
+				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
+					if self:isWeak(p) or p:hasArmorEffect("Vine") then good = true end
+				end
+			end
+		end
+		if #chained + #friends > 2 or dangerous then return false end
+		if keep then
+			local nulltype = self.room:getTag("NullificatonType"):toBool()
+			if nulltype and targets:length() > 1 then good = true end
+			if good then keep = false end
+		end
+		if keep then return false end
+		if self:isFriend(from) and self:isEnemy(to) then return true, true end
 	end
 	return
 end
@@ -454,12 +524,14 @@ function SmartAI:useCardLureTiger(LureTiger, use)
 end
 
 sgs.ai_nullification.LureTiger = function(self, card, from, to, positive)
+	--[[
 	if positive then
 		if self:isFriendWith(to) and self:isEnemy(from) then return true end
 	else
 		if self:isFriend(from) and self:isEnemy(to) then return true end
 	end
-	return
+	--]]
+	return false
 end
 
 sgs.ai_use_value.LureTiger = 5
@@ -584,15 +656,36 @@ sgs.ai_skill_choice["fight_together"] = function(self, choices)
 	return choices[#choices]
 end
 
-sgs.ai_nullification.FightTogether = function(self, card, from, to, positive)
+sgs.ai_nullification.FightTogether = function(self, card, from, to, positive, keep)
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. card:toString()):toList()
+	for _, q in sgs.qlist(players) do
+		if q:toPlayer():objectName() ~= to:objectName() and to:isFriendWith(q:toPlayer()) then
+			targets:append(q:toPlayer())
+		end
+	end
+	local ed, no = 0, 0
 	if positive then
 		if to:isChained() then
-			if self:isEnemy(to) and to:hasShownSkills(sgs.cardneed_skill .. "|" .. sgs.priority_skill .. "|" .. sgs.wizard_harm_skill) then return true end
+			local single = true
+			if self:isEnemy(to) and to:hasShownSkills(sgs.cardneed_skill .. "|" .. sgs.priority_skill .. "|" .. sgs.wizard_harm_skill) then
+				for _, p in sgs.qlist(targets) do
+					if p:isChained() then ed = ed + 1 else no = no + 1 end
+				end
+				if targets:length() > 0 and ed > no then single = false end
+				return true, single
+			end
 		else
-			if self:isFriendWith(to) and to:hasArmorEffect("Vine") then return true end
+			if self:isFriendWith(to) and to:hasArmorEffect("Vine") then
+				for _, p in sgs.qlist(targets) do
+					if p:isChained() then ed = ed + 1 else no = no + 1 end
+				end
+				if targets:length() > 0 and no >= ed then single = false end
+				return true, single
+			end
 		end
 	else
-		if self:isFriendWith(to) and to:isChained() then return true end
+		if self:isFriendWith(to) and to:isChained() then return true, true end
 	end
 	return
 end
@@ -671,16 +764,34 @@ sgs.ai_use_value.AllianceFeast = 7.5
 sgs.ai_use_priority.AllianceFeast = 8.8
 sgs.ai_keep_value.AllianceFeast = 3.26
 
-sgs.ai_nullification.AllianceFeast = function(self, card, from, to, positive)
+sgs.ai_nullification.AllianceFeast = function(self, card, from, to, positive, keep)
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. card:toString()):toList()
+	for _, q in sgs.qlist(players) do
+		targets:append(q:toPlayer())
+	end
 	if positive then
 		if self:isEnemy(to) then
-			if to:objectName() ~= from:objectName() and (to:isWounded() or not to:faceUp()) then return true end
-			if to:objectName() == from:objectName() and to:getMark("alliance_feast") >= 2 then return true end
+			local wounded
+			for _, p in sgs.qlist(targets) do
+				if p:objectName() ~= from:objectName() and (p:isWounded() or not p:faceUp()) then wounded = true end
+				if p:objectName() ~= from:objectName() and self:isWeak(p) then keep = false end
+			end
+			if keep then return false end
+			local hegnull = self:getCard("HegNullification") or (self.room:getTag("NullifyingTimes"):toInt() > 0 and self.room:getTag("NullificatonType"):toBool())
+			if to:objectName() ~= from:objectName() and wounded and hegnull then
+				return true, players:length() <= 1
+			end
+			if to:objectName() ~= from:objectName() and (to:isWounded() or not to:faceUp()) then
+				return true, true
+			end
+			if to:objectName() == from:objectName() and to:getMark("alliance_feast") >= 2 then return true, true end
 		end
 	else
 		if self:isFriend(to) then
-			if to:objectName() ~= from:objectName() and (to:isWounded() or not to:faceUp()) then return true end
-			if to:objectName() == from:objectName() and to:getMark("alliance_feast") >= 2 then return true end
+			if to:objectName() ~= from:objectName() and (to:isWounded() or not to:faceUp()) then return true, true end
+			if keep then return false end
+			if to:objectName() == from:objectName() and to:getMark("alliance_feast") >= 2 then return true, true end
 		end
 	end
 	return
@@ -698,11 +809,11 @@ sgs.ai_use_value.ThreatenEmperor = 8
 sgs.ai_use_priority.ThreatenEmperor = 0
 sgs.ai_keep_value.ThreatenEmperor = 3.2
 
-sgs.ai_nullification.ThreatenEmperor = function(self, card, from, to, positive)
+sgs.ai_nullification.ThreatenEmperor = function(self, card, from, to, positive, keep)
 	if positive then
-		if self:isEnemy(from) then return true end
+		if self:isEnemy(from) then return true, true end
 	else
-		if self:isFriend(from) then return true end
+		if self:isFriend(from) then return true, true end
 	end
 	return
 end
