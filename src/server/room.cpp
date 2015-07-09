@@ -1404,11 +1404,15 @@ QList<int> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee,
         foreach(const QString &src,handle_list)
         {
             QStringList handle = src.split("^");
-            Q_ASSERT(handle.length() == 4);
+            if (handle[1].isEmpty()) continue;
             if (!checkCard(choosee,handle[1])) continue;
+            if (handle[2].isEmpty()) handle[2] = "false";
+            if (handle[3].isEmpty()) handle[3] = "none";
             QList<int> ids;
-            foreach(const QString &id,handle[4].split("+"))
-                ids.append(id.toInt());
+            ids.clear();
+            if (!handle[4].isEmpty())
+                foreach(const QString &id,handle[4].split("+"))
+                    ids.append(id.toInt());
             int id = askForCardChosen(chooser,choosee,handle[1],reason,handle[2] == "true",
                     Sanguosha->getCardHandlingMethod(handle[3]),ids);
             records[id] = getCardPlace(id);

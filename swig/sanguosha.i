@@ -376,8 +376,8 @@ public:
     void removeTag(const char *tag_name) {
         $self->tag.remove(tag_name);
     }
-    bool operator==(Player *other) {
-        return $self->objectName() == other->objectName();
+    bool operator == (const Player &other) const {
+        return $self->objectName() == other.objectName(); 
     }
     
 };
