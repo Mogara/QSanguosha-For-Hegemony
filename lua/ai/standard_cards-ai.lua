@@ -3227,11 +3227,12 @@ sgs.ai_use_priority.BefriendAttacking = 9.28
 sgs.ai_use_value.BefriendAttacking = 8.9
 sgs.ai_keep_value.BefriendAttacking = 3.88
 
-sgs.ai_nullification.BefriendAttacking = function(self, card, from, to, positive)
+sgs.ai_nullification.BefriendAttacking = function(self, card, from, to, positive, keep)
+	if keep then return false end
 	if positive then
-		if not self:isFriend(to) and self:isEnemy(from) and self:isWeak(from) then return true end
+		if not self:isFriend(to) and self:isEnemy(from) and self:isWeak(from) then return true, true end
 	else
-		if self:isFriend(from) then return true end
+		if self:isFriend(from) then return true, true end
 	end
 	return
 end
