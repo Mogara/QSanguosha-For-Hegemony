@@ -3169,15 +3169,30 @@ sgs.ai_card_intention.AwaitExhausted = function(self, card, from, tos)
 		sgs.updateIntention(from, to, -50)
 	end
 end
-sgs.ai_nullification.AwaitExhausted = function(self, card, from, to, positive)
+sgs.ai_nullification.AwaitExhausted = function(self, card, from, to, positive, keep)
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. card:toString()):toList()
+	for _, q in sgs.qlist(players) do
+		targets:append(q:toPlayer())
+	end
+	if keep then return false end
 	if positive then
-		if self:isEnemy(to) and self:evaluateKingdom(to) ~= "unknown" then
-			if self:getOverflow() > 0 or self:getCardsNum("Nullification") > 1 then return true end
-			if to:hasShownSkills(sgs.lose_equip_skill) and to:getEquips():length() > 0 then return true end
-			if to:getArmor() and self:needToThrowArmor(to) then return true end
+		local hegnull = self:getCard("HegNullification") or (self.room:getTag("NullifyingTimes"):toInt() > 0 and self.room:getTag("NullificatonType"):toBool())
+		if self:isEnemy(to) and targets:length() > 1 and hegnull then
+			for _, p in sgs.qlist(targets) do
+				if (p:hasShownSkills(sgs.lose_equip_skill) and p:getEquips():length() > 0)
+					or (p:getArmor() and self:needToThrowArmor(p)) then
+					return true, false
+				end
+			end
+		else
+			if self:isEnemy(to) and self:evaluateKingdom(to) ~= "unknown" then
+				if to:hasShownSkills(sgs.lose_equip_skill) and to:getEquips():length() > 0 then return true, true end
+				if to:getArmor() and self:needToThrowArmor(to) then return true, true end
+			end
 		end
 	else
-		if self:isFriend(to) and (self:getOverflow() > 0 or self:getCardsNum("Nullification") > 1) then return true end
+		if self:isFriend(to) and (self:getOverflow() > 0 or self:getCardsNum("Nullification") > 1) then return true, true end
 	end
 	return
 end
