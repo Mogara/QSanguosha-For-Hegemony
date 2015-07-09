@@ -1283,6 +1283,8 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
         log2.arg = "hegnul_" + heg_nullification_selection;
         sendLog(log2);
     }
+
+    setTag("NullificatonType", isHegNullification);
     thread->delay(500);
 
     QVariant decisionData = QVariant::fromValue("Nullification:" + QString(trick->getClassName())
@@ -1296,6 +1298,8 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     effect.to = repliedPlayer;
     if (card->isCancelable(effect))
         result = !_askForNullification(card, repliedPlayer, to, !positive, aiHelper);
+
+    removeTag("NullificatonType");
 
     if (isHegNullification && heg_nullification_selection == "all" && result) {
         setTag("HegNullificationValid", true);
