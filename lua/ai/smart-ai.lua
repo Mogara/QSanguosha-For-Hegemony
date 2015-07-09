@@ -2139,8 +2139,42 @@ end
 
 function SmartAI:askForNullification(trick, from, to, positive)
 	if self.player:isDead() then return nil end
-	local null_card = self:getCardId("Nullification")
+	local nullcards = self.player:getCards("Nullification")
 	local null_num = self:getCardsNum("Nullification")
+	local null_card = self:getCardId("Nullification")
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. trick:toString()):toList()
+	local names = {}
+	for _, q in sgs.qlist(players) do
+		targets:append(q:toPlayer())
+	end
+	if null_num > 1 then
+		for _, card in sgs.qlist(nullcards) do
+			if not card:isKindOf("HegNullification") then
+				null_card = card:toString()
+				break
+			end
+		end
+	end
+	local keep				--要为被乐的友方保留无懈
+	if null_num == 1 then
+		local only = true
+		for _, p in ipairs(self.friends_noself) do
+			if getKnownCard(p, self.player, "Nullification", nil, "he") > 0 then
+				only = false
+				break
+			end
+		end
+		if only then
+			for _, p in ipairs(self.friends) do
+				if p:containsTrick("indulgence") and not p:hasShownSkills("guanxing|yizhi|shensu|qiaobian") and p:getHandcardNum() >= p:getHp() and not trick:isKindOf("Indulgence") then
+					keep = true
+					break
+				end
+			end
+		end
+	end
+
 	if null_card then null_card = sgs.Card_Parse(null_card) else return nil end
 	assert(null_card)
 	if self.player:isLocked(null_card) then return nil end
@@ -2169,7 +2203,12 @@ function SmartAI:askForNullification(trick, from, to, positive)
 
 	local callback = sgs.ai_nullification[trick:getClassName()]
 	if type(callback) == "function" then
-		local shouldUse = callback(self, trick, from, to, positive)
+		local shouldUse, single = callback(self, trick, from, to, positive, keep)
+		if self.room:getTag("NullifyingTimes"):toInt() > 0 then single = true end
+		if shouldUse and not single then
+			local heg_null_card = self:getCard("HegNullification")
+			if heg_null_card then null_card = heg_null_card end
+		end
 		return shouldUse and null_card
 	end
 
