@@ -2433,12 +2433,12 @@ function SmartAI:getCardRandomly(who, flags)
 	return card:getEffectiveId()
 end
 
-function SmartAI:askForCardChosen(who, flags, reason, method)
+function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 	local isDiscard = (method == sgs.Card_MethodDiscard)
 	local cardchosen = sgs.ai_skill_cardchosen[string.gsub(reason, "%-", "_")]
 	local card
 	if type(cardchosen) == "function" then
-		card = cardchosen(self, who, flags, method)
+		card = cardchosen(self, who, flags, method, disable_list)
 		if type(card) == "number" then return card
 		elseif card then return card:getEffectiveId() end
 	elseif type(cardchosen) == "number" then

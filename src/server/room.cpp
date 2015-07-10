@@ -1353,7 +1353,7 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
         AI *ai = player->getAI();
         if (ai) {
             thread->delay();
-            card_id = ai->askForCardChosen(who, flags, reason, method);
+            card_id = ai->askForCardChosen(who, flags, reason, method,disabled_ids);
             if (card_id == -1) {
                 QList<const Card *> cards = who->getCards(flags);
                 if (method == Card::MethodDiscard) {
@@ -5268,7 +5268,7 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
                 throwCard(dummy, movereason, player);
 
                 QVariant data;
-                data = QString("%1:%2").arg("cardDiscard").arg(dummy->toString());
+                data = QString("%1:%2:%3").arg("cardDiscard").arg(reason).arg(dummy->toString());
                 thread->trigger(ChoiceMade, this, player, data);
             }
 
@@ -5343,7 +5343,7 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
     }
 
     QVariant data;
-    data = QString("%1:%2").arg("cardDiscard").arg(dummy_card.toString());
+    data = QString("%1:%2:%3").arg("cardDiscard").arg(reason).arg(dummy_card.toString());
     thread->trigger(ChoiceMade, this, player, data);
 
     return true;
@@ -5393,6 +5393,11 @@ const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, in
     if (to_exchange.isEmpty()) return NULL;
 
     DummyCard *card = new DummyCard(to_exchange);
+
+    QVariant data;
+    data = QString("%1:%2:%3").arg("cardExchange").arg(reason).arg(card->toString());
+    thread->trigger(ChoiceMade, this, player, data);
+
     return card;
 }
 

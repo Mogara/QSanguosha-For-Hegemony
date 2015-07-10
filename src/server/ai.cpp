@@ -206,7 +206,7 @@ const Card *TrustAI::askForNullification(const Card *, ServerPlayer *, ServerPla
     return NULL;
 }
 
-int TrustAI::askForCardChosen(ServerPlayer *, const QString &, const QString &, Card::HandlingMethod)
+int TrustAI::askForCardChosen(ServerPlayer *, const QString &, const QString &, Card::HandlingMethod,const QList<int> &)
 {
     return -1;
 }
