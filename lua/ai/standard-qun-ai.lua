@@ -851,7 +851,11 @@ sgs.ai_skill_playerchosen.shuangren = function(self, targets)
 	local max_point = max_card:getNumber()
 
 	local slash = sgs.cloneCard("slash")
-	local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+	local dummy_use = { isDummy = true, to = sgs.SPlayerList(), current_targets = {}}
+	local zhangjiao = sgs.findPlayerByShownSkillName("leiji")
+	if zhangjiao and self:isFriend(zhangjiao) then
+		table.insert(dummy_use.current_targets, zhangjiao:objectName())
+	end
 	self.player:setFlags("slashNoDistanceLimit")
 	self:useBasicCard(slash, dummy_use)
 	self.player:setFlags("-slashNoDistanceLimit")
