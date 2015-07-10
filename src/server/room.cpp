@@ -1407,18 +1407,19 @@ QList<int> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee,
         setPlayerFlag(choosee,"Global_InTempMoving");
         foreach(const QString &src,handle_list)
         {
+            if (src.isEmpty()) continue;
             QStringList handle = src.split("^");
-            if (handle[1].isEmpty()) continue;
-            if (!checkCard(choosee,handle[1])) continue;
-            if (handle[2].isEmpty()) handle[2] = "false";
-            if (handle[3].isEmpty()) handle[3] = "none";
+            if (handle[0].isEmpty()) continue;
+            if (!checkCard(choosee,handle[0])) continue;
+            if (handle.length() == 1) handle.append("false");
+            if (handle.length() == 2) handle.append("none");
             QList<int> ids;
             ids.clear();
-            if (!handle[4].isEmpty())
-                foreach(const QString &id,handle[4].split("+"))
+            if (handle.length() > 3)
+                foreach(const QString &id,handle[3].split("+"))
                     ids.append(id.toInt());
-            int id = askForCardChosen(chooser,choosee,handle[1],reason,handle[2] == "true",
-                    Sanguosha->getCardHandlingMethod(handle[3]),ids);
+            int id = askForCardChosen(chooser,choosee,handle[0],reason,handle[1] == "true",
+                    Sanguosha->getCardHandlingMethod(handle[2]),ids);
             records[id] = getCardPlace(id);
             choosee->addToPile("#"+reason,id,false);
 
