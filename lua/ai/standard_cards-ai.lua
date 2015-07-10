@@ -495,7 +495,7 @@ function SmartAI:useCardSlash(card, use)
 		for _, friend in ipairs(self.friends_noself) do
 			if self:canLiuli(target, friend) and self:slashIsEffective(card, friend) and #targets > 1 and friend:getHp() < 3 then canliuli = true end
 		end
-		if not use.current_targets or not table.contains(use.current_targets, target:objectName())
+		if (not use.current_targets or not table.contains(use.current_targets, target:objectName()))
 			and(self.player:canSlash(target, card, not no_distance, rangefix)
 			or (use.isDummy and self.predictedRange and self.player:distanceTo(target, rangefix) <= self.predictedRange))
 			and self:objectiveLevel(target) > 3
@@ -563,7 +563,7 @@ function SmartAI:useCardSlash(card, use)
 	end
 
 	for _, friend in ipairs(self.friends_noself) do
-		if not use.current_targets or not table.contains(use.current_targets, friend:objectName())
+		if not (use.current_targets or not table.contains(use.current_targets, friend:objectName()))
 			and not self:slashProhibit(card, friend) and not self:hasHeavySlashDamage(self.player, card, friend)
 			and (self:getDamagedEffects(friend, self.player) or self:needToLoseHp(friend, self.player, true, true))
 			and (self.player:canSlash(friend, card, not no_distance, rangefix)
@@ -738,7 +738,7 @@ sgs.ai_skill_cardask["slash-jink"] = function(self, data, pattern, target)
 	end
 
 	local slash
-	if type(data) == "userdata" then
+	if type(data) == "SlashEffectStruct" or type(data) == "userdata" then
 		local effect = data:toSlashEffect()
 		slash = effect.slash
 	else
@@ -1617,7 +1617,7 @@ sgs.ai_skill_cardask.aoe = function(self, data, pattern, target, name)
 	if sgs.ai_skill_cardask.nullfilter(self, data, pattern, target) then return "." end
 
 	local aoe
-	if type(data) == "userdata" then aoe = data:toCardEffect().card else aoe = sgs.cloneCard(name) end
+	if type(data) == "CardEffectStruct" or type(data) == "userdata" then aoe = data:toCardEffect().card else aoe = sgs.cloneCard(name) end
 	assert(aoe ~= nil)
 	local menghuo = sgs.findPlayerByShownSkillName("huoshou")
 	local attacker = target
@@ -3323,7 +3323,7 @@ end
 
 sgs.ai_skill_use["@@Triblade"] = function(self, prompt)
 	local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
-	if type(damage) ~= "userdata" then return "." end
+	if type(damage) ~= "DamageStruct" and type(damage) ~= "userdata" then return "." end
 	local targets = sgs.SPlayerList()
 	for _, p in sgs.qlist(self.room:getOtherPlayers(damage.to)) do
 		if damage.to:distanceTo(p) == 1 then targets:append(p) end
