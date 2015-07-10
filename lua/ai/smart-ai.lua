@@ -2421,9 +2421,9 @@ end
 
 function SmartAI:getCardRandomly(who, flags, disable_list)
 	local cards = who:getCards(flags)
-	if disable_list and disable_list:length() > 0 then
+	if disable_list and #disable_list > 0 then
 		for _, c in sgs.qlist(who:getCards(flags)) do
-			if disable_list:contains(c:getEffectiveId()) then cards:removeOne(c) end
+			if table.contains(disable_list, c:getEffectiveId()) then cards:removeOne(c) end
 		end
 	end
 	if cards:isEmpty() then return end
@@ -2474,7 +2474,7 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 			local tricks = who:getCards("j")
 			local lightning, indulgence, supply_shortage
 			for _, trick in sgs.qlist(tricks) do
-				if disable_list:contains(trick:getEffectiveId()) then continue end
+				if table.contains(disable_list, trick:getEffectiveId()) then continue end
 				if trick:isKindOf("Lightning") and (not isDiscard or self.player:canDiscard(who, trick:getId())) then
 					lightning = trick:getId()
 				elseif trick:isKindOf("Indulgence") and (not isDiscard or self.player:canDiscard(who, trick:getId()))  then
@@ -2503,48 +2503,48 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 
 		if flags:match("e") then
 			if who:getArmor() and self:evaluateArmor(who:getArmor(), who) < -5 and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId()))
-				and not disable_list:contains(who:getArmor():getEffectiveId()) then
+				and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 				return who:getArmor():getEffectiveId()
 			end
 			if who:hasShownSkills(sgs.lose_equip_skill) and self:isWeak(who) then
-				if who:getWeapon() and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId())) and not disable_list:contains(who:getWeapon():getEffectiveId()) then
+				if who:getWeapon() and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId())) and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
 					return who:getWeapon():getEffectiveId()
 				end
-				if who:getOffensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId())) and not disable_list:contains(who:getOffensiveHorse():getEffectiveId()) then
+				if who:getOffensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId())) and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
 					return who:getOffensiveHorse():getEffectiveId()
 				end
 			end
 		end
 	else
 		local dangerous = self:getDangerousCard(who)
-		if flags:match("e") and dangerous and (not isDiscard or self.player:canDiscard(who, dangerous)) and not disable_list:contains(dangerous) then return dangerous end
+		if flags:match("e") and dangerous and (not isDiscard or self.player:canDiscard(who, dangerous)) and not table.contains(disable_list, dangerous) then return dangerous end
 		if flags:match("e") and who:getTreasure() and (who:getPile("wooden_ox"):length() > 1 or who:hasTreasure("JadeSeal")) and (not isDiscard or self.player:canDiscard(who, who:getTreasure():getId()))
-			and not disable_list:contains(who:getTreasure():getId()) then
+			and not table.contains(disable_list, who:getTreasure():getId()) then
 			return who:getTreasure():getId()
 		end
 		if flags:match("e") and who:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(who) and (not isDiscard or self.player:canDiscard(who, who:getArmor():getId()))
-			and not disable_list:contains(who:getArmor():getEffectiveId()) then
+			and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 			return who:getArmor():getId()
 			end
 		if flags:match("e") and who:hasShownSkills("jijiu|beige|weimu|qingcheng|LuaJijiu") and not self:doNotDiscard(who, "e", false, 1, reason) then
-			if who:getDefensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getDefensiveHorse():getEffectiveId())) and not disable_list:contains(who:getDefensiveHorse():getEffectiveId()) then
+			if who:getDefensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getDefensiveHorse():getEffectiveId())) and not table.contains(disable_list, who:getDefensiveHorse():getEffectiveId()) then
 				return who:getDefensiveHorse():getEffectiveId()
 			end
-			if who:getArmor() and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId())) and not disable_list:contains(who:getArmor():getEffectiveId()) then
+			if who:getArmor() and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId())) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 				return who:getArmor():getEffectiveId()
 			end
 			if who:getOffensiveHorse() and (not who:hasShownSkills("jijiu|LuaJijiu") or who:getOffensiveHorse():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId()))
-				and not disable_list:contains(who:getOffensiveHorse():getEffectiveId()) then
+				and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
 				return who:getOffensiveHorse():getEffectiveId()
 			end
 			if who:getWeapon() and (not who:hasShownSkills("jijiu|LuaJijiu") or who:getWeapon():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId()))
-				and not disable_list:contains(who:getWeapon():getEffectiveId()) then
+				and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
 				return who:getWeapon():getEffectiveId()
 			end
 		end
 		if flags:match("e") then
 			local valuable = self:getValuableCard(who)
-			if valuable and (not isDiscard or self.player:canDiscard(who, valuable)) and not disable_list:contains(valuable) then
+			if valuable and (not isDiscard or self.player:canDiscard(who, valuable)) and not table.contains(disable_list, valuable) then
 				return valuable
 			end
 		end
@@ -2571,7 +2571,7 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 			local tricks = who:getCards("j")
 			local lightning
 			for _, trick in sgs.qlist(tricks) do
-				if disable_list:contains(trick:getEffectiveId()) then
+				if table.contains(disable_list, trick:getEffectiveId()) then
 					continue
 				else
 					if trick:isKindOf("Lightning") and (not isDiscard or self.player:canDiscard(who, trick:getId())) then
@@ -2591,19 +2591,19 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 		end
 
 		if flags:match("e") and not self:doNotDiscard(who, "e") then
-			if who:getDefensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getDefensiveHorse():getEffectiveId())) and not disable_list:contains(who:getDefensiveHorse():getEffectiveId()) then
+			if who:getDefensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getDefensiveHorse():getEffectiveId())) and not table.contains(disable_list, who:getDefensiveHorse():getEffectiveId()) then
 				return who:getDefensiveHorse():getEffectiveId()
 			end
-			if who:getArmor() and not self:needToThrowArmor(who) and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId())) and not disable_list:contains(who:getArmor():getEffectiveId()) then
+			if who:getArmor() and not self:needToThrowArmor(who) and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId())) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 				return who:getArmor():getEffectiveId()
 			end
-			if who:getOffensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId())) and not disable_list:contains(who:getOffensiveHorse():getEffectiveId()) then
+			if who:getOffensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId())) and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
 				return who:getOffensiveHorse():getEffectiveId()
 			end
-			if who:getWeapon() and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId())) and not disable_list:contains(who:getWeapon():getEffectiveId()) then
+			if who:getWeapon() and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId())) and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
 				return who:getWeapon():getEffectiveId()
 			end
-			if who:getTreasure() and (not isDiscard or self.player:canDiscard(who, who:getTreasure():getEffectiveId())) and not disable_list:contains(who:getWeapon():getEffectiveId()) then
+			if who:getTreasure() and (not isDiscard or self.player:canDiscard(who, who:getTreasure():getEffectiveId())) and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
 				return who:getTreasure():getEffectiveId()
 			end
 		end
@@ -2617,7 +2617,7 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 	local cards = who:getCards(flags)
 
 	for _, c in sgs.qlist(who:getCards(flags)) do
-		if disable_list:contains(c:getEffectiveId()) then cards:removeOne(c) end
+		if table.contains(disable_list, c:getEffectiveId()) then cards:removeOne(c) end
 		if isDiscard and not self.player:canDiscard(who, c:getEffectiveId()) then
 			cards:removeOne(c)
 		end
@@ -5026,7 +5026,7 @@ function SmartAI:findPlayerToDraw(include_self, drawnum)
 end
 
 function SmartAI:dontRespondPeachInJudge(judge)
-	if not judge or type(judge) ~= "userdata" then self.room:writeToConsole(debug.traceback()) return end
+	if not judge or type(judge) ~= "JudgeStruct" then self.room:writeToConsole(debug.traceback()) return end
 	local peach_num = self:getCardsNum("Peach")
 	if peach_num == 0 then return false end
 	if self:willSkipPlayPhase() and self:getCardsNum("Peach") > self:getOverflow(self.player, true) then return false end
