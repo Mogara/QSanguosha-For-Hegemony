@@ -1503,7 +1503,7 @@ void Client::askForChoice(const QVariant &ask_str)
     JsonArray ask = ask_str.value<JsonArray>();
     if (!JsonUtils::isStringArray(ask, 0, 1)) return;
     QString skill_name = ask[0].toString();
-    QStringList options = ask[1].toString().split("+");
+    QStringList options = ask[1].toString().split("|");
     emit options_got(skill_name, options);
     setStatus(AskForChoice);
 }

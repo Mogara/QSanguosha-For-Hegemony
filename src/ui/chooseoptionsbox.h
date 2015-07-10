@@ -47,7 +47,6 @@ public slots:
     void reply();
 
 private:
-    int optionsNumber;
     QStringList options;
     QString skillName;
     QList<Button *> buttons;

@@ -1079,7 +1079,11 @@ QString Room::askForChoice(ServerPlayer *player, const QString &skill_name, cons
     tryPause();
 
 
-    QStringList validChoices = choices.split("+");
+    QStringList validChoices;
+    foreach (const QString &choice ,choices.split("|")){
+        validChoices.append(choice.split("+"));
+    }
+
     Q_ASSERT(!validChoices.isEmpty());
 
     QString answer;

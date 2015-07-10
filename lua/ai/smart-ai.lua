@@ -2047,13 +2047,16 @@ function SmartAI:askForSkillInvoke(skill_name, data)
 end
 
 function SmartAI:askForChoice(skill_name, choices, data)
+	local choice_table = {}
+	for _,section in pairs(choices:split("|")) do
+		table.insertTable(choice_table,section:split("+"))
+	end
 	local choice = sgs.ai_skill_choice[skill_name]
 	if type(choice) == "string" then
 		return choice
 	elseif type(choice) == "function" then
-		return choice(self, choices, data)
+		return choice(self, table.concat(choice_table,"+"), data)
 	else
-		local choice_table = choices:split("+")
 		for index, achoice in ipairs(choice_table) do
 			if achoice == "benghuai" then table.remove(choice_table, index) break end
 		end
