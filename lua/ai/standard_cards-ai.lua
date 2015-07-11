@@ -563,7 +563,7 @@ function SmartAI:useCardSlash(card, use)
 	end
 
 	for _, friend in ipairs(self.friends_noself) do
-		if not (use.current_targets or not table.contains(use.current_targets, friend:objectName()))
+		if (not use.current_targets or not table.contains(use.current_targets, friend:objectName()))
 			and not self:slashProhibit(card, friend) and not self:hasHeavySlashDamage(self.player, card, friend)
 			and (self:getDamagedEffects(friend, self.player) or self:needToLoseHp(friend, self.player, true, true))
 			and (self.player:canSlash(friend, card, not no_distance, rangefix)
