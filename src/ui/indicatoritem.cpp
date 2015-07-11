@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "indicatoritem.h"
@@ -34,7 +34,8 @@ IndicatorItem::IndicatorItem(const QPointF &start, const QPointF &real_finish, P
     width = player->isLord() ? 4 : 3;
 }
 
-void IndicatorItem::doAnimation() {
+void IndicatorItem::doAnimation()
+{
     QSequentialAnimationGroup *group = new QSequentialAnimationGroup(this);
 
     QPropertyAnimation *animation = new QPropertyAnimation(this, "finish");
@@ -55,16 +56,19 @@ void IndicatorItem::doAnimation() {
     connect(group, &QSequentialAnimationGroup::finished, this, &IndicatorItem::deleteLater);
 }
 
-QPointF IndicatorItem::getFinish() const{
+QPointF IndicatorItem::getFinish() const
+{
     return finish;
 }
 
-void IndicatorItem::setFinish(const QPointF &finish) {
+void IndicatorItem::setFinish(const QPointF &finish)
+{
     this->finish = finish;
     update();
 }
 
-void IndicatorItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void IndicatorItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     painter->setRenderHint(QPainter::Antialiasing);
 
     QPen pen(color);
@@ -92,7 +96,8 @@ void IndicatorItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
     painter->drawLine(mapFromScene(start), mapFromScene(finish));
 }
 
-QRectF IndicatorItem::boundingRect() const{
+QRectF IndicatorItem::boundingRect() const
+{
     qreal width = qAbs(start.x() - real_finish.x());
     qreal height = qAbs(start.y() - real_finish.y());
 

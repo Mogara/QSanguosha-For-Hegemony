@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef DISTANCEVIEWDIALOG_H
@@ -25,7 +25,8 @@
 
 class DistanceViewDialogUI;
 
-class DistanceViewDialog : public FlatDialog {
+class DistanceViewDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:

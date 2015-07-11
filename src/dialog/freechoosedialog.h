@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef FREECHOOSEDIALOG_H
@@ -27,12 +27,16 @@ class General;
 class QButtonGroup;
 class QAbstractButton;
 
-class FreeChooseDialog : public FlatDialog {
+class FreeChooseDialog : public FlatDialog
+{
     Q_OBJECT
     Q_ENUMS(ButtonGroupType)
 
 public:
-    enum ButtonGroupType { Exclusive, Pair, Multi };
+    enum ButtonGroupType
+    {
+        Exclusive, Pair, Multi
+    };
 
     explicit FreeChooseDialog(QWidget *parent, ButtonGroupType type = Exclusive);
 

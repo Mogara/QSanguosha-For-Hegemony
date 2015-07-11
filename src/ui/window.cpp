@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "window.h"
@@ -47,7 +47,7 @@ Window::Window(const QString &title, const QSizeF &size, const QString &path)
 
     qreal xc = (w - 2 * pad) / (tw - 2 * pad), yc = (h - 2 * pad) / (th - 2 * pad);
 
-    for (int i = 0; i < tw; i++){
+    for (int i = 0; i < tw; i++) {
         for (int j = 0; j < th; j++) {
             int x = i, y = j;
 
@@ -81,12 +81,14 @@ Window::Window(const QString &title, const QSizeF &size, const QString &path)
     setTitle(title);
 }
 
-Window::~Window(){
+Window::~Window()
+{
     delete bg;
     delete outimg;
 }
 
-void Window::addContent(const QString &content) {
+void Window::addContent(const QString &content)
+{
     QGraphicsTextItem *content_item = new QGraphicsTextItem(this);
     content_item->moveBy(15, 40);
     content_item->setHtml(content);
@@ -99,8 +101,9 @@ void Window::addContent(const QString &content) {
     content_item->setFont(*font);
 }
 
-Button *Window::addCloseButton(const QString &label) {
-    Button *ok_button = new Button(label, 0.6, true);
+Button *Window::addCloseButton(const QString &label)
+{
+    Button *ok_button = new Button(label, 0.6);
     QFont font = Config.TinyFont;
     font.setBold(true);
     ok_button->setFontSize(font.pixelSize());
@@ -114,30 +117,36 @@ Button *Window::addCloseButton(const QString &label) {
     return ok_button;
 }
 
-void Window::shift(qreal pos_x, qreal pos_y) {
+void Window::shift(qreal pos_x, qreal pos_y)
+{
     setTransform(QTransform::fromTranslate(pos_x - size.width() / 2, pos_y - size.height() / 2));
 }
 
-void Window::shift(const QPointF &pos) {
+void Window::shift(const QPointF &pos)
+{
     setTransform(QTransform::fromTranslate(pos.x() - size.width() / 2, pos.y() - size.height() / 2));
 }
 
-void Window::keepWhenDisappear() {
+void Window::keepWhenDisappear()
+{
     keep_when_disappear = true;
 }
 
-QRectF Window::boundingRect() const{
+QRectF Window::boundingRect() const
+{
     return QRectF(QPointF(), size);
 }
 
-void Window::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void Window::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     QRectF window_rect = boundingRect();
 
     painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
     painter->drawImage(window_rect, *outimg);
 }
 
-void Window::appear() {
+void Window::appear()
+{
     QPropertyAnimation *scale_x = new QPropertyAnimation(scaleTransform, "xScale");
     QPropertyAnimation *scale_y = new QPropertyAnimation(scaleTransform, "yScale");
     QPropertyAnimation *opacity = new QPropertyAnimation(this, "opacity");
@@ -154,7 +163,8 @@ void Window::appear() {
 
 }
 
-void Window::disappear() {
+void Window::disappear()
+{
     QPropertyAnimation *scale_x = new QPropertyAnimation(scaleTransform, "xScale");
     QPropertyAnimation *scale_y = new QPropertyAnimation(scaleTransform, "yScale");
     QPropertyAnimation *opacity = new QPropertyAnimation(this, "opacity");
@@ -173,7 +183,8 @@ void Window::disappear() {
         connect(group, &QParallelAnimationGroup::finished, this, &Window::deleteLater);
 }
 
-void Window::setTitle(const QString &title) {
+void Window::setTitle(const QString &title)
+{
     QString style;
     style.append("font-size:18pt; ");
     style.append("color:#77c379; ");

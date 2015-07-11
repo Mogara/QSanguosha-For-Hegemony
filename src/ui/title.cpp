@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,14 +15,14 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "title.h"
 #include "skinbank.h"
 
 Title::Title(QGraphicsObject *parent, const QString &text, const QString &font_name, const int &font_size)
-: QGraphicsObject(parent), text(text), font_name(font_name), font_size(font_size)
+    : QGraphicsObject(parent), text(text), font_name(font_name), font_size(font_size)
 {
 }
 

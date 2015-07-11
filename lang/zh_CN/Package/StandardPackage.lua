@@ -1,3 +1,23 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
+
 -- translation for StandardPackage
 
 local t = {
@@ -72,6 +92,7 @@ local t = {
 
 	["Fan"] = "朱雀羽扇",
 	[":Fan"] = "装备牌·武器\n\n攻击范围：4\n技能：你可以将一张普通【杀】当火【杀】使用；你可以将视为使用【杀】改为视为使用火【杀】。",
+	["fan"] = "朱雀羽扇",
 
 	["SilverLion"] = "白银狮子",
 	[":SilverLion"] = "装备牌·防具\n\n技能：锁定技，每当你受到大于1点的伤害时，你令此伤害减至1点；锁定技，每当你失去装备区里的【白银狮子】后，你回复1点体力。",
@@ -134,7 +155,7 @@ local t = {
 	.."\n\n使用方法Ⅱ：\n使用时机：一张锦囊牌对一名目标角色生效前。\n使用目标：一张对一名目标角色生效前的锦囊牌。\n作用效果：抵消此牌，然后你选择所有除目标角色外与目标角色势力相同的角色，令所有角色不能使用【无懈可击】响应对这些角色结算的此牌，若如此做，每当此牌对你选择的这些角色中的一名角色生效前，抵消之。",
 	["heg_nullification:single"] = "为该角色无懈",
 	["heg_nullification:all"] = "为该势力无懈" ,
-	
+
 	["indulgence"] = "乐不思蜀",
 	[":indulgence"] = "延时锦囊牌\n\n使用时机：出牌阶段。\n使用目标：一名其他角色。\n作用效果：目标角色判定，若结果不为红桃，其跳过出牌阶段。",
 
@@ -151,7 +172,7 @@ local t = {
 
 	["supply_shortage"] = "兵粮寸断",
 	[":supply_shortage"] = "延时锦囊牌\n\n使用时机：出牌阶段。\n使用目标：距离为1的一名其他角色。\n作用效果：目标角色判定，若结果不为梅花，其跳过摸牌阶段。",
-	
+
 	["await_exhausted"] = "以逸待劳",
 	[":await_exhausted"] = "锦囊牌\n\n使用时机：出牌阶段。\n使用目标：你和与你势力相同的所有角色。\n作用效果：每名目标角色摸两张牌，然后每名目标角色弃置两张牌。",
 
@@ -159,7 +180,7 @@ local t = {
 	[":known_both"] = "锦囊牌\n\n使用时机：出牌阶段。\n使用目标：一名其他角色。\n作用效果：你选择一项：1.观看目标角色的所有手牌；2.观看目标角色的一张暗置的武将牌。\n◆此牌能重铸。",
 	["#KnownBothView"] = "%from 观看了 %to 的 %arg" ,
 	["$KnownBothViewGeneral"] = "%from 观看了 %to 的 %arg，为 %arg2" ,
-	
+
 	["befriend_attacking"] = "远交近攻",
 	[":befriend_attacking"] = "锦囊牌\n\n使用时机：出牌阶段。\n使用目标：与你势力不同的一名有明置的武将牌的角色。\n作用效果：目标角色摸一张牌，然后你摸三张牌。",
 

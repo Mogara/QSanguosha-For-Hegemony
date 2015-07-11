@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _PLAYER_H
@@ -36,7 +36,8 @@ class DelayedTrick;
 class DistanceSkill;
 class TriggerSkill;
 
-class Player : public QObject {
+class Player : public QObject
+{
     Q_OBJECT
 
     Q_PROPERTY(QString screenname READ screenName WRITE setScreenName)
@@ -80,13 +81,20 @@ class Player : public QObject {
     Q_ENUMS(Role)
 
 public:
-    enum Phase { RoundStart, Start, Judge, Draw, Play, Discard, Finish, NotActive, PhaseNone };
-    enum Place {
+    enum Phase
+    {
+        RoundStart, Start, Judge, Draw, Play, Discard, Finish, NotActive, PhaseNone
+    };
+    enum Place
+    {
         PlaceHand, PlaceEquip, PlaceDelayedTrick, PlaceJudge,
         PlaceSpecial, DiscardPile, DrawPile, PlaceTable, PlaceUnknown,
         PlaceWuGu, DrawPileBottom
     };
-    enum Role { Lord, Loyalist, Rebel, Renegade };
+    enum Role
+    {
+        Lord, Loyalist, Rebel, Renegade
+    };
 
     explicit Player(QObject *parent);
 
@@ -241,6 +249,10 @@ public:
     QStringList getPileNames() const;
     QString getPileName(int card_id) const;
 
+    //Xusine:
+    QList<int> getHandPile() const;
+    QStringList getHandPileList(bool view_as_skill = true) const;
+
     bool pileOpen(const QString &pile_name, const QString &player) const;
     void setPileOpen(const QString &pile_name, const QString &player);
 
@@ -259,6 +271,10 @@ public:
     QSet<const Skill *> getVisibleSkills(bool include_equip = false) const;
     QList<const Skill *> getVisibleSkillList(bool include_equip = false) const;
     QSet<QString> getAcquiredSkills() const;
+
+    //Xusine:
+    QStringList getAcquiredSkills(const QString &flags) const;
+
     QString getSkillDescription(bool inToolTip = true) const;
     QString getHeadSkillDescription() const;
     QString getDeputySkillDescription() const;
@@ -267,8 +283,14 @@ public:
     bool canSlashWithoutCrossbow(const Card *slash = NULL) const;
     virtual bool isLastHandCard(const Card *card, bool contain = false) const = 0;
 
-    inline bool isJilei(const Card *card) const{ return isCardLimited(card, Card::MethodDiscard); }
-    inline bool isLocked(const Card *card) const{ return isCardLimited(card, Card::MethodUse); }
+    inline bool isJilei(const Card *card) const
+    {
+        return isCardLimited(card, Card::MethodDiscard);
+    }
+    inline bool isLocked(const Card *card) const
+    {
+        return isCardLimited(card, Card::MethodUse);
+    }
 
     void setCardLimitation(const QString &limit_list, const QString &pattern, bool single_turn = false);
     void removeCardLimitation(const QString &limit_list, const QString &pattern);
@@ -313,8 +335,14 @@ public:
     bool hasPreshowedSkill(const Skill *skill) const;
     bool isHidden(const bool &head_general) const;
 
-    inline bool getScenarioRoleShown() const{ return scenario_role_shown; }
-    inline void setScenarioRoleShown(bool show) { scenario_role_shown = show; }
+    inline bool getScenarioRoleShown() const
+    {
+        return scenario_role_shown;
+    }
+    inline void setScenarioRoleShown(bool show)
+    {
+        scenario_role_shown = show;
+    }
 
     bool ownSkill(const QString &skill_name) const;
     bool ownSkill(const Skill *skill) const;

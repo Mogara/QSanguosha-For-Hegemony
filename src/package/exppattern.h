@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _EXPPATTERN_H
@@ -25,11 +25,13 @@
 #include "card.h"
 #include "player.h"
 
-class ExpPattern : public CardPattern {
+class ExpPattern : public CardPattern
+{
 public:
     ExpPattern(const QString &exp);
     virtual bool match(const Player *player, const Card *card) const;
-    virtual QString getPatternString() const{
+    virtual QString getPatternString() const
+    {
         return exp;
     }
 private:

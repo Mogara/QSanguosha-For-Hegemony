@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "heroskincontainer.h"
@@ -61,10 +61,8 @@ HeroSkinContainer::HeroSkinContainer(const QString &generalName,
         G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK, kingdom), this);
 
     QGraphicsPixmapItem *positionIcon = NULL;
-    QString key = (Self->getGeneralName() == m_generalName) ?
-                QSanRoomSkin::S_SKIN_KEY_HEAD_ICON : QSanRoomSkin::S_SKIN_KEY_DEPUTY_ICON;
-    PlayerCardContainer::_paintPixmap(positionIcon, QRect(9, 3, 29, 24),
-                                      G_ROOM_SKIN.getPixmap(key), this);
+    QString key = (Self->getGeneralName() == m_generalName) ? QSanRoomSkin::S_SKIN_KEY_HEAD_ICON : QSanRoomSkin::S_SKIN_KEY_DEPUTY_ICON;
+    PlayerCardContainer::_paintPixmap(positionIcon, QRect(9, 3, 29, 24), G_ROOM_SKIN.getPixmap(key), this);
 
     QString name = Sanguosha->translate("&" + m_generalName);
     if (name.startsWith("&")) {
@@ -72,9 +70,7 @@ HeroSkinContainer::HeroSkinContainer(const QString &generalName,
     }
 
     QGraphicsPixmapItem *avatarNameItem = new QGraphicsPixmapItem(this);
-    G_DASHBOARD_LAYOUT.m_avatarNameFont.paintText(avatarNameItem,
-    G_COMMON_LAYOUT.generalButtonNameRegion,
-    Qt::AlignLeft | Qt::AlignVCenter | Qt::AlignJustify, name);
+    G_DASHBOARD_LAYOUT.m_avatarNameFont.paintText(avatarNameItem, G_COMMON_LAYOUT.generalButtonNameRegion, Qt::AlignLeft | Qt::AlignVCenter | Qt::AlignJustify, name);
     avatarNameItem->setPos(35, 1);
 
     initSkins();

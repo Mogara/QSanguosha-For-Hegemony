@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _PROTOCOL_H
@@ -26,7 +26,8 @@
 
 namespace QSanProtocol {
 
-    enum PacketDescription {
+    enum PacketDescription
+    {
         S_DESC_UNKNOWN,
         S_TYPE_REQUEST = 0x1,
         S_TYPE_REPLY = 0x2,
@@ -44,12 +45,14 @@ namespace QSanProtocol {
         S_DESC_DUMMY
     };
 
-    enum ProcessInstanceType {
+    enum ProcessInstanceType
+    {
         S_SERVER_INSTANCE,
         S_CLIENT_INSTANCE
     };
 
-    enum CheatCode {
+    enum CheatCode
+    {
         S_CHEAT_GET_ONE_CARD,
         S_CHEAT_KILL_PLAYER,
         S_CHEAT_REVIVE_PLAYER,
@@ -57,7 +60,8 @@ namespace QSanProtocol {
         S_CHEAT_RUN_SCRIPT
     };
 
-    enum CheatCategory {
+    enum CheatCategory
+    {
         S_CHEAT_FIRE_DAMAGE,
         S_CHEAT_THUNDER_DAMAGE,
         S_CHEAT_NORMAL_DAMAGE,
@@ -67,7 +71,8 @@ namespace QSanProtocol {
         S_CHEAT_MAX_HP_RESET
     };
 
-    enum CommandType {
+    enum CommandType
+    {
         S_COMMAND_UNKNOWN,
         S_COMMAND_CHOOSE_CARD,
         S_COMMAND_PLAY_CARD,
@@ -158,7 +163,8 @@ namespace QSanProtocol {
         S_COMMAND_CHANGE_SKIN
     };
 
-    enum GameEventType {
+    enum GameEventType
+    {
         S_GAME_EVENT_PLAYER_DYING,
         S_GAME_EVENT_PLAYER_QUITDYING,
         S_GAME_EVENT_PLAY_EFFECT,
@@ -177,7 +183,8 @@ namespace QSanProtocol {
         S_GAME_EVENT_REVEAL_PINDIAN
     };
 
-    enum AnimateType {
+    enum AnimateType
+    {
         S_ANIMATE_NULL,
 
         S_ANIMATE_INDICATE,
@@ -187,17 +194,20 @@ namespace QSanProtocol {
         S_ANIMATE_LIGHTNING
     };
 
-    enum Game3v3ChooseOrderCommand {
+    enum Game3v3ChooseOrderCommand
+    {
         S_REASON_CHOOSE_ORDER_TURN,
         S_REASON_CHOOSE_ORDER_SELECT
     };
 
-    enum Game3v3Camp {
+    enum Game3v3Camp
+    {
         S_CAMP_WARM,
         S_CAMP_COOL
     };
 
-    enum GuanxingStep {
+    enum GuanxingStep
+    {
         S_GUANXING_START,
         S_GUANXING_MOVE,
         S_GUANXING_FINISH
@@ -208,9 +218,11 @@ namespace QSanProtocol {
 
     extern const int S_ALL_ALIVE_PLAYERS;
 
-    class Countdown {
+    class Countdown
+    {
     public:
-        enum CountdownType {
+        enum CountdownType
+        {
             S_COUNTDOWN_NO_LIMIT,
             S_COUNTDOWN_USE_SPECIFIED,
             S_COUNTDOWN_USE_DEFAULT
@@ -219,10 +231,13 @@ namespace QSanProtocol {
         time_t current;
         time_t max;
         inline Countdown(CountdownType type = S_COUNTDOWN_NO_LIMIT, time_t current = 0, time_t max = 0)
-            : type(type), current(current), max(max) {}
+            : type(type), current(current), max(max)
+        {
+        }
         bool tryParse(const QVariant &var);
         QVariant toVariant() const;
-        inline bool hasTimedOut() {
+        inline bool hasTimedOut()
+        {
             if (type == S_COUNTDOWN_NO_LIMIT)
                 return false;
             else
@@ -230,7 +245,8 @@ namespace QSanProtocol {
         }
     };
 
-    class AbstractPacket {
+    class AbstractPacket
+    {
     public:
         virtual bool parse(const QByteArray &) = 0;
         virtual QByteArray toJson() const = 0;
@@ -242,7 +258,8 @@ namespace QSanProtocol {
         virtual CommandType getCommandType() const = 0;
     };
 
-    class Packet : public AbstractPacket {
+    class Packet : public AbstractPacket
+    {
     public:
         //format: [global_serial, local_serial, packet_type, command_name, command_body]
         unsigned int globalSerial;
@@ -250,22 +267,37 @@ namespace QSanProtocol {
 
         Packet(int packetDescription = S_DESC_UNKNOWN, CommandType command = S_COMMAND_UNKNOWN);
         unsigned int createGlobalSerial();
-        inline void setMessageBody(const QVariant &value) { messageBody = value; }
-        inline const QVariant &getMessageBody() const{ return messageBody; }
+        inline void setMessageBody(const QVariant &value)
+        {
+            messageBody = value;
+        }
+        inline const QVariant &getMessageBody() const
+        {
+            return messageBody;
+        }
         virtual bool parse(const QByteArray &raw);
         virtual QByteArray toJson() const;
         virtual QString toString() const;
-        virtual PacketDescription getPacketDestination() const{
+        virtual PacketDescription getPacketDestination() const
+        {
             return static_cast<PacketDescription>(packetDescription & S_DEST_MASK);
         }
-        virtual PacketDescription getPacketSource() const{
+        virtual PacketDescription getPacketSource() const
+        {
             return static_cast<PacketDescription>(packetDescription & S_SRC_MASK);
         }
-        virtual PacketDescription getPacketType() const{
+        virtual PacketDescription getPacketType() const
+        {
             return static_cast<PacketDescription>(packetDescription & S_TYPE_MASK);
         }
-        virtual PacketDescription getPacketDescription() const{ return packetDescription; }
-        virtual CommandType getCommandType() const{ return command; }
+        virtual PacketDescription getPacketDescription() const
+        {
+            return packetDescription;
+        }
+        virtual CommandType getCommandType() const
+        {
+            return command;
+        }
 
     protected:
         static unsigned int globalSerialSequence;

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _DASHBOARD_H
@@ -40,12 +40,16 @@
 class HeroSkinContainer;
 class GraphicsPixmapHoverItem;
 
-class Dashboard : public PlayerCardContainer {
+class Dashboard : public PlayerCardContainer
+{
     Q_OBJECT
     Q_ENUMS(SortType)
 
 public:
-    enum SortType { ByType, BySuit, ByNumber };
+    enum SortType
+    {
+        ByType, BySuit, ByNumber
+    };
 
     Dashboard(QGraphicsItem *buttonWidget);
 
@@ -54,14 +58,16 @@ public:
     void repaintAll();
     void setWidth(int width);
     int getMiddleWidth();
-    inline QRectF getRightAvatarArea() {
+    inline QRectF getRightAvatarArea()
+    {
         QRectF rect;
         rect.setSize(layout->m_avatarArea.size());
         QPointF topLeft = mapFromItem(_getAvatarParent(), layout->m_avatarArea.topLeft());
         rect.moveTopLeft(topLeft);
         return rect;
     }
-    inline QRectF getLeftAvatarArea() {
+    inline QRectF getLeftAvatarArea()
+    {
         QRectF rect;
         rect.setSize(layout->m_secondaryAvatarArea.size());
         QPointF topLeft = mapFromItem(_getAvatarParent(), layout->m_secondaryAvatarArea.topLeft());
@@ -112,6 +118,7 @@ public:
 
     void expandPileCards(const QString &pile_name);
     void retractPileCards(const QString &pile_name);
+    void retractAllSkillPileCards();
 
     void selectCard(CardItem *item, bool isSelected);
 
@@ -126,18 +133,14 @@ public:
 
     static const int S_PENDING_OFFSET_Y = -25;
 
-    inline void updateSkillButton() {
-        if (rightSkillDock)
-            rightSkillDock->update();
-        if (leftSkillDock)
-            leftSkillDock->update();
-    }
+    void updateSkillButton();
 
     void setPlayer(ClientPlayer *player);
 
     void showSeat();
 
-    inline QRectF getAvatarAreaSceneBoundingRect() const {
+    inline QRectF getAvatarAreaSceneBoundingRect() const
+    {
         return rightFrame->sceneBoundingRect();
     }
 
@@ -146,13 +149,15 @@ public:
         pendings << item;
     }
 
-    inline QList<CardItem *> getPendings() const {
+    inline QList<CardItem *> getPendings() const
+    {
         return pendings;
     }
 
     void clearPendings();
 
-    inline bool hasHandCard(CardItem *item) const {
+    inline bool hasHandCard(CardItem *item) const
+    {
         return m_handCards.contains(item);
     }
 
@@ -168,10 +173,12 @@ public slots:
     void skillButtonDeactivated();
     void selectAll();
     void selectCards(const QString &pattern);
-    void controlNullificationButton();
+    void controlNullificationButton(bool keepState);
 
     virtual void updateAvatar();
     virtual void updateSmallAvatar();
+    void updateLeftHiddenMark();
+    void updateRightHiddenMark();
 
 protected:
     void _createExtraButtons();
@@ -180,18 +187,54 @@ protected:
     virtual QList<CardItem *> removeHandCards(const QList<int> &cardIds);
 
     // initialization of _m_layout is compulsory for children classes.
-    inline virtual QGraphicsItem *_getEquipParent() { return leftFrame; }
-    inline virtual QGraphicsItem *_getDelayedTrickParent() { return leftFrame; }
-    inline virtual QGraphicsItem *_getAvatarParent() { return rightFrame; }
-    inline virtual QGraphicsItem *_getMarkParent() { return _m_floatingArea; }
-    inline virtual QGraphicsItem *_getPhaseParent() { return _m_floatingArea; }
-    inline virtual QGraphicsItem *_getRoleComboBoxParent() { return rightFrame; }
-    inline virtual QGraphicsItem *_getPileParent() { return rightFrame; }
-    inline virtual QGraphicsItem *_getProgressBarParent() { return _m_floatingArea; }
-    inline virtual QGraphicsItem *_getFocusFrameParent() { return rightFrame; }
-    inline virtual QGraphicsItem *_getDeathIconParent() { return middleFrame; }
-    inline virtual QString getResourceKeyName() { return QSanRoomSkin::S_SKIN_KEY_DASHBOARD; }
-    inline virtual QAbstractAnimation *_getPlayerRemovedEffect() { return _removedEffect; }
+    inline virtual QGraphicsItem *_getEquipParent()
+    {
+        return leftFrame;
+    }
+    inline virtual QGraphicsItem *_getDelayedTrickParent()
+    {
+        return leftFrame;
+    }
+    inline virtual QGraphicsItem *_getAvatarParent()
+    {
+        return rightFrame;
+    }
+    inline virtual QGraphicsItem *_getMarkParent()
+    {
+        return _m_floatingArea;
+    }
+    inline virtual QGraphicsItem *_getPhaseParent()
+    {
+        return _m_floatingArea;
+    }
+    inline virtual QGraphicsItem *_getRoleComboBoxParent()
+    {
+        return rightFrame;
+    }
+    inline virtual QGraphicsItem *_getPileParent()
+    {
+        return rightFrame;
+    }
+    inline virtual QGraphicsItem *_getProgressBarParent()
+    {
+        return _m_floatingArea;
+    }
+    inline virtual QGraphicsItem *_getFocusFrameParent()
+    {
+        return rightFrame;
+    }
+    inline virtual QGraphicsItem *_getDeathIconParent()
+    {
+        return middleFrame;
+    }
+    inline virtual QString getResourceKeyName()
+    {
+        return QSanRoomSkin::S_SKIN_KEY_DASHBOARD;
+    }
+    inline virtual QAbstractAnimation *_getPlayerRemovedEffect()
+    {
+        return _removedEffect;
+    }
 
     void _createRoleComboBox();
 
@@ -224,7 +267,7 @@ protected:
     QGraphicsRectItem *trusting_item;
     QGraphicsSimpleTextItem *trusting_text;
 
-    QSanInvokeSkillDock *rightSkillDock, *leftSkillDock;
+    QSanInvokeSkillDock *m_leftSkillDock, *m_rightSkillDock;
     const QSanRoomSkin::DashboardLayout *layout;
 
     //for avatar shadow layer
@@ -279,6 +322,17 @@ private:
 
     QPointF getHeroSkinContainerPosition() const;
 
+    void moveProgressBarUp();
+    void moveProgressBarDown();
+
+    enum ProgressBarPostion
+    {
+        Up,
+        Down
+    } m_progressBarPositon;
+
+    int maxCardsNumInFirstLine() const;
+
 protected slots:
     virtual void _onEquipSelectChanged();
 
@@ -289,8 +343,6 @@ private slots:
     void onMarkChanged();
     void onHeadStateChanged();
     void onDeputyStateChanged();
-    void onHeadSkillPreshowed();
-    void onDeputySkillPreshowed();
     void updateTrustButton();
     void bringSenderToTop();
     void resetSenderZValue();

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _MAGATAMAS_ITEM_H
@@ -25,26 +25,54 @@
 #include <QPixmap>
 #include "skinbank.h"
 
-class MagatamasBoxItem : public QGraphicsObject {
+class MagatamasBoxItem : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
     MagatamasBoxItem();
     MagatamasBoxItem(QGraphicsItem *parent);
-    inline int getHp() const{ return m_hp; }
+    inline int getHp() const
+    {
+        return m_hp;
+    }
     void setHp(int hp);
-    inline int getMaxHp() const{ return m_maxHp; }
+    inline int getMaxHp() const
+    {
+        return m_maxHp;
+    }
     void setMaxHp(int maxHp);
     void setOrientation(Qt::Orientation orientation);
-    inline Qt::Orientation getOrientation() const{ return m_orientation; }
-    inline void setBackgroundVisible(bool visible) { m_showBackground = visible; }
-    inline bool isBackgroundVisible() const{ return m_showBackground; }
+    inline Qt::Orientation getOrientation() const
+    {
+        return m_orientation;
+    }
+    inline void setBackgroundVisible(bool visible)
+    {
+        m_showBackground = visible;
+    }
+    inline bool isBackgroundVisible() const
+    {
+        return m_showBackground;
+    }
     void setAnchor(QPoint anchor, Qt::Alignment align);
-    inline void setAnchorEnable(bool enabled) { anchorEnabled = enabled; }
-    inline bool isAnchorEnable() { return anchorEnabled; }
+    inline void setAnchorEnable(bool enabled)
+    {
+        anchorEnabled = enabled;
+    }
+    inline bool isAnchorEnable()
+    {
+        return anchorEnabled;
+    }
     void setIconSize(QSize size);
-    inline void setImageArea(QRect rect) { m_imageArea = rect; }
-    inline QSize getIconSize() const{ return m_iconSize; }
+    inline void setImageArea(QRect rect)
+    {
+        m_imageArea = rect;
+    }
+    inline QSize getIconSize() const
+    {
+        return m_iconSize;
+    }
     virtual QRectF boundingRect() const;
     virtual void update();
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);

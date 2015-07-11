@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _NATIVESOCKET_H
@@ -25,7 +25,8 @@
 
 class QUdpSocket;
 
-class NativeServerSocket : public ServerSocket {
+class NativeServerSocket : public ServerSocket
+{
     Q_OBJECT
 
 public:
@@ -44,7 +45,8 @@ private:
 };
 
 
-class NativeClientSocket : public ClientSocket {
+class NativeClientSocket : public ClientSocket
+{
     Q_OBJECT
 
 public:

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef WINDOW_H
@@ -25,7 +25,8 @@
 #include <QGraphicsObject>
 #include "button.h"
 
-class Window : public QGraphicsObject {
+class Window : public QGraphicsObject
+{
     Q_OBJECT
 
 public:

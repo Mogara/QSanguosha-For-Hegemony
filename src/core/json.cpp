@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "json.h"
@@ -32,17 +32,17 @@ JsonDocument::JsonDocument()
 }
 
 JsonDocument::JsonDocument(const QVariant &var)
-    :value(var), valid(true)
+    : value(var), valid(true)
 {
 }
 
 JsonDocument::JsonDocument(const JsonArray &array)
-    :value(array), valid(true)
+    : value(array), valid(true)
 {
 }
 
 JsonDocument::JsonDocument(const JsonObject &object)
-    :value(object), valid(true)
+    : value(object), valid(true)
 {
 }
 
@@ -60,7 +60,7 @@ bool JsonUtils::isStringArray(const QVariant &var, unsigned from, unsigned to)
 
     JsonArray array = var.value<JsonArray>();
 
-    if ((unsigned) array.length() <= to)
+    if ((unsigned)array.length() <= to)
         return false;
     for (unsigned int i = from; i <= to; i++) {
         if (!array.at(i).canConvert<QString>())
@@ -76,7 +76,7 @@ bool JsonUtils::isNumberArray(const QVariant &var, unsigned from, unsigned to)
 
     JsonArray array = var.value<JsonArray>();
 
-    if ((unsigned) array.length() <= to)
+    if ((unsigned)array.length() <= to)
         return false;
     for (unsigned int i = from; i <= to; i++) {
         if (!array.at(i).canConvert<int>())
@@ -104,13 +104,15 @@ QVariant JsonUtils::toJsonArray(const QStringList &stringArray)
 }
 
 
-bool JsonUtils::tryParse(const QVariant &arg, int &result) {
+bool JsonUtils::tryParse(const QVariant &arg, int &result)
+{
     if (!arg.canConvert<int>()) return false;
     result = arg.toInt();
     return true;
 }
 
-bool JsonUtils::tryParse(const QVariant &arg, double &result) {
+bool JsonUtils::tryParse(const QVariant &arg, double &result)
+{
     if (arg.canConvert<double>())
         result = arg.toDouble();
     else
@@ -118,7 +120,8 @@ bool JsonUtils::tryParse(const QVariant &arg, double &result) {
     return true;
 }
 
-bool JsonUtils::tryParse(const QVariant &arg, bool &result) {
+bool JsonUtils::tryParse(const QVariant &arg, bool &result)
+{
     if (!arg.canConvert<bool>()) return false;
     result = arg.toBool();
     return true;
@@ -164,7 +167,8 @@ bool JsonUtils::tryParse(const QVariant &var, QList<int> &list)
     return true;
 }
 
-bool JsonUtils::tryParse(const QVariant &arg, Qt::Alignment &align) {
+bool JsonUtils::tryParse(const QVariant &arg, Qt::Alignment &align)
+{
     if (!JsonUtils::isString(arg)) return false;
     QString alignStr = arg.toString().toLower();
     if (alignStr.contains("left"))
@@ -184,7 +188,8 @@ bool JsonUtils::tryParse(const QVariant &arg, Qt::Alignment &align) {
     return true;
 }
 
-bool JsonUtils::tryParse(const QVariant &arg, QRect &result) {
+bool JsonUtils::tryParse(const QVariant &arg, QRect &result)
+{
     JsonArray args = arg.value<JsonArray>();
     if (args.size() != 4) return false;
 
@@ -196,7 +201,8 @@ bool JsonUtils::tryParse(const QVariant &arg, QRect &result) {
     return true;
 }
 
-bool JsonUtils::tryParse(const QVariant &arg, QSize &result) {
+bool JsonUtils::tryParse(const QVariant &arg, QSize &result)
+{
     JsonArray args = arg.value<JsonArray>();
     if (args.size() != 2) return false;
     result.setWidth(args[0].toInt());
@@ -204,7 +210,8 @@ bool JsonUtils::tryParse(const QVariant &arg, QSize &result) {
     return true;
 }
 
-bool JsonUtils::tryParse(const QVariant &arg, QPoint &result) {
+bool JsonUtils::tryParse(const QVariant &arg, QPoint &result)
+{
     JsonArray args = arg.value<JsonArray>();
     if (args.size() != 2) return false;
     result.setX(args[0].toInt());
@@ -212,7 +219,8 @@ bool JsonUtils::tryParse(const QVariant &arg, QPoint &result) {
     return true;
 }
 
-bool JsonUtils::tryParse(const QVariant &arg, QColor &color) {
+bool JsonUtils::tryParse(const QVariant &arg, QColor &color)
+{
     JsonArray args = arg.value<JsonArray>();
     if (args.size() < 3) return false;
 
@@ -231,33 +239,33 @@ QByteArray clearComment(const QByteArray &src)
     for (int i = 0; i < max; i++) {
         switch (result.at(i)) {
         case '/':
-            if (result.at(i + 1) == '*') {//multi-line comment
+            if (result.at(i + 1) == '*') { // multi-line comment
                 int offset = i;
                 i++;
-                while(i < max && (result.at(i) != '*' || result.at(i + 1) != '/')) {
+                while (i < max && (result.at(i) != '*' || result.at(i + 1) != '/')) {
                     i++;
                 }
 
                 int length = i + 2 - offset;
                 result.remove(offset, length);
-                i = offset;
+                i = offset - 1;
                 max -= length;
 
-            } else if (result.at(i + 1) == '/') {//single-line comment
+            } else if (result.at(i + 1) == '/') { // single-line comment
                 int offset = i;
                 i++;
-                while(i < max + 1 && result.at(i) != '\n') {
+                while (i < max + 1 && result.at(i) != '\n') {
                     i++;
                 }
 
                 int length = i + 1 - offset;
                 result.remove(offset, length);
-                i = offset;
+                i = offset - 1;
                 max -= length;
             }
             break;
-        case '"'://string
-            while(i < max + 1 && result.at(i) != '"') {
+        case '"': // string
+            while (i < max + 1 && result.at(i) != '"') {
                 if (result.at(i) == '\\') {
                     i += 2;
                 } else {

@@ -1,0 +1,46 @@
+<Folders>
+ai-selector
+audio
+diy
+dmp
+etc
+extension-doc
+font
+hero-skin
+image
+lang
+lua
+rule
+skins
+style-sheet
+ui-script
+
+<Files>
+CC BY-NC-ND 4.0
+LICENSE
+qt_zh_CN.qm
+sanguosha.qm
+
+<Qt Libraries>
+libQt5Core.so.5
+libQt5DBus.so.5
+libQt5Declarative.so.5
+libQt5Gui.so.5
+libQt5Network.so.5
+libQt5OpenGL.so.5
+libQt5Script.so.5
+libQt5Sql.so.5
+libQt5Widgets.so.5
+libQt5XmlPatterns.so.5
+libicudata.so.53
+libicuuc.so.53
+libicui18n.so.53
+
+<Non Qt Libraries>
+libfmodex.so
+
+<Qt Plugins>
+platforms
+imageformats
+platforminputcontexts
+platformthemes

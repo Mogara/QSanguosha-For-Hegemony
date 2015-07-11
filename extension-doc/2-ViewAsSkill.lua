@@ -40,7 +40,7 @@
 
 --视为技在创建时，需要以下方法|变量的定义：
 
---name, relate_to_place, response_pattern, view_filter, view_as, enabled_at_play, enabled_at_response, enabled_at_nullification
+--name, relate_to_place, response_pattern, guhuo_type, view_filter, view_as, enabled_at_play, enabled_at_response, enabled_at_nullification,expand_pile
 
 --name和relate_to_place不再说明。
 
@@ -48,6 +48,15 @@
 --一个字符串，表示该视为技仅用于响应pattern。
 --该参数仅当没有定义enabled_at_play与enabled_at_response时可用。
 --如果定义了enabled_at_play，则不会禁止出牌阶段使用本技能，如果定义了enabled_at_response，则该参数无效。
+
+--guhuo_type:
+--一个字符串，表示与该技能绑定的蛊惑框的类型。
+--蛊惑框就是点击视为技时弹出的一个对话框，用于选择牌的类型。技能蛊惑、奇策都用到了这个对话框。
+--这个字符串的规则如下：
+--1.如果字符串中含有字符b，则就在框中显示基本牌这一组
+--2.如果字符串中含有字符t，则就在框中显示锦囊牌这一组，包括单体锦囊和群体锦囊
+--3.如果字符串中含有字符d，则就在框中显示延时锦囊这一组
+--4.如果字符串以!开头，则在响应回合外打出时也会弹出对话框。
 
 --view_filter：
 --lua函数，返回一个布尔值，即某张卡是否可被选中以用作发动技能。
@@ -79,6 +88,9 @@
 --默认为false，即如果你没有定义，则询问无懈可击时，如果你手牌当中不存在无懈可击，则跳过对你的无懈可击询问。
 --这是视为技所有函数当中唯一一个在服务器端运行的
 
+--expand_pile
+--字符串，我们会专门开一个小分支来处理这个问题。
+
 --** 实例
 
 --以下为“任意一张草花牌”的view_filter方法：
@@ -89,6 +101,11 @@ end,
 
 --getSuit()返回一张牌的花色的enum。
 --如果to_select的花色为草花Club，则返回真（可被选择）。否则返回假（不可被选择）。
+
+--以下为奇策（锦囊牌）的蛊惑框的字符串：
+
+guhuo_type = "t",
+
 
 --以下为“任意两张同花色手牌“的view_filter方法：
 

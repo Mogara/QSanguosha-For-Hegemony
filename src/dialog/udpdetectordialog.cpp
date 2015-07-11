@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "udpdetectordialog.h"
@@ -58,7 +58,8 @@ UdpDetectorDialog::UdpDetectorDialog(QDialog *parent)
     detect_button->click();
 }
 
-void UdpDetectorDialog::startDetection() {
+void UdpDetectorDialog::startDetection()
+{
     list->clear();
     detect_button->setEnabled(false);
 
@@ -69,14 +70,16 @@ void UdpDetectorDialog::startDetection() {
     detector->detect();
 }
 
-void UdpDetectorDialog::stopDetection() {
+void UdpDetectorDialog::stopDetection()
+{
     detect_button->setEnabled(true);
     detector->stop();
     delete detector;
     detector = NULL;
 }
 
-void UdpDetectorDialog::addServerAddress(const QString &server_name, const QString &address) {
+void UdpDetectorDialog::addServerAddress(const QString &server_name, const QString &address)
+{
     QString label = QString("%1 [%2]").arg(server_name).arg(address);
     QListWidgetItem *item = new QListWidgetItem(label);
     item->setData(Qt::UserRole, address);
@@ -84,7 +87,8 @@ void UdpDetectorDialog::addServerAddress(const QString &server_name, const QStri
     list->addItem(item);
 }
 
-void UdpDetectorDialog::chooseAddress(QListWidgetItem *item) {
+void UdpDetectorDialog::chooseAddress(QListWidgetItem *item)
+{
     accept();
 
     QString address = item->data(Qt::UserRole).toString();

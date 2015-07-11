@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "avatarmodel.h"
@@ -39,12 +39,12 @@ QVariant AvatarModel::data(const QModelIndex &index, int role) const
 
     const General *general = list.at(row);
 
-    switch(role) {
+    switch (role) {
     case Qt::UserRole: return general->objectName();
     case Qt::DisplayRole: return Sanguosha->translate(general->objectName());
     case Qt::DecorationRole: {
         QIcon icon(G_ROOM_SKIN.getGeneralPixmap(general->objectName(),
-                                                QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
+            QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
         return icon;
     }
     }

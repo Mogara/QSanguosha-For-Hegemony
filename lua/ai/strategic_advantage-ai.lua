@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
 
 --transfer
@@ -48,6 +48,8 @@ sgs.ai_skill_use_func.TransferCard = function(transferCard, use, self)
 		if c:isTransferable() and (not isCard("Peach", c, self.player) or #friends > 0) then
 			if not oneJink and isCard("Jink", c, self.player) then
 				oneJink = true
+				continue
+			elseif c:getNumber() > 10 and self.player:hasSkills("tianyi|quhu|shuangren|lieren") then
 				continue
 			end
 			table.insert(cards, c)
@@ -126,11 +128,24 @@ function SmartAI:useCardDrowning(card, use)
 	for _, enemy in ipairs(self.enemies) do
 		if card:targetFilter(players, enemy, self.player) and not players:contains(enemy) and enemy:hasEquip()
 			and self:hasTrickEffective(card, enemy) and self:damageIsEffective(enemy, sgs.DamageStruct_Thunder, self.player) and self:canAttack(enemy)
-			and not self:getDamagedEffects(enemy, self.player) and not self:needToLoseHp(enemy, self.player)
+			and not self:getDamagedEffects(enemy, self.player) and not self:needToLoseHp(enemy, self.player) and not self:needToThrowArmor(enemy)
 			and not (enemy:hasArmorEffect("PeaceSpell") and (enemy:getHp() > 1 or self:needToLoseHp(enemy, self.player)))
 			and not (enemy:hasArmorEffect("Breastplate") and enemy:getHp() == 1) then
-			players:append(enemy)
-			if use.to then use.to:append(enemy) end
+			local dangerous
+			local chained = {}
+			if enemy:isChained() and not self.player:hasShownSkill("jueqing") then
+				for _, p in sgs.qlist(self.room:getOtherPlayers(enemy)) do
+					if not self:isGoodChainTarget(enemy, p, sgs.DamageStruct_Thunder) and self:damageIsEffective(p, sgs.DamageStruct_Thunder) and self:isFriend(p) then
+						table.insert(chained, p)
+						if self:isWeak(p) then dangerous = true end
+					end
+				end
+			end
+			if #chained >= 2 then dangerous = true end
+			if not dangerous then
+				players:append(enemy)
+				if use.to then use.to:append(enemy) end
+			end
 		end
 	end
 
@@ -181,14 +196,14 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 	if value < 8 then return "throw" else return "damage" end
 end
 
-sgs.ai_nullification.Drowning = function(self, card, from, to, positive)
+sgs.ai_nullification.Drowning = function(self, card, from, to, positive, keep)
 	if positive then
 		if self:isFriend(to) then
 			if self:needToThrowArmor(to) then return end
-			if to:getEquips():length() >= 2 then return true end
+			if to:getEquips():length() >= 2 then return true, true end
 		end
 	else
-		if self:isFriend(from) and (self:getOverflow() > 0 or self:getCardsNum("Nullification") > 1) then return true end
+		if self:isFriend(from) and (self:getOverflow() > 0 or self:getCardsNum("Nullification") > 1) then return true, true end
 	end
 	return
 end
@@ -224,7 +239,6 @@ function SmartAI:useCardBurningCamps(card, use)
 	for i = 0 , players:length() - 1 do
 		player = findPlayerByObjectName(players:at(i):objectName())
 		if not self:hasTrickEffective(card, player, self.player) then
-			if i == 0 then return end
 			continue
 		end
 		local damage = {}
@@ -240,8 +254,6 @@ function SmartAI:useCardBurningCamps(card, use)
 			else
 				return
 			end
-		elseif i == 0 then
-			return
 		end
 	end
 	if shouldUse then
@@ -249,11 +261,81 @@ function SmartAI:useCardBurningCamps(card, use)
 	end
 end
 
-sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive)
+sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, keep)
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. card:toString()):toList()
+	for _, q in sgs.qlist(players) do
+		targets:append(q:toPlayer())
+	end
 	if positive then
-		if self:isFriendWith(to) and self:isEnemy(from) then return true end
+		if from:objectName() == self.player:objectName() then return false end
+		local chained = {}
+		local dangerous
+		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasShownSkill("jueqing") then
+			for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
+				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isFriend(p) then
+					table.insert(chained, p)
+					if self:isWeak(p) then dangerous = true end
+				end
+			end
+		end
+		if to:hasArmorEffect("Vine") and #chained > 0 then dangerous = true end
+		local friends = {}
+		if self:isFriend(to) then
+			for _, p in sgs.qlist(targets) do
+				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
+					table.insert(friends, p)
+					if self:isWeak(p) or p:hasArmorEffect("Vine") then dangerous = true end
+				end
+			end
+		end
+		if #chained + #friends > 2 or dangerous then return true, #friends <= 1 end
+		if keep then return false end
+		if self:isFriendWith(to) and self:isEnemy(from) then return true, #friends <= 1 end
 	else
-		if self:isFriend(from) and self:isEnemy(to) then return true end
+		if not self:isFriend(from) then return false end
+		local chained = {}
+		local dangerous
+		local enemies = {}
+		local good
+		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasShownSkill("jueqing") then
+			for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
+				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isFriend(p) then
+					table.insert(chained, p)
+					if self:isWeak(p) then dangerous = true end
+				end
+				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isEnemy(p) then
+					table.insert(enemies, p)
+					if self:isWeak(p) then good = true end
+				end
+			end
+		end
+		if to:hasArmorEffect("Vine") and #chained > 0 then dangerous = true end
+		if to:hasArmorEffect("Vine") and #enemies > 0 then good = true end
+		local friends = {}
+		if self:isFriend(to) then
+			for _, p in sgs.qlist(targets) do
+				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
+					table.insert(friends, p)
+					if self:isWeak(p) or p:hasArmorEffect("Vine") then dangerous = true end
+				end
+			end
+		end
+		if self:isEnemy(to) then
+			for _, p in sgs.qlist(targets) do
+				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
+					if self:isWeak(p) or p:hasArmorEffect("Vine") then good = true end
+				end
+			end
+		end
+		if #chained + #friends > 2 or dangerous then return false end
+		if keep then
+			local nulltype = self.room:getTag("NullificatonType"):toBool()
+			if nulltype and targets:length() > 1 then good = true end
+			if good then keep = false end
+		end
+		if keep then return false end
+		if self:isFriend(from) and self:isEnemy(to) then return true, true end
 	end
 	return
 end
@@ -455,12 +537,14 @@ function SmartAI:useCardLureTiger(LureTiger, use)
 end
 
 sgs.ai_nullification.LureTiger = function(self, card, from, to, positive)
+	--[[
 	if positive then
 		if self:isFriendWith(to) and self:isEnemy(from) then return true end
 	else
 		if self:isFriend(from) and self:isEnemy(to) then return true end
 	end
-	return
+	--]]
+	return false
 end
 
 sgs.ai_use_value.LureTiger = 5
@@ -485,11 +569,13 @@ function SmartAI:useCardFightTogether(card, use)
 					table.insert(bigs, p)
 					if p:objectName() == self.player:objectName() then isBig = true end
 				else
-					table.insert(smalls, p)
-					if p:objectName() == self.player:objectName() then isSmall = true end
+					if not(p:hasArmorEffect("IronArmor") and not p:isChained()) then
+						table.insert(smalls, p)
+						if p:objectName() == self.player:objectName() then isSmall = true end
+					end
 				end
 			else
-				if not p:hasShownOneGeneral() then
+				if not p:hasShownOneGeneral() and not(p:hasArmorEffect("IronArmor") and not p:isChained()) then
 					if p:objectName() == self.player:objectName() then isSmall = true end
 					table.insert(smalls, p)
 					continue
@@ -502,8 +588,10 @@ function SmartAI:useCardFightTogether(card, use)
 					if p:objectName() == self.player:objectName() then isBig = true end
 					table.insert(bigs, p)
 				else
-					if p:objectName() == self.player:objectName() then isSmall = true end
-					table.insert(smalls, p)
+					if not(p:hasArmorEffect("IronArmor") and not p:isChained()) then
+						if p:objectName() == self.player:objectName() then isSmall = true end
+						table.insert(smalls, p)
+					end
 				end
 			end
 		end
@@ -554,6 +642,16 @@ function SmartAI:useCardFightTogether(card, use)
 			end
 		end
 	end
+	if (self.FightTogether_choice == "big" and #bigs == 1) or (self.FightTogether_choice == "small" and #smalls == 1) then
+		local check
+		for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+			if p:isChained() and self:isEnemy(p) then
+				check = true
+				break
+			end
+		end
+		if not check then self.FightTogether_choice = nil end
+	end
 
 	if not self.FightTogether_choice and not self.player:isCardLimited(card, sgs.Card_MethodRecast) then
 		self.FightTogether_choice = "recast"
@@ -571,15 +669,36 @@ sgs.ai_skill_choice["fight_together"] = function(self, choices)
 	return choices[#choices]
 end
 
-sgs.ai_nullification.FightTogether = function(self, card, from, to, positive)
+sgs.ai_nullification.FightTogether = function(self, card, from, to, positive, keep)
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. card:toString()):toList()
+	for _, q in sgs.qlist(players) do
+		if q:toPlayer():objectName() ~= to:objectName() and to:isFriendWith(q:toPlayer()) then
+			targets:append(q:toPlayer())
+		end
+	end
+	local ed, no = 0, 0
 	if positive then
 		if to:isChained() then
-			if self:isEnemy(to) and to:hasShownSkills(sgs.cardneed_skill .. "|" .. sgs.priority_skill .. "|" .. sgs.wizard_harm_skill) then return true end
+			local single = true
+			if self:isEnemy(to) and to:hasShownSkills(sgs.cardneed_skill .. "|" .. sgs.priority_skill .. "|" .. sgs.wizard_harm_skill) then
+				for _, p in sgs.qlist(targets) do
+					if p:isChained() then ed = ed + 1 else no = no + 1 end
+				end
+				if targets:length() > 0 and ed > no then single = false end
+				return true, single
+			end
 		else
-			if self:isFriendWith(to) and to:hasArmorEffect("Vine") then return true end
+			if self:isFriendWith(to) and to:hasArmorEffect("Vine") then
+				for _, p in sgs.qlist(targets) do
+					if p:isChained() then ed = ed + 1 else no = no + 1 end
+				end
+				if targets:length() > 0 and no >= ed then single = false end
+				return true, single
+			end
 		end
 	else
-		if self:isFriendWith(to) and to:isChained() then return true end
+		if self:isFriendWith(to) and to:isChained() then return true, true end
 	end
 	return
 end
@@ -621,10 +740,29 @@ function SmartAI:useCardAllianceFeast(card, use)
 			return v1 > v2
 		end
 		table.sort(targets, cmp_k)
-		if isEnemy then targets = sgs.reverse(targets) end
-		use.card = card
-		if use.to then use.to:append(targets[1]) end
-		return
+		local target = targets[1]
+		if isEnemy then
+			target = nil
+			targets = sgs.reverse(targets)
+			for _, t in ipairs(targets) do
+				local v = 0
+				for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+					if p:isFriendWith(t) then
+						if p:isWounded() then
+							v = v - 2
+						else
+							v = v + 1
+						end
+					end
+				end
+				if v > 0 then target = t break end
+			end
+		end
+		if target then
+			use.card = card
+			if use.to then use.to:append(target) end
+			return
+		end
 	end
 end
 
@@ -639,7 +777,36 @@ sgs.ai_use_value.AllianceFeast = 7.5
 sgs.ai_use_priority.AllianceFeast = 8.8
 sgs.ai_keep_value.AllianceFeast = 3.26
 
-sgs.ai_nullification.AllianceFeast = function(self, card, from, to, positive)
+sgs.ai_nullification.AllianceFeast = function(self, card, from, to, positive, keep)
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. card:toString()):toList()
+	for _, q in sgs.qlist(players) do
+		targets:append(q:toPlayer())
+	end
+	if positive then
+		if self:isEnemy(to) then
+			local wounded
+			for _, p in sgs.qlist(targets) do
+				if p:objectName() ~= from:objectName() and (p:isWounded() or not p:faceUp()) then wounded = true end
+				if p:objectName() ~= from:objectName() and self:isWeak(p) then keep = false end
+			end
+			if keep then return false end
+			local hegnull = self:getCard("HegNullification") or (self.room:getTag("NullifyingTimes"):toInt() > 0 and self.room:getTag("NullificatonType"):toBool())
+			if to:objectName() ~= from:objectName() and wounded and hegnull then
+				return true, players:length() <= 1
+			end
+			if to:objectName() ~= from:objectName() and (to:isWounded() or not to:faceUp()) then
+				return true, true
+			end
+			if to:objectName() == from:objectName() and to:getMark("alliance_feast") >= 2 then return true, true end
+		end
+	else
+		if self:isFriend(to) then
+			if to:objectName() ~= from:objectName() and (to:isWounded() or not to:faceUp()) then return true, true end
+			if keep then return false end
+			if to:objectName() == from:objectName() and to:getMark("alliance_feast") >= 2 then return true, true end
+		end
+	end
 	return
 end
 
@@ -648,17 +815,21 @@ end
 function SmartAI:useCardThreatenEmperor(card, use)
 	if not card:isAvailable(self.player) then return end
 	if self.player:getCardCount(true) < 2 then return end
+	if not self:hasTrickEffective(card, self.player, self.player) then return end
 	use.card = card
 end
 sgs.ai_use_value.ThreatenEmperor = 8
 sgs.ai_use_priority.ThreatenEmperor = 0
 sgs.ai_keep_value.ThreatenEmperor = 3.2
 
-sgs.ai_nullification.ThreatenEmperor = function(self, card, from, to, positive)
+sgs.ai_nullification.ThreatenEmperor = function(self, card, from, to, positive, keep)
 	if positive then
-		if self:isEnemy(from) then return true end
+		if self:isEnemy(from) and not from:isNude() then return true, true end
 	else
-		if self:isFriend(from) then return true end
+		if from:getCards("he"):length() == 1 and self.player:objectName() == from:objectName() then
+			if self:getCard("Nullification"):getEffectiveId() == self.player:getCards("he"):first():getEffectiveId() then return false end
+		end
+		if self:isFriend(from) and not from:isNude() then return true, true end
 	end
 	return
 end
@@ -667,6 +838,11 @@ sgs.ai_skill_cardask["@threaten_emperor"] = function(self)
 	if self.player:isNude() then return "." end
 	local cards = sgs.QList2Table(self.player:getCards("he"))
 	self:sortByKeepValue(cards)
+	for _, card in ipairs(cards) do
+		if not card:isKindOf("JadeSeal") then
+			return card:getEffectiveId()
+		end
+	end
 	return cards[1]:getEffectiveId()
 end
 
@@ -687,12 +863,20 @@ sgs.ai_skill_cardask["@imperial_order-equip"] = function(self)
 	if self:needToThrowArmor() then
 		return self.player:getArmor():getEffectiveId()
 	end
-	if not self:willShowForAttack() and self.player:getPhase() == sgs.Player_NotActive then
+	local discard
+	local kingdom = self:evaluateKingdom(self.player)
+	if kingdom == "unknown" then discard = true
+	else
+		kingdom = kingdom:split("?")
+		discard = #kingdom / #sgs.KingdomsTable >= 0.5
+	end
+	if self.player:getPhase() == sgs.Player_NotActive and discard then
 		local cards = self.player:getCards("he")
 		local cards = sgs.QList2Table(self.player:getCards("he"))
 			for _, card in ipairs(cards) do
-				if (card:isKindOf("Weapon") and self.player:getHandcardNum() < 3) or card:isKindOf("OffensiveHorse")
-					or self:getSameEquip(card, self.player) then
+				if not self:willShowForAttack() and ((card:isKindOf("Weapon") and self.player:getHandcardNum() < 3) or card:isKindOf("OffensiveHorse")) then
+					return card:getEffectiveId()
+				elseif not self:willShowForDefence() and ((card:isKindOf("Armor") and self.player:getHp() > 1) or card:isKindOf("DefensiveHorse")) then
 					return card:getEffectiveId()
 				end
 			end
@@ -817,7 +1001,7 @@ sgs.ai_skill_cardask["@Halberd"] = function(self)
 			end
 		end
 		self:useCardSlash(slash, use)
-		if not use.card then return "." end
+		if not use.card or not use.card:isKindOf("Slash") then return "." end
 		local targets = {}
 		for _, p in sgs.qlist(use.to) do
 			table.insert(targets, p:objectName())
@@ -840,12 +1024,13 @@ wooden_ox_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("WoodenOxCard") or self.player:isKongcheng() or not self.player:hasTreasure("WoodenOx") then return end
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByUseValue(cards, true)
-	local card, friend = self:getCardNeedPlayer(cards)
+	local card, friend = self:getCardNeedPlayer(cards, self.friends_noself, "WoodenOx")
 	if card and friend and friend:objectName() ~= self.player:objectName() and (self:getOverflow() > 0 or self:isWeak(friend)) then
 		self.wooden_ox_assist = friend
 		return sgs.Card_Parse("@WoodenOxCard=" .. card:getEffectiveId())
 	end
 	if self:getOverflow() > 0 or (self:needKongcheng() and #cards == 1) then
+		self.wooden_ox_assist = nil
 		return sgs.Card_Parse("@WoodenOxCard=" .. cards[1]:getEffectiveId())
 	end
 end

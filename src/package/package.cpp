@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,13 +15,14 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "package.h"
 #include "skill.h"
 
-void Package::insertRelatedSkills(const QString &main_skill, int n, ...) {
+void Package::insertRelatedSkills(const QString &main_skill, int n, ...)
+{
     va_list ap;
     va_start(ap, n);
     for (int i = 0; i < n; ++i) {
@@ -31,16 +32,18 @@ void Package::insertRelatedSkills(const QString &main_skill, int n, ...) {
     va_end(ap);
 }
 
-Package::~Package() {
-    foreach(const Skill *skill, skills)
+Package::~Package()
+{
+    foreach (const Skill *skill, skills)
         delete skill;
 
-    foreach(const QString key, patterns.keys())
+    foreach (const QString key, patterns.keys())
         delete patterns[key];
 }
 
 Q_GLOBAL_STATIC(PackageHash, Packages)
-PackageHash &PackageAdder::packages() {
+PackageHash &PackageAdder::packages()
+{
     return *(::Packages());
 }
 

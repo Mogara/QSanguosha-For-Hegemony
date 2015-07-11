@@ -111,10 +111,13 @@ SOURCES += \
     src/ui/graphicspixmaphoveritem.cpp \
     src/ui/heroskincontainer.cpp \
     src/ui/skinitem.cpp \
+    src/ui/tile.cpp \
+    src/ui/choosesuitbox.cpp \
     src/util/detector.cpp \
     src/util/nativesocket.cpp \
     src/util/recorder.cpp \
-    swig/sanguosha_wrap.cxx
+    swig/sanguosha_wrap.cxx \
+    src/ui/guhuobox.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -219,22 +222,40 @@ HEADERS += \
     src/ui/graphicspixmaphoveritem.h \
     src/ui/heroskincontainer.h \
     src/ui/skinitem.h \
+    src/ui/tile.h \
+    src/ui/choosesuitbox.h \
     src/util/detector.h \
     src/util/nativesocket.h \
     src/util/recorder.h \
-    src/util/socket.h
+    src/util/socket.h \
+    src/ui/guhuobox.h
 
 FORMS += \
     src/dialog/cardoverview.ui \
     src/dialog/configdialog.ui \
     src/dialog/connectiondialog.ui \
     src/dialog/generaloverview.ui
+    
+
+
+CONFIG(buildbot) {
+    DEFINES += USE_BUILDBOT
+    SOURCES += src/bot_version.cpp
+}
 
 win32 {
     FORMS += src/dialog/mainwindow.ui
 }
-else: android {
+else: linux {
     FORMS += src/dialog/mainwindow.ui
+}
+else: ios {
+    FORMS += \
+    src/dialog/mainwindow_ios.ui\
+    src/dialog/cardoverview_ios.ui \
+    src/dialog/configdialog_ios.ui \
+    src/dialog/connectiondialog_ios.ui \
+    src/dialog/generaloverview_ios.ui
 }
 else {
     FORMS += src/dialog/mainwindow_nonwin.ui
@@ -300,7 +321,13 @@ win32-g++{
 winrt{
     DEFINES += _CRT_SECURE_NO_WARNINGS
     DEFINES += WINRT
-    LIBS += -L"$$_PRO_FILE_PWD_/lib/winrt/x64"
+    !winphone {
+        LIBS += -L"$$_PRO_FILE_PWD_/lib/winrt/x64"
+    } else {
+        DEFINES += WINPHONE
+        contains($$QMAKESPEC, arm): LIBS += -L"$$_PRO_FILE_PWD_/lib/winphone/arm"
+        else : LIBS += -L"$$_PRO_FILE_PWD_/lib/winphone/x86"
+    }
 }
 macx{
     DEFINES += MAC
@@ -325,9 +352,11 @@ linux{
         DEFINES += LINUX
         !contains(QMAKE_HOST.arch, x86_64) {
             LIBS += -L"$$_PRO_FILE_PWD_/lib/linux/x86"
+            QMAKE_LFLAGS += -Wl,--rpath=lib/linux/x86
         }
         else {
             LIBS += -L"$$_PRO_FILE_PWD_/lib/linux/x64"
+            QMAKE_LFLAGS += -Wl,--rpath=lib/linux/x64
         }
     }
 }
@@ -343,6 +372,8 @@ CONFIG(audio){
         CONFIG(debug, debug|release):ANDROID_EXTRA_LIBS += $$ANDROID_LIBPATH/libfmodexL.so
         else:ANDROID_EXTRA_LIBS += $$ANDROID_LIBPATH/libfmodex.so
     }
+
+    ios: QMAKE_LFLAGS += -framework AudioToolBox
 }
 
 
@@ -451,6 +482,7 @@ android:DEFINES += "\"l_getlocaledecpoint()='.'\""
         src/lua53/lapi.c \
         src/lua53/lutf8lib.c
     HEADERS += \
+        src/lua53/lprefix.h \
         src/lua53/lzio.h \
         src/lua53/lvm.h \
         src/lua53/lundump.h \
@@ -487,12 +519,12 @@ CONFIG(opengl){
 TRANSLATIONS += builds/sanguosha.ts
 
 !build_pass{
-    system("lrelease builds/sanguosha.ts -qm $$PWD/sanguosha.qm")
+    system("lrelease $$_PRO_FILE_PWD_/builds/sanguosha.ts -qm $$_PRO_FILE_PWD_/sanguosha.qm")
 
     SWIG_bin = "swig"
-    win32: SWIG_bin = "$$PWD/tools/swig/swig.exe"
+    contains(QMAKE_HOST.os, "Windows"): SWIG_bin = "$$_PRO_FILE_PWD_/tools/swig/swig.exe"
 
-    system("$$SWIG_bin -c++ -lua $$PWD/swig/sanguosha.i")
+    system("$$SWIG_bin -c++ -lua $$_PRO_FILE_PWD_/swig/sanguosha.i")
 }
 
 OTHER_FILES += \
@@ -501,9 +533,10 @@ OTHER_FILES += \
     resource/android/AndroidManifest.xml \
     builds/sanguosha.ts
 
-LIBS += -lfreetype
+CONFIG(debug, debug|release): LIBS += -lfreetype_D
+else:LIBS += -lfreetype
 
-INCLUDEPATH += $$PWD/include/freetype
-DEPENDPATH += $$PWD/include/freetype
+INCLUDEPATH += $$_PRO_FILE_PWD_/include/freetype
+DEPENDPATH += $$_PRO_FILE_PWD_/include/freetype
 
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/resource/android
+ANDROID_PACKAGE_SOURCE_DIR = $$_PRO_FILE_PWD_/resource/android

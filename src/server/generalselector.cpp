@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "generalselector.h"
@@ -29,7 +29,8 @@
 
 static GeneralSelector *Selector;
 
-GeneralSelector *GeneralSelector::getInstance() {
+GeneralSelector *GeneralSelector::getInstance()
+{
     if (Selector == NULL) {
         Selector = new GeneralSelector;
         Selector->setParent(Sanguosha);
@@ -38,21 +39,23 @@ GeneralSelector *GeneralSelector::getInstance() {
     return Selector;
 }
 
-GeneralSelector::GeneralSelector() {
+GeneralSelector::GeneralSelector()
+{
     loadGeneralTable();
     loadPairTable();
 }
 
-QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringList &candidates) {
-    if (private_pair_value_table[player].isEmpty())
+QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringList &candidates)
+{
+    if (m_privatePairValueTable[player].isEmpty())
         calculatePairValues(player, candidates);
 
-    QHash<QString, int> my_hash = private_pair_value_table[player];
+    QHash<QString, int> my_hash = m_privatePairValueTable[player];
 
     int max_score = my_hash.values().first();
     QString best_pair = my_hash.keys().first();
 
-    foreach(QString key, my_hash.keys()) {
+    foreach (const QString &key, my_hash.keys()) {
         int score = my_hash.value(key);
         if (score > max_score) {
             max_score = score;
@@ -69,7 +72,8 @@ QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringL
     return pair;
 }
 
-void GeneralSelector::loadGeneralTable() {
+void GeneralSelector::loadGeneralTable()
+{
     QRegExp rx("(\\w+)\\s+(\\d+)");
     QFile file("ai-selector/general-value.txt");
     if (file.open(QIODevice::ReadOnly)) {
@@ -84,12 +88,12 @@ void GeneralSelector::loadGeneralTable() {
             QString general = texts.at(1);
             int value = texts.at(2).toInt();
 
-            single_general_table.insert(general, value);
+            m_singleGeneralTable.insert(general, value);
         }
 
         file.close();
     }
-    foreach(QString pack, Config.value("LuaPackages", QString()).toString().split("+")) {
+    foreach (const QString &pack, Config.value("LuaPackages", QString()).toString().split("+")) {
         QFile lua_file(QString("extensions/ai-selector/%1-general-value.txt").arg(pack));
         if (lua_file.exists() && lua_file.open(QIODevice::ReadOnly)) {
             QTextStream stream(&lua_file);
@@ -103,7 +107,7 @@ void GeneralSelector::loadGeneralTable() {
                 QString general = texts.at(1);
                 int value = texts.at(2).toInt();
 
-                single_general_table.insert(general, value);
+                m_singleGeneralTable.insert(general, value);
             }
 
             lua_file.close();
@@ -111,7 +115,8 @@ void GeneralSelector::loadGeneralTable() {
     }
 }
 
-void GeneralSelector::loadPairTable() {
+void GeneralSelector::loadPairTable()
+{
     QRegExp rx("(\\w+)\\s+(\\w+)\\s+(\\d+)\\s+(\\d+)");
     QFile file("ai-selector/pair-value.txt");
     if (file.open(QIODevice::ReadOnly)) {
@@ -129,14 +134,14 @@ void GeneralSelector::loadPairTable() {
             int value_b = texts.at(4).toInt();
 
             QString key_f = QString("%1+%2").arg(first).arg(second);
-            pair_table.insert(key_f, value_f);
+            m_pairTable.insert(key_f, value_f);
             QString key_b = QString("%1+%2").arg(second).arg(first);
-            pair_table.insert(key_b, value_b);
+            m_pairTable.insert(key_b, value_b);
         }
 
         file.close();
     }
-    foreach(QString pack, Config.value("LuaPackages", QString()).toString().split("+")) {
+    foreach (const QString &pack, Config.value("LuaPackages", QString()).toString().split("+")) {
         QFile lua_file(QString("extensions/ai-selector/%1-pair-value.txt").arg(pack));
         if (lua_file.exists() && lua_file.open(QIODevice::ReadOnly)) {
             QTextStream stream(&lua_file);
@@ -153,9 +158,9 @@ void GeneralSelector::loadPairTable() {
                 int value_b = texts.at(4).toInt();
 
                 QString key_f = QString("%1+%2").arg(first).arg(second);
-                pair_table.insert(key_f, value_f);
+                m_pairTable.insert(key_f, value_f);
                 QString key_b = QString("%1+%2").arg(second).arg(first);
-                pair_table.insert(key_b, value_b);
+                m_pairTable.insert(key_b, value_b);
             }
 
             lua_file.close();
@@ -176,13 +181,13 @@ void GeneralSelector::calculatePairValues(const ServerPlayer *player, const QStr
     }
 
     QStringList candidates = _candidates;
-    if (!player->getGeneralName().isEmpty()){
-        foreach(QString candidate, _candidates){
+    if (!player->getGeneralName().isEmpty()) {
+        foreach (const QString &candidate, _candidates) {
             if (BanPair::isBanned(player->getGeneralName(), candidate))
                 candidates.removeOne(candidate);
         }
     }
-    foreach(QString first, candidates) {
+    foreach (const QString &first, candidates) {
         calculateDeputyValue(player, first, candidates, kingdoms);
     }
 }
@@ -190,25 +195,25 @@ void GeneralSelector::calculatePairValues(const ServerPlayer *player, const QStr
 void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QString &first, const QStringList &_candidates, const QStringList &kingdom_list)
 {
     QStringList candidates = _candidates;
-    foreach(QString candidate, _candidates){
-        if (BanPair::isBanned(first, candidate)){
-            private_pair_value_table[player][QString("%1+%2").arg(first, candidate)] = -100;
+    foreach (const QString &candidate, _candidates) {
+        if (BanPair::isBanned(first, candidate)) {
+            m_privatePairValueTable[player][QString("%1+%2").arg(first, candidate)] = -100;
             candidates.removeOne(candidate);
         }
     }
-    foreach(QString second, candidates) {
+    foreach (const QString &second, candidates) {
         if (first == second) continue;
         QString key = QString("%1+%2").arg(first, second);
-        if (pair_table.contains(key))
-            private_pair_value_table[player][key] = pair_table.value(key);
+        if (m_pairTable.contains(key))
+            m_privatePairValueTable[player][key] = m_pairTable.value(key);
         else {
             const General *general1 = Sanguosha->getGeneral(first);
             const General *general2 = Sanguosha->getGeneral(second);
             Q_ASSERT(general1 && general2);
             QString kingdom = general1->getKingdom();
             if (general2->getKingdom() != kingdom || general2->isLord()) continue;
-            const int general2_value = single_general_table.value(second, 0);
-            int v = single_general_table.value(first, 0) + general2_value;
+            const int general2_value = m_singleGeneralTable.value(second, 0);
+            int v = m_singleGeneralTable.value(first, 0) + general2_value;
 
             if (!kingdom_list.isEmpty())
                 v += (kingdom_list.indexOf(kingdom) - 1);
@@ -223,8 +228,7 @@ void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QSt
                     v -= 2;
                 else if (kingdom != "qun")
                     v += 1;
-            }
-            else if ("qun" == kingdom)
+            } else if ("qun" == kingdom)
                 v += 1;
 
             if (general1->hasSkill("baoling") && general2_value > 6) v -= 5;
@@ -232,12 +236,12 @@ void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QSt
             if (max_hp < 8) {
                 QSet<QString> need_high_max_hp_skills;
                 need_high_max_hp_skills << "zhiheng" << "zaiqi" << "yinghun" << "kurou";
-                foreach(const Skill *skill, general1->getVisibleSkills() + general2->getVisibleSkills()) {
+                foreach (const Skill *skill, general1->getVisibleSkills() + general2->getVisibleSkills()) {
                     if (need_high_max_hp_skills.contains(skill->objectName())) v -= 5;
                 }
             }
 
-            private_pair_value_table[player][key] = v;
+            m_privatePairValueTable[player][key] = v;
         }
     }
 }

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _PACKAGE_H
@@ -30,67 +30,86 @@ class Card;
 class Player;
 class Skill;
 
-class CardPattern {
+class CardPattern
+{
 public:
     virtual bool match(const Player *player, const Card *card) const = 0;
-    virtual bool willThrow() const{
+    virtual bool willThrow() const
+    {
         return true;
     }
-    virtual QString getPatternString() const{
+    virtual QString getPatternString() const
+    {
         return QString();
     }
 
-    virtual ~CardPattern() {}
+    virtual ~CardPattern()
+    {
+    }
 };
 
-class Package : public QObject {
+class Package : public QObject
+{
     Q_OBJECT
-    Q_ENUMS(Type)
+        Q_ENUMS(Type)
 
 public:
-    enum Type { GeneralPack, CardPack, MixedPack, SpecialPack };
+    enum Type
+    {
+        GeneralPack, CardPack, MixedPack, SpecialPack
+    };
 
-    Package(const QString &name, Type pack_type = GeneralPack) {
+    Package(const QString &name, Type pack_type = GeneralPack)
+    {
         setObjectName(name);
         type = pack_type;
     }
 
-    QList<const QMetaObject *> getMetaObjects() const{
+    QList<const QMetaObject *> getMetaObjects() const
+    {
         return metaobjects;
     }
 
-    QList<const Skill *> getSkills() const{
+    QList<const Skill *> getSkills() const
+    {
         return skills;
     }
 
-    QMap<QString, const CardPattern *> getPatterns() const{
+    QMap<QString, const CardPattern *> getPatterns() const
+    {
         return patterns;
     }
 
-    QMultiMap<QString, QString> getRelatedSkills() const{
+    QMultiMap<QString, QString> getRelatedSkills() const
+    {
         return related_skills;
     }
 
-    QMultiMap<QString, QString> getConvertPairs() const{
+    QMultiMap<QString, QString> getConvertPairs() const
+    {
         return convert_pairs;
     }
 
-    Type getType() const{
+    Type getType() const
+    {
         return type;
     }
 
     template<typename T>
-    void addMetaObject() {
+    void addMetaObject()
+    {
         metaobjects << &T::staticMetaObject;
     }
 
-    inline void insertRelatedSkills(const QString &main_skill, const QString &related_skill) {
+    inline void insertRelatedSkills(const QString &main_skill, const QString &related_skill)
+    {
         related_skills.insertMulti(main_skill, related_skill);
     }
 
     void insertRelatedSkills(const QString &main_skill, int n, ...);
 
-    inline void insertConvertPairs(const QString &from, const QString &to) {
+    inline void insertConvertPairs(const QString &from, const QString &to)
+    {
         convert_pairs.insertMulti(from, to);
     }
 
@@ -107,9 +126,11 @@ protected:
 
 typedef QHash<QString, Package *> PackageHash;
 
-class PackageAdder {
+class PackageAdder
+{
 public:
-    PackageAdder(const QString &name, Package *pack) {
+    PackageAdder(const QString &name, Package *pack)
+    {
         packages()[name] = pack;
     }
 

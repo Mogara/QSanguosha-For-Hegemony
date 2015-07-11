@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _CARD_OVERVIEW_H
@@ -30,7 +30,8 @@ namespace Ui {
     class CardOverview;
 }
 
-class CardOverview : public FlatDialog {
+class CardOverview : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -51,6 +52,9 @@ private slots:
     void on_femalePlayButton_clicked();
     void on_malePlayButton_clicked();
     void on_playAudioEffectButton_clicked();
+#ifdef Q_OS_IOS
+    void comboBoxChanged();
+#endif
     void on_tableWidget_itemDoubleClicked(QTableWidgetItem *item);
     void on_tableWidget_itemSelectionChanged();
     void askCard();

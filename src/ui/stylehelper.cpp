@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "stylehelper.h"
@@ -31,8 +31,8 @@
 
 StyleHelper *StyleHelper::instance = NULL;
 
-StyleHelper::StyleHelper(QObject *):
-    QObject(qApp)
+StyleHelper::StyleHelper(QObject *)
+    : QObject(qApp)
 {
     iconFont = getFontByFileName("fontawesome-webfont.ttf");
 }

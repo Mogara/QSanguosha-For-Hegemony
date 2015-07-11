@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef SERVERDIALOG_H
@@ -29,8 +29,10 @@ class QSpinBox;
 class QCheckBox;
 class QButtonGroup;
 class QAbstractButton;
+class QComboBox;
 
-class ServerDialog : public FlatDialog {
+class ServerDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -46,7 +48,7 @@ public:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     ServerDialog(QWidget *parent);
@@ -61,13 +63,17 @@ public:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     bool config();
 
 private:
     QWidget *createBasicTab();
+#ifdef Q_OS_IOS
+    QWidget *createGameModeTab();
+    QWidget *createAiTab();
+#endif
     QWidget *createPackageTab();
     //************************************
     // Method:    createAdvancedTab
@@ -80,7 +86,7 @@ private:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     QWidget *createAdvancedTab();
@@ -95,7 +101,7 @@ private:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     QWidget *createConversionTab();
@@ -137,12 +143,15 @@ private:
 
 
     QCheckBox *convert_ds_to_dp;
+    QCheckBox *convert_jf_to_ps;
     QCheckBox *convert_lord;
 
     //QCheckBox *add_peace_spell;
-    QCheckBox *convert_zhangjiao_to_lord;
+    //QCheckBox *convert_zhangjiao_to_lord;
 
     QCheckBox *ai_chat_checkbox;
+
+    QComboBox *scenario_ComboBox;
 
 private slots:
     void onOkButtonClicked();

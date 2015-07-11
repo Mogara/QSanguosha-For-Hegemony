@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,37 +15,27 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _ROOM_THREAD_H
 #define _ROOM_THREAD_H
 
+#include "structs.h"
+
 #include <QThread>
 #include <QSemaphore>
 #include <QVariant>
 
-#include "structs.h"
-
 class GameRule;
 
-struct LogMessage {
-    LogMessage();
-    QString toString() const;
-    QVariant toVariant() const;
-
-    QString type;
-    ServerPlayer *from;
-    QList<ServerPlayer *> to;
-    QString card_str;
-    QString arg;
-    QString arg2;
-};
-
-class EventTriplet {
+class EventTriplet
+{
 public:
     inline EventTriplet(TriggerEvent triggerEvent, Room *room, ServerPlayer *target)
-        : _m_event(triggerEvent), _m_room(room), _m_target(target) {}
+        : _m_event(triggerEvent), _m_room(room), _m_target(target)
+    {
+    }
     QString toString() const;
 
 private:
@@ -54,7 +44,8 @@ private:
     ServerPlayer *_m_target;
 };
 
-class RoomThread : public QThread {
+class RoomThread : public QThread
+{
     Q_OBJECT
 
 public:

@@ -1,0 +1,46 @@
+<Folders>
+ai-selector
+audio
+diy
+dmp
+etc
+extension-doc
+font
+hero-skin
+image
+lang
+lua
+rule
+skins
+style-sheet
+ui-script
+
+<Files>
+CC BY-NC-ND 4.0
+fmodex.dll
+LICENSE
+qt_zh_CN.qm
+sanguosha.qm
+
+<Qt Libraries>
+Qt5Core.dll
+Qt5Declarative.dll
+Qt5Gui.dll
+Qt5Network.dll
+Qt5OpenGL.dll
+Qt5Script.dll
+Qt5Sql.dll
+Qt5Widgets.dll
+Qt5XmlPatterns.dll
+libEGL.dll
+libGLESv2.dll
+icudt55.dll
+icuuc55.dll
+icuin55.dll
+libgcc_s_dw2-1.dll
+libstdc++-6.dll
+libwinpthread-1.dll
+
+<Qt Plugins>
+platforms
+imageformats

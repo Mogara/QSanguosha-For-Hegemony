@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,11 +15,15 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "connectiondialog.h"
+#ifdef Q_OS_IOS
+#include "ui_connectiondialog_ios.h"
+#else
 #include "ui_connectiondialog.h"
+#endif
 #include "settings.h"
 #include "engine.h"
 #include "stylehelper.h"
@@ -62,16 +66,19 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     ui->avatarList->hide();
 }
 
-ConnectionDialog::~ConnectionDialog() {
+ConnectionDialog::~ConnectionDialog()
+{
     delete ui;
 }
 
-void ConnectionDialog::hideAvatarList() {
+void ConnectionDialog::hideAvatarList()
+{
     if (!ui->avatarList->isVisible()) return;
     ui->avatarList->hide();
 }
 
-void ConnectionDialog::showAvatarList() {
+void ConnectionDialog::showAvatarList()
+{
     if (ui->avatarList->isVisible()) return;
 
     if (ui->avatarList->model() == NULL) {
@@ -89,7 +96,8 @@ void ConnectionDialog::showAvatarList() {
     ui->avatarList->show();
 }
 
-void ConnectionDialog::on_connectButton_clicked() {
+void ConnectionDialog::on_connectButton_clicked()
+{
     QString username = ui->nameLineEdit->text();
 
     if (username.isEmpty()) {
@@ -107,7 +115,8 @@ void ConnectionDialog::on_connectButton_clicked() {
     accept();
 }
 
-void ConnectionDialog::on_changeAvatarButton_clicked() {
+void ConnectionDialog::on_changeAvatarButton_clicked()
+{
     if (ui->avatarList->isVisible()) {
         QModelIndex index = ui->avatarList->currentIndex();
         if (index.isValid()) {
@@ -124,7 +133,8 @@ void ConnectionDialog::on_changeAvatarButton_clicked() {
     }
 }
 
-void ConnectionDialog::on_avatarList_doubleClicked(const QModelIndex &index) {
+void ConnectionDialog::on_avatarList_doubleClicked(const QModelIndex &index)
+{
     QString general_name = ui->avatarList->model()->data(index, Qt::UserRole).toString();
     QPixmap avatar(G_ROOM_SKIN.getGeneralPixmap(general_name, QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
     ui->avatarPixmap->setPixmap(avatar);
@@ -135,7 +145,8 @@ void ConnectionDialog::on_avatarList_doubleClicked(const QModelIndex &index) {
     resize(ShrinkWidth, height());
 }
 
-void ConnectionDialog::on_clearHistoryButton_clicked() {
+void ConnectionDialog::on_clearHistoryButton_clicked()
+{
     ui->hostComboBox->clear();
     ui->hostComboBox->lineEdit()->clear();
 
@@ -143,7 +154,8 @@ void ConnectionDialog::on_clearHistoryButton_clicked() {
     Config.remove("HistoryIPs");
 }
 
-void ConnectionDialog::on_detectLANButton_clicked() {
+void ConnectionDialog::on_detectLANButton_clicked()
+{
     UdpDetectorDialog *detector_dialog = new UdpDetectorDialog(this);
     connect(detector_dialog, &UdpDetectorDialog::address_chosen, ui->hostComboBox->lineEdit(), &QLineEdit::setText);
 

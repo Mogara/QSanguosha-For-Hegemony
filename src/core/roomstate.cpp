@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,27 +15,30 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "roomstate.h"
 #include "engine.h"
 #include "wrappedcard.h"
 
-RoomState::~RoomState() {
+RoomState::~RoomState()
+{
     foreach (WrappedCard *card, m_cards) {
         delete card;
     }
     m_cards.clear();
 }
 
-Card *RoomState::getCard(int cardId) const{
+Card *RoomState::getCard(int cardId) const
+{
     if (!m_cards.contains(cardId))
         return NULL;
     return m_cards[cardId];
 }
 
-void RoomState::resetCard(int cardId) {
+void RoomState::resetCard(int cardId)
+{
     Card *newCard = Card::Clone(Sanguosha->getEngineCard(cardId));
     if (newCard == NULL) return;
     newCard->setFlags(m_cards[cardId]->getFlags());
@@ -45,7 +48,8 @@ void RoomState::resetCard(int cardId) {
 }
 
 // Reset all cards, generals' states of the room instance
-void RoomState::reset() {
+void RoomState::reset()
+{
     foreach (WrappedCard *card, m_cards) {
         delete card;
     }

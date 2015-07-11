@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef GRAPHICSPIXMAPHOVERITEM_H
@@ -31,11 +31,13 @@ class GraphicsPixmapHoverItem : public QObject, public QGraphicsPixmapItem
     Q_OBJECT
 
 public:
-    explicit GraphicsPixmapHoverItem(PlayerCardContainer *playerCardContainer,
-                                     QGraphicsItem *parent = 0);
+    explicit GraphicsPixmapHoverItem(PlayerCardContainer *playerCardContainer, QGraphicsItem *parent = 0);
 
     void stopChangeHeroSkinAnimation();
-    bool isSkinChangingFinished() const { return (0 == m_timer); }
+    bool isSkinChangingFinished() const
+    {
+        return (0 == m_timer);
+    }
 
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
 

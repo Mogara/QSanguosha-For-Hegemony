@@ -1,12 +1,30 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
 
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
 
 return {
 
 	-- 华佗
-	["$jijiu1"] = "别紧张，有老夫呢。", 
-	["$jijiu2"] = "救人一命，胜造七级浮屠。", 
-	["$qingnang1"] = "早睡早起，方能养生。", 
-	["$qingnang2"] = "越老越要补啊。", 
+	["$jijiu1"] = "别紧张，有老夫呢。",
+	["$jijiu2"] = "救人一命，胜造七级浮屠。",
+	["$qingnang1"] = "早睡早起，方能养生。",
+	["$qingnang2"] = "越老越要补啊。",
 	["~huatuo"] = "医者…不能自医啊……",
 
 	-- 吕布
@@ -20,8 +38,8 @@ return {
 	["$lijian1"] = "嗯呵呵~~呵呵~~",
 	["$lijian2"] = "夫君，你要替妾身做主啊……",
 	["~diaochan"] = "父亲大人，对不起……",
-	
-	
+
+
 	-- 张角
 	["$leiji1"] = "雷公助我！",
 	["$leiji2"] = "以我之真气，合天地之造化。",
@@ -30,15 +48,15 @@ return {
 	["$huangtian1"] = "苍天已死，黄天当立！",
 	["$huangtian2"] = "岁在甲子，天下大吉！",
 	["~zhangjiao"] = "黄天…也死了……",
-	
+
 	["$luanji1"] = "弓箭手，准备放箭！",
 	["$luanji2"] = "全都去死吧！",
 	["~yuanshao"] = "老天不助我袁家啊！",
-	
+
 	["$mengjin1"] = "你，可敢挡我！",
 	["$mengjin2"] = "我要杀你们个片甲不留！",
 	["~pangde"] = "四面都是水……我命休矣。",
-	
+
 	["$shuangxiong1"] = "吾乃河北上将颜良（文丑）是也！",
 	["$shuangxiong2"] = "快来与我等决一死战！",
 	["~yanliangwenchou"] = "这红脸长须大将是……",
@@ -50,13 +68,13 @@ return {
 	["$luanwu1"] = "哭喊吧，哀求吧，挣扎吧，然后，死吧！",
 	["$luanwu2"] = "嘿嘿嘿，坐山观虎斗。",
 	["~jiaxu"] = "我的时辰也到了……",
-	
+
 	["$beige1"] = "制兹八拍兮拟排忧，何知曲成兮心转愁。",
 	["$beige2"] = "悲歌可以当泣，远望可以当归。",
 	["$duanchang1"] = "日东月西兮徒相忘，不得相随兮空断肠。",
 	["$duanchang2"] = "流落异乡愁断肠。",
 	["~caiwenji"] = "人生几何时，怀忧终年岁。" ,
-	
+
 
 	-- 马腾
 	["$xiongyi1"] = "弟兄们，我们的机会来啦！",

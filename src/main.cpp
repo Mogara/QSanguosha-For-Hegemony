@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #if defined(WIN32) && !defined(GPP) && !defined(QT_NO_DEBUG) && !defined(WINRT)
@@ -47,8 +47,9 @@
 
 using namespace google_breakpad;
 
-static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINTERS *, MDRawAssertionInfo *, bool succeeded) {
-    if (succeeded && QFile::exists("QSanSMTPClient.exe")){
+static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINTERS *, MDRawAssertionInfo *, bool succeeded)
+{
+    if (succeeded && QFile::exists("QSanSMTPClient.exe")) {
         char ID[16000];
         memset(ID, 0, sizeof(ID));
 #ifdef _MSC_VER
@@ -68,7 +69,8 @@ static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINT
 }
 #endif
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     bool noGui = argc > 1 && strcmp(argv[1], "-server") == 0;
 
     if (noGui)
@@ -82,7 +84,13 @@ int main(int argc, char *argv[]) {
 #else
     QSplashScreen *splash = NULL;
     if (!noGui) {
-        QPixmap raraLogo("image/system/developers/logo.png");
+        QPixmap raraLogo;
+        QDate currentDate = QDate::currentDate();
+        if (currentDate.month() == 11 && currentDate.day() == 30)
+            raraLogo.load("image/system/developers/logo_rara.png");
+        else
+            raraLogo.load("image/system/developers/logo.png");
+
         splash = new QSplashScreen(raraLogo);
         splash->show();
         qApp->processEvents();
@@ -90,10 +98,10 @@ int main(int argc, char *argv[]) {
 #define showSplashMessage(message) \
     if (splash == NULL) {\
         puts(message.toUtf8().constData());\
-    } else {\
+        } else {\
         splash->showMessage(message, Qt::AlignBottom | Qt::AlignHCenter, Qt::cyan);\
         qApp->processEvents();\
-    }
+        }
 #endif
 
 #ifdef USE_BREAKPAD
@@ -221,7 +229,8 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    foreach(QString arg, qApp->arguments()) {
+    foreach (const QString &_arg, qApp->arguments()) {
+        QString arg = _arg;
         if (arg.startsWith("-connect:")) {
             arg.remove("-connect:");
             Config.HostAddress = arg;

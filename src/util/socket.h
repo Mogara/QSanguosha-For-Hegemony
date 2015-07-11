@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _SOCKET_H
@@ -27,7 +27,8 @@
 
 class ClientSocket;
 
-class ServerSocket : public QObject {
+class ServerSocket : public QObject
+{
     Q_OBJECT
 
 public:
@@ -38,7 +39,8 @@ signals:
     void new_connection(ClientSocket *connection);
 };
 
-class ClientSocket : public QObject {
+class ClientSocket : public QObject
+{
     Q_OBJECT
 
 public:

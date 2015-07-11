@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _MINI_SCENARIOS_H
@@ -25,7 +25,8 @@
 #include "engine.h"
 #include "room.h"
 
-class MiniSceneRule : public ScenarioRule {
+class MiniSceneRule : public ScenarioRule
+{
     Q_OBJECT
 
 public:
@@ -52,7 +53,8 @@ protected:
     QList<int> m_fixedDrawCards;
 };
 
-class MiniScene : public Scenario {
+class MiniScene : public Scenario
+{
     Q_OBJECT
 
 public:
@@ -61,28 +63,38 @@ public:
     ~MiniScene();
     void setupCustom(QString name) const;
     virtual void onTagSet(Room *room, const QString &key) const;
-    virtual void assign(QStringList &generals, QStringList &generals2, QStringList &roles, Room *room) const{
+    virtual void assign(QStringList &generals, QStringList &generals2, QStringList &roles, Room *room) const
+    {
         MiniSceneRule *rule = qobject_cast<MiniSceneRule *>(getRule());
         rule->assign(generals, generals2, roles, room);
     }
-    virtual int getPlayerCount() const{
+    virtual int getPlayerCount() const
+    {
         MiniSceneRule *rule = qobject_cast<MiniSceneRule *>(getRule());
         return rule->getPlayerCount();
     }
 };
 
-class CustomScenario : public MiniScene {
+class CustomScenario : public MiniScene
+{
     Q_OBJECT
 
 public:
-    CustomScenario() : MiniScene("custom_scenario") { setupCustom(NULL); }
+    CustomScenario() : MiniScene("custom_scenario")
+    {
+        setupCustom(NULL);
+    }
 };
 
-class LoadedScenario : public MiniScene {
+class LoadedScenario : public MiniScene
+{
     Q_OBJECT
 
 public:
-    LoadedScenario(const QString &name) : MiniScene(QString(MiniScene::S_KEY_MINISCENE).arg(name)) { setupCustom(name); }
+    LoadedScenario(const QString &name) : MiniScene(QString(MiniScene::S_KEY_MINISCENE).arg(name))
+    {
+        setupCustom(name);
+    }
 };
 
 #endif

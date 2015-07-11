@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "clientplayer.h"
@@ -36,23 +36,26 @@ ClientPlayer::ClientPlayer(Client *client)
     mark_doc = new QTextDocument(this);
 }
 
-int ClientPlayer::aliveCount(bool includeRemoved) const{
+int ClientPlayer::aliveCount(bool includeRemoved) const
+{
     int n = ClientInstance->alivePlayerCount();
     if (!includeRemoved) {
         if (isRemoved())
             n--;
-        foreach (const Player *p, getAliveSiblings())
+        foreach(const Player *p, getAliveSiblings())
             if (p->isRemoved())
                 n--;
     }
     return n;
 }
 
-int ClientPlayer::getHandcardNum() const{
+int ClientPlayer::getHandcardNum() const
+{
     return handcard_num;
 }
 
-void ClientPlayer::addCard(const Card *card, Place place) {
+void ClientPlayer::addCard(const Card *card, Place place)
+{
     switch (place) {
     case PlaceHand: {
         if (card) known_cards << card;
@@ -73,27 +76,27 @@ void ClientPlayer::addCard(const Card *card, Place place) {
     }
 }
 
-void ClientPlayer::addKnownHandCard(const Card *card) {
+void ClientPlayer::addKnownHandCard(const Card *card)
+{
     if (!known_cards.contains(card))
         known_cards << card;
 }
 
-bool ClientPlayer::isLastHandCard(const Card *card, bool contain) const{
+bool ClientPlayer::isLastHandCard(const Card *card, bool contain) const
+{
     if (!card->isVirtualCard()) {
         if (known_cards.length() != 1)
             return false;
         return known_cards.first()->getId() == card->getEffectiveId();
-    }
-    else if (card->getSubcards().length() > 0) {
+    } else if (card->getSubcards().length() > 0) {
         if (!contain) {
-            foreach(int card_id, card->getSubcards()) {
+            foreach (int card_id, card->getSubcards()) {
                 if (!known_cards.contains(Sanguosha->getCard(card_id)))
                     return false;
             }
             return known_cards.length() == card->getSubcards().length();
-        }
-        else {
-            foreach(const Card *ncard, known_cards) {
+        } else {
+            foreach (const Card *ncard, known_cards) {
                 if (!card->getSubcards().contains(ncard->getEffectiveId()))
                     return false;
             }
@@ -103,7 +106,8 @@ bool ClientPlayer::isLastHandCard(const Card *card, bool contain) const{
     return false;
 }
 
-void ClientPlayer::removeCard(const Card *card, Place place) {
+void ClientPlayer::removeCard(const Card *card, Place place)
+{
     switch (place) {
     case PlaceHand: {
         handcard_num--;
@@ -125,36 +129,40 @@ void ClientPlayer::removeCard(const Card *card, Place place) {
     }
 }
 
-QList<const Card *> ClientPlayer::getHandcards() const{
+QList<const Card *> ClientPlayer::getHandcards() const
+{
     return known_cards;
 }
 
-void ClientPlayer::setCards(const QList<int> &card_ids) {
+void ClientPlayer::setCards(const QList<int> &card_ids)
+{
     known_cards.clear();
     foreach(int cardId, card_ids)
         known_cards.append(Sanguosha->getCard(cardId));
 }
 
-QTextDocument *ClientPlayer::getMarkDoc() const{
+QTextDocument *ClientPlayer::getMarkDoc() const
+{
     return mark_doc;
 }
 
-static bool compareByNumber(int c1, int c2){
+static bool compareByNumber(int c1, int c2)
+{
     const Card *card1 = Sanguosha->getCard(c1);
     const Card *card2 = Sanguosha->getCard(c2);
 
     return card1->getNumber() < card2->getNumber();
 }
 
-void ClientPlayer::changePile(const QString &name, bool add, QList<int> card_ids) {
-    if (add){
+void ClientPlayer::changePile(const QString &name, bool add, QList<int> card_ids)
+{
+    if (add) {
         piles[name].append(card_ids);
-        if (name == "buqu"){
+        if (name == "buqu") {
             qSort(piles["buqu"].begin(), piles["buqu"].end(), compareByNumber);
         }
-    }
-    else {
-        foreach(int card_id, card_ids) {
+    } else {
+        foreach (int card_id, card_ids) {
             if (piles[name].isEmpty()) break;
             if (piles[name].contains(Card::S_UNKNOWN_CARD_ID) && !piles[name].contains(card_id))
                 piles[name].removeOne(Card::S_UNKNOWN_CARD_ID);
@@ -168,7 +176,8 @@ void ClientPlayer::changePile(const QString &name, bool add, QList<int> card_ids
         emit pile_changed(name);
 }
 
-QString ClientPlayer::getDeathPixmapPath() const{
+QString ClientPlayer::getDeathPixmapPath() const
+{
     QString basename = getRole() == "careerist" ? "careerist" : getKingdom();
 
     if (basename.isEmpty())
@@ -177,15 +186,18 @@ QString ClientPlayer::getDeathPixmapPath() const{
     return QString("image/system/death/%1.png").arg(basename);
 }
 
-void ClientPlayer::setHandcardNum(int n) {
+void ClientPlayer::setHandcardNum(int n)
+{
     handcard_num = n;
 }
 
-QString ClientPlayer::getGameMode() const{
+QString ClientPlayer::getGameMode() const
+{
     return ServerInfo.GameMode;
 }
 
-void ClientPlayer::setFlags(const QString &flag) {
+void ClientPlayer::setFlags(const QString &flag)
+{
     Player::setFlags(flag);
 
     if (flag.endsWith("actioned"))
@@ -194,7 +206,8 @@ void ClientPlayer::setFlags(const QString &flag) {
     //emit skill_state_changed(flag);
 }
 
-void ClientPlayer::setMark(const QString &mark, int value) {
+void ClientPlayer::setMark(const QString &mark, int value)
+{
     if (marks[mark] == value)
         return;
     marks[mark] = value;
@@ -209,26 +222,9 @@ void ClientPlayer::setMark(const QString &mark, int value) {
     // set mark doc
     QString text = "";
     QMapIterator<QString, int> itor(marks);
-    int yongsi_test_mark = 0, jushou_test_mark = 0;
-    int max_cards_test_mark = 0, offensive_distance_test_mark = 0, defensive_distance_test_mark = 0;
     while (itor.hasNext()) {
         itor.next();
-
         if (itor.key().startsWith("@") && itor.value() > 0) {
-#define _EXCLUDE_MARK(markname) \
-                { \
-            if (itor.key() == QString("@%1").arg(#markname)) { \
-                markname##_mark = itor.value(); \
-                continue; \
-                        } \
-                }
-
-            _EXCLUDE_MARK(yongsi_test)
-            _EXCLUDE_MARK(jushou_test)
-            _EXCLUDE_MARK(max_cards_test)
-            _EXCLUDE_MARK(offensive_distance_test)
-            _EXCLUDE_MARK(defensive_distance_test)
-#undef _EXCLUDE_MARK
             QString mark_text = QString("<img src='image/mark/%1.png' />").arg(itor.key());
             if (itor.value() != 1)
                 mark_text.append(QString("%1").arg(itor.value()));
@@ -237,31 +233,6 @@ void ClientPlayer::setMark(const QString &mark, int value) {
             text.append(mark_text);
         }
     }
-
-    // keep these marks at a certain place
-#define _SET_MARK(markname) \
-                {\
-        if (markname##_mark > 0) { \
-            QString mark_text = QString("<img src='image/mark/test/@%1.png' />").arg(#markname); \
-            if (markname##_mark != 1) { \
-                    mark_text.append(QString("%1").arg(markname##_mark)); \
-                                                } \
-            if (this != Self) { \
-                mark_text.append("<br>"); \
-                text.prepend(mark_text); \
-                                                } \
-                        else { \
-                    text.append(mark_text); \
-                        }\
-                                } \
-                }
-
-    _SET_MARK(yongsi_test)
-    _SET_MARK(jushou_test)
-    _SET_MARK(max_cards_test)
-    _SET_MARK(offensive_distance_test)
-    _SET_MARK(defensive_distance_test)
-#undef _SET_MARK
     mark_doc->setHtml(text);
 
     if (mark == "@duanchang")
@@ -289,7 +260,7 @@ QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCards
     if (type == MaxCardsType::Max && hasLordSkill("hongfa") && !getPile("heavenly_army").isEmpty())
         kingdom_map["qun"] += getPile("heavenly_army").length();
     QStringList big_kingdoms;
-    foreach (QString key, kingdom_map.keys()) {
+    foreach (const QString &key, kingdom_map.keys()) {
         if (kingdom_map[key] == 0)
             continue;
         if (big_kingdoms.isEmpty()) {

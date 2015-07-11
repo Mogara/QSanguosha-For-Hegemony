@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "settings.h"
@@ -57,7 +57,8 @@ Settings::Settings()
     connect(qApp, &QApplication::aboutToQuit, this, &Settings::deleteLater);
 }
 
-void Settings::init() {
+void Settings::init()
+{
     if (!qApp->arguments().contains("-server")) {
         QString font_path = value("DefaultFontPath", "font/simli.ttf").toString();
         int font_id = QFontDatabase::addApplicationFont(font_path);
@@ -77,6 +78,10 @@ void Settings::init() {
         SmallFont.setWeight(QFont::Bold);
 
         AppFont = value("AppFont", QApplication::font("QMainWindow")).value<QFont>();
+        //SE add font for Roomscene::log_box of iphone(ios)
+        iosLogFont = value("AppFont", QApplication::font("QMainWindow")).value<QFont>();
+        iosLogFont.setPixelSize(13);
+
         UIFont = value("UIFont", QApplication::font("QTextEdit")).value<QFont>();
         TextEditColor = QColor(value("TextEditColor", "white").toString());
         SkillDescriptionInToolTipColor = value("SkillDescriptionInToolTipColor", "#FFFF33").toString();
@@ -137,12 +142,12 @@ void Settings::init() {
     BGMVolume = value("BGMVolume", 1.0f).toFloat();
     EffectVolume = value("EffectVolume", 1.0f).toFloat();
 
-    BackgroundImage = value("BackgroundImage", "image/backdrop/new-version.jpg").toString();
-    TableBgImage = value("TableBgImage", "image/backdrop/default.jpg").toString();
+    BackgroundImage = value("BackgroundImage", "image/backdrop/bg.jpg").toString();
+    TableBgImage = value("TableBgImage", "image/backdrop/table.jpg").toString();
 
     EnableAutoSaveRecord = value("EnableAutoSaveRecord", false).toBool();
     NetworkOnly = value("NetworkOnly", false).toBool();
-    RecordSavePaths = value("RecordSavePaths", "records/").toString();
+    RecordSavePath = value("RecordSavePath", "records/").toString();
 
     EnableAutoPreshow = value("EnableAutoPreshowInConsoleMode", false).toBool();
 

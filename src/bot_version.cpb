@@ -1,0 +1,11 @@
+#ifdef USE_BUILDBOT
+
+#include "engine.h"
+#include "version.h"
+
+QSanVersionNumber Engine::getVersionNumber() const
+{
+    return QSanVersionNumber(1, 2, 1, QSanVersionNumber::alpha, %date);
+}
+
+#endif

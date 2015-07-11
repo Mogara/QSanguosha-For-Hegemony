@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _SETTINGS_H
@@ -27,7 +27,8 @@
 #include <QPixmap>
 #include <QBrush>
 
-class Settings : public QSettings {
+class Settings : public QSettings
+{
     Q_OBJECT
 
 public:
@@ -43,7 +44,7 @@ public:
     // Last Updated By Yanguam Siliagim
     // To use a proper way to convert generals and cards
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 17 2014
     //************************************
     void init();
@@ -54,6 +55,7 @@ public:
     QFont TinyFont;
 
     QFont AppFont;
+    QFont iosLogFont;
     QFont UIFont;
     QColor TextEditColor;
     QColor SkillDescriptionInToolTipColor;
@@ -115,7 +117,7 @@ public:
 
     QString BackgroundImage;
     QString TableBgImage;
-    QString RecordSavePaths;
+    QString RecordSavePath;
 
     int BubbleChatBoxKeepSeconds;
     bool IgnoreOthersSwitchesOfSkin;

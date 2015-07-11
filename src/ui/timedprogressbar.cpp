@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "timedprogressbar.h"
@@ -23,7 +23,8 @@
 #include <QPainter>
 #include "skinbank.h"
 
-void TimedProgressBar::show() {
+void TimedProgressBar::show()
+{
     m_mutex.lock();
     if (!m_hasTimer || m_max <= 0) {
         m_mutex.unlock();
@@ -40,7 +41,8 @@ void TimedProgressBar::show() {
     m_mutex.unlock();
 }
 
-void TimedProgressBar::hide() {
+void TimedProgressBar::hide()
+{
     m_mutex.lock();
     if (m_timer != 0) {
         killTimer(m_timer);
@@ -50,7 +52,8 @@ void TimedProgressBar::hide() {
     QProgressBar::hide();
 }
 
-void TimedProgressBar::timerEvent(QTimerEvent *) {
+void TimedProgressBar::timerEvent(QTimerEvent *)
+{
     bool emitTimeout = false;
     bool doHide = false;
     int val = 0;
@@ -75,19 +78,22 @@ void TimedProgressBar::timerEvent(QTimerEvent *) {
 
 using namespace QSanProtocol;
 
-QSanCommandProgressBar::QSanCommandProgressBar() {
+QSanCommandProgressBar::QSanCommandProgressBar()
+{
     m_step = Config.S_PROGRESS_BAR_UPDATE_INTERVAL;
     m_hasTimer = (ServerInfo.OperationTimeout != 0);
     m_instanceType = S_CLIENT_INSTANCE;
 }
 
-void QSanCommandProgressBar::setCountdown(CommandType command) {
+void QSanCommandProgressBar::setCountdown(CommandType command)
+{
     m_mutex.lock();
     m_max = ServerInfo.getCommandTimeout(command, m_instanceType);
     m_mutex.unlock();
 }
 
-void QSanCommandProgressBar::paintEvent(QPaintEvent *) {
+void QSanCommandProgressBar::paintEvent(QPaintEvent *)
+{
     m_mutex.lock();
     int val = this->m_val;
     int max = this->m_max;
@@ -108,7 +114,8 @@ void QSanCommandProgressBar::paintEvent(QPaintEvent *) {
     painter.drawPixmap(0, 0, percent * width, height, prog, 0, 0, drawWidth, prog.height());
 }
 
-void QSanCommandProgressBar::setCountdown(Countdown countdown) {
+void QSanCommandProgressBar::setCountdown(Countdown countdown)
+{
     m_mutex.lock();
     m_hasTimer = (countdown.type != Countdown::S_COUNTDOWN_NO_LIMIT);
     m_max = countdown.max;

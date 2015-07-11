@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef GUANXINGBOX_H
@@ -23,7 +23,8 @@
 
 #include "cardcontainer.h"
 
-class GuanxingBox : public CardContainer {
+class GuanxingBox : public CardContainer
+{
     Q_OBJECT
 
 public:

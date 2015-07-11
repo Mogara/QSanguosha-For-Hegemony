@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef HEROSKINCONTAINER_H
@@ -34,13 +34,17 @@ public:
     HeroSkinContainer(const QString &generalName,
         const QString &kingdom, QGraphicsItem *parent = 0);
 
-    ~HeroSkinContainer() {
+    ~HeroSkinContainer()
+    {
         if (this == m_currentTopMostContainer) {
             m_currentTopMostContainer = NULL;
         }
     }
 
-    const QString &getGeneralName() const { return m_generalName; }
+    const QString &getGeneralName() const
+    {
+        return m_generalName;
+    }
 
     void bringToTopMost();
 

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef STYLEHELPER_H
@@ -48,8 +48,8 @@ public:
     inline static QString styleSheetOfTooltip()
     {
         return QString("QToolTip{ border: 1px solid rgb(166, 150, 122); padding: 1px; "
-                       "border-radius: 3px; background: %1; opacity: 230; }")
-                .arg(Config.ToolTipBackgroundColor.name());
+            "border-radius: 3px; background: %1; opacity: 230; }")
+            .arg(Config.ToolTipBackgroundColor.name());
     }
 
     static QString styleSheetOfScrollBar();

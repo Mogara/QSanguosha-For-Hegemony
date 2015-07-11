@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef GRAPHICSBOX_H
@@ -23,10 +23,11 @@
 
 #include <QGraphicsObject>
 
-class GraphicsBox : public QGraphicsObject {
+class GraphicsBox : public QGraphicsObject
+{
     Q_OBJECT
 
-public :
+public:
     explicit GraphicsBox(const QString &title = QString());
     virtual ~GraphicsBox();
 
@@ -36,7 +37,13 @@ public :
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
     virtual QRectF boundingRect() const = 0;
+
+    virtual void paintLayout(QPainter *painter)
+    {
+        Q_UNUSED(painter)
+    }
 
     void moveToCenter();
     void disappear();

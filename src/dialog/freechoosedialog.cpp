@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "freechoosedialog.h"
@@ -43,7 +43,7 @@ FreeChooseDialog::FreeChooseDialog(QWidget *parent, ButtonGroupType type)
 
     QList<const General *> all_generals = Sanguosha->getGeneralList();
     QMap<QString, QList<const General *> > map;
-    foreach(const General *general, all_generals) {
+    foreach (const General *general, all_generals) {
         if (general->isTotallyHidden())
             continue;
 
@@ -58,7 +58,7 @@ FreeChooseDialog::FreeChooseDialog(QWidget *parent, ButtonGroupType type)
 
     QStringList kingdoms = Sanguosha->getKingdoms();
 
-    foreach(QString kingdom, kingdoms) {
+    foreach (const QString &kingdom, kingdoms) {
         QList<const General *> generals = map[kingdom];
 
         if (!generals.isEmpty()) {
@@ -92,7 +92,7 @@ void FreeChooseDialog::chooseGeneral()
     if (type == Pair) {
         QList<QAbstractButton *> buttons = group->buttons();
         QString first, second;
-        foreach(QAbstractButton *button, buttons) {
+        foreach (QAbstractButton *button, buttons) {
             if (!button->isChecked())
                 continue;
 
@@ -104,13 +104,13 @@ void FreeChooseDialog::chooseGeneral()
                 break;
             }
         }
-        if (second.isEmpty()){
+        if (second.isEmpty()) {
             QMessageBox::information(this, tr("Information"), tr("You can only select 2 generals in Pairs mode."));
             return;
         }
     } else if (type == Multi) {
         QStringList general_names;
-        foreach(QAbstractButton *button, group->buttons()) {
+        foreach (QAbstractButton *button, group->buttons()) {
             if (button->isChecked())
                 general_names << button->objectName();
         }
@@ -180,25 +180,25 @@ void FreeChooseDialog::disableButtons(QAbstractButton *)
 {
     QList<QAbstractButton *> buttons = group->buttons();
     QList<QAbstractButton *> checked;
-    foreach(QAbstractButton *btn, buttons){
+    foreach (QAbstractButton *btn, buttons) {
         if (btn->isChecked())
             checked << btn;
     }
-    if (checked.length() == 2){
-        foreach(QAbstractButton *btn, buttons){
+    if (checked.length() == 2) {
+        foreach (QAbstractButton *btn, buttons) {
             if (!btn->isChecked())
                 btn->setEnabled(false);
             else
                 btn->setEnabled(true);
         }
-    } else if (checked.length() == 1){
+    } else if (checked.length() == 1) {
         QString checked_kingdom = Sanguosha->getGeneral(checked.first()->objectName())->getKingdom();
-        foreach(QAbstractButton *btn, buttons){
+        foreach (QAbstractButton *btn, buttons) {
             QString btn_kingdom = Sanguosha->getGeneral(btn->objectName())->getKingdom();
             btn->setEnabled(checked_kingdom == btn_kingdom);
         }
-    } else if (checked.length() == 0){
-        foreach(QAbstractButton *btn, buttons)
+    } else if (checked.length() == 0) {
+        foreach (QAbstractButton *btn, buttons)
             btn->setEnabled(true);
     } else {
         Q_ASSERT(false);

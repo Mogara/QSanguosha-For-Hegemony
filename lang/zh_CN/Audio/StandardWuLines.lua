@@ -1,4 +1,22 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
 
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
 
 return {
 
@@ -25,17 +43,17 @@ return {
 	["~huanggai"] = "失血过多了……",
 
 	-- 周瑜
-	["$yingzi1"] = "哈哈哈哈……", 
-	["$yingzi2"] = "汝等看好了！",
-	["$fanjian1"] = "挣扎吧，在血和暗的深渊里！", 
-	["$fanjian2"] = "痛苦吧，在仇与恨的地狱中！", 
+	["$yingzi_zhouyu1"] = "哈哈哈哈……",
+	["$yingzi_zhouyu2"] = "汝等看好了！",
+	["$fanjian1"] = "挣扎吧，在血和暗的深渊里！",
+	["$fanjian2"] = "痛苦吧，在仇与恨的地狱中！",
 	["~zhouyu"] = "既生瑜，何生……",
 
 	-- 大乔
-	["$guose1"] = "请休息吧。", 
-	["$guose2"] = "你累了。", 
-	["$liuli1"] = "交给你了。", 
-	["$liuli2"] = "你来嘛~", 
+	["$guose1"] = "请休息吧。",
+	["$guose2"] = "你累了。",
+	["$liuli1"] = "交给你了。",
+	["$liuli2"] = "你来嘛~",
 	["~daqiao"] = "伯符，我去了……",
 
 	-- 陆逊
@@ -46,13 +64,13 @@ return {
 	["~luxun"] = "还以为我已经不再年轻……",
 
 	-- 孙尚香
-	["$jieyin1"] = "夫君，身体要紧。", 
-	["$jieyin2"] = "他好，我也好。", 
-	["$xiaoji1"] = "哼！", 
-	["$xiaoji2"] = "看我的厉害！", 
+	["$jieyin1"] = "夫君，身体要紧。",
+	["$jieyin2"] = "他好，我也好。",
+	["$xiaoji1"] = "哼！",
+	["$xiaoji2"] = "看我的厉害！",
 	["~sunshangxiang"] = "不！还不可以死！",
-	
-	
+
+
 	-- 小乔
 	["$tianxiang1"] = "接着哦~",
 	["$tianxiang2"] = "替我挡着~",
@@ -63,14 +81,14 @@ return {
 	["$buqu1"] = "我绝不会倒下！",
 	["$buqu2"] = "还不够！",
 	["~zhoutai"] = "已经尽力了……",
-	
-		
+
+
 	["$tianyi1"] = "我当要替天行道。",
 	["$tianyi2"] = "请助我一臂之力！",
 	["~taishici"] = "大丈夫，当带三尺之剑，立不世之功！",
-	
-	["$yinghun1"] = "以吾魂魄，保佑吾儿之基业。",
-	["$yinghun2"] = "不诛此贼三族，则吾死不瞑目！",
+
+	["$yinghun_sunjian1"] = "以吾魂魄，保佑吾儿之基业。",
+	["$yinghun_sunjian2"] = "不诛此贼三族，则吾死不瞑目！",
 	["~sunjian"] = "有埋伏！呃……啊！！",
 
 	["$haoshi1"] = "拿去拿去，莫跟哥哥客气。",
@@ -78,7 +96,7 @@ return {
 	["$dimeng1"] = "以和为贵，以和为贵。",
 	["$dimeng2"] = "合纵连横，方能以弱胜强。",
 	["~lusu"] = "此联盟已破，吴蜀休矣。",
-	
+
 	["$zhijian1"] = "请恕老臣直言。",
 	["$zhijian2"] = "为臣者，当冒死以谏！",
 	["$guzheng1"] = "今当稳固内政，以御外患！",

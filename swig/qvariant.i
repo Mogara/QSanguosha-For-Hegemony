@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************/
 
 class QVariant {
@@ -25,6 +25,7 @@ public:
     QVariant(const char *);
     QVariant(bool);
     QVariant(QList<QVariant>);
+    bool canConvert(int targetTypeId) const; // a very six method..
     int toInt() const;
     QString toString() const;
     QStringList toStringList() const;
@@ -159,7 +160,7 @@ public:
 /*
     void setValue(QList<int> intlist) {
         QVariantList varlist;
-        for (int i = 0; i < intlist.length(); i++)
+        for (int i = 0; i < intlist.length(); ++i)
             varlist.append(QVariant::fromValue(intlist.at(i)));
         $self->setValue(QVariant::fromValue(varlist));
     }
@@ -168,7 +169,7 @@ public:
         QList<int> result;
         if ($self->canConvert<QVariantList>()) {
             QVariantList res_var = $self->toList();
-            for (int i = 0; i < res_var.length(); i++)
+            for (int i = 0; i < res_var.length(); ++i)
                 result.append(res_var.at(i).toInt());
         }
         return result;

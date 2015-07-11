@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _STANDARD_WU_H
@@ -25,25 +25,33 @@
 #include "card.h"
 #include "skill.h"
 
-class Yingzi : public DrawCardsSkill {
+class Yingzi : public DrawCardsSkill
+{
 public:
-    Yingzi();
+    explicit Yingzi(const QString &owner = "zhouyu", bool can_preshow = true);
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual int getDrawNum(ServerPlayer *player, int n) const;
+    virtual bool canPreshow() const;
+
+private:
+    bool m_canPreshow;
 };
 
-class Yinghun : public PhaseChangeSkill {
+class Yinghun : public PhaseChangeSkill
+{
 public:
-    Yinghun();
+    explicit Yinghun(const QString &owner = "sunjian");
 
     virtual bool canPreshow() const;
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const;
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual bool onPhaseChange(ServerPlayer *target) const;
+
 };
 
-class ZhihengCard : public SkillCard {
+class ZhihengCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -51,7 +59,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class KurouCard : public SkillCard {
+class KurouCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -60,7 +69,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class FanjianCard : public SkillCard {
+class FanjianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -68,7 +78,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class LiuliCard : public SkillCard {
+class LiuliCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -78,7 +89,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class JieyinCard : public SkillCard {
+class JieyinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -87,7 +99,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class TianxiangCard : public SkillCard {
+class TianxiangCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -96,7 +109,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class TianyiCard : public SkillCard {
+class TianyiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -107,7 +121,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class HaoshiCard : public SkillCard {
+class HaoshiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -117,7 +132,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class DimengCard : public SkillCard {
+class DimengCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -128,7 +144,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ZhijianCard : public SkillCard {
+class ZhijianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -139,7 +156,18 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class FenxunCard : public SkillCard {
+class GuzhengCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE GuzhengCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class FenxunCard : public SkillCard
+{
     Q_OBJECT
 
 public:

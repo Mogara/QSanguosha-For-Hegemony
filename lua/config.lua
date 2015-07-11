@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
 
 -- this script to store the basic configuration for game program itself
@@ -74,15 +74,15 @@ config = {
 	},
 
 	robot_names = {
-		"Moligaloo" ,
+		"無に帰ろう", --Moligaloo
 		"啦啦失恋过", --啦啦SLG
-		"Fsu0213", --Fsu0413
+		"【Pikachu】Fs", --Fsu0413
 		"凌电信", --凌天翼
 		"元嘉体",
 		"萌豚紙",  --豚紙
 		"女王神·Slob", --女王受·虫
-		"Double_Bit！", --Double_Bit？
-		"爱  上穹妹的Jia", --爱上穹妹的某
+		"DBDBD！免费哟！", --Double_Bit？
+		"爱 上穹妹的 Jia", --爱上穹妹的某
 		"没驾照开不了车", --开不了车
 		"写书的独孤安河", --独孤安河
 		"百年东南西北风", --百年东风
@@ -94,11 +94,11 @@ config = {
 		"卍brianのvong卍", --卍冰の羽卍
 		"五毛羽", --arrow羽
 		"大同人陈家祺" , --陈家祺大同中心
-		"fsu0415" , --你妹大神
+		"叫什么啊我妹" , --你妹大神
 		"麦当劳" , --果然萝卜斩
 		"高调的富妮妮" , --低调的付尼玛
 		"☆№Ｌ36×李Ｊ№★" , --☆№Ｌ糾×結Ｊ№★
-		"ACG杀手", --hmqgg
+		"老A呱呱呱", --hmqgg
 		"Nagisa乐意", --Nagisa_Willing
 		"0o叮咚咚叮o0", --0o叮咚Backup
 		"医治曙光", --医治永恒（曙光）
@@ -111,9 +111,9 @@ config = {
 		"晓月的微信", --晓月的泪痕
 		"Xasy-Po-Love", --Easy-To-Love（XPL）
 		"小修司V", --小休斯
-		"ΑΝΑΓΚΗ" ,
-		"清风不屈一对10", --清风弄错流年
-		"非凡借刀教做人", --非凡神力
+		"淫" , --银
+		"清风不屈一对五", --清风弄错流年
+		"非凡借刀秒大魏", --非凡神力
 		"高城和二", --takashiro
 		"tan∠ANY", --任意角的正切
 		"刘恒飞翔", --恒星飞翔
@@ -126,10 +126,13 @@ config = {
 		"凌乱_解锁", --铃兰_杰索
 		"凹凸", --ought~
 		"DJ ainomelody",
-		"shenglove82" ,
-		"1131561728" ,
-		"阿米拉嗪" ,
-		"teyteym" ,
-		"半圆"
+		"shenglove82",
+		"怒喷数字", --1131561728
+		"氯丙嗪", --阿米拉嗪
+		"teyteym", --myetyet
+		"半圆", --半缘
+		"猪肉贩龙傲天", --龙傲天
+		"三国成双", --三国有单
+		"这王八" --thiswangba
 	},
 }

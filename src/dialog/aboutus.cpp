@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "aboutus.h"
@@ -62,7 +62,7 @@ AboutUsDialog::AboutUsDialog(QWidget *parent)
 
     QStringList developers = GetValueFromLuaState(L, "about_us", "developers").toStringList();
 
-    foreach(QString name, developers) {
+    foreach (const QString &name, developers) {
         QListWidgetItem *item = new QListWidgetItem(Sanguosha->translate(name), list);
         item->setData(Qt::UserRole, name);
     }
@@ -77,7 +77,8 @@ AboutUsDialog::AboutUsDialog(QWidget *parent)
     content_box->verticalScrollBar()->setStyleSheet(style);
 }
 
-void AboutUsDialog::loadContent(int row) {
+void AboutUsDialog::loadContent(int row)
+{
     QString name = list->item(row)->data(Qt::UserRole).toString();
     lua_State *L = Sanguosha->getLuaState();
     QString page = GetValueFromLuaState(L, "about_us", name.toLatin1().constData()).toString();

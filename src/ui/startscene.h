@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,13 +15,12 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _START_SCENE_H
 #define _START_SCENE_H
 
-#include "button.h"
 #include "qsanselectableitem.h"
 #include "server.h"
 
@@ -29,7 +28,10 @@
 #include <QAction>
 #include <QTextEdit>
 
-class StartScene : public QGraphicsScene {
+class Tile;
+
+class StartScene : public QGraphicsScene
+{
     Q_OBJECT
 
 public:
@@ -49,7 +51,7 @@ private:
 
     QSanSelectableItem *logo;
     QTextEdit *serverLog;
-    QList<Button *> buttons;
+    QList<Tile *> buttons;
     bool shouldMourn;
 };
 

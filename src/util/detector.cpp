@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "detector.h"
@@ -23,12 +23,14 @@
 
 #include <QApplication>
 
-UdpDetector::UdpDetector() {
+UdpDetector::UdpDetector()
+{
     socket = new QUdpSocket(this);
     connect(socket, &QUdpSocket::readyRead, this, &UdpDetector::onReadReady);
 }
 
-void UdpDetector::detect() {
+void UdpDetector::detect()
+{
     socket->bind(Config.DetectorPort, QUdpSocket::ShareAddress);
 
     const char *ask_str = "whoIsServer";
@@ -38,11 +40,13 @@ void UdpDetector::detect() {
         Config.ServerPort);
 }
 
-void UdpDetector::stop() {
+void UdpDetector::stop()
+{
     socket->close();
 }
 
-void UdpDetector::onReadReady() {
+void UdpDetector::onReadReady()
+{
     while (socket->hasPendingDatagrams()) {
         QHostAddress from;
         QByteArray data;

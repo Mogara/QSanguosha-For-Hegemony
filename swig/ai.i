@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************/
 
 %{
@@ -43,13 +43,13 @@ public:
     virtual QString askForChoice(const char *skill_name, const char *choices, const QVariant &data) = 0;
     virtual QList<int> askForDiscard(const char *reason, int discard_num, int min_num, bool optional, bool include_equip) = 0;
     virtual const Card *askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive) = 0;
-    virtual int askForCardChosen(ServerPlayer *who, const char *flags, const char *reason, Card::HandlingMethod method) = 0;
+    virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids) = 0;
     virtual const Card *askForCard(const char *pattern, const char *prompt, const QVariant &data) = 0;
     virtual QString askForUseCard(const char *pattern, const char *prompt, const Card::HandlingMethod method) = 0;
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const char *reason) = 0;
     virtual const Card *askForCardShow(ServerPlayer *requestor, const char *reason) = 0;
     virtual const Card *askForPindian(ServerPlayer *requestor, const char *reason) = 0;
-    virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const char *reason) = 0;
+    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int max_num, int min_num) = 0;
     virtual const Card *askForSinglePeach(ServerPlayer *dying) = 0;
 };
 
@@ -64,13 +64,13 @@ public:
     virtual QString askForChoice(const char *skill_name, const char *choices, const QVariant &data);
     virtual QList<int> askForDiscard(const char *reason, int discard_num, int min_num, bool optional, bool include_equip);
     virtual const Card *askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
-    virtual int askForCardChosen(ServerPlayer *who, const char *flags, const char *reason, Card::HandlingMethod method);
+    virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids);
     virtual const Card *askForCard(const char *pattern, const char *prompt, const QVariant &data);
     virtual QString askForUseCard(const char *pattern, const char *prompt, const Card::HandlingMethod method);
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const char *reason);
     virtual const Card *askForCardShow(ServerPlayer *requestor, const char *reason);
     virtual const Card *askForPindian(ServerPlayer *requestor, const char *reason);
-    virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const char *reason);
+    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max_num, int min_num);
     virtual const Card *askForSinglePeach(ServerPlayer *dying);
 
     virtual bool useCard(const Card *card);
@@ -85,8 +85,8 @@ public:
     virtual void activate(CardUseStruct &card_use);
     virtual QList<int> askForDiscard(const char *reason, int discard_num, int min_num, bool optional, bool include_equip) ;
     virtual QString askForChoice(const char *skill_name, const char *choices, const QVariant &data);
-    virtual int askForCardChosen(ServerPlayer *who, const char *flags, const char *reason, Card::HandlingMethod method);
-    virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const char *reason);
+    virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids);
+    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max_num, int min_num);
     virtual const Card *askForCard(const char *pattern, const char *prompt, const QVariant &data);
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const char *reason);
     virtual const Card *askForSinglePeach(ServerPlayer *dying);
@@ -98,7 +98,8 @@ public:
 
 %{
 
-bool LuaAI::askForSkillInvoke(const QString &skill_name, const QVariant &data) {
+bool LuaAI::askForSkillInvoke(const QString &skill_name, const QVariant &data)
+{
     if (callback == 0)
         return TrustAI::askForSkillInvoke(skill_name, data);
 
@@ -113,8 +114,7 @@ bool LuaAI::askForSkillInvoke(const QString &skill_name, const QVariant &data) {
         const char *error_msg = lua_tostring(L, -1);
         lua_pop(L, 1);
         room->output(error_msg);
-    }
-    else {
+    } else {
         bool invoke = lua_toboolean(L, -1);
         lua_pop(L, 1);
         return invoke;
@@ -123,7 +123,8 @@ bool LuaAI::askForSkillInvoke(const QString &skill_name, const QVariant &data) {
     return false;
 }
 
-QString LuaAI::askForChoice(const QString &skill_name, const QString &choices, const QVariant &data) {
+QString LuaAI::askForChoice(const QString &skill_name, const QString &choices, const QVariant &data)
+{
     if (callback == 0)
         return TrustAI::askForChoice(skill_name, choices, data);
 
@@ -142,7 +143,8 @@ QString LuaAI::askForChoice(const QString &skill_name, const QString &choices, c
     return result;
 }
 
-void LuaAI::activate(CardUseStruct &card_use) {
+void LuaAI::activate(CardUseStruct &card_use)
+{
     Q_ASSERT(callback);
 
     lua_State *L = room->getLuaState();
@@ -160,7 +162,8 @@ void LuaAI::activate(CardUseStruct &card_use) {
     }
 }
 
-AI *Room::cloneAI(ServerPlayer *player) {
+AI *Room::cloneAI(ServerPlayer *player)
+{
     if (L == NULL)
         return new TrustAI(player);
 
@@ -173,8 +176,7 @@ AI *Room::cloneAI(ServerPlayer *player) {
         const char *error_msg = lua_tostring(L, -1);
         lua_pop(L, 1);
         output(error_msg);
-    }
-    else {
+    } else {
         void *ai_ptr;
         int result = SWIG_ConvertPtr(L, -1, &ai_ptr, SWIGTYPE_p_AI, 0);
         lua_pop(L, 1);
@@ -187,7 +189,8 @@ AI *Room::cloneAI(ServerPlayer *player) {
     return new TrustAI(player);
 }
 
-ServerPlayer *LuaAI::askForYiji(const QList<int> &cards, const QString &reason, int &card_id) {
+ServerPlayer *LuaAI::askForYiji(const QList<int> &cards, const QString &reason, int &card_id)
+{
     if (callback == 0)
         return TrustAI::askForYiji(cards, reason, card_id);
 
@@ -197,7 +200,7 @@ ServerPlayer *LuaAI::askForYiji(const QList<int> &cards, const QString &reason, 
     lua_createtable(L, cards.length(), 0);
     lua_pushstring(L, reason.toLatin1());
 
-    for (int i = 0; i < cards.length(); i++) {
+    for (int i = 0; i < cards.length(); ++i) {
         int elem = cards.at(i);
         lua_pushnumber(L, elem);
         lua_rawseti(L, -3, i + 1);
@@ -224,7 +227,8 @@ ServerPlayer *LuaAI::askForYiji(const QList<int> &cards, const QString &reason, 
     return NULL;
 }
 
-void LuaAI::filterEvent(TriggerEvent event, ServerPlayer *player, const QVariant &data) {
+void LuaAI::filterEvent(TriggerEvent event, ServerPlayer *player, const QVariant &data)
+{
     if (callback == 0)
         return;
 
@@ -243,7 +247,8 @@ void LuaAI::filterEvent(TriggerEvent event, ServerPlayer *player, const QVariant
     }
 }
 
-const Card *LuaAI::askForCard(const QString &pattern, const QString &prompt, const QVariant &data) {
+const Card *LuaAI::askForCard(const QString &pattern, const QString &prompt, const QVariant &data)
+{
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
@@ -265,7 +270,8 @@ const Card *LuaAI::askForCard(const QString &pattern, const QString &prompt, con
     return Card::Parse(result);
 }
 
-int LuaAI::askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method) {
+int LuaAI::askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids)
+{
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
@@ -273,14 +279,22 @@ int LuaAI::askForCardChosen(ServerPlayer *who, const QString &flags, const QStri
     lua_pushstring(L, flags.toLatin1());
     lua_pushstring(L, reason.toLatin1());
     lua_pushinteger(L, (int)method);
+    lua_createtable(L, disabled_ids.length(), 0);
+    
+    for (int i = 0; i < disabled_ids.length(); ++i) {
+        int elem = disabled_ids.at(i);
+        lua_pushnumber(L, elem);
+        lua_rawseti(L, -2, i + 1);
+    }
+    
 
-    int error = lua_pcall(L, 5, 1, 0);
+    int error = lua_pcall(L, 6, 1, 0);
     if (error) {
         const char *error_msg = lua_tostring(L, -1);
         lua_pop(L, 1);
         room->output(error_msg);
 
-        return TrustAI::askForCardChosen(who, flags, reason, method);
+        return TrustAI::askForCardChosen(who, flags, reason, method, disabled_ids);
     }
 
     if (lua_isnumber(L, -1)) {
@@ -291,35 +305,60 @@ int LuaAI::askForCardChosen(ServerPlayer *who, const QString &flags, const QStri
 
     room->output(QString("The result of function %1 should be an integer!").arg(__FUNCTION__));
     lua_pop(L, 1);
-    return TrustAI::askForCardChosen(who, flags, reason, method);
+    return TrustAI::askForCardChosen(who, flags, reason, method, disabled_ids);
 }
 
-ServerPlayer *LuaAI::askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason) {
+QList<ServerPlayer *> LuaAI::askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max_num, int min_num)
+{
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
     SWIG_NewPointerObj(L, &targets, SWIGTYPE_p_QListT_ServerPlayer_p_t, 0);
     lua_pushstring(L, reason.toLatin1());
+    lua_pushnumber(L,max_num);
+    lua_pushnumber(L,min_num);
 
-    int error = lua_pcall(L, 3, 1, 0);
+    int error = lua_pcall(L, 5, 1, 0);
     if (error) {
         const char *error_msg = lua_tostring(L, -1);
         lua_pop(L, 1);
         room->output(error_msg);
 
-        return TrustAI::askForPlayerChosen(targets, reason);
+        return TrustAI::askForPlayersChosen(targets, reason,max_num,min_num);
     }
-
-    void *player_ptr;
-    int result = SWIG_ConvertPtr(L, -1, &player_ptr, SWIGTYPE_p_ServerPlayer, 0);
+    
+    QList<ServerPlayer *> return_result;
+    
+    lua_pushnil(L);
+    int fails = 0;
+    while (lua_next(L,-2)) {
+        void *player_ptr;
+        int result = SWIG_ConvertPtr(L, -1, &player_ptr, SWIGTYPE_p_ServerPlayer, 0);
+        lua_pop(L,1);
+        if (SWIG_IsOK(result))
+            return_result << static_cast<ServerPlayer *>(player_ptr);
+        else
+            ++fails;
+    }
+    lua_pop(L,1);
+    if (fails > 0) {
+        room->output(QString("The result of function %1 should all be ServerPlayers!").arg(__FUNCTION__));
+        return TrustAI::askForPlayersChosen(targets, reason,max_num,min_num);
+    }
+    return return_result;
+   /*  void *playerlist_ptr;
+    int result = SWIG_ConvertPtr(L, -1, &playerlist_ptr, SWIGTYPE_p_QListT_ServerPlayer_p_t, 0);
     lua_pop(L, 1);
     if (SWIG_IsOK(result))
-        return static_cast<ServerPlayer *>(player_ptr);
+        return *reinterpret_cast<QList<ServerPlayer *> *>(playerlist_ptr);
     else
-        return TrustAI::askForPlayerChosen(targets, reason);
+        return TrustAI::askForPlayersChosen(targets, reason); */
+    
+    
 }
 
-const Card *LuaAI::askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive) {
+const Card *LuaAI::askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive)
+{
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
@@ -346,7 +385,8 @@ const Card *LuaAI::askForNullification(const Card *trick, ServerPlayer *from, Se
         return TrustAI::askForNullification(trick, from, to, positive);
 }
 
-const Card *LuaAI::askForCardShow(ServerPlayer *requestor, const QString &reason) {
+const Card *LuaAI::askForCardShow(ServerPlayer *requestor, const QString &reason)
+{
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
@@ -370,7 +410,8 @@ const Card *LuaAI::askForCardShow(ServerPlayer *requestor, const QString &reason
         return TrustAI::askForCardShow(requestor, reason);
 }
 
-const Card *LuaAI::askForSinglePeach(ServerPlayer *dying) {
+const Card *LuaAI::askForSinglePeach(ServerPlayer *dying)
+{
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
@@ -392,7 +433,8 @@ const Card *LuaAI::askForSinglePeach(ServerPlayer *dying) {
     return Card::Parse(result);
 }
 
-const Card *LuaAI::askForPindian(ServerPlayer *requestor, const QString &reason) {
+const Card *LuaAI::askForPindian(ServerPlayer *requestor, const QString &reason)
+{
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
@@ -417,7 +459,8 @@ const Card *LuaAI::askForPindian(ServerPlayer *requestor, const QString &reason)
         return TrustAI::askForPindian(requestor, reason);
 }
 
-Card::Suit LuaAI::askForSuit(const QString &reason) {
+Card::Suit LuaAI::askForSuit(const QString &reason)
+{
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
@@ -439,5 +482,6 @@ Card::Suit LuaAI::askForSuit(const QString &reason) {
 
     return TrustAI::askForSuit(reason);
 }
+
 
 %}

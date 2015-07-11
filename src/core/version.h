@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _VERSION_H
@@ -23,9 +23,11 @@
 
 #include <QString>
 
-class QSanVersionNumber{
+class QSanVersionNumber
+{
 public:
-    enum VersionType{
+    enum VersionType
+    {
         alpha,
         beta,
         offical,
@@ -57,7 +59,8 @@ private:
     int m_step;
 };
 
-struct UpdateInfoStruct {
+struct UpdateInfoStruct
+{
     QString version_number;
     bool is_patch;
     QString address;

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "uiutils.h"
@@ -28,7 +28,8 @@
 #include <QMutex>
 #include <ft2build.h>
 
-void QSanUiUtils::paintShadow(QPainter *painter, const QImage &image, QColor shadowColor, int radius, double decade, const int x, const int y) {
+void QSanUiUtils::paintShadow(QPainter *painter, const QImage &image, QColor shadowColor, int radius, double decade, const int x, const int y)
+{
     const uchar *oldImage = image.bits();
     int cols = image.width();
     int rows = image.height();
@@ -73,12 +74,14 @@ void QSanUiUtils::paintShadow(QPainter *painter, const QImage &image, QColor sha
     newImage = NULL;
 }
 
-void QSanUiUtils::paintShadow(QPainter *painter, const QImage &image, QColor shadowColor, int radius, double decade, const QRect boundingBox) {
+void QSanUiUtils::paintShadow(QPainter *painter, const QImage &image, QColor shadowColor, int radius, double decade, const QRect boundingBox)
+{
     QPoint TL = boundingBox.topLeft();
     paintShadow(painter, image, shadowColor, radius, decade, TL.x(), TL.y());
 }
 
-void QSanUiUtils::makeGray(QPixmap &pixmap) {
+void QSanUiUtils::makeGray(QPixmap &pixmap)
+{
     QImage img = pixmap.toImage();
     for (int i = 0; i < img.width(); i++) {
         for (int j = 0; j < img.height(); j++) {
@@ -103,8 +106,7 @@ bool QSanUiUtils::QSanFreeTypeFont::init()
     if (error) {
         qWarning("error loading library");
         return false;
-    }
-    else {
+    } else {
         _ftLibInitialized = true;
         return true;
     }
@@ -117,7 +119,8 @@ void QSanUiUtils::QSanFreeTypeFont::quit()
     }
 }
 
-QString QSanUiUtils::QSanFreeTypeFont::resolveFont(const QString &fontName) {
+QString QSanUiUtils::QSanFreeTypeFont::resolveFont(const QString &fontName)
+{
     QString result;
     if (QFile::exists(fontName))
         result = fontName;
@@ -130,8 +133,8 @@ QString QSanUiUtils::QSanFreeTypeFont::resolveFont(const QString &fontName) {
         dirsToResolve.push_back("./font");
         extsToTry.push_back("ttf");
         extsToTry.push_back("ttc");
-        foreach(QString sdir, dirsToResolve) {
-            foreach(QString ext, extsToTry) {
+        foreach (const QString &sdir, dirsToResolve) {
+            foreach (const QString &ext, extsToTry) {
                 QDir dir(sdir);
                 QString filePath = dir.filePath(QString("%1.%2").arg(fontName).arg(ext));
                 if (QFile::exists(filePath)) {
@@ -144,15 +147,18 @@ QString QSanUiUtils::QSanFreeTypeFont::resolveFont(const QString &fontName) {
     return result;
 }
 
-static QSanUiUtils::QSanFreeTypeFont::QSanFont qsanfont(FT_Face face) {
+static QSanUiUtils::QSanFreeTypeFont::QSanFont qsanfont(FT_Face face)
+{
     return reinterpret_cast<QSanUiUtils::QSanFreeTypeFont::QSanFont>(face);
 }
 
-static FT_Face qsanfont(QSanUiUtils::QSanFreeTypeFont::QSanFont font) {
+static FT_Face qsanfont(QSanUiUtils::QSanFreeTypeFont::QSanFont font)
+{
     return reinterpret_cast<FT_Face>(font);
 }
 
-QSanUiUtils::QSanFreeTypeFont::QSanFont QSanUiUtils::QSanFreeTypeFont::loadFont(const QString &fontName) {
+QSanUiUtils::QSanFreeTypeFont::QSanFont QSanUiUtils::QSanFreeTypeFont::loadFont(const QString &fontName)
+{
     if (!_ftLibInitialized && !init())
         return NULL;
     FT_Face face = NULL;
@@ -173,7 +179,8 @@ static QMutex _paintTextMutex;
 
 bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text, QSanUiUtils::QSanFreeTypeFont::QSanFont font, QColor color,
     QSize &fontSize, int spacing, int weight, QRect boundingBox,
-    Qt::Orientation orient, Qt::Alignment align) {
+    Qt::Orientation orient, Qt::Alignment align)
+{
     if (!_ftLibInitialized || font == NULL || painter == NULL || text.isNull())
         return false;
 
@@ -201,8 +208,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
             if (fontSize.height() + spacing > ystep)
                 fontSize.setHeight(ystep - spacing);
         }
-    }
-    else {
+    } else {
         ystep = 0;
         if (fontSize.height() > boundingBox.height())
             fontSize.setHeight(boundingBox.height());
@@ -261,8 +267,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
         FT_Bitmap bitmap;
         if (weight == 0) {
             FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER);
-        }
-        else {
+        } else {
             FT_Outline_Embolden(&slot->outline, weight);
             FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
         }
@@ -301,8 +306,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
                     fontPtr++;
                     imagePtr += 4;
                 }
-            }
-            else {
+            } else {
                 int mask = 0x80;
                 for (int x = 0; x < fontClippedCols; x++) {
                     if (*fontPtr & mask)
@@ -349,8 +353,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
             ystart = 0;
             Q_ASSERT(false);
         }
-    }
-    else {
+    } else {
         if (vAlign & Qt::AlignTop)
             ystart = spacing;
         else if (vAlign & Qt::AlignVCenter)
@@ -385,7 +388,8 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
 bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(QPainter *painter, QString text,
     QSanUiUtils::QSanFreeTypeFont::QSanFont font, QColor color,
     QSize &fontSize, int spacing, QRect boundingBox,
-    Qt::Alignment align) {
+    Qt::Alignment align)
+{
     if (!_ftLibInitialized || font == NULL || painter == NULL)
         return false;
 
@@ -491,8 +495,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(QPainter *painter, QSt
                     fontPtr++;
                     imagePtr += 4;
                 }
-            }
-            else {
+            } else {
                 int mask = 0x80;
                 for (int x = 0; x < fontClippedCols; x++) {
                     if (*fontPtr & mask)

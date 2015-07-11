@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _DETECTOR_H
@@ -26,7 +26,8 @@
 #include <QUdpSocket>
 #include <QThread>
 
-class Detector : public QObject {
+class Detector : public QObject
+{
     Q_OBJECT
 
 public slots:
@@ -37,7 +38,8 @@ signals:
     void detected(const QString &server_name, const QString &address);
 };
 
-class UdpDetector : public Detector {
+class UdpDetector : public Detector
+{
     Q_OBJECT
 
 public:

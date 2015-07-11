@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _SERVER_PLAYER_H
@@ -50,7 +50,8 @@ public:
 };
 #endif
 
-class ServerPlayer : public Player {
+class ServerPlayer : public Player
+{
     Q_OBJECT
     Q_PROPERTY(QString ip READ getIp)
 
@@ -114,11 +115,14 @@ public:
     AI *getSmartAI() const;
 
     bool isOnline() const;
-    inline bool isOffline() const{ return getState() == "robot" || getState() == "offline"; }
+    inline bool isOffline() const
+    {
+        return getState() == "robot" || getState() == "offline";
+    }
 
     virtual int aliveCount(bool includeRemoved = true) const;
     int getPlayerNumWithSameKingdom(const QString &reason, const QString &_to_calculate = QString(),
-                                    MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
+        MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     virtual int getHandcardNum() const;
     virtual void removeCard(const Card *card, Place place);
     virtual void addCard(const Card *card, Place place);
@@ -155,24 +159,46 @@ public:
     qint64 endNetworkDelayTest();
 
     //Synchronization helpers
-    enum SemaphoreType {
+    enum SemaphoreType
+    {
         SEMA_MUTEX, // used to protect mutex access to member variables
         SEMA_COMMAND_INTERACTIVE // used to wait for response from client
     };
-    inline QSemaphore *getSemaphore(SemaphoreType type) { return semas[type]; }
-    inline void acquireLock(SemaphoreType type) { semas[type]->acquire(); }
-    inline bool tryAcquireLock(SemaphoreType type, int timeout = 0) {
+    inline QSemaphore *getSemaphore(SemaphoreType type)
+    {
+        return semas[type];
+    }
+    inline void acquireLock(SemaphoreType type)
+    {
+        semas[type]->acquire();
+    }
+    inline bool tryAcquireLock(SemaphoreType type, int timeout = 0)
+    {
         return semas[type]->tryAcquire(1, timeout);
     }
-    inline void releaseLock(SemaphoreType type) { semas[type]->release(); }
-    inline void drainLock(SemaphoreType type) { while (semas[type]->tryAcquire()) {} }
-    inline void drainAllLocks() {
+    inline void releaseLock(SemaphoreType type)
+    {
+        semas[type]->release();
+    }
+    inline void drainLock(SemaphoreType type)
+    {
+        while (semas[type]->tryAcquire()) {
+        }
+    }
+    inline void drainAllLocks()
+    {
         for (int i = 0; i < S_NUM_SEMAPHORES; i++) {
             drainLock((SemaphoreType)i);
         }
     }
-    inline const QVariant &getClientReply() const{ return _m_clientResponse; }
-    inline void setClientReply(const QVariant &val) { _m_clientResponse = val; }
+    inline const QVariant &getClientReply() const
+    {
+        return _m_clientResponse;
+    }
+    inline void setClientReply(const QVariant &val)
+    {
+        _m_clientResponse = val;
+    }
     unsigned int m_expectedReplySerial; // Suggest the acceptable serial number of an expected response.
     bool m_isClientResponseReady; //Suggest whether a valid player's reponse has been received.
     bool m_isWaitingReply; // Suggest if the server player is waiting for client's response.

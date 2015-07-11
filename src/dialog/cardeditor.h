@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef CARDEDITOR_H
@@ -35,7 +35,8 @@ class QFontDialog;
 class QGroupBox;
 class QPushButton;
 
-class BlackEdgeTextItem : public QGraphicsObject{
+class BlackEdgeTextItem : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -62,7 +63,8 @@ private:
     int outline;
 };
 
-class AATextItem : public QGraphicsTextItem{
+class AATextItem : public QGraphicsTextItem
+{
 public:
     AATextItem(const QString &text, QGraphicsItem *parent);
 
@@ -70,7 +72,8 @@ protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 };
 
-class SkillBox : public QGraphicsObject{
+class SkillBox : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -103,7 +106,8 @@ private:
     AATextItem *copyright_text;
 };
 
-class AvatarRectItem : public QGraphicsRectItem {
+class AvatarRectItem : public QGraphicsRectItem
+{
 public:
     AvatarRectItem(qreal width, qreal height, const QRectF &box_rect, int font_size);
     void toCenter(QGraphicsScene *scene);
@@ -115,7 +119,8 @@ private:
     BlackEdgeTextItem *name;
 };
 
-class CardScene : public QGraphicsScene {
+class CardScene : public QGraphicsScene
+{
     Q_OBJECT
 
 public:
@@ -125,8 +130,14 @@ public:
     void setGeneralPhoto(const QString &filename);
     BlackEdgeTextItem *getNameItem() const;
     BlackEdgeTextItem *getTitleItem() const;
-    inline SkillBox *getSkillBox() const { return skill_box; }
-    inline CompanionBox *getCompanionBox() const { return companion_box; }
+    inline SkillBox *getSkillBox() const
+    {
+        return skill_box;
+    }
+    inline CompanionBox *getCompanionBox() const
+    {
+        return companion_box;
+    }
     void saveConfig();
     void loadConfig();
     void setMenu(QMenu *menu);

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef FLATDIALOG_H
@@ -26,13 +26,15 @@
 class QLabel;
 class QVBoxLayout;
 
-class FlatDialog : public QDialog {
+class FlatDialog : public QDialog
+{
     Q_OBJECT
 
 public:
     FlatDialog(QWidget *parent = 0, bool initialLayoutWithTitle = true);
 
-    inline QVBoxLayout *mainLayout() const {
+    inline QVBoxLayout *mainLayout() const
+    {
         return layout;
     }
 

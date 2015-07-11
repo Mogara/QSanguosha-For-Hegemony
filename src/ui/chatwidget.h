@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _CHAT_WIDGET_H
@@ -29,7 +29,8 @@
 #include <QGraphicsProxyWidget>
 #include <QGraphicsPixmapItem>
 
-class MyPixmapItem : public QObject, public QGraphicsPixmapItem {
+class MyPixmapItem : public QObject, public QGraphicsPixmapItem
+{
     Q_OBJECT
 
 public:
@@ -61,7 +62,8 @@ signals:
     void my_pixmap_item_msg(QString);
 };
 
-class ChatWidget : public QGraphicsObject {
+class ChatWidget : public QGraphicsObject
+{
     Q_OBJECT
 
 public:

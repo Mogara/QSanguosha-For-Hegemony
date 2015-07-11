@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef GENERALOVERVIEW_H
@@ -34,7 +34,8 @@ class Skill;
 class GeneralOverview;
 struct SearchDetails;
 
-class GeneralSearch : public FlatDialog {
+class GeneralSearch : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -74,7 +75,8 @@ namespace Ui {
     class GeneralOverview;
 }
 
-class GeneralOverview : public FlatDialog {
+class GeneralOverview : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -105,11 +107,15 @@ private:
 public slots:
     void startSearch(const SearchDetails &detail);
     void startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper, const QStringList &packages);
+
 private slots:
     void playAudioEffect();
     void copyLines();
     void showNextSkin();
     void fillAllGenerals();
+#ifdef Q_OS_IOS
+    void comboBoxChanged(const QString &);
+#endif
     void on_tableView_clicked(const QModelIndex &index);
     void playDeathAudio();
 };

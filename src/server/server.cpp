@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "server.h"
@@ -47,7 +47,8 @@ Server::Server(QObject *parent)
     connect(qApp, &QApplication::aboutToQuit, this, &Server::deleteLater);
 }
 
-void Server::broadcastSystemMessage(const QString &msg) {
+void Server::broadcastSystemMessage(const QString &msg)
+{
     JsonArray arg;
     arg << ".";
     arg << msg;
@@ -59,15 +60,18 @@ void Server::broadcastSystemMessage(const QString &msg) {
         room->broadcast(&packet);
 }
 
-bool Server::listen() {
+bool Server::listen()
+{
     return server->listen();
 }
 
-void Server::daemonize() {
+void Server::daemonize()
+{
     server->daemonize();
 }
 
-Room *Server::createNewRoom() {
+Room *Server::createNewRoom()
+{
     Room *new_room = new Room(this, Config.GameMode);
     current = new_room;
     rooms.insert(current);
@@ -78,7 +82,8 @@ Room *Server::createNewRoom() {
     return current;
 }
 
-void Server::processNewConnection(ClientSocket *socket) {
+void Server::processNewConnection(ClientSocket *socket)
+{
     QString address = socket->peerAddress();
     if (Config.ForbidSIMC) {
         if (addresses.contains(address)) {
@@ -90,7 +95,7 @@ void Server::processNewConnection(ClientSocket *socket) {
         }
     }
 
-    if (Config.value("BannedIP").toStringList().contains(address)){
+    if (Config.value("BannedIP").toStringList().contains(address)) {
         socket->disconnectFromHost();
         emit server_message(tr("Forbid the connection of address %1").arg(address));
         return;
@@ -149,7 +154,7 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
     QString avatar = body[2].toString();
 
     if (is_reconnection) {
-        foreach (QString objname, name2objname.values(screen_name)) {
+        foreach (const QString &objname, name2objname.values(screen_name)) {
             ServerPlayer *player = players.value(objname);
             if (player && player->getState() == "offline" && !player->getRoom()->isFinished()) {
                 player->getRoom()->reconnect(player, socket);
@@ -171,23 +176,27 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
     }
 }
 
-void Server::cleanup() {
+void Server::cleanup()
+{
     ClientSocket *socket = qobject_cast<ClientSocket *>(sender());
     if (Config.ForbidSIMC)
         addresses.removeOne(socket->peerAddress());
     socket->deleteLater();
 }
 
-void Server::signupPlayer(ServerPlayer *player) {
+void Server::signupPlayer(ServerPlayer *player)
+{
     name2objname.insert(player->screenName(), player->objectName());
     players.insert(player->objectName(), player);
 }
 
-void Server::gameOver() {
+void Server::gameOver()
+{
     Room *room = qobject_cast<Room *>(sender());
     rooms.remove(room);
 
-    foreach(ServerPlayer *player, room->findChildren<ServerPlayer *>()) {
+    foreach(ServerPlayer *player, room->findChildren<ServerPlayer *>())
+    {
         name2objname.remove(player->screenName(), player->objectName());
         players.remove(player->objectName());
     }

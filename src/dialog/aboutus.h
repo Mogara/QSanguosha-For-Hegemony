@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef ABOUTUS_H
@@ -26,7 +26,8 @@
 class QListWidget;
 class QTextBrowser;
 
-class AboutUsDialog : public FlatDialog {
+class AboutUsDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -44,7 +45,7 @@ public:
     // Last Updated By Yanguam Siliagim
     // To make the characters clearer
     //
-    // QSanguosha-Rara
+    // Mogara
     // March 14 2014
     //************************************
     AboutUsDialog(QWidget *parent);

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "magatamasitem.h"
@@ -38,24 +38,28 @@ MagatamasBoxItem::MagatamasBoxItem(QGraphicsItem *parent)
     m_maxHp = 0;
 }
 
-void MagatamasBoxItem::setOrientation(Qt::Orientation orientation) {
+void MagatamasBoxItem::setOrientation(Qt::Orientation orientation)
+{
     m_orientation = orientation;
     _updateLayout();
 }
 
-void MagatamasBoxItem::_updateLayout() {
+void MagatamasBoxItem::_updateLayout()
+{
     for (int i = 0; i < 4; i++) {
         _icons[i] = G_ROOM_SKIN.getPixmap(QString(QSanRoomSkin::S_SKIN_KEY_MAGATAMAS).arg(QString::number(i)))
             .scaled(m_iconSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     }
 }
 
-void MagatamasBoxItem::setIconSize(QSize size) {
+void MagatamasBoxItem::setIconSize(QSize size)
+{
     m_iconSize = size;
     _updateLayout();
 }
 
-QRectF MagatamasBoxItem::boundingRect() const{
+QRectF MagatamasBoxItem::boundingRect() const
+{
     int buckets = qMin(m_maxHp, 4) + G_COMMON_LAYOUT.m_hpExtraSpaceHolder;
     if (m_orientation == Qt::Horizontal)
         return QRectF(0, 0, buckets * m_iconSize.width(), m_iconSize.height());
@@ -63,23 +67,27 @@ QRectF MagatamasBoxItem::boundingRect() const{
         return QRectF(0, 0, m_iconSize.width(), buckets * m_iconSize.height());
 }
 
-void MagatamasBoxItem::setHp(int hp) {
+void MagatamasBoxItem::setHp(int hp)
+{
     _doHpChangeAnimation(hp);
     m_hp = hp;
     update();
 }
 
-void MagatamasBoxItem::setAnchor(QPoint anchor, Qt::Alignment align) {
+void MagatamasBoxItem::setAnchor(QPoint anchor, Qt::Alignment align)
+{
     m_anchor = anchor;
     m_align = align;
 }
 
-void MagatamasBoxItem::setMaxHp(int maxHp) {
+void MagatamasBoxItem::setMaxHp(int maxHp)
+{
     m_maxHp = maxHp;
     _autoAdjustPos();
 }
 
-void MagatamasBoxItem::_autoAdjustPos() {
+void MagatamasBoxItem::_autoAdjustPos()
+{
     if (!anchorEnabled) return;
     QRectF rect = boundingRect();
     Qt::Alignment hAlign = m_align & Qt::AlignHorizontal_Mask;
@@ -98,13 +106,15 @@ void MagatamasBoxItem::_autoAdjustPos() {
         setY(m_anchor.y());
 }
 
-void MagatamasBoxItem::update() {
+void MagatamasBoxItem::update()
+{
     _updateLayout();
     _autoAdjustPos();
     QGraphicsItem::update();
 }
 
-void MagatamasBoxItem::_doHpChangeAnimation(int newHp) {
+void MagatamasBoxItem::_doHpChangeAnimation(int newHp)
+{
     if (newHp >= m_hp) return;
 
     int width = m_imageArea.width();
@@ -113,8 +123,7 @@ void MagatamasBoxItem::_doHpChangeAnimation(int newHp) {
     if (this->m_orientation == Qt::Horizontal) {
         xStep = width;
         yStep = 0;
-    }
-    else {
+    } else {
         xStep = 0;
         yStep = height;
     }
@@ -160,7 +169,8 @@ void MagatamasBoxItem::_doHpChangeAnimation(int newHp) {
     }
 }
 
-void MagatamasBoxItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void MagatamasBoxItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     if (m_maxHp <= 0) return;
 
     int imageIndex = qBound(0, m_hp, 3);

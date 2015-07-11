@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef MAINWINDOW_H
@@ -40,7 +40,8 @@ class ConnectionDialog;
 class ConfigDialog;
 class Window;
 
-class BroadcastBox : public QDialog {
+class BroadcastBox : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -54,12 +55,14 @@ private:
     QTextEdit *text_edit;
 };
 
-class BackLoader {
+class BackLoader
+{
 public:
     static void preload();
 };
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow
+{
     Q_OBJECT
 
 public:
@@ -67,7 +70,7 @@ public:
     ~MainWindow();
     void fitBackgroundBrush();
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     virtual void mousePressEvent(QMouseEvent *event);
     virtual void mouseReleaseEvent(QMouseEvent *event);
     virtual void mouseDoubleClickEvent(QMouseEvent *event);
@@ -83,7 +86,10 @@ public:
 
     static const int S_PADDING = 4;
     static const int S_CORNER_SIZE = 5;
-    enum Direction { Up, Down, Left, Right, LeftTop, LeftBottom, RightTop, RightBottom, None = -1 };
+    enum Direction
+    {
+        Up, Down, Left, Right, LeftTop, LeftBottom, RightTop, RightBottom, None = -1
+    };
 
     bool isZoomReady;
     Direction direction;

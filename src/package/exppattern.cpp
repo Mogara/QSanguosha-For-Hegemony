@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,18 +15,20 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "exppattern.h"
 #include "engine.h"
 
-ExpPattern::ExpPattern(const QString &exp) {
+ExpPattern::ExpPattern(const QString &exp)
+{
     this->exp = exp;
 }
 
-bool ExpPattern::match(const Player *player, const Card *card) const{
-    foreach(QString one_exp, this->exp.split('#'))
+bool ExpPattern::match(const Player *player, const Card *card) const
+{
+    foreach (const QString &one_exp, this->exp.split('#'))
         if (this->matchOne(player, card, one_exp)) return true;
 
     return false;
@@ -38,18 +40,19 @@ bool ExpPattern::match(const Player *player, const Card *card) const{
 // 2nd patt means the card suit, and ',' means more than one options.
 // 3rd part means the card number, and ',' means more than one options,
 // the number uses '~' to make a scale for valid expressions
-bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) const{
+bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) const
+{
     QStringList factors = exp.split('|');
 
     bool checkpoint = false;
     QStringList card_types = factors.at(0).split(',');
-    foreach(QString or_name, card_types) {
+    foreach (const QString &or_name, card_types) {
         checkpoint = false;
-        foreach(QString name, or_name.split('+')) {
+        foreach (const QString &_name, or_name.split('+')) {
+            QString name = _name;
             if (name == ".") {
                 checkpoint = true;
-            }
-            else {
+            } else {
                 bool isInt = false;
                 bool positive = true;
                 if (name.startsWith('^')) {
@@ -72,8 +75,11 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
 
     checkpoint = false;
     QStringList card_suits = factors.at(1).split(',');
-    foreach(QString suit, card_suits) {
-        if (suit == ".") { checkpoint = true; break; }
+    foreach (const QString &_suit, card_suits) {
+        QString suit = _suit;
+        if (suit == ".") {
+            checkpoint = true; break;
+        }
         bool positive = true;
         if (suit.startsWith('^')) {
             positive = false;
@@ -94,8 +100,12 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
     QStringList card_numbers = factors.at(2).split(',');
     int cdn = card->getNumber();
 
-    foreach(QString number, card_numbers) {
-        if (number == ".") { checkpoint = true; break; }
+    foreach (const QString &number, card_numbers) {
+        if (number == ".") {
+            checkpoint = true;
+            break;
+        }
+
         bool isInt = false;
         if (number.contains('~')) {
             QStringList params = number.split('~');
@@ -110,11 +120,9 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
                 to = params.at(1).toInt();
 
             if (from <= cdn && cdn <= to) checkpoint = true;
-        }
-        else if (number.toInt(&isInt) == cdn && isInt) {
+        } else if (number.toInt(&isInt) == cdn && isInt) {
             checkpoint = true;
-        }
-        else if ((number == "A" && cdn == 1)
+        } else if ((number == "A" && cdn == 1)
             || (number == "J" && cdn == 11)
             || (number == "Q" && cdn == 12)
             || (number == "K" && cdn == 13)) {
@@ -138,7 +146,8 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
             foreach (int id, ids) {
                 checkpoint = false;
                 const Card *card = Sanguosha->getCard(id);
-                foreach (QString p, place.split(",")) {
+                foreach (const QString &_p, place.split(",")) {
+                    QString p = _p;
                     if (p == "equipped" && player->hasEquip(card)) {
                         checkpoint = true;
                     } else if (p == "hand" && card->getEffectiveId() >= 0) {
@@ -150,11 +159,12 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
                         }
                     } else if (p.startsWith("%")) {
                         p = p.mid(1);
-                        foreach (const Player *pl, player->getAliveSiblings())
+                        foreach (const Player *pl, player->getAliveSiblings()) {
                             if (!pl->getPile(p).isEmpty() && pl->getPile(p).contains(id)) {
                                 checkpoint = true;
                                 break;
                             }
+                        }
                     } else if (!player->getPile(p).isEmpty() && player->getPile(p).contains(id)) {
                         checkpoint = true;
                     }

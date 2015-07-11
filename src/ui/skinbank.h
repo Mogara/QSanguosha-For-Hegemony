@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _SKIN_BANK_H
@@ -38,7 +38,8 @@
 #include <QGraphicsPixmapItem>
 #include <QAbstractAnimation>
 
-class QSanPixmapCache {
+class QSanPixmapCache
+{
 public:
     // Load pixmap from a file and map it to the given key.
     static QPixmap getPixmap(const QString &key, const QString &fileName);
@@ -47,9 +48,11 @@ public:
     static bool contains(const QString &key);
 };
 
-class IQSanComponentSkin { // interface class
+class IQSanComponentSkin
+{ // interface class
 public:
-    class QSanSimpleTextFont {
+    class QSanSimpleTextFont
+    {
     public:
         QSanUiUtils::QSanFreeTypeFont::QSanFont m_fontFace;
         QSize m_fontSize;
@@ -64,11 +67,14 @@ public:
         // QGraphicsPixmapItem passed in and then start drawing.
         void paintText(QGraphicsPixmapItem *item, const QRect &pos, Qt::Alignment align, const QString &text) const;
 
-    protected:
-        static QHash<QString, int *> _m_fontBank;
+        static QHash<QString, int *> _m_fontBank; //by Xusine
+
+        //protected:
+        //static QHash<QString, int *> _m_fontBank;
     };
 
-    class QSanShadowTextFont : public QSanSimpleTextFont {
+    class QSanShadowTextFont : public QSanSimpleTextFont
+    {
     public:
         int m_shadowRadius;
         double m_shadowDecadeFactor;
@@ -81,7 +87,8 @@ public:
         void paintText(QGraphicsPixmapItem *item, const QRect &pos, Qt::Alignment align, const QString &text) const;
     };
 
-    class AnchoredRect {
+    class AnchoredRect
+    {
     public:
         QRect getTranslatedRect(const QRect &parentRect) const;
         QRect getTranslatedRect(const QRect &parentRect, const QSize &childSize) const;
@@ -99,7 +106,7 @@ public:
     static const char *S_SKIN_KEY_DEFAULT_SECOND;
     bool load(const QString &layoutConfigFileName, const QString &imageConfigFileName,
         const QString &audioConfigFileName, const QString &animationConfigFileName);
-    QPixmap getPixmap(const QString &key, const QString &arg = QString(), const QString &arg2 = QString()) const;
+    QPixmap getPixmap(const QString &key, const QString &arg = QString(), const QString &arg2 = QString(), bool addDefaultArg = false) const;
     QPixmap getPixmapFileName(const QString &key) const;
     QPixmap getPixmapFromFileName(const QString &fileName) const;
     QStringList getAudioFileNames(const QString &key) const;
@@ -128,9 +135,11 @@ protected:
     static QHash<QString, int> S_HERO_SKIN_INDEX;
 };
 
-class QSanRoomSkin : public IQSanComponentSkin {
+class QSanRoomSkin : public IQSanComponentSkin
+{
 public:
-    struct RoomLayout {
+    struct RoomLayout
+    {
         int m_scenePadding;
         int m_roleBoxHeight;
         int m_chatTextBoxHeight;
@@ -149,7 +158,8 @@ public:
         QSize m_maximumSceneSize10Player;
     };
 
-    struct PlayerCardContainerLayout {
+    struct PlayerCardContainerLayout
+    {
         int m_normalHeight;
         QRect m_boundingRect;
         QRect m_focusFrameArea;
@@ -231,7 +241,8 @@ public:
         QRect m_extraSkillTextArea;
     };
 
-    struct PhotoLayout : public PlayerCardContainerLayout {
+    struct PhotoLayout : public PlayerCardContainerLayout
+    {
         int m_normalWidth;
         QRect m_mainFrameArea;
         QRect m_cardMoveRegion;
@@ -242,7 +253,8 @@ public:
         QSanShadowTextFont m_skillNameFont;
     };
 
-    struct DashboardLayout : public PlayerCardContainerLayout {
+    struct DashboardLayout : public PlayerCardContainerLayout
+    {
         int m_leftWidth, m_rightWidth, m_magatamasBaseWidth;
         int m_floatingAreaHeight;
         int m_rswidth;
@@ -270,7 +282,8 @@ public:
             QSanInvokeSkillButton::SkillButtonWidth width) const;
     };
 
-    struct CommonLayout {
+    struct CommonLayout
+    {
         // card related
         int m_cardNormalWidth;
         int m_cardNormalHeight;
@@ -329,7 +342,8 @@ public:
         QSanShadowTextFont skinItemTitleText;
     };
 
-    enum GeneralIconSize {
+    enum GeneralIconSize
+    {
         S_GENERAL_ICON_SIZE_TINY,
         S_GENERAL_ICON_SIZE_SMALL,
         S_GENERAL_ICON_SIZE_LARGE,
@@ -364,7 +378,7 @@ public:
     QString getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index = -1, const Player *player = NULL) const;
     QPixmap getProgressBarPixmap(int percentile) const;
 
-    bool doesGeneralHaveSkin(const QString &general, const int skinId = 1, const bool isCard = false) const;
+    bool generalHasSkin(const QString &general, const int skinId = 1, const bool isCard = false) const;
 
     // static consts
     // main keys
@@ -469,7 +483,8 @@ protected:
     virtual bool _loadAnimationConfig(const QVariant &animationConfig);
 };
 
-class QSanSkinScheme {
+class QSanSkinScheme
+{
     // Why do we need another layer above room skin? Because we may add lobby, login interface
     // in the future; and we may need to assemble a set of different skins into a scheme.
 public:
@@ -480,7 +495,8 @@ protected:
     QSanRoomSkin _m_roomSkin;
 };
 
-class QSanSkinFactory {
+class QSanSkinFactory
+{
 public:
     static QSanSkinFactory &getInstance();
     static void destroyInstance();

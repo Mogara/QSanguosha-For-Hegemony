@@ -1,17 +1,18 @@
 /*
-** $Id: ldebug.c,v 2.101 2014/10/17 16:28:21 roberto Exp $
+** $Id: ldebug.c,v 2.110 2015/01/02 12:52:22 roberto Exp $
 ** Debug Interface
 ** See Copyright Notice in lua.h
 */
+
+#define ldebug_c
+#define LUA_CORE
+
+#include "lprefix.h"
 
 
 #include <stdarg.h>
 #include <stddef.h>
 #include <string.h>
-
-
-#define ldebug_c
-#define LUA_CORE
 
 #include "lua.h"
 
@@ -166,9 +167,10 @@ LUA_API const char *lua_setlocal (lua_State *L, const lua_Debug *ar, int n) {
   StkId pos = 0;  /* to avoid warnings */
   const char *name = findlocal(L, ar->i_ci, n, &pos);
   lua_lock(L);
-  if (name)
+  if (name) {
     setobjs2s(L, pos, L->top - 1);
-  L->top--;  /* pop value */
+    L->top--;  /* pop value */
+  }
   lua_unlock(L);
   return name;
 }
@@ -365,7 +367,7 @@ static int findsetreg (Proto *p, int lastpc, int reg) {
       case OP_JMP: {
         int b = GETARG_sBx(i);
         int dest = pc + 1 + b;
-        /* jump is forward and do not skip `lastpc'? */
+        /* jump is forward and do not skip 'lastpc'? */
         if (pc < dest && dest <= lastpc) {
           if (dest > jmptarget)
             jmptarget = dest;  /* update 'jmptarget' */
@@ -437,10 +439,14 @@ static const char *getobjname (Proto *p, int lastpc, int reg,
 
 
 static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name) {
-  TMS tm;
+  TMS tm = (TMS)0;  /* to avoid warnings */
   Proto *p = ci_func(ci)->p;  /* calling function */
   int pc = currentpc(ci);  /* calling instruction index */
   Instruction i = p->code[pc];  /* calling instruction */
+  if (ci->callstatus & CIST_HOOKED) {  /* was it called inside a hook? */
+    *name = "?";
+    return "hook";
+  }
   switch (GET_OPCODE(i)) {
     case OP_CALL:
     case OP_TAILCALL:  /* get function name */
@@ -450,26 +456,27 @@ static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name) {
        return "for iterator";
     }
     /* all other instructions can call only through metamethods */
-    case OP_SELF:
-    case OP_GETTABUP:
-    case OP_GETTABLE: tm = TM_INDEX; break;
-    case OP_SETTABUP:
-    case OP_SETTABLE: tm = TM_NEWINDEX; break;
-    case OP_EQ: tm = TM_EQ; break;
-    case OP_ADD: tm = TM_ADD; break;
-    case OP_SUB: tm = TM_SUB; break;
-    case OP_MUL: tm = TM_MUL; break;
-    case OP_DIV: tm = TM_DIV; break;
-    case OP_IDIV: tm = TM_IDIV; break;
-    case OP_MOD: tm = TM_MOD; break;
-    case OP_POW: tm = TM_POW; break;
+    case OP_SELF: case OP_GETTABUP: case OP_GETTABLE:
+      tm = TM_INDEX;
+      break;
+    case OP_SETTABUP: case OP_SETTABLE:
+      tm = TM_NEWINDEX;
+      break;
+    case OP_ADD: case OP_SUB: case OP_MUL: case OP_MOD:
+    case OP_POW: case OP_DIV: case OP_IDIV: case OP_BAND:
+    case OP_BOR: case OP_BXOR: case OP_SHL: case OP_SHR: {
+      int offset = cast_int(GET_OPCODE(i)) - cast_int(OP_ADD);  /* ORDER OP */
+      tm = cast(TMS, offset + cast_int(TM_ADD));  /* ORDER TM */
+      break;
+    }
     case OP_UNM: tm = TM_UNM; break;
+    case OP_BNOT: tm = TM_BNOT; break;
     case OP_LEN: tm = TM_LEN; break;
+    case OP_CONCAT: tm = TM_CONCAT; break;
+    case OP_EQ: tm = TM_EQ; break;
     case OP_LT: tm = TM_LT; break;
     case OP_LE: tm = TM_LE; break;
-    case OP_CONCAT: tm = TM_CONCAT; break;
-    default:
-      return NULL;  /* else no useful name can be found */
+    default: lua_assert(0);  /* other instructions cannot call a function */
   }
   *name = getstr(G(L)->tmname[tm]);
   return "metamethod";
@@ -480,17 +487,21 @@ static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name) {
 
 
 /*
-** only ANSI way to check whether a pointer points to an array
-** (used only for error messages, so efficiency is not a big concern)
+** The subtraction of two potentially unrelated pointers is
+** not ISO C, but it should not crash a program; the subsequent
+** checks are ISO C and ensure a correct result.
 */
 static int isinstack (CallInfo *ci, const TValue *o) {
-  StkId p;
-  for (p = ci->u.l.base; p < ci->top; p++)
-    if (o == p) return 1;
-  return 0;
+  ptrdiff_t i = o - ci->u.l.base;
+  return (0 <= i && i < (ci->top - ci->u.l.base) && ci->u.l.base + i == o);
 }
 
 
+/*
+** Checks whether value 'o' came from an upvalue. (That can only happen
+** with instructions OP_GETTABUP/OP_SETTABUP, which operate directly on
+** upvalues.)
+*/
 static const char *getupvalname (CallInfo *ci, const TValue *o,
                                  const char **name) {
   LClosure *c = ci_func(ci);
@@ -506,7 +517,7 @@ static const char *getupvalname (CallInfo *ci, const TValue *o,
 
 
 static const char *varinfo (lua_State *L, const TValue *o) {
-  const char *name;
+  const char *name = NULL;  /* to avoid warnings */
   CallInfo *ci = L->ci;
   const char *kind = NULL;
   if (isLua(ci)) {
@@ -531,11 +542,12 @@ l_noret luaG_concaterror (lua_State *L, const TValue *p1, const TValue *p2) {
 }
 
 
-l_noret luaG_aritherror (lua_State *L, const TValue *p1, const TValue *p2) {
+l_noret luaG_opinterror (lua_State *L, const TValue *p1,
+                         const TValue *p2, const char *msg) {
   lua_Number temp;
   if (!tonumber(p1, &temp))  /* first operand is wrong? */
     p2 = p1;  /* now second is wrong */
-  luaG_typeerror(L, p2, "perform arithmetic on");
+  luaG_typeerror(L, p2, msg);
 }
 
 
@@ -579,10 +591,9 @@ static void addinfo (lua_State *L, const char *msg) {
 l_noret luaG_errormsg (lua_State *L) {
   if (L->errfunc != 0) {  /* is there an error handling function? */
     StkId errfunc = restorestack(L, L->errfunc);
-    if (!ttisfunction(errfunc)) luaD_throw(L, LUA_ERRERR);
     setobjs2s(L, L->top, L->top - 1);  /* move argument */
     setobjs2s(L, L->top - 1, errfunc);  /* push function */
-    L->top++;
+    L->top++;  /* assume EXTRA_STACK */
     luaD_call(L, L->top - 2, 1, 0);  /* call it */
   }
   luaD_throw(L, LUA_ERRRUN);

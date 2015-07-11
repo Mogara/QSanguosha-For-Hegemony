@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _UTIL_H
@@ -29,7 +29,8 @@ class QVariant;
 #include <QVariant>
 
 template<typename T>
-void qShuffle(QList<T> &list) {
+void qShuffle(QList<T> &list)
+{
     int i, n = list.length();
     for (i = 0; i < n; i++) {
         int r = qrand() % (n - i) + i;

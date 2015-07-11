@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "scenario.h"
@@ -26,19 +26,28 @@ Scenario::Scenario(const QString &name)
 {
 }
 
-int Scenario::getPlayerCount() const{
+int Scenario::getPlayerCount() const
+{
     return 1 + loyalists.length() + rebels.length() + renegades.length();
 }
 
-ScenarioRule *Scenario::getRule() const{
+ScenarioRule *Scenario::getRule() const
+{
     return rule;
 }
 
-bool Scenario::exposeRoles() const{
+bool Scenario::exposeRoles() const
+{
     return true;
 }
 
-QString Scenario::getRoles() const{
+void Scenario::onTagSet(Room *, const QString &) const
+{
+
+}
+
+QString Scenario::getRoles() const
+{
     QString roles = "Z";
     for (int i = 0; i < loyalists.length(); i++)
         roles.append('C');
@@ -49,11 +58,12 @@ QString Scenario::getRoles() const{
     return roles;
 }
 
-void Scenario::assign(QStringList &generals, QStringList &, QStringList &roles, Room *) const{
+void Scenario::assign(QStringList &generals, QStringList &, QStringList &roles, Room *) const
+{
     generals << lord << loyalists << rebels << renegades;
     qShuffle(generals);
 
-    foreach(QString general, generals) {
+    foreach (const QString &general, generals) {
         if (general == lord)
             roles << "lord";
         else if (loyalists.contains(general))
@@ -65,11 +75,13 @@ void Scenario::assign(QStringList &generals, QStringList &, QStringList &roles, 
     }
 }
 
-bool Scenario::generalSelection() const{
+bool Scenario::generalSelection() const
+{
     return false;
 }
 
-AI::Relation Scenario::relationTo(const ServerPlayer *a, const ServerPlayer *b) const{
+AI::Relation Scenario::relationTo(const ServerPlayer *a, const ServerPlayer *b) const
+{
     return AI::GetRelationHegemony(a, b);
 }
 

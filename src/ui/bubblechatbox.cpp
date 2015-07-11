@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "bubblechatbox.h"
@@ -154,7 +154,7 @@ QVariant BubbleChatBox::itemChange(GraphicsItemChange change, const QVariant &va
 void BubbleChatBox::updatePos()
 {
     const int xOffset = (area.width() - rect.width()) / 2;
-    const int yOffset = (area.height() -rect.height()) / 2;
+    const int yOffset = (area.height() - rect.height()) / 2;
     setPos(QPointF(area.left() + xOffset, area.top() + yOffset));
 }
 

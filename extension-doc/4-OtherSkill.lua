@@ -31,6 +31,7 @@ LuaMashu_mateng = sgs.CreateMashuSkill("mateng")
 --国战中只有横江和太平要术用到了手牌上限技
 --注意手牌上限技一经声明全场生效，即使不附加给玩家
 --国战中同名的手牌上限技也要区分开
+--注意：后来国战的上限技能是在服务器执行的，也就是说这里可以用player获取Room。
 
 --（你的手牌上限+2）实现：
 
@@ -85,5 +86,26 @@ LuaLiegongRange = sgs.CreateAttackRangeSkill{
 			end
 		end
 		return 0
+	end ,
+}
+
+--锁定视为技(sgs.CreateFilterSkill)
+--顾名思义，用于实现锁定技“XX牌视为xx牌”的
+--国战中只有小乔用到了锁定视为技
+--注意可以用类似视为技的方式亮锁定视为技
+
+--小乔红颜效果实现：
+LuaHongyan = sgs.CreateFilterSkill{
+	name = "LuaHongyan" ,
+	view_filter = function(self, to_select)
+		return to_select:getSuit() == sgs.Card_Spade
+	end ,
+	view_as = function(self, card)
+		local id = card:getEffectiveId()
+		local new_card = sgs.Sanguosha:getWrappedCard(id)
+		new_card:setSkillName(self:objectName())
+		new_card:setSuit(sgs.Card_Heart)
+		new_card:setModified(true)
+		return new_card
 	end ,
 }

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,14 +15,15 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "version.h"
 #include <QRegExp>
 #include <QStringList>
 
-QSanVersionNumber::QSanVersionNumber(const QString &str){
+QSanVersionNumber::QSanVersionNumber(const QString &str)
+{
     if (!tryParse(str))
         Q_ASSERT(false);
 }
@@ -33,23 +34,24 @@ QSanVersionNumber::QSanVersionNumber(int major, int minor, int sub, VersionType 
 
 }
 
-bool QSanVersionNumber::tryParse(const QString &str){
-    QRegExp regexp("(\\d+)\\.(\\d+)\\.(\\d+)(\\-([a-z]+)(\\d+))?");
-    if (regexp.exactMatch(str)){
+bool QSanVersionNumber::tryParse(const QString &str)
+{
+    QRegExp regexp("(\\d+)\\.(\\d+)\\.(\\d+)\\-([a-z]+)(\\d+)?");
+    if (regexp.exactMatch(str)) {
         QStringList l = regexp.capturedTexts();
         m_major = l[1].toInt();
         m_minor = l[2].toInt();
         m_sub = l[3].toInt();
-        if (l[5] == "alpha")
+        if (l[4] == "alpha")
             m_type = alpha;
-        else if (l[5] == "beta")
+        else if (l[4] == "beta")
             m_type = beta;
-        else if (l[5] == "offical")
+        else if (l[4] == "offical")
             m_type = offical;
         else
             m_type = other;
         if (l.length() > 5)
-            m_step = l[6].toInt();
+            m_step = l[5].toInt();
         else
             m_step = 0;
 
@@ -59,10 +61,11 @@ bool QSanVersionNumber::tryParse(const QString &str){
     return false;
 }
 
-QString QSanVersionNumber::toString() const{
+QString QSanVersionNumber::toString() const
+{
     QString str = "%1.%2.%3-%4";
     QString type_str;
-    switch (m_type){
+    switch (m_type) {
     case alpha:
         type_str = "alpha";
         break;
@@ -86,19 +89,22 @@ QString QSanVersionNumber::toString() const{
     return str;
 }
 
-QSanVersionNumber::operator QString() const{
+QSanVersionNumber::operator QString() const
+{
     return toString();
 }
 
-bool QSanVersionNumber::operator ==(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator ==(const QSanVersionNumber &arg2) const
+{
     return (m_major == arg2.m_major
-            && m_minor == arg2.m_minor
-            && m_sub == arg2.m_sub
-            && m_type == arg2.m_type
-            && m_step == arg2.m_step);
+        && m_minor == arg2.m_minor
+        && m_sub == arg2.m_sub
+        && m_type == arg2.m_type
+        && m_step == arg2.m_step);
 }
 
-bool QSanVersionNumber::operator <(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator <(const QSanVersionNumber &arg2) const
+{
     if (m_major < arg2.m_major) {
         return true;
     } else if (m_major == arg2.m_major) {
@@ -107,7 +113,7 @@ bool QSanVersionNumber::operator <(const QSanVersionNumber &arg2) const{
         } else if (m_minor == arg2.m_minor) {
             if (m_sub < arg2.m_sub) {
                 return true;
-            } else if (m_sub == arg2.m_sub){
+            } else if (m_sub == arg2.m_sub) {
                 if (m_type < arg2.m_type)
                     return true;
                 else
@@ -118,22 +124,26 @@ bool QSanVersionNumber::operator <(const QSanVersionNumber &arg2) const{
     return false;
 }
 
-bool QSanVersionNumber::operator >(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator >(const QSanVersionNumber &arg2) const
+{
     const QSanVersionNumber &arg1 = *this;
     return !(arg1 == arg2 || arg1 < arg2);
 }
 
-bool QSanVersionNumber::operator !=(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator !=(const QSanVersionNumber &arg2) const
+{
     const QSanVersionNumber &arg1 = *this;
     return !(arg1 == arg2);
 }
 
-bool QSanVersionNumber::operator <=(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator <=(const QSanVersionNumber &arg2) const
+{
     const QSanVersionNumber &arg1 = *this;
     return (arg1 == arg2 || arg1 < arg2);
 }
 
-bool QSanVersionNumber::operator >=(const QSanVersionNumber &arg2) const{
+bool QSanVersionNumber::operator >=(const QSanVersionNumber &arg2) const
+{
     const QSanVersionNumber &arg1 = *this;
     return !(arg1 < arg2);
 }

@@ -1,3 +1,23 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
+
 -- translation for Standard General Package
 
 return {
@@ -25,7 +45,7 @@ return {
 	["#zhouyu"] = "大都督",
 	["zhouyu"] = "周瑜",
 	["illustrator:zhouyu"] = "苍月白龙",
-	["yingzi"] = "英姿",
+	["yingzi_zhouyu"] = "英姿",
 	[":yingzi"] = "摸牌阶段，你可以多摸一张牌。",
 	["fanjian"] = "反间",
 	[":fanjian"] = "出牌阶段限一次，若你有手牌，你可以令一名其他角色选择一种花色，然后其先获得你的一张手牌再展示之，若此牌的花色与其所选的不同，你对其造成1点伤害。",
@@ -56,11 +76,11 @@ return {
 	["#sunjian"] = "武烈帝",
 	["sunjian"] = "孙坚",
 	["illustrator:sunjian"] = "LiuHeng",
-	["yinghun"] = "英魂",
+	["yinghun_sunjian"] = "英魂",
 	[":yinghun"] = "准备阶段开始时，若你已受伤，你可以选择一项：1.令一名其他角色摸X张牌，然后其弃置一张牌；2.令一名其他角色摸一张牌，然后其弃置X张牌。（X为你已损失的体力值）",
 	["yinghun-invoke"] = "你可以发动“英魂”<br/> <b>操作提示</b>: 选择一名其他角色→点击确定<br/>",
-	["yinghun:d1tx"] = "摸一张牌，然后弃置X张牌",
-	["yinghun:dxt1"] = "摸X张牌，然后弃置一张牌",
+	["yinghun_sunjian:d1tx"] = "摸一张牌，然后弃置X张牌",
+	["yinghun_sunjian:dxt1"] = "摸X张牌，然后弃置一张牌",
 
 	["#xiaoqiao"] = "矫情之花",
 	["xiaoqiao"] = "小乔",
@@ -92,6 +112,7 @@ return {
 	["illustrator:lusu"] = "LiuHeng",
 	["haoshi"] = "好施",
 	[":haoshi"] = "摸牌阶段，你可以多摸两张牌，然后若你的手牌数大于5，你将一半的手牌交给一名手牌最少的其他角色。",
+	["#haoshi-give"] = "好施[给牌]",
 	["@haoshi"] = "请选择“好施”的目标，将一半手牌（向下取整）交给该角色",
 	["~haoshi"] = "选择需要给出的手牌→选择一名其他角色→点击确定",
 	["dimeng"] = "缔盟",
@@ -107,6 +128,9 @@ return {
 	["guzheng"] = "固政",
 	[":guzheng"] = "其他角色的弃牌阶段结束时，你可以将弃牌堆里的一张其于此阶段内因其弃置而失去过的手牌交给该角色，若如此做，你可以获得弃牌堆里的其余于此阶段内弃置的牌。",
 	["$ZhijianEquip"] = "%from 被装备了 %card",
+	["@guzheng"] = "你可以令 %src 获得其弃置的其中一张牌。" ,
+	["~guzheng"] = "选择一张牌 -> 点击确定" ,
+	["_Guzheng:GuzhengObtain"] = "你可以获得弃牌堆里的其余于此阶段内弃置的牌",
 
 	["#dingfeng"] = "清侧重臣",
 	["dingfeng"] = "丁奉",

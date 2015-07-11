@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _TABLE_PILE_H
@@ -29,17 +29,32 @@
 #include <QGraphicsObject>
 #include <QPixmap>
 
-class TablePile : public GenericCardContainer {
+class TablePile : public GenericCardContainer
+{
     Q_OBJECT
 
 public:
-    inline TablePile() : GenericCardContainer(), m_currentTime(0) { m_timer = startTimer(S_CLEARANCE_UPDATE_INTERVAL_MSEC); }
+    inline TablePile() : GenericCardContainer(), m_currentTime(0)
+    {
+        m_timer = startTimer(S_CLEARANCE_UPDATE_INTERVAL_MSEC);
+    }
     virtual QList<CardItem *> removeCardItems(const QList<int> &card_ids, Player::Place place);
-    inline void setSize(QSize newSize) { setSize(newSize.width(), newSize.height()); }
+    inline void setSize(QSize newSize)
+    {
+        setSize(newSize.width(), newSize.height());
+    }
     void setSize(double width, double height);
-    inline void setNumCardsVisible(int num) { m_numCardsVisible = num; }
-    inline int getNumCardsVisible() { return m_numCardsVisible; }
-    inline virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) {}
+    inline void setNumCardsVisible(int num)
+    {
+        m_numCardsVisible = num;
+    }
+    inline int getNumCardsVisible()
+    {
+        return m_numCardsVisible;
+    }
+    inline virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
+    {
+    }
     void adjustCards();
     virtual QRectF boundingRect() const;
     void showJudgeResult(int cardId, bool takeEffect);

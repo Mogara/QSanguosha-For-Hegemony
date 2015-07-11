@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _STRATEGIC_ADVANTAGE_PACKAGE_H
@@ -25,21 +25,24 @@
 #include "standard.h"
 #include "skill.h"
 
-class Blade : public Weapon{
+class Blade : public Weapon
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE Blade(Card::Suit suit, int number);
 };
 
-class Halberd : public Weapon{
+class Halberd : public Weapon
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE Halberd(Card::Suit suit, int number);
 };
 
-class HalberdCard: public SkillCard {
+class HalberdCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -50,21 +53,24 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
-class Breastplate : public Armor{
+class Breastplate : public Armor
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE Breastplate(Card::Suit suit = Card::Club, int number = 2);
 };
 
-class IronArmor : public Armor{
+class IronArmor : public Armor
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE IronArmor(Card::Suit suit = Card::Spade, int number = 2);
 };
 
-class WoodenOxCard: public SkillCard {
+class WoodenOxCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -73,7 +79,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class WoodenOx: public Treasure{
+class WoodenOx : public Treasure
+{
     Q_OBJECT
 
 public:
@@ -82,14 +89,16 @@ public:
     virtual void onUninstall(ServerPlayer *player) const;
 };
 
-class JadeSeal : public Treasure{
+class JadeSeal : public Treasure
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE JadeSeal(Card::Suit suit, int number);
 };
 
-class Drowning: public SingleTargetTrick {
+class Drowning : public SingleTargetTrick
+{
     Q_OBJECT
 
 public:
@@ -102,7 +111,8 @@ public:
     virtual QStringList checkTargetModSkillShow(const CardUseStruct &use) const;
 };
 
-class BurningCamps : public AOE{
+class BurningCamps : public AOE
+{
     Q_OBJECT
 
 public:
@@ -113,7 +123,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class LureTiger : public TrickCard {
+class LureTiger : public TrickCard
+{
     Q_OBJECT
 
 public:
@@ -128,7 +139,8 @@ public:
     virtual QStringList checkTargetModSkillShow(const CardUseStruct &use) const;
 };
 
-class FightTogether : public GlobalEffect{
+class FightTogether : public GlobalEffect
+{
     Q_OBJECT
 
 public:
@@ -140,7 +152,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class AllianceFeast : public AOE {
+class AllianceFeast : public AOE
+{
     Q_OBJECT
 
 public:
@@ -153,7 +166,8 @@ public:
     virtual bool isAvailable(const Player *player) const;
 };
 
-class ThreatenEmperor: public SingleTargetTrick{
+class ThreatenEmperor : public SingleTargetTrick
+{
     Q_OBJECT
 
 public:
@@ -163,7 +177,8 @@ public:
     virtual bool isAvailable(const Player *player) const;
 };
 
-class ImperialOrder: public GlobalEffect{
+class ImperialOrder : public GlobalEffect
+{
     Q_OBJECT
 
 public:
@@ -176,7 +191,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class StrategicAdvantagePackage : public Package{
+class StrategicAdvantagePackage : public Package
+{
     Q_OBJECT
 
 public:

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "pixmapanimation.h"
@@ -34,7 +34,8 @@ PixmapAnimation::PixmapAnimation()
 {
 }
 
-void PixmapAnimation::advance(int phase) {
+void PixmapAnimation::advance(int phase)
+{
     if (phase) current++;
     if (current >= frames.size()) {
         current = 0;
@@ -43,7 +44,8 @@ void PixmapAnimation::advance(int phase) {
     update();
 }
 
-void PixmapAnimation::setPath(const QString &path) {
+void PixmapAnimation::setPath(const QString &path)
+{
     frames.clear();
     current = 0;
 
@@ -55,38 +57,46 @@ void PixmapAnimation::setPath(const QString &path) {
     } while (QFile::exists(pic_path));
 }
 
-void PixmapAnimation::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void PixmapAnimation::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     painter->drawPixmap(0, 0, frames.at(current));
 }
 
-QRectF PixmapAnimation::boundingRect() const{
+QRectF PixmapAnimation::boundingRect() const
+{
     return frames.at(current).rect();
 }
 
-bool PixmapAnimation::valid() {
+bool PixmapAnimation::valid()
+{
     return !frames.isEmpty();
 }
 
-void PixmapAnimation::timerEvent(QTimerEvent *) {
+void PixmapAnimation::timerEvent(QTimerEvent *)
+{
     advance(1);
 }
 
-void PixmapAnimation::start(bool permanent, int interval) {
+void PixmapAnimation::start(bool permanent, int interval)
+{
     _m_timerId = startTimer(interval);
     if (!permanent)
         connect(this, &PixmapAnimation::finished, this, &PixmapAnimation::deleteLater);
 }
 
-void PixmapAnimation::stop() {
+void PixmapAnimation::stop()
+{
     killTimer(_m_timerId);
 }
 
-void PixmapAnimation::preStart() {
+void PixmapAnimation::preStart()
+{
     this->show();
     this->startTimer(S_DEFAULT_INTERVAL);
 }
 
-PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, const QString &emotion) {
+PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, const QString &emotion)
+{
     PixmapAnimation *pma = new PixmapAnimation();
     pma->setPath(QString("image/system/emotion/%1/").arg(emotion));
     if (pma->valid()) {
@@ -94,13 +104,11 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->moveBy(pma->boundingRect().width() * 0.25,
                 pma->boundingRect().height() * 0.25);
             pma->setScale(0.5);
-        }
-        else if (emotion == "success") {
+        } else if (emotion == "success") {
             pma->moveBy(pma->boundingRect().width() * 0.1,
                 pma->boundingRect().height() * 0.1);
             pma->setScale(0.8);
-        }
-        else if (emotion.contains("double_sword"))
+        } else if (emotion.contains("double_sword"))
             pma->moveBy(13, -20);
         else if (emotion.contains("fan") || emotion.contains("guding_blade"))
             pma->moveBy(0, -20);
@@ -115,20 +123,19 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
         if (emotion.contains("weapon")) {
             pma->hide();
             QTimer::singleShot(600, pma, SLOT(preStart()));
-        }
-        else
+        } else
             pma->startTimer(S_DEFAULT_INTERVAL);
 
         connect(pma, &PixmapAnimation::finished, pma, &PixmapAnimation::deleteLater);
         return pma;
-    }
-    else {
+    } else {
         delete pma;
         return NULL;
     }
 }
 
-QPixmap PixmapAnimation::GetFrameFromCache(const QString &filename) {
+QPixmap PixmapAnimation::GetFrameFromCache(const QString &filename)
+{
     QPixmap pixmap;
     if (!QPixmapCache::find(filename, &pixmap)) {
         pixmap.load(filename);
@@ -137,7 +144,8 @@ QPixmap PixmapAnimation::GetFrameFromCache(const QString &filename) {
     return pixmap;
 }
 
-int PixmapAnimation::GetFrameCount(const QString &emotion) {
+int PixmapAnimation::GetFrameCount(const QString &emotion)
+{
     QString path = QString("image/system/emotion/%1/").arg(emotion);
     QDir dir(path);
     dir.setNameFilters(QStringList("*.png"));

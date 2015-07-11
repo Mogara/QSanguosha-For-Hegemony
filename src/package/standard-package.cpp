@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,12 +15,42 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "standard-package.h"
 #include "exppattern.h"
 #include "card.h"
+#include "skill.h"
+
+//Xusine: we can put some global skills in here,for example,the Global FakeMove.
+//just for convenience.
+
+class GlobalFakeMoveSkill : public TriggerSkill { 
+public:
+	GlobalFakeMoveSkill() : TriggerSkill("global-fake-move") {
+		events << BeforeCardsMove << CardsMoveOneTime;
+		global = true;
+	}
+
+	virtual int getPriority() const{
+		return 10;
+	}
+
+	virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &) const{
+		return (target != NULL) ? QStringList(objectName()) : QStringList();
+	}
+
+	virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const{
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (p->hasFlag("Global_InTempMoving"))
+                return true;
+        }
+
+		return false;
+	}
+
+};
 
 StandardPackage::StandardPackage()
     : Package("standard")
@@ -29,6 +59,8 @@ StandardPackage::StandardPackage()
     addShuGenerals();
     addWuGenerals();
     addQunGenerals();
+
+	skills << new GlobalFakeMoveSkill;
 
     patterns["."] = new ExpPattern(".|.|.|hand");
     patterns[".S"] = new ExpPattern(".|spade|.|hand");
@@ -67,6 +99,8 @@ TestPackage::TestPackage()
     new General(this, "sujiangf", "god", 5, false, true);
 
     new General(this, "anjiang", "god", 5, true, true, true);
+    new General(this, "anjiang_head", "god", 5, true, true, true);
+    new General(this, "anjiang_deputy", "god", 5, true, true, true);
 
     // developers
     new General(this, "slob", "programmer", 9, true, true, true);
@@ -82,7 +116,7 @@ StandardCardPackage::StandardCardPackage()
 
     cards << basicCards() << equipCards() << trickCards();
 
-    foreach(Card *card, cards)
+    foreach (Card *card, cards)
         card->setParent(this);
 
     addEquipSkills();

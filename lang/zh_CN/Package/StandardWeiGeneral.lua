@@ -1,3 +1,23 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
+
 -- translation for Standard General Package
 
 return {
@@ -64,8 +84,8 @@ return {
 	["zhanghe"] = "张郃",
 	["illustrator:zhanghe"] = "张帅",
 	["qiaobian"] = "巧变",
-	[":qiaobian"] = "你可以弃置一张手牌，跳过一个阶段（准备阶段和结束阶段除外），" .. 
-					"然后若你以此法：跳过摸牌阶段，你可以选择有手牌的一至两名其他角色，然后获得这些角色的各一张手牌；" .. 
+	[":qiaobian"] = "你可以弃置一张手牌，跳过一个阶段（准备阶段和结束阶段除外），" ..
+					"然后若你以此法：跳过摸牌阶段，你可以选择有手牌的一至两名其他角色，然后获得这些角色的各一张手牌；" ..
 					"跳过出牌阶段，你可以将一名角色判定区/装备区里的一张牌置入另一名角色的判定区/装备区。",
 	["@qiaobian-2"] = "你可以依次获得一至两名其他角色的各一张手牌",
 	["@qiaobian-3"] = "你可以将场上的一张牌移动至另一名角色相应的区域内",

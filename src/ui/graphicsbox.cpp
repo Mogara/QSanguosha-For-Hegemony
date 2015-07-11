@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "graphicsbox.h"
@@ -53,8 +53,7 @@ void GraphicsBox::paintGraphicsBoxStyle(QPainter *painter, const QString &boxTit
     G_COMMON_LAYOUT.graphicsBoxTitleFont.paintText(painter, QRect(x, y, w, 27), Qt::AlignCenter, boxTitle);
     painter->restore();
     painter->setPen(G_COMMON_LAYOUT.graphicsBoxBorderColor);
-    painter->drawRoundedRect(x + 1, y + 1, w - 2, h - 2, roundedRectRadius,
-                             roundedRectRadius);
+    painter->drawRoundedRect(x + 1, y + 1, w - 2, h - 2, roundedRectRadius, roundedRectRadius);
 }
 
 void GraphicsBox::stylize(QGraphicsObject *target)
@@ -71,13 +70,13 @@ void GraphicsBox::stylize(QGraphicsObject *target)
 void GraphicsBox::moveToCenter(QGraphicsObject *target)
 {
     const QRectF rect = target->boundingRect();
-    target->setPos(RoomSceneInstance->tableCenterPos()
-                   - QPointF(rect.width() / 2, rect.height() / 2));
+    target->setPos(RoomSceneInstance->tableCenterPos() - QPointF(rect.width() / 2, rect.height() / 2));
 }
 
 void GraphicsBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     paintGraphicsBoxStyle(painter, title, boundingRect());
+    paintLayout(painter);
 }
 
 void GraphicsBox::moveToCenter()

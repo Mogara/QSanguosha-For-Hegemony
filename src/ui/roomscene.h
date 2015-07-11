@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _ROOM_SCENE_H
@@ -44,6 +44,7 @@ class ChooseOptionsBox;
 class ChooseTriggerOrderBox;
 class BubbleChatBox;
 class PlayerCardBox;
+class ChooseSuitBox;
 struct RoomLayout;
 
 #include <QGraphicsScene>
@@ -63,7 +64,8 @@ struct RoomLayout;
 #include <QDeclarativeContext>
 #include <QDeclarativeComponent>
 #endif
-class ScriptExecutor : public QDialog {
+class ScriptExecutor : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -73,7 +75,8 @@ public slots:
     void doScript();
 };
 
-class DeathNoteDialog : public QDialog {
+class DeathNoteDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -86,7 +89,8 @@ private:
     QComboBox *killer, *victim;
 };
 
-class DamageMakerDialog : public QDialog {
+class DamageMakerDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -107,7 +111,8 @@ private slots:
     void disableSource(const QString &currentNature);
 };
 
-class ReplayerControlBar : public QGraphicsObject{
+class ReplayerControlBar : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -131,7 +136,8 @@ private:
     qreal speed;
 };
 
-class RoomScene : public QGraphicsScene {
+class RoomScene : public QGraphicsScene
+{
     Q_OBJECT
 
 public:
@@ -140,9 +146,15 @@ public:
     void showPromptBox();
     static void FillPlayerNames(QComboBox *ComboBox, bool add_none);
     void updateTable();
-    inline QMainWindow *mainWindow() { return main_window; }
+    inline QMainWindow *mainWindow()
+    {
+        return main_window;
+    }
 
-    inline bool isCancelButtonEnabled() const{ return cancel_button != NULL && cancel_button->isEnabled(); }
+    inline bool isCancelButtonEnabled() const
+    {
+        return cancel_button != NULL && cancel_button->isEnabled();
+    }
 
     void stopHeroSkinChangingAnimations();
 
@@ -200,7 +212,10 @@ public slots:
 
     void doTimeout();
 
-    inline QPointF tableCenterPos() { return m_tableCenterPos; }
+    inline QPointF tableCenterPos()
+    {
+        return m_tableCenterPos;
+    }
 
     void doGongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
 
@@ -223,8 +238,10 @@ private:
     void _getSceneSizes(QSize &minSize, QSize &maxSize);
     bool _shouldIgnoreDisplayMove(CardsMoveStruct &movement);
     bool _processCardsMove(CardsMoveStruct &move, bool isLost);
-    bool _m_isInDragAndUseMode;
-    bool _m_superDragStarted;
+    bool m_isInDragAndUseMode;
+    bool m_superDragStarted;
+    bool m_mousePressed;
+
     const QSanRoomSkin::RoomLayout *_m_roomLayout;
     const QSanRoomSkin::PhotoLayout *_m_photoLayout;
     const QSanRoomSkin::CommonLayout *_m_commonLayout;
@@ -252,7 +269,7 @@ private:
     QGraphicsSimpleTextItem *pausing_text;
 
     QList<QGraphicsPixmapItem *> role_items;
-    CardContainer *card_container;
+    CardContainer *m_cardContainer;
 
     QList<QSanSkillButton *> m_skillButtons;
 
@@ -264,17 +281,23 @@ private:
 
     QList<const Player *> selected_targets;
 
-    GuanxingBox *guanxing_box;
+    GuanxingBox *m_guanxingBox;
 
-    ChooseGeneralBox *choose_general_box;
+    ChooseGeneralBox *m_chooseGeneralBox;
 
-    ChooseOptionsBox *choose_options_box;
+    ChooseOptionsBox *m_chooseOptionsBox;
 
-    ChooseTriggerOrderBox *chooseTriggerOrderBox;
+    ChooseTriggerOrderBox *m_chooseTriggerOrderBox;
 
-    PlayerCardBox *playerCardBox;
+    PlayerCardBox *m_playerCardBox;
+
+    ChooseSuitBox *m_chooseSuitBox;
 
     QList<CardItem *> gongxin_items;
+
+    //Xusine:
+
+    QMap<QString, GuhuoBox *> guhuo_items;
 
     ClientLogBox *log_box;
     QTextEdit *chatBox;
@@ -301,10 +324,20 @@ private:
     QPointF m_tableCenterPos;
     ReplayerControlBar *m_replayControl;
 
-    struct _MoveCardsClassifier {
-        inline _MoveCardsClassifier(const CardsMoveStruct &move) { m_card_ids = move.card_ids; }
-        inline bool operator ==(const _MoveCardsClassifier &other) const{ return m_card_ids == other.m_card_ids; }
-        inline bool operator <(const _MoveCardsClassifier &other) const{ return m_card_ids.first() < other.m_card_ids.first(); }
+    struct _MoveCardsClassifier
+    {
+        inline _MoveCardsClassifier(const CardsMoveStruct &move)
+        {
+            m_card_ids = move.card_ids;
+        }
+        inline bool operator ==(const _MoveCardsClassifier &other) const
+        {
+            return m_card_ids == other.m_card_ids;
+        }
+        inline bool operator <(const _MoveCardsClassifier &other) const
+        {
+            return m_card_ids.first() < other.m_card_ids.first();
+        }
         QList<int> m_card_ids;
     };
 
@@ -326,8 +359,8 @@ private:
     void callViewAsSkill();
     void cancelViewAsSkill();
     void highlightSkillButton(const QString &skillName,
-                              const CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_UNKNOWN,
-                              const QString &pattern = QString());
+        const CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_UNKNOWN,
+        const QString &pattern = QString());
 
     void freeze();
     void addRestartButton(QDialog *dialog);

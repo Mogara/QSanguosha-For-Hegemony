@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _H_FORMATION_H
@@ -26,7 +26,8 @@
 #include "skill.h"
 #include "standard.h"
 
-class ZiliangCard : public SkillCard{
+class ZiliangCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -35,7 +36,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class HuyuanCard : public SkillCard {
+class HuyuanCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -45,14 +47,16 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class HeyiSummon : public ArraySummonCard {
+class HeyiSummon : public ArraySummonCard
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE HeyiSummon();
 };
 
-class TiaoxinCard : public SkillCard {
+class TiaoxinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -62,14 +66,16 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class TianfuSummon : public ArraySummonCard {
+class TianfuSummon : public ArraySummonCard
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE TianfuSummon();
 };
 
-class ShangyiCard : public SkillCard {
+class ShangyiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -80,14 +86,16 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class NiaoxiangSummon : public ArraySummonCard {
+class NiaoxiangSummon : public ArraySummonCard
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE NiaoxiangSummon();
 };
 
-class QianhuanCard : public SkillCard{
+class QianhuanCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -95,21 +103,24 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class FormationPackage : public Package {
+class FormationPackage : public Package
+{
     Q_OBJECT
 
 public:
     FormationPackage();
 };
 
-class DragonPhoenix : public Weapon{
+class DragonPhoenix : public Weapon
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE DragonPhoenix(Card::Suit suit = Spade, int number = 2);
 };
 
-class FormationEquipPackage : public Package{
+class FormationEquipPackage : public Package
+{
     Q_OBJECT
 
 public:

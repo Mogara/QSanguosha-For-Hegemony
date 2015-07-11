@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _SPRITE_H
@@ -30,25 +30,38 @@
 
 #include "qsanselectableitem.h"
 
-class Sprite : public QObject, public QGraphicsPixmapItem {
+class Sprite : public QObject, public QGraphicsPixmapItem
+{
     Q_OBJECT
     Q_INTERFACES(QGraphicsItem)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
     Q_PROPERTY(qreal scale READ scale WRITE setScale)
 
 public:
-    Sprite(QGraphicsItem *parent = NULL) : QGraphicsPixmapItem(parent) {}
+    Sprite(QGraphicsItem *parent = NULL) : QGraphicsPixmapItem(parent)
+    {
+    }
 };
 
-class QAnimatedEffect : public QGraphicsEffect {
+class AnimatedEffect : public QGraphicsEffect
+{
     Q_OBJECT
     Q_PROPERTY(int index READ getIndex WRITE setIndex)
 
 public:
     void setStay(bool stay);
-    void reset() { index = 0; }
-    int getIndex() { return index; }
-    void setIndex(int ind)  { index = ind; }
+    void reset()
+    {
+        index = 0;
+    }
+    int getIndex()
+    {
+        return index;
+    }
+    void setIndex(int ind)
+    {
+        index = ind;
+    }
 
 protected:
     bool stay;
@@ -58,7 +71,8 @@ signals:
     void loop_finished();
 };
 
-class EffectAnimation : public QObject{
+class EffectAnimation : public QObject
+{
     Q_OBJECT
 
 public:
@@ -68,17 +82,18 @@ public:
     void emphasize(QGraphicsItem *map, bool stay = true);
     void sendBack(QGraphicsItem *map);
     void effectOut(QGraphicsItem *map);
-    void deleteEffect(QAnimatedEffect *effect);
+    void deleteEffect(AnimatedEffect *effect);
 
 public slots:
     void deleteEffect();
 
 private:
-    QMap<QGraphicsItem *, QAnimatedEffect *> effects;
-    QMap<QGraphicsItem *, QAnimatedEffect *> registered;
+    QMap<QGraphicsItem *, AnimatedEffect *> effects;
+    QMap<QGraphicsItem *, AnimatedEffect *> registered;
 };
 
-class EmphasizeEffect : public QAnimatedEffect {
+class EmphasizeEffect : public AnimatedEffect
+{
     Q_OBJECT
 
 public:
@@ -89,7 +104,8 @@ protected:
     virtual QRectF boundingRectFor(const QRectF &sourceRect) const;
 };
 
-class SentbackEffect : public QAnimatedEffect {
+class SentbackEffect : public AnimatedEffect
+{
     Q_OBJECT
 
 public:
@@ -105,7 +121,8 @@ private:
     QImage *grayed;
 };
 
-class FadeEffect : public QAnimatedEffect {
+class FadeEffect : public AnimatedEffect
+{
     Q_OBJECT
 
 public:

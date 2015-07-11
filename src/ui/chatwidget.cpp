@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "chatwidget.h"
@@ -34,10 +34,12 @@ MyPixmapItem::MyPixmapItem(const QPixmap &pixmap, QGraphicsItem *parentItem)
     easytext = Sanguosha->getChattingEasyTexts();
 }
 
-MyPixmapItem::~MyPixmapItem() {
+MyPixmapItem::~MyPixmapItem()
+{
 }
 
-void MyPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void MyPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
     setVisible(false);
     QString msg = "";
     int result = mouseCanClick(event->pos().x(), event->pos().y());
@@ -49,19 +51,22 @@ void MyPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     emit my_pixmap_item_msg(msg);
 }
 
-void MyPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+void MyPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+{
     if (mouseCanClick(event->pos().x(), event->pos().y()) != -1)
         setCursor(Qt::PointingHandCursor);
     else
         setCursor(Qt::ArrowCursor);
 }
 
-void MyPixmapItem::setSize(int x, int y) {
+void MyPixmapItem::setSize(int x, int y)
+{
     this->sizex = x;
     this->sizey = y;
 }
 
-int MyPixmapItem::mouseCanClick(int x, int y) {
+int MyPixmapItem::mouseCanClick(int x, int y)
+{
     int result = -1;
     if (this->itemName == "faceboard")
         result = mouseOnIcon(x, y);
@@ -70,7 +75,8 @@ int MyPixmapItem::mouseCanClick(int x, int y) {
     return result;
 }
 
-int MyPixmapItem::mouseOnIcon(int x, int y) {
+int MyPixmapItem::mouseOnIcon(int x, int y)
+{
     int result = -1;
     for (int i = 0; i < faceboardPos.size(); i++) {
         QRect rect = faceboardPos.at(i);
@@ -83,7 +89,8 @@ int MyPixmapItem::mouseOnIcon(int x, int y) {
     return result;
 }
 
-int MyPixmapItem::mouseOnText(int x, int y) {
+int MyPixmapItem::mouseOnText(int x, int y)
+{
     int result = -1;
     for (int i = 0; i < easytextPos.size(); i++) {
         QRect rect = easytextPos.at(i);
@@ -95,15 +102,18 @@ int MyPixmapItem::mouseOnText(int x, int y) {
     return result;
 }
 
-QRectF MyPixmapItem::boundingRect() const{
+QRectF MyPixmapItem::boundingRect() const
+{
     return QRectF(QPointF(0, 0), QSizeF(sizex, sizey));
 }
 
-void MyPixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void MyPixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     painter->drawPixmap(boundingRect().toRect(), pixmap());
 }
 
-void MyPixmapItem::initFaceBoardPos() {
+void MyPixmapItem::initFaceBoardPos()
+{
     const int start_x = 5, start_y = 5;
     int x, y;
     int icon_w = 16, icon_h = 16;
@@ -119,7 +129,8 @@ void MyPixmapItem::initFaceBoardPos() {
     }
 }
 
-void MyPixmapItem::initEasyTextPos() {
+void MyPixmapItem::initEasyTextPos()
+{
     const int start_x = 5, start_y = 5;
     int y;
     int icon_w = 210, icon_h = 12;
@@ -167,16 +178,19 @@ ChatWidget::ChatWidget()
     connect(returnButton, &QPushButton::clicked, this, &ChatWidget::sendText);
 }
 
-ChatWidget::~ChatWidget() {
+ChatWidget::~ChatWidget()
+{
 }
 
-void ChatWidget::showEasyTextBoard() {
+void ChatWidget::showEasyTextBoard()
+{
     easy_text_board->setVisible(!easy_text_board->isVisible());
     chat_face_board->setVisible(false);
 }
 
 
-void ChatWidget::showFaceBoard() {
+void ChatWidget::showFaceBoard()
+{
     chat_face_board->setVisible(!chat_face_board->isVisible());
     easy_text_board->setVisible(false);
 }
@@ -188,15 +202,18 @@ void ChatWidget::sendText()
     emit(return_button_click());
 }
 
-QRectF ChatWidget::boundingRect() const{
+QRectF ChatWidget::boundingRect() const
+{
     return QRectF(-1, 0, 24 * 3 + 2, 24);
 }
 
-void ChatWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void ChatWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     painter->drawPixmap(base->pos(), base_pixmap);
 }
 
-QPushButton *ChatWidget::createButton(const QString &name) {
+QPushButton *ChatWidget::createButton(const QString &name)
+{
     QPushButton *button = new QPushButton;
     button->setEnabled(true);
 
@@ -216,13 +233,15 @@ QPushButton *ChatWidget::createButton(const QString &name) {
     return button;
 }
 
-QPushButton *ChatWidget::addButton(const QString &name, int x) {
+QPushButton *ChatWidget::addButton(const QString &name, int x)
+{
     QPushButton *button = createButton(name);
     addWidget(button, x);
     return button;
 }
 
-QGraphicsProxyWidget *ChatWidget::addWidget(QWidget *widget, int x) {
+QGraphicsProxyWidget *ChatWidget::addWidget(QWidget *widget, int x)
+{
     QGraphicsProxyWidget *proxy_widget = new QGraphicsProxyWidget(this);
     proxy_widget->setWidget(widget);
     proxy_widget->setParentItem(base);

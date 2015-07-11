@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _GAME_RULE_H
@@ -23,7 +23,8 @@
 
 #include "skill.h"
 
-class GameRule : public TriggerSkill {
+class GameRule : public TriggerSkill
+{
     Q_OBJECT
 
 public:

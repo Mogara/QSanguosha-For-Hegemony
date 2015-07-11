@@ -1,3 +1,23 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
+
 -- translation for Standard General Package
 
 return {
@@ -13,7 +33,7 @@ return {
 	["lvbu"] = "吕布",
 	["illustrator:lvbu"] = "LiuHeng",
 	["wushuang"] = "无双",
-	[":wushuang"] = "锁定技，每当你使用【杀】指定一个目标后，你将其抵消此【杀】的方式改为依次使用两张【闪】；" .. 
+	[":wushuang"] = "锁定技，每当你使用【杀】指定一个目标后，你将其抵消此【杀】的方式改为依次使用两张【闪】；" ..
 					"锁定技，每当你使用【决斗】指定一个目标后，或成为一名角色使用【决斗】的目标后，你将其执行此【决斗】中打出【杀】的效果改为依次打出两张【杀】。",
 	["@wushuang-slash-1"] = "%src 对你【决斗】，你须连续打出两张【杀】",
 	["@wushuang-slash-2"] = "%src 对你【决斗】，你须再打出一张【杀】",
@@ -89,7 +109,7 @@ return {
 	["xiongyi"] = "雄异",
 	[":xiongyi"] = "限定技，出牌阶段，你可以令与你势力相同的所有角色各摸三张牌，然后若你的势力是角色最少的势力，你回复1点体力。",
 	["@arise"] = "雄异",
-	
+
 	["#kongrong"] = "凛然重义",
 	["kongrong"] = "孔融",
 	["illustrator:kongrong"] = "苍月白龙",

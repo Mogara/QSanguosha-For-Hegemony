@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,12 +15,14 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
+
 sgs.ai_skill_invoke.xunxun = function(self, data)
 	if not (self:willShowForDefence() or self:willShowForAttack()) then
 		return false
 	end
+	if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return false end
 	return true
 end
 
@@ -31,7 +33,7 @@ function sgs.ai_skill_invoke.wangxi(self, data)
 		if (self.player:isFriendWith(target) or self:isFriend(target)) and not self:needKongcheng(target)then
 				return true
 		else
-			if	not ( target:getPhase() ~= sgs.Player_NotActive and (target:hasShownSkills(sgs.Active_cardneed_skill) or target:hasWeapon("Crossbow")) )
+			if  not ( target:getPhase() ~= sgs.Player_NotActive and (target:hasShownSkills(sgs.Active_cardneed_skill) or target:hasWeapon("Crossbow")) )
 				and not ( target:getPhase() == sgs.Player_NotActive and target:hasShownSkills(sgs.notActive_cardneed_skill) )
 				or self:needKongcheng(target) then
 				return true
@@ -213,11 +215,11 @@ end
 
 sgs.ai_skill_invoke.hunshang = true
 
-sgs.ai_skill_invoke.yingzi_sunce = sgs.ai_skill_invoke.yingzi
-sgs.ai_skill_choice.yinghun_sunce = sgs.ai_skill_choice.yinghun
-sgs.ai_skill_playerchosen.yinghun_sunce = sgs.ai_skill_playerchosen.yinghun
-sgs.ai_playerchosen_intention.yinghun_sunce = sgs.ai_playerchosen_intention.yinghun
-sgs.ai_choicemade_filter.skillChoice.yinghun_sunce = sgs.ai_choicemade_filter.skillChoice.yinghun
+sgs.ai_skill_invoke.yingzi_sunce = sgs.ai_skill_invoke.yingzi_zhouyu
+sgs.ai_skill_choice.yinghun_sunce = sgs.ai_skill_choice.yinghun_sunjian
+sgs.ai_skill_playerchosen.yinghun_sunce = sgs.ai_skill_playerchosen.yinghun_sunjian
+sgs.ai_playerchosen_intention.yinghun_sunce = sgs.ai_playerchosen_intention.yinghun_sunjian
+sgs.ai_choicemade_filter.skillChoice.yinghun_sunce = sgs.ai_choicemade_filter.skillChoice.yinghun_sunjian
 
 local duanxie_skill = {}
 duanxie_skill.name = "duanxie"
@@ -306,7 +308,7 @@ sgs.ai_skill_choice.benghuai = function(self, choices, data)
 		end
 	end
 	if self.player:getMaxHp() >= self.player:getHp() + 2 then
-		if self.player:getMaxHp() > 5 and (self.player:hasSkills("yinghun|zaiqi") and self:findPlayerToDraw(false)) then
+		if self.player:getMaxHp() > 5 and (self.player:hasSkills("yinghun_sunce|yinghun_sunjian|zaiqi") and self:findPlayerToDraw(false)) then
 			local enemy_num = 0
 			for _, p in ipairs(self.enemies) do
 				if p:inMyAttackRange(self.player) and not self:willSkipPlayPhase(p) then enemy_num = enemy_num + 1 end

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _ROLE_COMBO_BOX_H
@@ -25,7 +25,8 @@
 #include <QPainter>
 #include <QGraphicsSceneEvent>
 
-class RoleComboBox : public QGraphicsObject {
+class RoleComboBox : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -35,7 +36,10 @@ public:
 
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    inline bool isExpanding() const { return expanding; };
+    inline bool isExpanding() const
+    {
+        return expanding;
+    };
 
 private:
 

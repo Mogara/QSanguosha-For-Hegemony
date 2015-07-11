@@ -1,3 +1,23 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
+
 CommonTranslationTable = {
 	["lord"] = "主公",
 	["loyalist"] = "忠臣",
@@ -86,7 +106,6 @@ CommonTranslationTable = {
 	["drawPileTop"] = "牌堆顶",
 	["drawPileBottom"] = "牌堆底",
 
-	["use upon"] = "对",
 	["yourself"] = "你",
 
 	["attack_card"] = "进攻牌",
@@ -154,7 +173,7 @@ CommonTranslationTable = {
 	["$MoveToDiscardPile"] = "%from 将 %card 置入弃牌堆",
 	["$GotCardBack"] = "%from 收回了 %card",
 	["$RecycleCard"] = "%from 从弃牌堆获得了 %card",
- 	["$Dismantlement"] = "%from 的 %card 被弃置",
+	["$Dismantlement"] = "%from 的 %card 被弃置",
 	["$ShowCard"] = "%from 展示了 %card",
 	["$ShowAllCards"] = "%from 展示了所有手牌 %card",
 	["$ViewAllCards"] = "%from 观看了 %to 的所有手牌 %card",
@@ -247,9 +266,14 @@ CommonTranslationTable = {
 	["#DanlaoAvoid"] = "“%arg2”效果被触发，【%arg】 对 %from 无效",
 
 	["custom_scenario"] = "自定义场景",
-	
+
 	["Player"] = "玩家",
-	["AI"] = "机器人"
+	["AI"] = "机器人",
+
+	--for GuhuoBox:
+	["SingleTargetTrick"] = "单体锦囊",
+	["MultiTarget"] = "群体锦囊",
+	["DelayedTrick"] = "延时锦囊",
 }
 
 return CommonTranslationTable

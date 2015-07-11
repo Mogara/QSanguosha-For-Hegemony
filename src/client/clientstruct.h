@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _CLIENT_STRUCT_H
@@ -27,7 +27,8 @@
 #include <QMap>
 #include <QWidget>
 
-struct ServerInfoStruct {
+struct ServerInfoStruct
+{
     bool parse(const QString &str);
     //Get the timeout allowance for a command. Server countdown is more lenient than the client.
     //@param command: type of command
@@ -54,7 +55,8 @@ extern ServerInfoStruct ServerInfo;
 class QLabel;
 class QListWidget;
 
-class ServerInfoWidget : public QWidget {
+class ServerInfoWidget : public QWidget
+{
     Q_OBJECT
 
 public:

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************/
 
 template <class T>
@@ -39,7 +39,8 @@ public:
 };
 
 %extend QList {
-    T at(int i) const{
+    T at(int i) const
+    {
         return $self->value(i);
     }
 }

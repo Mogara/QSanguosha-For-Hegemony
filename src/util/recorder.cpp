@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "recorder.h"
@@ -35,7 +35,8 @@ Recorder::Recorder(QObject *parent)
     watch.start();
 }
 
-void Recorder::recordLine(const QByteArray &line) {
+void Recorder::recordLine(const QByteArray &line)
+{
     if (line.isEmpty())
         return;
 
@@ -46,41 +47,25 @@ void Recorder::recordLine(const QByteArray &line) {
         data.append('\n');
 }
 
-bool Recorder::save(const QString &filename) const{
+bool Recorder::save(const QString &filename) const
+{
     if (filename.endsWith(".qsgs")) {
         QFile file(filename);
-        if (file.open(QIODevice::WriteOnly | QIODevice::Text))
-            return file.write(data) != -1;
-        else
+        if (file.open(QIODevice::WriteOnly)) {
+            file.putChar('\0');
+            return file.write(qCompress(data)) != -1;
+        } else {
             return false;
-    }
-    else if (filename.endsWith(".png")) {
-        return TXT2PNG(data).save(filename);
-    }
-    else
+        }
+    } else {
         return false;
+    }
 }
 
-QList<QByteArray> Recorder::getRecords() const{
+QList<QByteArray> Recorder::getRecords() const
+{
     QList<QByteArray> records = data.split('\n');
     return records;
-}
-
-QImage Recorder::TXT2PNG(const QByteArray &txtData) {
-    QByteArray data = qCompress(txtData, 9);
-    qint32 actual_size = data.size();
-    data.prepend((const char *)&actual_size, sizeof(qint32));
-
-    // actual data = width * height - padding
-    int width = ceil(sqrt((double)data.size()));
-    int height = width;
-    int padding = width * height - data.size();
-    QByteArray paddingData;
-    paddingData.fill('\0', padding);
-    data.append(paddingData);
-
-    QImage image((const uchar *)data.constData(), width, height, QImage::Format_ARGB32);
-    return image;
 }
 
 Replayer::Replayer(QObject *parent, const QString &filename)
@@ -90,12 +75,25 @@ Replayer::Replayer(QObject *parent, const QString &filename)
     QIODevice *device = NULL;
     if (filename.endsWith(".png")) {
         QByteArray *data = new QByteArray(PNG2TXT(filename));
-        QBuffer *buffer = new QBuffer(data);
-        device = buffer;
-    }
-    else if (filename.endsWith(".qsgs")) {
+        device = new QBuffer(data);
+    } else if (filename.endsWith(".qsgs")) {
         QFile *file = new QFile(filename);
-        device = file;
+        if (file->open(QFile::ReadOnly)) {
+            char header;
+            file->getChar(&header);
+            if (header == '\0') {
+                QByteArray content = file->readAll();
+                delete file;
+
+                QByteArray *data = new QByteArray(qUncompress(content));
+                device = new QBuffer(data);
+            } else {
+                file->close();
+                device = file;
+            }
+        } else {
+            return;
+        }
     }
 
     if (device == NULL)
@@ -116,9 +114,24 @@ Replayer::Replayer(QObject *parent, const QString &filename)
     }
 
     delete device;
+
+    int time_offset = 0;
+    pair_offset = 0;
+    foreach (const Pair &pair, pairs) {
+        Packet packet;
+        if (packet.parse(pair.cmd)) {
+            if (packet.getCommandType() == S_COMMAND_START_IN_X_SECONDS) {
+                time_offset = pair.elapsed;
+                break;
+            }
+        }
+        pair_offset++;
+    }
+    duration = pairs.last().elapsed - time_offset;
 }
 
-QByteArray Replayer::PNG2TXT(const QString &filename) {
+QByteArray Replayer::PNG2TXT(const QString &filename)
+{
     QImage image(filename);
     image = image.convertToFormat(QImage::Format_ARGB32);
     const uchar *imageData = image.bits();
@@ -129,11 +142,8 @@ QByteArray Replayer::PNG2TXT(const QString &filename) {
     return data;
 }
 
-int Replayer::getDuration() const{
-    return pairs.last().elapsed / 1000.0;
-}
-
-qreal Replayer::getSpeed() {
+qreal Replayer::getSpeed()
+{
     qreal speed;
     mutex.lock();
     speed = this->speed;
@@ -141,7 +151,8 @@ qreal Replayer::getSpeed() {
     return speed;
 }
 
-void Replayer::uniform() {
+void Replayer::uniform()
+{
     mutex.lock();
 
     if (speed != 1.0) {
@@ -152,7 +163,8 @@ void Replayer::uniform() {
     mutex.unlock();
 }
 
-void Replayer::speedUp() {
+void Replayer::speedUp()
+{
     mutex.lock();
 
     if (speed < 6.0) {
@@ -164,7 +176,8 @@ void Replayer::speedUp() {
     mutex.unlock();
 }
 
-void Replayer::slowDown() {
+void Replayer::slowDown()
+{
     mutex.lock();
 
     if (speed >= 1.0) {
@@ -176,45 +189,47 @@ void Replayer::slowDown() {
     mutex.unlock();
 }
 
-void Replayer::toggle() {
+void Replayer::toggle()
+{
     playing = !playing;
     if (playing)
         play_sem.release(); // to play
 }
 
-void Replayer::run() {
+void Replayer::run()
+{
+    int i = 0;
+    const int pair_num = pairs.length();
+
+    while (i < pair_offset) {
+        const Pair &pair = pairs.at(i);
+        emit command_parsed(pair.cmd);
+        i++;
+    }
+
     int last = 0;
+    const int time_offset = pairs.at(pair_offset).elapsed;
+    while (i < pair_num) {
+        const Pair &pair = pairs.at(i);
 
-    static QList<CommandType> nondelays;
-    if (nondelays.isEmpty())
-        nondelays << S_COMMAND_ADD_PLAYER << S_COMMAND_REMOVE_PLAYER << S_COMMAND_SPEAK;
+        int delay = qMax(0, qMin(pair.elapsed - last, 2500));
+        delay /= getSpeed();
+        msleep(delay);
 
-    foreach(Pair pair, pairs) {
-        int delay = qMin(pair.elapsed - last, 2500);
-        last = pair.elapsed;
+        emit elasped((pair.elapsed - time_offset) / 1000);
 
-        Packet packet;
-        bool delayed = true;
-        if (packet.parse(pair.cmd)) {
-            if (nondelays.contains(packet.getCommandType()))
-                delayed = false;
-        }
-
-        if (delayed) {
-            delay /= getSpeed();
-
-            msleep(delay);
-            emit elasped(pair.elapsed / 1000.0);
-
-            if (!playing)
-                play_sem.acquire();
-        }
+        if (!playing)
+            play_sem.acquire();
 
         emit command_parsed(pair.cmd);
+
+        last = pair.elapsed;
+        i++;
     }
 }
 
-QString Replayer::getPath() const{
+QString Replayer::getPath() const
+{
     return filename;
 }
 

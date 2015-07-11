@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _INDICATOR_ITEM_H
@@ -25,7 +25,8 @@
 
 #include <QGraphicsObject>
 
-class IndicatorItem : public QGraphicsObject {
+class IndicatorItem : public QGraphicsObject
+{
     Q_OBJECT
     Q_PROPERTY(QPointF finish READ getFinish WRITE setFinish)
 

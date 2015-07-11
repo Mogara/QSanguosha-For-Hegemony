@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,14 +15,14 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
 
 local qingnang_skill = {}
 qingnang_skill.name = "qingnang"
 table.insert(sgs.ai_skills, qingnang_skill)
 qingnang_skill.getTurnUseCard = function(self)
-	if not self:willShowForDefence() then return nil end 
+	if not self:willShowForDefence() then return nil end
 	if self.player:getHandcardNum() < 1 then return nil end
 	if self.player:usedTimes("QingnangCard") > 0 then return nil end
 
@@ -56,12 +56,11 @@ sgs.ai_use_priority.QingnangCard = 4.2
 sgs.ai_card_intention.QingnangCard = -100
 
 sgs.dynamic_value.benefit.QingnangCard = true
-
 sgs.ai_view_as.jijiu = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	if (card_place ~= sgs.Player_PlaceSpecial or player:getPile("wooden_ox"):contains(card_id)) and card:isRed() and player:getPhase() == sgs.Player_NotActive
+	if (card_place ~= sgs.Player_PlaceSpecial or player:getHandPile():contains(card_id)) and card:isRed() and player:getPhase() == sgs.Player_NotActive
 		and not player:hasFlag("Global_PreventPeach") and (player:getMark("@qianxi_red") <= 0 or card:isEquipped()) then
 		return ("peach:jijiu[%s:%s]=%d&jijiu"):format(suit, number, card_id)
 	end
@@ -98,12 +97,18 @@ end
 sgs.ai_skill_cardask["@multi-jink"] = sgs.ai_skill_cardask["@multi-jink-start"]
 
 sgs.ai_skill_invoke.wushuang = function(self, data)
-	if not self:willShowForAttack() then return false end 
-	local use = data:toCardUse()
+	if not self:willShowForAttack() and not self:willShowForDefence() then return false end
+	local use = self.player:getTag("WushuangData"):toCardUse()
+	local current_trigger = data:toPlayer()
+	local index = use.to:indexOf(current_trigger)
+	local left_trigger = sgs.SPlayerList()
+	for i = index, use.to:length() - 1, 1 do
+		left_trigger:append(use.to:at(i))
+	end
 	if use.card then
 		if use.card:isKindOf("Duel") then
 			if use.from:objectName() == self.player:objectName() then
-				for _, p in sgs.qlist(use.to) do
+				for _, p in sgs.qlist(left_trigger) do
 					if p:getKingdom() == "qun" then return false end
 				end
 				return true
@@ -116,7 +121,7 @@ sgs.ai_skill_invoke.wushuang = function(self, data)
 				return false
 			end
 		end
-		for _, p in sgs.qlist(use.to) do
+		for _, p in sgs.qlist(left_trigger) do
 			if p:getKingdom() == "qun" then return false end
 		end
 		return true
@@ -509,12 +514,10 @@ sgs.ai_skill_cardask["@luanwu-slash"] = function(self)
 			end
 		end
 
-		for _, slash in ipairs(slashes) do
-			for _, enemy in ipairs(targets) do
-				if self:isEnemy(enemy) and not self:slashProhibit(slash, enemy) and self:slashIsEffective(slash, enemy)
-					and sgs.isGoodTarget(enemy, targets, self) and not targets.contains(enemy:objectName()) then
-					table.insert(targets, enemy:objectName())
-				end
+		for _, enemy in ipairs(targets) do
+			if self:isEnemy(enemy) and not self:slashProhibit(slash, enemy) and self:slashIsEffective(slash, enemy)
+				and sgs.isGoodTarget(enemy, targets, self) and not targets.contains(enemy:objectName()) then
+				table.insert(targets, enemy:objectName())
 			end
 		end
 
@@ -543,14 +546,13 @@ sgs.ai_skill_cardask["@luanwu-slash"] = function(self)
 		end
 
 		if #targets > 0 then
-			return slash:toString() .. "->" .. table.concat(targets, "+", EXT) end
+			return slash:toString() .. "->" .. table.concat(targets, "+", 1, EXT) end
 		end
 	end
 	return "."
 end
 
 sgs.ai_skill_invoke.weimu = function(self, data)
-	if not self:willShowForDefence() then return false end 
 	local use = data:toCardUse()
 	if use.card:isKindOf("ImperialOrder") then
 		if sgs.GetConfig("RewardTheFirstShowingPlayer", true) then
@@ -566,6 +568,8 @@ sgs.ai_skill_invoke.weimu = function(self, data)
 			return false
 		end
 	end
+	if self:isWeak() then return true end
+	if not self:willShowForDefence() then return false end
 	return true
 end
 
@@ -588,10 +592,10 @@ sgs.ai_skill_invoke.mengjin = function(self, data)
 end
 
 sgs.ai_skill_cardask["@guidao-card"]=function(self, data)
-	if not (self:willShowForAttack() or self:willShowForDefence() ) then return "." end 
+	if not (self:willShowForAttack() or self:willShowForDefence() ) then return "." end
 	local judge = data:toJudge()
 	local all_cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(self.player:getHandPile()) do
 		all_cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	if all_cards:isEmpty() then return "." end
@@ -847,7 +851,11 @@ sgs.ai_skill_playerchosen.shuangren = function(self, targets)
 	local max_point = max_card:getNumber()
 
 	local slash = sgs.cloneCard("slash")
-	local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+	local dummy_use = { isDummy = true, to = sgs.SPlayerList(), current_targets = {}}
+	local zhangjiao = sgs.findPlayerByShownSkillName("leiji")
+	if zhangjiao and self:isFriend(zhangjiao) then
+		table.insert(dummy_use.current_targets, zhangjiao:objectName())
+	end
 	self.player:setFlags("slashNoDistanceLimit")
 	self:useBasicCard(slash, dummy_use)
 	self.player:setFlags("-slashNoDistanceLimit")

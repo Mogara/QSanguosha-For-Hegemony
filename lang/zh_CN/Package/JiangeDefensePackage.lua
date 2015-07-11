@@ -1,6 +1,27 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
+
 -- translation for JiangeDefense Package
 
 return {
+	["jiange_defense"] = "守卫剑阁",
 	["jiange-defense"] = "守卫剑阁",
 	
 	["#jg_liubei"] = "蜀汉英魂",
@@ -136,7 +157,7 @@ return {
 	["#jg_yazi_machine"] = "攻城器械",
 	["jg_yazi_machine"] = "裂石睚眦",
 	["jgjiguan_yazi"] = "机关",
-	["jgnailuo"] = "奈落",
+	["jgnailuo"] = "地陷",
 	[":jgnailuo"] = "结束阶段开始时，你可以将武将牌叠置，然后令所有敌方角色各弃置其装备区里的所有牌。",
 
 }

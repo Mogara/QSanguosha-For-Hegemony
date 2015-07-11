@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "tablepile.h"
@@ -25,12 +25,13 @@
 
 #include <QTimer>
 
-QList<CardItem *> TablePile::removeCardItems(const QList<int> &card_ids, Player::Place) {
+QList<CardItem *> TablePile::removeCardItems(const QList<int> &card_ids, Player::Place)
+{
     QList<CardItem *> result;
     _m_mutex_pileCards.lock();
     result = _createCards(card_ids);
     _disperseCards(result, m_cardsDisplayRegion, Qt::AlignCenter, false, true);
-    foreach(CardItem *card, result) {
+    foreach (CardItem *card, result) {
         for (int i = m_visibleCards.size() - 1; i >= 0; i--) {
             if (m_visibleCards[i]->getCard() && m_visibleCards[i]->getCard()->getId() == card->getId()) {
                 card->setPos(m_visibleCards[i]->pos());
@@ -42,27 +43,29 @@ QList<CardItem *> TablePile::removeCardItems(const QList<int> &card_ids, Player:
     return result;
 }
 
-QRectF TablePile::boundingRect() const{
+QRectF TablePile::boundingRect() const
+{
     return m_cardsDisplayRegion;
 }
 
-void TablePile::setSize(double width, double height) {
+void TablePile::setSize(double width, double height)
+{
     m_cardsDisplayRegion = QRect(0, 0, width, height);
     m_numCardsVisible = width / G_COMMON_LAYOUT.m_cardNormalHeight + 1;
     resetTransform();
     setTransform(QTransform::fromTranslate(-width / 2, -height / 2), true);
 }
 
-void TablePile::timerEvent(QTimerEvent *) {
+void TablePile::timerEvent(QTimerEvent *)
+{
     QList<CardItem *> oldCards;
     _m_mutex_pileCards.lock();
     m_currentTime++;
-    foreach(CardItem *toRemove, m_visibleCards) {
+    foreach (CardItem *toRemove, m_visibleCards) {
         if (m_currentTime - toRemove->m_uiHelper.tablePileClearTimeStamp > S_CLEARANCE_DELAY_BUCKETS) {
             oldCards.append(toRemove);
             m_visibleCards.removeOne(toRemove);
-        }
-        else if (m_currentTime > toRemove->m_uiHelper.tablePileClearTimeStamp)
+        } else if (m_currentTime > toRemove->m_uiHelper.tablePileClearTimeStamp)
             toRemove->setEnabled(false); // @todo: this is a dirty trick. Use another property in the future
     }
 
@@ -77,16 +80,19 @@ void TablePile::timerEvent(QTimerEvent *) {
     adjustCards();
 }
 
-void TablePile::_markClearance(CardItem *item) {
+void TablePile::_markClearance(CardItem *item)
+{
     if (item->m_uiHelper.tablePileClearTimeStamp > m_currentTime)
         item->m_uiHelper.tablePileClearTimeStamp = m_currentTime;
 }
 
-void TablePile::clear() {
+void TablePile::clear()
+{
     clear(true);
 }
 
-void TablePile::clear(bool delayRequest) {
+void TablePile::clear(bool delayRequest)
+{
     if (m_visibleCards.isEmpty()) return;
     _m_mutex_pileCards.lock();
     // check again since we just gain the lock.
@@ -106,9 +112,10 @@ void TablePile::clear(bool delayRequest) {
     _m_mutex_pileCards.unlock();
 }
 
-void TablePile::_fadeOutCardsLocked(const QList<CardItem *> &cards) {
-    QParallelAnimationGroup *group = new QParallelAnimationGroup;
-    foreach(CardItem *toRemove, cards) {
+void TablePile::_fadeOutCardsLocked(const QList<CardItem *> &cards)
+{
+    QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
+    foreach (CardItem *toRemove, cards) {
         toRemove->setZValue(0.0);
         toRemove->setHomeOpacity(0.0);
         toRemove->setHomePos(QPointF(toRemove->homePos().x(), toRemove->homePos().y()));
@@ -118,7 +125,8 @@ void TablePile::_fadeOutCardsLocked(const QList<CardItem *> &cards) {
     group->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
-void TablePile::showJudgeResult(int cardId, bool takeEffect) {
+void TablePile::showJudgeResult(int cardId, bool takeEffect)
+{
     _m_mutex_pileCards.lock();
     CardItem *judgeCard = NULL;
     QList<CardItem *> cardsToClear;
@@ -139,12 +147,13 @@ void TablePile::showJudgeResult(int cardId, bool takeEffect) {
     adjustCards();
 }
 
-bool TablePile::_addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo) {
+bool TablePile::_addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo)
+{
     if (card_items.isEmpty())
         return false;
     else if (moveInfo.from_place == Player::PlaceDelayedTrick
         && moveInfo.reason.m_reason == CardMoveReason::S_REASON_NATURAL_ENTER) {
-        foreach(CardItem *item, card_items) {
+        foreach (CardItem *item, card_items) {
             item->deleteLater();
             card_items.clear();
         }
@@ -168,7 +177,7 @@ bool TablePile::_addCardItems(QList<CardItem *> &card_items, const CardsMoveStru
         _markClearance(toRemove);
     }
 
-    foreach(CardItem *card_item, card_items) {
+    foreach (CardItem *card_item, card_items) {
         card_item->setHomeOpacity(1.0);
         card_item->showFootnote();
         if (moveInfo.from_place == Player::DrawPile
@@ -187,12 +196,13 @@ bool TablePile::_addCardItems(QList<CardItem *> &card_items, const CardsMoveStru
     return false;
 }
 
-void TablePile::adjustCards() {
+void TablePile::adjustCards()
+{
     if (m_visibleCards.length() == 0) return;
     _disperseCards(m_visibleCards, m_cardsDisplayRegion, Qt::AlignCenter, true, true);
     QParallelAnimationGroup *animation = new QParallelAnimationGroup(this);
     foreach(CardItem *card_item, m_visibleCards)
         animation->addAnimation(card_item->getGoBackAnimation(true));
-    animation->start();
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
 

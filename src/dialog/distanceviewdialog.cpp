@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "distanceviewdialog.h"
@@ -30,9 +30,11 @@
 #include <QGroupBox>
 #include <QPushButton>
 
-class DistanceViewDialogUI {
+class DistanceViewDialogUI
+{
 public:
-    DistanceViewDialogUI() {
+    DistanceViewDialogUI()
+    {
         from = new QComboBox;
         to = new QComboBox;
 
@@ -52,9 +54,9 @@ public:
         horse_edit->setObjectName("HorseCorrect");
         horse_edit->setReadOnly(true);
         distance_edits << horse_edit;
-        foreach(const DistanceSkill *skill, skills) {
+        foreach (const DistanceSkill *skill, skills) {
             bool show_skill = false;
-            foreach(const ClientPlayer *p, ClientInstance->getPlayers()) {
+            foreach (const ClientPlayer *p, ClientInstance->getPlayers()) {
                 if (p->hasShownSkill(skill)) {
                     show_skill = true;
                     break;
@@ -106,7 +108,7 @@ DistanceViewDialog::DistanceViewDialog(QWidget *parent)
     fLayout->addRow(tr("Distance correct"), box);
 
     QFormLayout *box_layout = new QFormLayout;
-    foreach(QLineEdit *edit, ui->distance_edits)
+    foreach (QLineEdit *edit, ui->distance_edits)
         box_layout->addRow(Sanguosha->translate(edit->objectName()), edit);
 
     box->setLayout(box_layout);
@@ -123,11 +125,13 @@ DistanceViewDialog::DistanceViewDialog(QWidget *parent)
     showDistance();
 }
 
-DistanceViewDialog::~DistanceViewDialog() {
+DistanceViewDialog::~DistanceViewDialog()
+{
     delete ui;
 }
 
-void DistanceViewDialog::showDistance() {
+void DistanceViewDialog::showDistance()
+{
     QString from_name = ui->from->itemData(ui->from->currentIndex()).toString();
     QString to_name = ui->to->itemData(ui->to->currentIndex()).toString();
 
@@ -152,7 +156,7 @@ void DistanceViewDialog::showDistance() {
             .arg(min));
     }
 
-    foreach(QLineEdit *edit, ui->distance_edits) {
+    foreach (QLineEdit *edit, ui->distance_edits) {
         QString skill_name = edit->objectName();
         if (skill_name == "HorseCorrect")
             skill_name = "Horse";

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef JSON_H
@@ -28,7 +28,8 @@
 typedef QVariantList JsonArray;
 typedef QVariantMap JsonObject;
 
-class JsonDocument{
+class JsonDocument
+{
 public:
     JsonDocument();
     JsonDocument(const QVariant &var);
@@ -40,14 +41,35 @@ public:
     static JsonDocument fromJson(const QByteArray &json, bool allowComment = false);
     static JsonDocument fromFilePath(const QString &path, bool allowComment = true);
 
-    inline bool isArray() const{return value.canConvert<JsonArray>();}
-    inline bool isObject() const{return value.canConvert<JsonObject>();}
-    inline bool isValid() const{return valid;}
+    inline bool isArray() const
+    {
+        return value.canConvert<JsonArray>();
+    }
+    inline bool isObject() const
+    {
+        return value.canConvert<JsonObject>();
+    }
+    inline bool isValid() const
+    {
+        return valid;
+    }
 
-    inline JsonArray array() const{return value.value<JsonArray>();}
-    inline JsonObject object() const{return value.value<JsonObject>();}
-    inline const QVariant& toVariant() const{return value;}
-    inline const QString errorString() const{return error;}
+    inline JsonArray array() const
+    {
+        return value.value<JsonArray>();
+    }
+    inline JsonObject object() const
+    {
+        return value.value<JsonObject>();
+    }
+    inline const QVariant& toVariant() const
+    {
+        return value;
+    }
+    inline const QString errorString() const
+    {
+        return error;
+    }
 
 protected:
     QVariant value;
@@ -55,18 +77,21 @@ protected:
     QString error;
 };
 
-namespace JsonUtils{
+namespace JsonUtils {
 
-    inline bool isNumber(const QVariant &var) {
+    inline bool isNumber(const QVariant &var)
+    {
         //three number types defined by JsonCPP
         return var.userType() == QMetaType::Double || var.userType() == QMetaType::Int || var.userType() == QMetaType::UInt;
     }
 
-    inline bool isString(const QVariant &var) {
+    inline bool isString(const QVariant &var)
+    {
         return var.userType() == QMetaType::QString;
     }
 
-    inline bool isBool(const QVariant &var) {
+    inline bool isBool(const QVariant &var)
+    {
         return var.userType() == QMetaType::Bool;
     }
 

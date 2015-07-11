@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _BAN_PAIR_H
@@ -25,7 +25,8 @@
 #include <QPair>
 #include <QListWidget>
 
-struct BanPair : public QPair < QString, QString > {
+struct BanPair : public QPair < QString, QString >
+{
     BanPair();
     BanPair(const QString &first, const QString &second);
 

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _GENERAL_H
@@ -32,7 +32,8 @@ class QSize;
 #include <QStringList>
 #include <QMetaType>
 
-class General : public QObject {
+class General : public QObject
+{
     Q_OBJECT
     Q_ENUMS(Gender)
     Q_PROPERTY(QString kingdom READ getKingdom CONSTANT)
@@ -60,7 +61,10 @@ public:
     int getMaxHpHead() const;
     int getMaxHpDeputy() const;
 
-    enum Gender { Sexless, Male, Female, Neuter };
+    enum Gender
+    {
+        Sexless, Male, Female, Neuter
+    };
     Gender getGender() const;
     void setGender(Gender gender);
 
@@ -79,7 +83,10 @@ public:
     QString getCompanions() const;
     QString getSkillDescription(bool include_name = false, bool inToolTip = true) const;
 
-    inline QSet<QString> getExtraSkillSet() const{ return extra_set; }
+    inline QSet<QString> getExtraSkillSet() const
+    {
+        return extra_set;
+    }
 
     void addCompanion(const QString &name);
     bool isCompanionWith(const QString &name) const;

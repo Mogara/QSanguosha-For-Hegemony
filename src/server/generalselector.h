@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,11 +15,11 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
-#ifndef _GENERAL_SELECTOR_H
-#define _GENERAL_SELECTOR_H
+#ifndef GENERALSELECTOR_H
+#define GENERALSELECTOR_H
 
 #include <QObject>
 #include <QHash>
@@ -29,12 +29,17 @@
 class ServerPlayer;
 
 // singleton class
-class GeneralSelector : public QObject {
+class GeneralSelector : public QObject
+{
     Q_OBJECT
 
 public:
     static GeneralSelector *getInstance();
     QStringList selectGenerals(ServerPlayer *player, const QStringList &candidates);
+    inline void resetValues()
+    {
+        m_privatePairValueTable.clear();
+    }
 
 private:
     GeneralSelector();
@@ -43,9 +48,9 @@ private:
     void calculatePairValues(const ServerPlayer *player, const QStringList &candidates);
     void calculateDeputyValue(const ServerPlayer *player, const QString &first, const QStringList &candidates, const QStringList &kingdom_list = QStringList());
 
-    QHash<QString, int> single_general_table;
-    QHash<QString, int> pair_table;
-    QHash<const ServerPlayer *, QHash<QString, int> > private_pair_value_table;
+    QHash<QString, int> m_singleGeneralTable;
+    QHash<QString, int> m_pairTable;
+    QHash<const ServerPlayer *, QHash<QString, int> > m_privatePairValueTable;
 };
 
-#endif
+#endif // GENERALSELECTOR_H

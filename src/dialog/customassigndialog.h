@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef CUSTOMASSIGNDIALOG_H
@@ -37,21 +37,31 @@ class Card;
 class QLineEdit;
 class QTextEdit;
 
-class LabelButton : public QLabel {
+class LabelButton : public QLabel
+{
     Q_OBJECT
 
 public:
-    LabelButton() : QLabel() {}
+    LabelButton() : QLabel()
+    {
+    }
 
-    void mouseDoubleClickEvent(QMouseEvent *) { emit double_clicked(); }
-    void mousePressEvent(QMouseEvent *) { emit clicked(); }
+    void mouseDoubleClickEvent(QMouseEvent *)
+    {
+        emit double_clicked();
+    }
+    void mousePressEvent(QMouseEvent *)
+    {
+        emit clicked();
+    }
 
 signals:
     void double_clicked();
     void clicked();
 };
 
-class CustomAssignDialog : public FlatDialog {
+class CustomAssignDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -218,7 +228,8 @@ signals:
     void scenario_changed();
 };
 
-class GeneralAssignDialog : public FlatDialog {
+class GeneralAssignDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -237,7 +248,8 @@ signals:
     void generalCleared();
 };
 
-class CardAssignDialog : public FlatDialog {
+class CardAssignDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -260,7 +272,8 @@ signals:
     void cardChosen(int cardId);
 };
 
-class SkillAssignDialog : public FlatDialog {
+class SkillAssignDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:

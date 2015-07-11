@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "generalmodel.h"
@@ -52,10 +52,10 @@ QVariant GeneralModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     const General *general = keep_order_list.at(row);
-    switch(role) {
+    switch (role) {
     case Qt::UserRole: return general->objectName();
     case Qt::DisplayRole: {
-        switch(index.column()) {
+        switch (index.column()) {
         case TitleColumn: return general->getTitle(all_generals.value(general));
         case NameColumn: return Sanguosha->translate(general->objectName());
         case KingdomColumn: return Sanguosha->translate(general->getKingdom());
@@ -94,21 +94,19 @@ QVariant GeneralModel::data(const QModelIndex &index, int role) const
         }
     }
     case Qt::ToolTipRole: {
-        switch(index.column()) {
+        switch (index.column()) {
         case TitleColumn:
         case NameColumn: {
             if (Sanguosha->isGeneralHidden(general->objectName())) {
                 return tr("<font color=%1>This general is hidden</font>")
-                        .arg(Config.SkillDescriptionInToolTipColor.name());
+                    .arg(Config.SkillDescriptionInToolTipColor.name());
             } else {
                 return QString();
             }
         }
         case PackageColumn: {
-            if (Config.value("LuaPackages", QString())
-                    .toString().split("+").contains(general->getPackage())) {
-                return tr("<font color=%1>This is an Lua extension</font>")
-                        .arg(Config.SkillDescriptionInToolTipColor.name());
+            if (Config.value("LuaPackages", QString()).toString().split("+").contains(general->getPackage())) {
+                return tr("<font color=%1>This is an Lua extension</font>").arg(Config.SkillDescriptionInToolTipColor.name());
             } else {
                 return QString();
             }
@@ -118,7 +116,7 @@ QVariant GeneralModel::data(const QModelIndex &index, int role) const
     }
     case Qt::TextAlignmentRole: return Qt::AlignCenter;
     case Qt::BackgroundRole: {
-        switch(index.column()) {
+        switch (index.column()) {
         case TitleColumn:
         case NameColumn: {
             if (Sanguosha->isGeneralHidden(general->objectName()))
@@ -127,8 +125,7 @@ QVariant GeneralModel::data(const QModelIndex &index, int role) const
                 break;
         }
         case PackageColumn: {
-            if (Config.value("LuaPackages", QString())
-                    .toString().split("+").contains(general->getPackage())) {
+            if (Config.value("LuaPackages", QString()).toString().split("+").contains(general->getPackage())) {
                 return QBrush(QColor(0x66, 0xCC, 0xFF));
             } else {
                 break;

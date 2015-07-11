@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef PLAYERCARDBOX_H
@@ -29,22 +29,23 @@ class ClientPlayer;
 class QGraphicsProxyWidget;
 class QSanCommandProgressBar;
 
-class PlayerCardBox : public GraphicsBox {
+class PlayerCardBox : public GraphicsBox
+{
     Q_OBJECT
 
 public:
     explicit PlayerCardBox();
 
     void chooseCard(const QString &reason, const ClientPlayer *player,
-               const QString &flags = "hej", bool handcardVisible = false,
-               Card::HandlingMethod method = Card::MethodNone,
-               const QList<int> &disabledIds = QList<int>());
+        const QString &flags = "hej", bool handcardVisible = false,
+        Card::HandlingMethod method = Card::MethodNone,
+        const QList<int> &disabledIds = QList<int>());
     void clear();
 
 protected:
     // GraphicsBox interface
     QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void paintLayout(QPainter *painter);
 
 private:
     void paintArea(const QString &name, QPainter *painter);
@@ -69,16 +70,16 @@ private:
     int intervalsBetweenRows;
     int maxCardsInOneRow;
 
-    static const int maxCardNumberInOneRow = 10;
+    static const int maxCardNumberInOneRow;
 
-    static const int verticalBlankWidth = 37;
-    static const int placeNameAreaWidth = 15;
-    static const int intervalBetweenNameAndCard = 20;
-    static const int topBlankWidth = 42;
-    static const int bottomBlankWidth = 25;
-    static const int intervalBetweenAreas = 10;
-    static const int intervalBetweenRows = 5;
-    static const int intervalBetweenCards = 3;
+    static const int verticalBlankWidth;
+    static const int placeNameAreaWidth;
+    static const int intervalBetweenNameAndCard;
+    static const int topBlankWidth;
+    static const int bottomBlankWidth;
+    static const int intervalBetweenAreas;
+    static const int intervalBetweenRows;
+    static const int intervalBetweenCards;
 
 public slots:
     void reply();

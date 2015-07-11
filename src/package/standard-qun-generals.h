@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _STANDARD_QUN_H
@@ -24,7 +24,8 @@
 #include "standard-package.h"
 #include "card.h"
 
-class QingnangCard : public SkillCard {
+class QingnangCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -34,7 +35,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class LijianCard : public SkillCard {
+class LijianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -46,7 +48,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class LuanwuCard : public SkillCard {
+class LuanwuCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -56,7 +59,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class XiongyiCard : public SkillCard {
+class XiongyiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -66,14 +70,16 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class HuoshuiCard : public SkillCard {
+class HuoshuiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE HuoshuiCard();
 };
 
-class QingchengCard : public SkillCard {
+class QingchengCard : public SkillCard
+{
     Q_OBJECT
 
 public:

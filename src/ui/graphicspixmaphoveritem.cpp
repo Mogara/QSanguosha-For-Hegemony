@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "graphicspixmaphoveritem.h"
@@ -29,8 +29,7 @@ static const char *CHANGE_SKIN_EMOTION_NAME = "skin_changing";
 QList<QPixmap> GraphicsPixmapHoverItem::m_skinChangingFrames;
 int GraphicsPixmapHoverItem::m_skinChangingFrameCount = 0;
 
-GraphicsPixmapHoverItem::GraphicsPixmapHoverItem(PlayerCardContainer *playerCardContainer,
-                                                 QGraphicsItem *parent)
+GraphicsPixmapHoverItem::GraphicsPixmapHoverItem(PlayerCardContainer *playerCardContainer, QGraphicsItem *parent)
     : QGraphicsPixmapItem(parent),
     m_playerCardContainer(playerCardContainer), m_timer(0), m_val(0),
     m_currentSkinChangingFrameIndex(-1)
@@ -58,8 +57,8 @@ void GraphicsPixmapHoverItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
     Highlights \a item as selected.
 
     NOTE: This function is a duplicate of qt_graphicsItem_highlightSelected() in
-          qgraphicssvgitem.cpp!
-*/
+    qgraphicssvgitem.cpp!
+    */
 static void qt_graphicsItem_highlightSelected(
     QGraphicsItem *item, QPainter *painter, const QStyleOptionGraphicsItem *option)
 {
@@ -73,26 +72,26 @@ static void qt_graphicsItem_highlightSelected(
 
     qreal itemPenWidth;
     switch (item->type()) {
-        case QGraphicsEllipseItem::Type:
-            itemPenWidth = static_cast<QGraphicsEllipseItem *>(item)->pen().widthF();
-            break;
-        case QGraphicsPathItem::Type:
-            itemPenWidth = static_cast<QGraphicsPathItem *>(item)->pen().widthF();
-            break;
-        case QGraphicsPolygonItem::Type:
-            itemPenWidth = static_cast<QGraphicsPolygonItem *>(item)->pen().widthF();
-            break;
-        case QGraphicsRectItem::Type:
-            itemPenWidth = static_cast<QGraphicsRectItem *>(item)->pen().widthF();
-            break;
-        case QGraphicsSimpleTextItem::Type:
-            itemPenWidth = static_cast<QGraphicsSimpleTextItem *>(item)->pen().widthF();
-            break;
-        case QGraphicsLineItem::Type:
-            itemPenWidth = static_cast<QGraphicsLineItem *>(item)->pen().widthF();
-            break;
-        default:
-            itemPenWidth = 1.0;
+    case QGraphicsEllipseItem::Type:
+        itemPenWidth = static_cast<QGraphicsEllipseItem *>(item)->pen().widthF();
+        break;
+    case QGraphicsPathItem::Type:
+        itemPenWidth = static_cast<QGraphicsPathItem *>(item)->pen().widthF();
+        break;
+    case QGraphicsPolygonItem::Type:
+        itemPenWidth = static_cast<QGraphicsPolygonItem *>(item)->pen().widthF();
+        break;
+    case QGraphicsRectItem::Type:
+        itemPenWidth = static_cast<QGraphicsRectItem *>(item)->pen().widthF();
+        break;
+    case QGraphicsSimpleTextItem::Type:
+        itemPenWidth = static_cast<QGraphicsSimpleTextItem *>(item)->pen().widthF();
+        break;
+    case QGraphicsLineItem::Type:
+        itemPenWidth = static_cast<QGraphicsLineItem *>(item)->pen().widthF();
+        break;
+    default:
+        itemPenWidth = 1.0;
     }
     const qreal pad = itemPenWidth / 2;
 
@@ -100,9 +99,9 @@ static void qt_graphicsItem_highlightSelected(
 
     const QColor fgcolor = option->palette.windowText().color();
     const QColor bgcolor( // ensure good contrast against fgcolor
-        fgcolor.red()   > 127 ? 0 : 255,
+        fgcolor.red() > 127 ? 0 : 255,
         fgcolor.green() > 127 ? 0 : 255,
-        fgcolor.blue()  > 127 ? 0 : 255);
+        fgcolor.blue() > 127 ? 0 : 255);
 
     painter->setPen(QPen(bgcolor, penWidth, Qt::SolidLine));
     painter->setBrush(Qt::NoBrush);

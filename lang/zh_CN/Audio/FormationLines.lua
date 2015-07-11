@@ -1,4 +1,22 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
 
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
 
 return {
 
@@ -11,51 +29,56 @@ return {
 	["$jixi1"] = "攻其不备，出其不意！",
 	["$jixi2"] = "偷渡阴平，直取蜀汉！",
 	["~dengai"] = "吾破蜀克敌，竟葬于奸贼之手！",
-	
+
 	-- 曹洪
-	["cv:caohong"] = "喵小林",
-	["$huyuan1"] = "持吾兵戈，随我杀敌！", --武器
-	["$huyuan2"] = "汝今势微，吾当助汝。", --防具
-	["$huyuan3"] = "公急上马，洪敌贼军！", --坐骑
-	["$heyi1"] = "天下可无洪，不可无公。",
-	["$heyi2"] = "持戈整兵，列阵御敌！",
-	["~caohong"] = "主公已安，洪纵死亦何惜……",
+	["cv:caohong"] = "极光星逝",
+	["$huyuan1"] = "明公先行，洪自断后。", --武器
+	["$huyuan2"] = "天下可无洪，不可无公。", --防具
+	["$heyi1"] = "如鹤振翅，翼护四方。",
+	["$heyi2"] = "变阵换形，护主突围。",
+	["~caohong"] = "福祸本相依，觉时已晚矣。",
 
 	-- 姜维
-	--["cv:jiangwei"] = "轻笑独行",
-	["$tiaoxin2"] = "贼将早降，可免一死！",
-	["$tiaoxin1"] = "汝等小儿，可敢杀我。",
-	["$kanpo3"] = "先帝之志，丞相之托，不可忘也！",
-	["$kanpo4"] = "丞相厚恩，维万死不能相报。",
-	["$yizhi1"] = "继丞相之遗志，讨篡汉之逆贼！",
-	["$yizhi2"] = "克复中原，指日可待！",
-	["~jiangwei"] = "我计不成，乃天命也。",
-	
+	["cv:jiangwei"] = "极光星逝",
+	["$tiaoxin1"] = "鼠辈无胆，竟缩手不出？",
+	["$tiaoxin2"] = "无胆匪类，还不下马受降？",
+	["$tiaoxin3"] = "八阵在此，汝等岂可破之？",
+	["$kanpo3"] = "雕虫小技，也敢班门弄斧？",
+	["$kanpo4"] = "此等伎俩，已尽在掌控之中。",
+	["$yizhi1"] = "秉承相志，誓伐曹魏！",
+	["$yizhi2"] = "拔城斩将，誓破曹贼！",
+	["~jiangwei"] = "早除宦佞，绝非此境，悔不该……",
+
 	-- 蒋琬&费祎
-	["cv:jiangwanfeiyi"] = "曹操&德邦总管老张",
-		
+	--["cv:jiangwanfeiyi"] = "曹操&德邦总管老张",
+
 	-- 徐盛
-	--["cv:xusheng"] = "轻笑独行",
-	["$yicheng2"] = "大军在此！汝等休想前进一步！",
-	["$yicheng1"] = "敬请养精蓄锐！",
-	["~xusheng"] = "盛不能奋身出命，不亦辱乎。",
-	
+	["cv:xusheng"] = "极光星逝",
+	["$yicheng1"] = "临江为城以疑之，方可退敌。",
+	["$yicheng2"] = "虚实相掩，此疑城之计也。",
+	["~xusheng"] = "大军压境，我亦无能为力……",
+
 	-- 蒋钦
-	--["cv:jiangqin"] = "両仪弑",
-	["cv:jiangqin"] = "极光星逝" ,
-	["$shangyi2"] = "臣当助国求才， 岂敢挟私恨以蔽贤乎。" ,
+	["cv:jiangqin"] = "両仪弑&极光星逝",
 	["$shangyi1"] = "坦诚相待，以消不虞之隙。" ,
-	["$niaoxiang"] = "一夫突击，三军莫当！" ,
-	["~jiangqin"] = "壮志未酬身先死……" ,
+	["$shangyi2"] = "臣当助国求才， 岂敢挟私恨以蔽贤乎。" ,
+	["$niaoxiang1"] = "困敌阵中，猛似惊鸿。" ,
+	["$niaoxiang2"] = "一夫猛击，三军莫当！" ,
+	["~jiangqin"] = "你…竟还有所隐瞒…" ,
 
 	-- 于吉
-	--["cv:yuji"] = "七哥",
-	["$qianhuan1"] = "你信吗？",
-	["$qianhuan2"] = "猜猜看哪？",
-	["~yuji"] = "竟然…被猜到了……",
-	
+	["cv:yuji"] = "七哥",
+	["$qianhuan1"] = "万事皆空，幻象新生。",
+	["$qianhuan2"] = "魂绕左右，噩极此生。",
+	["~yuji"] = "魂飞魄散，回天无术。",
+
 	-- 何太后
 	["cv:hetaihou"] = "郁望梦始",
+	["$zhendu1"] = "最毒不过妇人心。",
+	["$zhendu2"] = "鸩酒已备，取酌由君。",
+	["$qiluan1"] = "屠彘贫户，今握汉室江山。",
+	["$qiluan2"] = "天下霸权尽归我何氏所有。",
+	["~hetaihou"] = "昨昔后兄诛董后，今朝董贼戮何家…",
 
 	-- 君刘备
 	["cv:lord_liubei"] = "喵小林",

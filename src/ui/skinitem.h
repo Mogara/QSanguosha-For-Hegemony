@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef SKINITEM_H
@@ -32,9 +32,12 @@ class SkinItem : public QGraphicsObject
 
 public:
     SkinItem(const QString &generalName, int skinId, bool used,
-             QGraphicsItem *parent = 0);
+        QGraphicsItem *parent = 0);
 
-    void setUsed(bool used) { m_used = used; }
+    void setUsed(bool used)
+    {
+        m_used = used;
+    }
 
     virtual QRectF boundingRect() const;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
