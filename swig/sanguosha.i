@@ -1557,6 +1557,10 @@ public:
     QString askForGeneral(ServerPlayer *player, const char *generals, const char *default_choice = NULL, bool single_result = true, const char *skill_name = NULL, const QVariant &data = QVariant());
     const Card *askForSinglePeach(ServerPlayer *player, ServerPlayer *dying);
     void addPlayerHistory(ServerPlayer *player, const char *key, int times = 1);
+    
+    QList<ServerPlayer *> askForPlayersChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets,
+                                              const char *reason,int min_num = 0, int max_num = 2, const char *prompt = "",
+                                              bool notify_skill = false);
 
     inline Card *getCard(int cardId) const;
     inline void resetCard(int cardId);

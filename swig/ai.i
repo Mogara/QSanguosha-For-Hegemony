@@ -49,7 +49,7 @@ public:
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const char *reason) = 0;
     virtual const Card *askForCardShow(ServerPlayer *requestor, const char *reason) = 0;
     virtual const Card *askForPindian(ServerPlayer *requestor, const char *reason) = 0;
-    virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const char *reason) = 0;
+    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int max_num, int min_num) = 0;
     virtual const Card *askForSinglePeach(ServerPlayer *dying) = 0;
 };
 
@@ -70,7 +70,7 @@ public:
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const char *reason);
     virtual const Card *askForCardShow(ServerPlayer *requestor, const char *reason);
     virtual const Card *askForPindian(ServerPlayer *requestor, const char *reason);
-    virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const char *reason);
+    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max_num, int min_num);
     virtual const Card *askForSinglePeach(ServerPlayer *dying);
 
     virtual bool useCard(const Card *card);
@@ -86,7 +86,7 @@ public:
     virtual QList<int> askForDiscard(const char *reason, int discard_num, int min_num, bool optional, bool include_equip) ;
     virtual QString askForChoice(const char *skill_name, const char *choices, const QVariant &data);
     virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids);
-    virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const char *reason);
+    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max_num, int min_num);
     virtual const Card *askForCard(const char *pattern, const char *prompt, const QVariant &data);
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const char *reason);
     virtual const Card *askForSinglePeach(ServerPlayer *dying);
@@ -308,30 +308,53 @@ int LuaAI::askForCardChosen(ServerPlayer *who, const QString &flags, const QStri
     return TrustAI::askForCardChosen(who, flags, reason, method, disabled_ids);
 }
 
-ServerPlayer *LuaAI::askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason)
+QList<ServerPlayer *> LuaAI::askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max_num, int min_num)
 {
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
     SWIG_NewPointerObj(L, &targets, SWIGTYPE_p_QListT_ServerPlayer_p_t, 0);
     lua_pushstring(L, reason.toLatin1());
+    lua_pushnumber(L,max_num);
+    lua_pushnumber(L,min_num);
 
-    int error = lua_pcall(L, 3, 1, 0);
+    int error = lua_pcall(L, 5, 1, 0);
     if (error) {
         const char *error_msg = lua_tostring(L, -1);
         lua_pop(L, 1);
         room->output(error_msg);
 
-        return TrustAI::askForPlayerChosen(targets, reason);
+        return TrustAI::askForPlayersChosen(targets, reason,max_num,min_num);
     }
-
-    void *player_ptr;
-    int result = SWIG_ConvertPtr(L, -1, &player_ptr, SWIGTYPE_p_ServerPlayer, 0);
+    
+    QList<ServerPlayer *> return_result;
+    
+    lua_pushnil(L);
+    int fails = 0;
+    while (lua_next(L,-2)) {
+        void *player_ptr;
+        int result = SWIG_ConvertPtr(L, -1, &player_ptr, SWIGTYPE_p_ServerPlayer, 0);
+        lua_pop(L,1);
+        if (SWIG_IsOK(result))
+            return_result << static_cast<ServerPlayer *>(player_ptr);
+        else
+            ++fails;
+    }
+    lua_pop(L,1);
+    if (fails > 0) {
+        room->output(QString("The result of function %1 should all be ServerPlayers!").arg(__FUNCTION__));
+        return TrustAI::askForPlayersChosen(targets, reason,max_num,min_num);
+    }
+    return return_result;
+   /*  void *playerlist_ptr;
+    int result = SWIG_ConvertPtr(L, -1, &playerlist_ptr, SWIGTYPE_p_QListT_ServerPlayer_p_t, 0);
     lua_pop(L, 1);
     if (SWIG_IsOK(result))
-        return static_cast<ServerPlayer *>(player_ptr);
+        return *reinterpret_cast<QList<ServerPlayer *> *>(playerlist_ptr);
     else
-        return TrustAI::askForPlayerChosen(targets, reason);
+        return TrustAI::askForPlayersChosen(targets, reason); */
+    
+    
 }
 
 const Card *LuaAI::askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive)

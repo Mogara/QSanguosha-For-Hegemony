@@ -5801,7 +5801,7 @@ ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerP
     AI *ai = player->getAI();
     ServerPlayer *choice = NULL;
     if (ai) {
-        choice = ai->askForPlayerChosen(targets, skillName);
+        choice = ai->askForPlayersChosen(targets, skillName,1,optional ? 0 : 1).first();
         if (choice && notify_skill)
             thread->delay();
     } else {
@@ -5812,7 +5812,8 @@ ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerP
         req << QVariant(req_targets);
         req << skillName;
         req << prompt;
-        req << optional;
+        req << 1;
+        req << (optional ? 0 : 1);
         bool success = doRequest(player, S_COMMAND_CHOOSE_PLAYER, req, true);
 
         const QVariant &clientReply = player->getClientReply();
@@ -5841,6 +5842,76 @@ ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerP
         thread->trigger(ChoiceMade, this, player, data);
     }
     return choice;
+}
+
+QList<ServerPlayer *> Room::askForPlayersChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const QString &skillName, int min_num, int max_num, const QString &prompt, bool notify_skill)
+{
+    if (targets.length() <= min_num) {
+        QStringList names;
+        foreach (ServerPlayer *p,targets)
+            names.append(p->objectName());
+        QVariant data = QString("%1:%2:%3").arg("playerChosen").arg(skillName).arg(names.join("+"));
+        thread->trigger(ChoiceMade, this, player, data);
+        return targets;
+    }
+
+    tryPause();
+    min_num = qMin(min_num,targets.length());
+    max_num = qMin(max_num,targets.length());
+    notifyMoveFocus(player, S_COMMAND_CHOOSE_PLAYER);
+    AI *ai = player->getAI();
+    QList<ServerPlayer *> result;
+    if (ai) {
+        result = ai->askForPlayersChosen(targets, skillName,max_num,min_num);
+        if (!result.isEmpty() && notify_skill)
+            thread->delay();
+    } else {
+        JsonArray req;
+        JsonArray req_targets;
+        foreach(ServerPlayer *target, targets)
+            req_targets << target->objectName();
+        req << QVariant(req_targets);
+        req << skillName;
+        req << prompt;
+        req << max_num;
+        req << min_num;
+        bool success = doRequest(player, S_COMMAND_CHOOSE_PLAYER, req, true);
+
+        const QVariant &clientReply = player->getClientReply();
+        if (success && JsonUtils::isString(clientReply))
+            foreach (const QString &name,clientReply.toString().split("+"))
+                if (targets.contains(findChild<ServerPlayer *>(name)))
+                    result << findChild<ServerPlayer *>(name);
+    }
+    if (result.length() < min_num) {
+        QList<ServerPlayer *> copy = targets;
+        foreach (ServerPlayer *p ,result)
+            copy.removeOne(p);
+        while (result.length() < min_num)
+            result << copy.takeAt(qrand() % copy.length());
+
+    }
+    if (!result.isEmpty()) {
+        if (notify_skill) {
+            notifySkillInvoked(player, skillName);
+            QVariant decisionData = QVariant::fromValue("skillInvoke:" + skillName + ":yes");
+            thread->trigger(ChoiceMade, this, player, decisionData);
+            foreach(ServerPlayer *choice,result)
+                doAnimate(S_ANIMATE_INDICATE, player->objectName(), choice->objectName());
+            LogMessage log;
+            log.type = "#ChoosePlayerWithSkill";
+            log.from = player;
+            log.to << result;
+            log.arg = skillName;
+            sendLog(log);
+        }
+        QStringList names;
+        foreach (ServerPlayer *p,result)
+            names.append(p->objectName());
+        QVariant data = QString("%1:%2:%3").arg("playerChosen").arg(skillName).arg(names.join("+"));
+        thread->trigger(ChoiceMade, this, player, data);
+    }
+    return result;
 }
 
 QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, const QString &_default_choice, bool single_result, const QString &skill_name, const QVariant &data)

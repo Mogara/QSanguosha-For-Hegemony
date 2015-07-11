@@ -3168,15 +3168,24 @@ sgs.ai_skill_playerchosen.damage = function(self, targets)
 	return targetlist[#targetlist]
 end
 
-function SmartAI:askForPlayerChosen(targets, reason)
+function SmartAI:askForPlayersChosen(targets, reason,max_num,min_num)
 	local playerchosen = sgs.ai_skill_playerchosen[string.gsub(reason, "%-", "_")]
-	local target = nil
+	local returns = {}
 	if type(playerchosen) == "function" then
-		target = playerchosen(self, targets)
-		return target
+		local result = playerchosen(self, targets,max_num,min_num)
+		if (type(result) == "ServerPlayer") then 
+			return {result}
+		elseif type(result) == "table" then
+			return result
+		end
 	end
-	local r = math.random(0, targets:length() - 1)
-	return targets:at(r)
+	local copy = table.copyFrom(targets)
+	while (#returns < min_num) do
+		local r = math.random(0, copy:length() - 1)
+		table.insert(returns,copy[r])
+		table.remove(copy,r)
+	end
+	return returns
 end
 
 function SmartAI:ableToSave(saver, dying)

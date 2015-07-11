@@ -169,6 +169,17 @@ bool TrustAI::useCard(const Card *card)
     return false;
 }
 
+QList<ServerPlayer *> TrustAI::askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int min_num, int max_num)
+{
+    Q_UNUSED(reason)
+    Q_UNUSED(max_num)
+    QList<ServerPlayer *> result;
+    QList<ServerPlayer *> copy = targets;
+    while (result.length() < min_num)
+        result << copy.takeAt(qrand() % copy.length());
+    return result;
+}
+
 Card::Suit TrustAI::askForSuit(const QString &)
 {
     return Card::AllSuits[qrand() % 4];
@@ -259,13 +270,13 @@ const Card *TrustAI::askForPindian(ServerPlayer *requestor, const QString &)
         return cards.last();
 }
 
-ServerPlayer *TrustAI::askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason)
-{
-    Q_UNUSED(reason);
+//ServerPlayer *TrustAI::askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason)
+//{
+//    Q_UNUSED(reason);
 
-    int r = qrand() % targets.length();
-    return targets.at(r);
-}
+//    int r = qrand() % targets.length();
+//    return targets.at(r);
+//}
 
 const Card *TrustAI::askForSinglePeach(ServerPlayer *dying)
 {

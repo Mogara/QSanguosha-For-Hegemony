@@ -201,18 +201,27 @@ public:
         target_fixed = false;
     }
 
-    void setPlayerNames(const QStringList &names)
+    void setPlayerNames(const QStringList &names,int max,int min)
     {
         set = names.toSet();
+        this->max = max;
+        this->min = min;
     }
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
     {
-        return targets.isEmpty() && set.contains(to_select->objectName());
+        return targets.length() < max && set.contains(to_select->objectName());
+    }
+
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *) const
+    {
+        return targets.length() >= min;
     }
 
 private:
     QSet<QString> set;
+    int max;
+    int min;
 };
 
 ChoosePlayerSkill::ChoosePlayerSkill()
@@ -222,9 +231,9 @@ ChoosePlayerSkill::ChoosePlayerSkill()
     card->setParent(this);
 }
 
-void ChoosePlayerSkill::setPlayerNames(const QStringList &names)
+void ChoosePlayerSkill::setPlayerNames(const QStringList &names,int max,int min)
 {
-    card->setPlayerNames(names);
+    card->setPlayerNames(names,max,min);
 }
 
 const Card *ChoosePlayerSkill::viewAs() const

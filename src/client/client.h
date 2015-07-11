@@ -246,8 +246,11 @@ public:
     int min_num;
     QString skill_name;
     QList<const Card *> discarded_list;
-    QStringList players_to_choose;
     QString discard_reason;
+
+    QStringList players_to_choose;
+    int choose_max_num;
+    int choose_min_num;
 
 public slots:
     void signup();
@@ -255,7 +258,7 @@ public slots:
     void onPlayerMakeChoice(const QString &choice);
     void onPlayerChooseCard(int card_id = -2);
     void onPlayerChooseAG(int card_id);
-    void onPlayerChoosePlayer(const Player *player);
+    void onPlayerChoosePlayer(const QList<const Player *> &players);
     void onPlayerChooseTriggerOrder(const QString &choice);
     void onPlayerChangeSkin(int skin_id, bool is_head = true);
     void onPlayerChooseSuit(const QString &suit);
