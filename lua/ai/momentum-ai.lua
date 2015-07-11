@@ -22,6 +22,7 @@ sgs.ai_skill_invoke.xunxun = function(self, data)
 	if not (self:willShowForDefence() or self:willShowForAttack()) then
 		return false
 	end
+	if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return false end
 	return true
 end
 

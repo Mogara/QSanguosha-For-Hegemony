@@ -131,8 +131,21 @@ function SmartAI:useCardDrowning(card, use)
 			and not self:getDamagedEffects(enemy, self.player) and not self:needToLoseHp(enemy, self.player) and not self:needToThrowArmor(enemy)
 			and not (enemy:hasArmorEffect("PeaceSpell") and (enemy:getHp() > 1 or self:needToLoseHp(enemy, self.player)))
 			and not (enemy:hasArmorEffect("Breastplate") and enemy:getHp() == 1) then
-			players:append(enemy)
-			if use.to then use.to:append(enemy) end
+			local dangerous
+			local chained = {}
+			if enemy:isChained() and not self.player:hasShownSkill("jueqing") then
+				for _, p in sgs.qlist(self.room:getOtherPlayers(enemy)) do
+					if not self:isGoodChainTarget(enemy, p, sgs.DamageStruct_Thunder) and self:damageIsEffective(p, sgs.DamageStruct_Thunder) and self:isFriend(p) then
+						table.insert(chained, p)
+						if self:isWeak(p) then dangerous = true end
+					end
+				end
+			end
+			if #chained >= 2 then dangerous = true end
+			if not dangerous then
+				players:append(enemy)
+				if use.to then use.to:append(enemy) end
+			end
 		end
 	end
 
@@ -811,9 +824,12 @@ sgs.ai_keep_value.ThreatenEmperor = 3.2
 
 sgs.ai_nullification.ThreatenEmperor = function(self, card, from, to, positive, keep)
 	if positive then
-		if self:isEnemy(from) then return true, true end
+		if self:isEnemy(from) and not from:isNude() then return true, true end
 	else
-		if self:isFriend(from) then return true, true end
+		if from:getCards("he"):length() == 1 and self.player:objectName() == from:objectName() then
+			if self:getCard("Nullification"):getEffectiveId() == self.player:getCards("he"):first():getEffectiveId() then return false end
+		end
+		if self:isFriend(from) and not from:isNude() then return true, true end
 	end
 	return
 end
@@ -1008,7 +1024,7 @@ wooden_ox_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("WoodenOxCard") or self.player:isKongcheng() or not self.player:hasTreasure("WoodenOx") then return end
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByUseValue(cards, true)
-	local card, friend = self:getCardNeedPlayer(cards, self.friends_noself)
+	local card, friend = self:getCardNeedPlayer(cards, self.friends_noself, "WoodenOx")
 	if card and friend and friend:objectName() ~= self.player:objectName() and (self:getOverflow() > 0 or self:isWeak(friend)) then
 		self.wooden_ox_assist = friend
 		return sgs.Card_Parse("@WoodenOxCard=" .. card:getEffectiveId())

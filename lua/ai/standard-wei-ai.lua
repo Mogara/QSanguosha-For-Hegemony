@@ -333,6 +333,7 @@ sgs.ai_skill_use["@@tuxi"] = function(self, prompt)
 	if not self:willShowForAttack() then
 		return "."
 	end
+	if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return "." end
 	local targets = self:findTuxiTarget()
 	if type(targets) == "table" and #targets > 0 then
 		return ("@TuxiCard=.&->" .. table.concat(targets, "+"))
