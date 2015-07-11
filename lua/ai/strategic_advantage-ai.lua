@@ -811,9 +811,12 @@ sgs.ai_keep_value.ThreatenEmperor = 3.2
 
 sgs.ai_nullification.ThreatenEmperor = function(self, card, from, to, positive, keep)
 	if positive then
-		if self:isEnemy(from) then return true, true end
+		if self:isEnemy(from) and not from:isNude() then return true, true end
 	else
-		if self:isFriend(from) then return true, true end
+		if from:getCards("he"):length() == 1 and self.player:objectName() == from:objectName() then
+			if self:getCard("Nullification"):getEffectiveId() == self.player:getCards("he"):first():getEffectiveId() then return false end
+		end
+		if self:isFriend(from) and not from:isNude() then return true, true end
 	end
 	return
 end
