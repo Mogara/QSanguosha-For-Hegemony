@@ -329,6 +329,11 @@ QList<ServerPlayer *> LuaAI::askForPlayersChosen(const QList<ServerPlayer *> &ta
     
     QList<ServerPlayer *> return_result;
     
+    if (!lua_istable(L,-1)) {
+        room->output(QString("The result of function %1 should all a table!").arg(__FUNCTION__));
+        return TrustAI::askForPlayersChosen(targets, reason,max_num,min_num);
+    }
+    
     lua_pushnil(L);
     int fails = 0;
     while (lua_next(L,-2)) {

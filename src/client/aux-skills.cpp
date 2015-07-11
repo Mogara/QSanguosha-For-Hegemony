@@ -215,7 +215,7 @@ public:
 
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *) const
     {
-        return targets.length() >= min;
+        return targets.length() >= min && !targets.isEmpty();
     }
 
 private:
