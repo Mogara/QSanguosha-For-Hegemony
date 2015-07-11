@@ -131,8 +131,21 @@ function SmartAI:useCardDrowning(card, use)
 			and not self:getDamagedEffects(enemy, self.player) and not self:needToLoseHp(enemy, self.player) and not self:needToThrowArmor(enemy)
 			and not (enemy:hasArmorEffect("PeaceSpell") and (enemy:getHp() > 1 or self:needToLoseHp(enemy, self.player)))
 			and not (enemy:hasArmorEffect("Breastplate") and enemy:getHp() == 1) then
-			players:append(enemy)
-			if use.to then use.to:append(enemy) end
+			local dangerous
+			local chained = {}
+			if enemy:isChained() and not self.player:hasShownSkill("jueqing") then
+				for _, p in sgs.qlist(self.room:getOtherPlayers(enemy)) do
+					if not self:isGoodChainTarget(enemy, p, sgs.DamageStruct_Thunder) and self:damageIsEffective(p, sgs.DamageStruct_Thunder) and self:isFriend(p) then
+						table.insert(chained, p)
+						if self:isWeak(p) then dangerous = true end
+					end
+				end
+			end
+			if #chained >= 2 then dangerous = true end
+			if not dangerous then
+				players:append(enemy)
+				if use.to then use.to:append(enemy) end
+			end
 		end
 	end
 
