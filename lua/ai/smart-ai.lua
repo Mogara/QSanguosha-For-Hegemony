@@ -3169,15 +3169,23 @@ sgs.ai_skill_playerchosen.damage = function(self, targets)
 	return targetlist[#targetlist]
 end
 
-function SmartAI:askForPlayersChosen(targets, reason,max_num,min_num)
+function SmartAI:askForPlayersChosen(targets, reason, max_num, min_num)
 	local playerchosen = sgs.ai_skill_playerchosen[string.gsub(reason, "%-", "_")]
 	local returns = {}
 	if type(playerchosen) == "function" then
-		local result = playerchosen(self, targets,max_num,min_num)
-		if (type(result) == "ServerPlayer") then 
+		local result = playerchosen(self, targets, max_num, min_num)
+		if type(result) == "ServerPlayer" then
 			return {result}
+		elseif type(result) == "ClientPlayer" then
+			for _, p in sgs.qlist(room:getAllPlayers()) do
+				if p:objectName() == result:objectName() then
+					return {p}
+				end
+			end
 		elseif type(result) == "table" then
 			return result
+		else
+			return {}
 		end
 	end
 	local copy = table.copyFrom(sgs.QList2Table(targets))
