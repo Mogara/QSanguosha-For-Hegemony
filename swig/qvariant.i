@@ -25,6 +25,7 @@ public:
     QVariant(const char *);
     QVariant(bool);
     QVariant(QList<QVariant>);
+    bool canConvert(int targetTypeId) const; // a very six method..
     int toInt() const;
     QString toString() const;
     QStringList toStringList() const;

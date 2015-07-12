@@ -224,6 +224,13 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 		if string.find(choices, "luoshen") and string.find(choices, "guanxing") then return "guanxing" end
 		if string.find(choices, "wangxi") and string.find(choices, "fangzhu") then return "fangzhu" end
 
+		if table.contains(skillnames, "tiandu") then
+			local judge = data:toJudge()
+			if judge.card:isKindOf("Peach") or judge.card:isKindOf("Analeptic") then
+				return "tiandu"
+			end
+		end
+
 		local except = {}
 		for _, skillname in ipairs(skillnames) do
 			local invoke = self:askForSkillInvoke(skillname, data)

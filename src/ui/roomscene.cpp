@@ -2210,7 +2210,7 @@ void RoomScene::useSelectedCard()
         break;
     }
     case Client::AskForPlayerChoose: {
-        ClientInstance->onPlayerChoosePlayer(selected_targets.first());
+        ClientInstance->onPlayerChoosePlayer(selected_targets);
         prompt_box->disappear();
         break;
     }
@@ -2382,7 +2382,8 @@ void RoomScene::doTimeout()
         break;
     }
     case Client::AskForPlayerChoose: {
-        ClientInstance->onPlayerChoosePlayer(NULL);
+        QList<const Player*> null;
+        ClientInstance->onPlayerChoosePlayer(null);
         dashboard->stopPending();
         prompt_box->disappear();
         break;
@@ -2660,7 +2661,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         cancel_button->setEnabled(ClientInstance->m_isDiscardActionRefusable);
         discard_button->setEnabled(false);
 
-        choose_skill->setPlayerNames(ClientInstance->players_to_choose);
+        choose_skill->setPlayerNames(ClientInstance->players_to_choose,ClientInstance->choose_max_num,ClientInstance->choose_min_num);
         dashboard->startPending(choose_skill);
 
         break;
@@ -2858,7 +2859,8 @@ void RoomScene::doCancelButton()
     }
     case Client::AskForPlayerChoose: {
         dashboard->stopPending();
-        ClientInstance->onPlayerChoosePlayer(NULL);
+        QList<const Player *> null;
+        ClientInstance->onPlayerChoosePlayer(null);
         prompt_box->disappear();
         break;
     }

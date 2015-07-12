@@ -248,6 +248,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         room->tryPause();
                         if (will_trigger.isEmpty()
                             || skill->getDynamicPriority(triggerEvent) == will_trigger.last()->getDynamicPriority(triggerEvent)) {
+                            skill->record(triggerEvent, room, target, data); //to record something for next.
                             TriggerList triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
                             foreach (ServerPlayer *p, room->getPlayers()) {
                                 if (triggerSkillList.contains(p) && !triggerSkillList.value(p).isEmpty()) {

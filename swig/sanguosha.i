@@ -376,8 +376,8 @@ public:
     void removeTag(const char *tag_name) {
         $self->tag.remove(tag_name);
     }
-    bool operator==(Player *other) {
-        return $self->objectName() == other->objectName();
+    bool operator == (const Player &other) const {
+        return $self->objectName() == other.objectName(); 
     }
     
 };
@@ -901,6 +901,7 @@ enum TriggerEvent
     TargetConfirmed,
     CardEffect,
     CardEffected,
+    CardEffectConfirmed,
     PostCardEffected,
     CardFinished,
     TrickCardCanceling,
@@ -1295,6 +1296,9 @@ public:
     virtual bool triggerable(const ServerPlayer *target) const;
 
     //virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    
+    virtual void record(TriggerEvent triggerEvent,Room *room,ServerPlayer *player,QVariant &data) const;
+    
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const;
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
@@ -1532,6 +1536,9 @@ public:
     bool isCanceled(const CardEffectStruct &effect);
     int askForCardChosen(ServerPlayer *player, ServerPlayer *who, const char *flags, const char *reason,
         bool handcard_visible = false, Card::HandlingMethod method = Card::MethodNone, const QList<int> &disabled_ids = QList<int>());
+        
+    QList<const Card*> askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee, const char *handle_string, const char *reason);
+    
     const Card *askForCard(ServerPlayer *player, const char *pattern, const char *prompt, const QVariant &data, const char *skill_name);
     const Card *askForCard(ServerPlayer *player, const char *pattern, const char *prompt, const QVariant &data = QVariant(),
         Card::HandlingMethod method = Card::MethodDiscard, ServerPlayer *to = NULL, bool isRetrial = false,
@@ -1555,6 +1562,10 @@ public:
     QString askForGeneral(ServerPlayer *player, const char *generals, const char *default_choice = NULL, bool single_result = true, const char *skill_name = NULL, const QVariant &data = QVariant());
     const Card *askForSinglePeach(ServerPlayer *player, ServerPlayer *dying);
     void addPlayerHistory(ServerPlayer *player, const char *key, int times = 1);
+    
+    QList<ServerPlayer *> askForPlayersChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets,
+                                              const char *reason,int min_num = 0, int max_num = 2, const char *prompt = "",
+                                              bool notify_skill = false);
 
     inline Card *getCard(int cardId) const;
     inline void resetCard(int cardId);

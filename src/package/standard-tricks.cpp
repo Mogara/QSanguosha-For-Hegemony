@@ -864,8 +864,17 @@ void AwaitExhausted::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
         effect.multiple = (targets.length() > 1);
         effect.nullified = (all_nullified || nullified_list.contains(target->objectName()));
 
+        QVariantList players;
+        for (int i = targets.indexOf(target); i < targets.length(); i++) {
+            if (!nullified_list.contains(targets.at(i)->objectName()) && !all_nullified)
+                players.append(QVariant::fromValue(targets.at(i)));
+        }
+        room->setTag("targets" + this->toString(), QVariant::fromValue(players));
+
         room->cardEffect(effect);
     }
+
+    room->removeTag("targets" + this->toString());
 
     foreach (ServerPlayer *target, targets) {
         if (target->hasFlag("AwaitExhaustedEffected")) {

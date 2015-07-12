@@ -373,6 +373,8 @@ Card::HandlingMethod Engine::getCardHandlingMethod(const QString &method_name) c
         return Card::MethodRecast;
     else if (method_name == "pindian")
         return Card::MethodPindian;
+    else if(method_name == "none")
+        return Card::MethodNone;
     else {
         Q_ASSERT(false);
         return Card::MethodNone;

@@ -333,6 +333,7 @@ sgs.ai_skill_use["@@tuxi"] = function(self, prompt)
 	if not self:willShowForAttack() then
 		return "."
 	end
+	if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return "." end
 	local targets = self:findTuxiTarget()
 	if type(targets) == "table" and #targets > 0 then
 		return ("@TuxiCard=.&->" .. table.concat(targets, "+"))
@@ -536,20 +537,61 @@ sgs.ai_skill_use["@@shensu1"] = function(self, prompt)
 		return "."
 	end
 
+	if not self.player:containsTrick("indulgence") and not self.player:containsTrick("supply_shortage") then
+		if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return "." end
+	end
+
 	local slash = sgs.cloneCard("slash")
 	local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
 	self.player:setFlags("slashNoDistanceLimit")
 	self:useBasicCard(slash, dummy_use)
 	self.player:setFlags("-slashNoDistanceLimit")
-
+	
 	if dummy_use.card and not dummy_use.to:isEmpty() then
 		for _, enemy in sgs.qlist(dummy_use.to) do
-			local def = sgs.getDefenseSlash(enemy, self)
-			if def < 3 then return "@ShensuCard=.->" .. enemy:objectName() end
-			if not self:isWeak() and def < 5 then return "@ShensuCard=.->" .. enemy:objectName() end
+			if self:isEnemy(enemy) and sgs.getDefenseSlash(enemy, self) < 3 then
+				if  enemy:getHp() <= 1 and (not self.player:inMyAttackRange(enemy) or self:getCardsNum("Slash") == 0) then
+					return "@ShensuCard=.->" .. enemy:objectName()
+				end
+				if enemy:getHp() <= 2 and self.player:inMyAttackRange(enemy) and self:getCardsNum("Slash") > 0 then
+					return "@ShensuCard=.->" .. enemy:objectName()
+				end
+			end
 		end
 	end
 
+	local Nullification = false
+	for _, p in ipairs(self.friends) do
+		if getKnownCard(p, self.player, "Nullification") > 0 then
+			Nullification = true
+		end
+	end
+	if self.player:containsTrick("indulgence") and (not self:hasWizard(self.friends) or self:hasWizard(self.enemies, true))
+		and not Nullification then
+		local target
+		if dummy_use.card and not dummy_use.to:isEmpty() then
+			for _, enemy in sgs.qlist(dummy_use.to) do
+				local def = sgs.getDefenseSlash(enemy, self)
+				if def < 3 or (not self:isWeak() and def < 5) then
+					target = enemy
+					break
+				end
+			end
+			if not target then
+				local handcardsValue = 0
+				local cards = sgs.QList2Table(self.player:getCards("h"))
+				for _, c in ipairs(cards) do
+					handcardsValue = handcardsValue + self:getUseValue(c)
+				end
+				if handcardsValue > 16 or self:getOverflow(self.player, true) > 1 then
+					local targets =  sgs.QList2Table(dummy_use.to)
+					self:sort(targets, "defenseSlash")
+					target = targets[1]
+				end
+			end
+			if target then return "@ShensuCard=.->" .. target:objectName() end
+		end
+	end
 	return "."
 end
 

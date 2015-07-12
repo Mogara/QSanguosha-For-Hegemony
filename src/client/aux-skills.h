@@ -109,7 +109,7 @@ class ChoosePlayerSkill : public ZeroCardViewAsSkill
 
 public:
     explicit ChoosePlayerSkill();
-    void setPlayerNames(const QStringList &names);
+    void setPlayerNames(const QStringList &names, int max, int min);
 
     virtual const Card *viewAs() const;
 

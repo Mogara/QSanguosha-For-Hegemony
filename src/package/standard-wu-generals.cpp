@@ -697,9 +697,9 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *xiaoqiao, QVariant &data, ServerPlayer *) const
     {
-        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+        foreach (ServerPlayer *p, room->getAlivePlayers())
             p->setFlags("-tianxiang_target");
-        }
+
         xiaoqiao->setFlags("-tianxiang_invoke");
         xiaoqiao->tag["TianxiangDamage"] = data;
         room->askForUseCard(xiaoqiao, "@@tianxiang", "@tianxiang-card", -1, Card::MethodDiscard);
@@ -772,8 +772,7 @@ public:
     virtual bool viewFilter(const Card *to_select) const
     {
         Room *room = Sanguosha->currentRoom();
-        if(room != NULL) // Server
-        {
+        if (room != NULL) { // Server
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->ownSkill(objectName()) && p->hasShownSkill(objectName()))
                     return to_select->getSuit() == Card::Spade;
@@ -784,7 +783,7 @@ public:
                     return to_select->getSuit() == Card::Spade;
             }
         }
-        
+
         return false;
     }
 
@@ -1424,47 +1423,47 @@ public:
     }
 };
 
-class GuzhengRecord : public TriggerSkill
-{
-public:
-    GuzhengRecord() : TriggerSkill("#guzheng-record")
-    {
-        events << CardsMoveOneTime;
-        frequency = Compulsory;
-    }
+//class GuzhengRecord : public TriggerSkill
+//{
+//public:
+//    GuzhengRecord() : TriggerSkill("#guzheng-record")
+//    {
+//        events << CardsMoveOneTime;
+//        frequency = Compulsory;
+//    }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *erzhang, QVariant &data, ServerPlayer * &) const
-    {
-        if (!erzhang || !erzhang->isAlive() || !erzhang->hasSkill("guzheng")) return QStringList();
-        ServerPlayer *current = room->getCurrent();
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+//    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *erzhang, QVariant &data, ServerPlayer * &) const
+//    {
+//        if (!erzhang || !erzhang->isAlive() || !erzhang->hasSkill("guzheng")) return QStringList();
+//        ServerPlayer *current = room->getCurrent();
+//        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 
-        if (erzhang == current)
-            return QStringList();
+//        if (erzhang == current)
+//            return QStringList();
 
-        if (current->getPhase() == Player::Discard) {
-            QVariantList guzhengToGet = erzhang->tag["GuzhengToGet"].toList();
-            QVariantList guzhengOther = erzhang->tag["GuzhengOther"].toList();
+//        if (current->getPhase() == Player::Discard) {
+//            QVariantList guzhengToGet = erzhang->tag["GuzhengToGet"].toList();
+//            QVariantList guzhengOther = erzhang->tag["GuzhengOther"].toList();
 
-            if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
-                foreach (int card_id, move.card_ids) {
-                    if (move.from == current) {
-                        if (!guzhengToGet.contains(card_id))
-                            guzhengToGet << card_id;
-                    } else {
-                        if (!guzhengOther.contains(card_id))
-                            guzhengOther << card_id;
-                    }
-                }
-            }
+//            if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+//                foreach (int card_id, move.card_ids) {
+//                    if (move.from == current) {
+//                        if (!guzhengToGet.contains(card_id))
+//                            guzhengToGet << card_id;
+//                    } else {
+//                        if (!guzhengOther.contains(card_id))
+//                            guzhengOther << card_id;
+//                    }
+//                }
+//            }
 
-            erzhang->tag["GuzhengToGet"] = guzhengToGet;
-            erzhang->tag["GuzhengOther"] = guzhengOther;
-        }
+//            erzhang->tag["GuzhengToGet"] = guzhengToGet;
+//            erzhang->tag["GuzhengOther"] = guzhengOther;
+//        }
 
-        return QStringList();
-    }
-};
+//        return QStringList();
+//    }
+//};
 
 GuzhengCard::GuzhengCard()
 {
@@ -1507,14 +1506,43 @@ class Guzheng : public TriggerSkill
 public:
     Guzheng() : TriggerSkill("guzheng")
     {
-        events << EventPhaseEnd;
+        events << EventPhaseEnd << CardsMoveOneTime;
         view_as_skill = new GuzhengVS;
     }
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *erzhang, QVariant &data) const
+    {
+        if (!erzhang || !erzhang->isAlive() || !erzhang->hasSkill("guzheng") || triggerEvent != CardsMoveOneTime) return;
+        ServerPlayer *current = room->getCurrent();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+        if (erzhang == current)
+            return;
+
+        if (current->getPhase() == Player::Discard) {
+            QVariantList guzhengToGet = erzhang->tag["GuzhengToGet"].toList();
+            QVariantList guzhengOther = erzhang->tag["GuzhengOther"].toList();
+
+            if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                foreach (int card_id, move.card_ids) {
+                    if (move.from == current) {
+                        if (!guzhengToGet.contains(card_id))
+                            guzhengToGet << card_id;
+                    } else {
+                        if (!guzhengOther.contains(card_id))
+                            guzhengOther << card_id;
+                    }
+                }
+            }
+
+            erzhang->tag["GuzhengToGet"] = guzhengToGet;
+            erzhang->tag["GuzhengOther"] = guzhengOther;
+        }
+
+    }
+    virtual TriggerList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &) const
     {
         TriggerList skill_list;
-        if (player == NULL || player->getPhase() != Player::Discard) return skill_list;
+        if (player == NULL || e != EventPhaseEnd || player->getPhase() != Player::Discard) return skill_list;
         QList<ServerPlayer *> erzhangs = room->findPlayersBySkillName(objectName());
 
         foreach (ServerPlayer *erzhang, erzhangs) {
@@ -1776,8 +1804,8 @@ void StandardPackage::addWuGenerals()
     General *erzhang = new General(this, "erzhang", "wu", 3); // WU 015
     erzhang->addSkill(new Zhijian);
     erzhang->addSkill(new Guzheng);
-    erzhang->addSkill(new GuzhengRecord);
-    insertRelatedSkills("guzheng", "#guzheng-record");
+    //erzhang->addSkill(new GuzhengRecord);
+    //insertRelatedSkills("guzheng", "#guzheng-record");
 
     General *dingfeng = new General(this, "dingfeng", "wu"); // WU 016
     dingfeng->addSkill(new Duanbing);

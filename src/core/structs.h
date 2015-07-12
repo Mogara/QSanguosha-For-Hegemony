@@ -592,6 +592,7 @@ enum TriggerEvent
     TargetConfirmed,
     CardEffect,
     CardEffected,
+    CardEffectConfirmed, //after Nullification
     PostCardEffected,
     CardFinished,
     TrickCardCanceling,

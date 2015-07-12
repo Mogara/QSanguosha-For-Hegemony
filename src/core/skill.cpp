@@ -416,6 +416,11 @@ void TriggerSkill::insertPriority(TriggerEvent e, double value)
     priority.insert(e,value);
 }
 
+void TriggerSkill::record(TriggerEvent , Room *, ServerPlayer *, QVariant &) const
+{
+
+}
+
 QStringList TriggerSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer* &) const
 {
     if (triggerable(target))
