@@ -2443,6 +2443,7 @@ end
 
 function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 	local isDiscard = (method == sgs.Card_MethodDiscard)
+	local disable_list = disable_list or {}
 	local cardchosen = sgs.ai_skill_cardchosen[string.gsub(reason, "%-", "_")]
 	local card
 	if type(cardchosen) == "function" then
