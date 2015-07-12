@@ -1596,6 +1596,23 @@ public:
         Q_UNUSED($self);
         throw event;
     }
+    void returnToDrawPile(const QList<int> &cards, bool isBottom) {
+        if (isBottom) {
+            foreach (int id ,cards) {
+                $self->setCardMapping(id, NULL, Player::DrawPile);
+                $self->getDrawPile().append(id);
+            }
+        } else {
+            QListIterator<int> i(cards);
+            i.toBack();
+            while (i.hasPrevious()) {
+                int id = i.previous();
+                $self->setCardMapping(id, NULL, Player::DrawPile);
+                $self->getDrawPile().prepend(id);
+            }
+        }
+        $self->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, QVariant($self->getDrawPile().length()));
+    }
 };
 
 %{

@@ -2688,11 +2688,41 @@ function SmartAI:askForCard(pattern, prompt, data)
 end
 
 function SmartAI:askForUseCard(pattern, prompt, method)
-	local use_func = sgs.ai_skill_use[pattern]
-	if use_func then
-		return use_func(self, prompt, method) or "."
+	if string.find(pattern,"%d") then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		local to_choose = {}
+		for _,card in ipairs(cards)do
+			if sgs.Sanguosha:matchExpPattern(pattern,self.player,card) and card:isAvailable(self.player) then
+				local dummy_use = {isDummy = true}
+				if not card:targetFixed() then dummy_use.to = sgs.SPlayerList() end
+				self:useCardByClassName(card,dummy_use)
+				if dummy_use.card then
+					table.insert(to_choose,card)
+				end
+			end
+		end
+		if #to_choose == 0 then return "." end
+		self:sortByUseValue(to_choose)
+		local c = to_choose[1]
+		local dummy_use = {isDummy = true}
+		if not c:targetFixed() then dummy_use.to = sgs.SPlayerList() end
+		self:useCardByClassName(c,dummy_use)
+		local str = c:toString()
+		if not c:targetFixed() then 
+			local target_objectname = {}
+			for _, p in sgs.qlist(dummy_use.to) do
+				table.insert(target_objectname, p:objectName())
+			end
+			str = str .. "->" .. table.concat(target_objectname, "+")
+		end
+		return str
 	else
-		return "."
+		local use_func = sgs.ai_skill_use[pattern]
+		if use_func then
+			return use_func(self, prompt, method) or "."
+		else
+			return "."
+		end
 	end
 end
 
