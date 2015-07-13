@@ -3570,7 +3570,7 @@ void Room::loseHp(ServerPlayer *victim, int lose)
     doBroadcastNotify(S_COMMAND_CHANGE_HP, arg);
 
     thread->trigger(PostHpReduced, this, victim, data);
-    thread->trigger(HpLose, this, victim, data);
+    thread->trigger(HpLost, this, victim, data);
 }
 
 void Room::loseMaxHp(ServerPlayer *victim, int lose)
