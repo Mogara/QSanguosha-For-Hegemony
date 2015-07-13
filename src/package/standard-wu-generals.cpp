@@ -1300,12 +1300,19 @@ bool DimengCard::targetsFeasible(const QList<const Player *> &targets, const Pla
     return targets.length() == 2;
 }
 
+void DimengCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    ServerPlayer *a = card_use.to.at(0);
+    ServerPlayer *b = card_use.to.at(1);
+    a->setFlags("DimengTarget");
+    b->setFlags("DimengTarget");
+    SkillCard::onUse(room, card_use);
+}
+
 void DimengCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const
 {
     ServerPlayer *a = targets.at(0);
     ServerPlayer *b = targets.at(1);
-    a->setFlags("DimengTarget");
-    b->setFlags("DimengTarget");
 
     int n1 = a->getHandcardNum();
     int n2 = b->getHandcardNum();
