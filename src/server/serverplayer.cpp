@@ -1752,8 +1752,8 @@ void ServerPlayer::sendSkillsToOthers(bool head_skill /* = true */)
     QStringList names = room->getTag(objectName()).toStringList();
     if (names.isEmpty()) return;
 
-    QString general = head_skill ? names.first() : names.last();
-    foreach (const Skill *skill, Sanguosha->getGeneral(general)->getSkillList(true, head_skill)) {
+    const QList<const Skill *> skills = head_skill ? getHeadSkillList() : getDeputySkillList();
+    foreach (const Skill *skill, skills) {
         JsonArray args;
         args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
         args << objectName();
