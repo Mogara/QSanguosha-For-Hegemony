@@ -1941,7 +1941,7 @@ void Room::addPlayerHistory(ServerPlayer *player, const QString &key, int times)
         doBroadcastNotify(S_COMMAND_ADD_HISTORY, arg);
 }
 
-QList<int> Room::notifyChooseCards(ServerPlayer *player, const QList<int> &cards, const QString &reason, Player::Place notify_from_place, Player::Place notify_to_place, int max_num, int min_num, const QString &prompt)
+QList<int> Room::notifyChooseCards(ServerPlayer *player, const QList<int> &cards, const QString &reason, Player::Place notify_from_place, Player::Place notify_to_place, int max_num, int min_num, const QString &prompt, const QString &pattern)
 {
     setPlayerFlag(player,"Global_InTempMoving");
     CardsMoveStruct move(cards,NULL,player,notify_from_place,Player::PlaceSpecial,
@@ -1953,10 +1953,15 @@ QList<int> Room::notifyChooseCards(ServerPlayer *player, const QList<int> &cards
     _player.append(player);
     notifyMoveCards(true,moves,true,_player);
     notifyMoveCards(false,moves,true,_player);
+    QString new_pattern;
+    if (pattern.isEmpty())
+        new_pattern = ".|.|.|#"+reason;
+    else
+        new_pattern = pattern;
 
-    const Card *result = askForExchange(player,reason,max_num,min_num,prompt,"#"+reason,".|.|.|#"+reason);
+    const Card *result = askForExchange(player,reason,max_num,min_num,prompt,"#"+reason,new_pattern);
 
-    CardsMoveStruct move2(cards,NULL,player,Player::PlaceSpecial,notify_to_place,
+    CardsMoveStruct move2(cards,player,NULL,Player::PlaceSpecial,notify_to_place,
                          CardMoveReason(CardMoveReason::S_REASON_UNKNOWN,player->objectName()));
     move2.from_pile_name = "#"+reason;
     moves.clear();

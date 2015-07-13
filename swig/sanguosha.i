@@ -361,7 +361,7 @@ public:
 
     virtual QStringList getBigKingdoms(const char *reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const = 0;
 
-    QStringList getAcquiredSkills(const QString &flags) const;
+    QStringList getAcquiredSkills(const char *flags) const;
 };
 
 %extend Player {
@@ -1565,7 +1565,7 @@ public:
     QList <int> notifyChooseCards(ServerPlayer *player, const QList<int> &cards,
                                   const char *reason, Player::Place notify_from_place,
                                   Player::Place notify_to_place, int max_num,
-                                  int min_num = 0, const char *prompt = "");
+                                  int min_num = 0, const char *prompt = "",const char *pattern = "");
 
     inline Card *getCard(int cardId) const;
     inline void resetCard(int cardId);

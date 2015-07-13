@@ -400,7 +400,7 @@ public:
     QList <int> notifyChooseCards(ServerPlayer *player, const QList<int> &cards,
                                   const QString &reason, Player::Place notify_from_place,
                                   Player::Place notify_to_place, int max_num,
-                                  int min_num = 0, const QString &prompt = QString());
+                                  int min_num = 0, const QString &prompt = QString(),const QString &pattern = QString());
 
     //notification callbacks
     void toggleReadyCommand(ServerPlayer *player, const QVariant &);
