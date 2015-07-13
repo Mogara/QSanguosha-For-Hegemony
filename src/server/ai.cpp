@@ -169,6 +169,15 @@ bool TrustAI::useCard(const Card *card)
     return false;
 }
 
+QList<int> TrustAI::askForExchange(const QString &, const QString &pattern, int , int min_num, const QString &expand_pile)
+{
+    QList<int> to_discard;
+    if (min_num == 0)
+        return to_discard;
+    else
+        return self->forceToDiscard(min_num,pattern,expand_pile,false);
+}
+
 QList<ServerPlayer *> TrustAI::askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int min_num, int max_num)
 {
     Q_UNUSED(reason)
@@ -361,6 +370,30 @@ QList<int> LuaAI::askForDiscard(const QString &reason, int discard_num, int min_
         return result;
     else
         return TrustAI::askForDiscard(reason, discard_num, min_num, optional, include_equip);
+}
+
+QList<int> LuaAI::askForExchange(const QString &reason, const QString &pattern, int max_num, int min_num, const QString &expand_pile)
+{
+    lua_State *L = room->getLuaState();
+
+    pushCallback(L, __FUNCTION__);
+    lua_pushstring(L, reason.toLatin1());
+    lua_pushstring(L,pattern.toLatin1());
+    lua_pushinteger(L, max_num);
+    lua_pushinteger(L, min_num);
+    lua_pushstring(L,expand_pile.toLatin1());
+
+    int error = lua_pcall(L, 5, 1, 0);
+    if (error) {
+        reportError(L);
+        return TrustAI::askForExchange(reason,pattern,max_num,min_num,expand_pile);
+    }
+
+    QList<int> result;
+    if (getTable(L, result))
+        return result;
+    else
+        return TrustAI::askForExchange(reason,pattern,max_num,min_num,expand_pile);
 }
 
 bool LuaAI::getTable(lua_State *L, QList<int> &table)

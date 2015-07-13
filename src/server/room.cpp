@@ -1941,6 +1941,37 @@ void Room::addPlayerHistory(ServerPlayer *player, const QString &key, int times)
         doBroadcastNotify(S_COMMAND_ADD_HISTORY, arg);
 }
 
+QList<int> Room::notifyChooseCards(ServerPlayer *player, const QList<int> &cards, const QString &reason, Player::Place notify_from_place, Player::Place notify_to_place, int max_num, int min_num, const QString &prompt)
+{
+    setPlayerFlag(player,"Global_InTempMoving");
+    CardsMoveStruct move(cards,NULL,player,notify_from_place,Player::PlaceSpecial,
+                         CardMoveReason(CardMoveReason::S_REASON_UNKNOWN,player->objectName()));
+    move.to_pile_name = "#"+reason;
+    QList<CardsMoveStruct> moves;
+    moves.append(move);
+    QList<ServerPlayer *> _player;
+    _player.append(player);
+    notifyMoveCards(true,moves,true,_player);
+    notifyMoveCards(false,moves,true,_player);
+
+    const Card *result = askForExchange(player,reason,max_num,min_num,prompt,"#"+reason,".|.|.|#"+reason);
+
+    CardsMoveStruct move2(cards,NULL,player,Player::PlaceSpecial,notify_to_place,
+                         CardMoveReason(CardMoveReason::S_REASON_UNKNOWN,player->objectName()));
+    move2.from_pile_name = "#"+reason;
+    moves.clear();
+    moves.append(move2);
+    notifyMoveCards(true,moves,false,_player);
+    notifyMoveCards(false,moves,false,_player);
+
+    setPlayerFlag(player,"-Global_InTempMoving");
+    if(result)
+        return result->getSubcards();
+    else
+        return QList<int>();
+
+}
+
 void Room::setPlayerFlag(ServerPlayer *player, const QString &flag)
 {
     if (flag.startsWith("-")) {
@@ -5353,13 +5384,18 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
     return true;
 }
 
-const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, int discard_num, bool include_equip,
-    const QString &prompt, bool optional)
+const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, int exchange_num, int min_num,const QString &prompt, const QString &expand_pile,
+    const QString &pattern)
 {
     if (!player->isAlive())
         return NULL;
     tryPause();
     notifyMoveFocus(player, S_COMMAND_EXCHANGE_CARD);
+
+    QString  new_pattern;
+    if (pattern.isEmpty())
+        new_pattern = ".|.|.|" + (expand_pile.isEmpty() ? "." : expand_pile);
+
 
     AI *ai = player->getAI();
     QList<int> to_exchange;
@@ -5367,8 +5403,8 @@ const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, in
         // share the same callback interface
         player->setFlags("Global_AIDiscardExchanging");
         try {
-            to_exchange = ai->askForDiscard(reason, discard_num, discard_num, optional, include_equip);
-            if (optional && !to_exchange.isEmpty())
+            to_exchange = ai->askForExchange(reason,pattern,exchange_num,min_num,expand_pile);
+            if (min_num == 0 && !to_exchange.isEmpty())
                 thread->delay();
             player->setFlags("-Global_AIDiscardExchanging");
         }
@@ -5379,18 +5415,20 @@ const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, in
         }
     } else {
         JsonArray exchange_str;
-        exchange_str << discard_num;
-        exchange_str << include_equip;
+        exchange_str << exchange_num;
+        exchange_str << min_num;
         exchange_str << prompt;
-        exchange_str << optional;
+        exchange_str << expand_pile;
+        exchange_str << (pattern.isEmpty() ? new_pattern : pattern);
+        exchange_str << reason;
 
         bool success = doRequest(player, S_COMMAND_EXCHANGE_CARD, exchange_str, true);
         //@todo: also check if the player does have that card!!!
         JsonArray clientReply = player->getClientReply().value<JsonArray>();
-        if (!success || (int)clientReply.size() != discard_num
+        if (!success || (int)clientReply.size() < min_num || (int)clientReply.size() > exchange_num
             || !JsonUtils::tryParse(clientReply, to_exchange)) {
-            if (optional) return NULL;
-            to_exchange = player->forceToDiscard(discard_num, include_equip, false);
+            if (min_num == 0) return NULL;
+            to_exchange = player->forceToDiscard(min_num,pattern,expand_pile,false);
         }
     }
 

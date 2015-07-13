@@ -252,6 +252,12 @@ public:
     int choose_max_num;
     int choose_min_num;
 
+    int exchange_max;
+    int exchange_min;
+    QString exchange_pattern;
+    QString exchange_expand_pile;
+    QString exchange_reason;
+
 public slots:
     void signup();
     void onPlayerChooseGeneral(const QString &_name);

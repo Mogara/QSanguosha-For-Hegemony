@@ -45,7 +45,8 @@ Client *ClientInstance = NULL;
 Client::Client(QObject *parent, const QString &filename)
     : QObject(parent), m_isDiscardActionRefusable(true),
     status(NotActive), alive_count(1), swap_pile(0),
-    _m_roomState(true), choose_min_num(0), choose_max_num(0)
+    _m_roomState(true), choose_min_num(0), choose_max_num(0),
+    exchange_min(0), exchange_max(1), discard_num(0)
 {
     ClientInstance = this;
     m_isGameOver = false;
@@ -1348,28 +1349,46 @@ void Client::askForDiscard(const QVariant &reqvar)
 
 void Client::askForExchange(const QVariant &exchange)
 {
+//    JsonArray args = exchange.value<JsonArray>();
+//    if (!JsonUtils::isNumber(args[0]) || !JsonUtils::isBool(args[1])
+//        || !JsonUtils::isString(args[2]) || !JsonUtils::isBool(args[3])) {
+//        QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
+//        return;
+//    }
+
+//    discard_num = args[0].toInt();
+//    m_canDiscardEquip = args[1].toBool();
+//    QString prompt = args[2].toString();
+//    min_num = discard_num;
+//    m_isDiscardActionRefusable = args[3].toBool();
     JsonArray args = exchange.value<JsonArray>();
-    if (!JsonUtils::isNumber(args[0]) || !JsonUtils::isBool(args[1])
-        || !JsonUtils::isString(args[2]) || !JsonUtils::isBool(args[3])) {
+    if (args.size() != 6 || !JsonUtils::isNumber(args[0]) || !JsonUtils::isNumber(args[1])
+           || !JsonUtils::isString(args[2]) || !JsonUtils::isString(args[3])
+            || ! JsonUtils::isString(args[4]) || !JsonUtils::isString(args[5])){
         QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
         return;
     }
-
-    discard_num = args[0].toInt();
-    m_canDiscardEquip = args[1].toBool();
+    exchange_max = args[0].toInt();
+    exchange_min = args[1].toInt();
     QString prompt = args[2].toString();
-    min_num = discard_num;
-    m_isDiscardActionRefusable = args[3].toBool();
-
+    exchange_expand_pile = args[3].toString();
+    exchange_pattern = args[4].toString();
+    exchange_reason = args[5].toString();
+    m_isDiscardActionRefusable = (exchange_min == 0);
     if (prompt.isEmpty()) {
-        prompt = tr("Please give %1 cards to exchange").arg(discard_num);
+        if (m_isDiscardActionRefusable)
+            prompt = tr("Please give %1 cards to exchange at most").arg(exchange_max);
+        else if (exchange_max == exchange_min)
+            prompt = tr("Please give %1 cards to exchange").arg(exchange_max);
+        else
+            prompt = tr("Please give %1 to %2 cards to exchange").arg(exchange_min).arg(exchange_max);
         prompt_doc->setHtml(prompt);
     } else {
         QStringList texts = prompt.split(":");
         if (texts.length() < 4) {
             while (texts.length() < 3)
                 texts.append(QString());
-            texts.append(QString::number(discard_num));
+            texts.append(QString::number(exchange_max));
         }
         setPromptList(texts);
     }

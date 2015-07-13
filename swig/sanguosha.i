@@ -409,6 +409,7 @@ public:
     bool askForSkillInvoke(const char *skill_name, const QVariant &data = QVariant());
     bool askForSkillInvoke(const Skill *skill, const QVariant &data = QVariant());
     QList<int> forceToDiscard(int discard_num, bool include_equip, bool is_discard = true);
+    QList<int> forceToDiscard(int discard_num, const char *pattern, const char *expand_pile , bool is_discard);
     QList<int> handCards() const;
     virtual QList<const Card *> getHandcards() const;
     QList<const Card *> getCards(const char *flags) const;
@@ -1525,8 +1526,7 @@ public:
     bool askForSkillInvoke(ServerPlayer *player, const char *skill_name, const QVariant &data = QVariant());
     QString askForChoice(ServerPlayer *player, const char *skill_name, const char *choices, const QVariant &data = QVariant());
     bool askForDiscard(ServerPlayer *target, const char *reason, int discard_num, int min_num,bool optional = false, bool include_equip = false, const char *prompt = NULL, bool notify_skill = false);
-    const Card *askForExchange(ServerPlayer *player, const char *reason, int discard_num, bool include_equip = false,
-        const char *prompt = NULL, bool optional = false);
+    const Card *askForExchange(ServerPlayer *player, const char *reason, int exchange_num, int min_num = 0,const char *prompt = "", const char *expand_pile = "", const char *pattern = "");
     bool askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
     bool isCanceled(const CardEffectStruct &effect);
     int askForCardChosen(ServerPlayer *player, ServerPlayer *who, const char *flags, const char *reason,
@@ -1561,6 +1561,11 @@ public:
     QList<ServerPlayer *> askForPlayersChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets,
                                               const char *reason,int min_num = 0, int max_num = 2, const char *prompt = "",
                                               bool notify_skill = false);
+                                              
+    QList <int> notifyChooseCards(ServerPlayer *player, const QList<int> &cards,
+                                  const char *reason, Player::Place notify_from_place,
+                                  Player::Place notify_to_place, int max_num,
+                                  int min_num = 0, const char *prompt = "");
 
     inline Card *getCard(int cardId) const;
     inline void resetCard(int cardId);

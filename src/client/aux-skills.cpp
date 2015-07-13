@@ -267,3 +267,38 @@ void TransferSkill::setToSelect(int toSelect)
 {
     _toSelect = toSelect;
 }
+
+//--------------------------------------------------
+ExchangeSkill::ExchangeSkill()
+    : ViewAsSkill("exchange"), card(new DummyCard), num(0), minnum(0)
+{
+    card->setParent(this);
+    pattern = ".|.|.|.";
+}
+
+void ExchangeSkill::initialize(int num, int minnum, const QString &expand_pile, const QString &pattern)
+{
+    this->num = num;
+    this->minnum = minnum;
+    this->expand_pile = expand_pile;
+    this->pattern = pattern;
+}
+
+bool ExchangeSkill::viewFilter(const QList<const Card *> &selected, const Card *card) const
+{
+    if (selected.length() >= num)
+        return false;
+
+    return Sanguosha->matchExpPattern(pattern,Self,card);
+}
+
+const Card *ExchangeSkill::viewAs(const QList<const Card *> &cards) const
+{
+    if (cards.length() == 0) return NULL;
+    if (cards.length() >= minnum) {
+        card->clearSubcards();
+        card->addSubcards(cards);
+        return card;
+    } else
+        return NULL;
+}

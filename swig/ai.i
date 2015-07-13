@@ -51,6 +51,8 @@ public:
     virtual const Card *askForPindian(ServerPlayer *requestor, const char *reason) = 0;
     virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int max_num, int min_num) = 0;
     virtual const Card *askForSinglePeach(ServerPlayer *dying) = 0;
+    
+    virtual QList<int> askForExchange(const char *reason, const char *pattern, int max_num, int min_num, const char *expand_pile) = 0;
 };
 
 class TrustAI: public AI {
@@ -74,6 +76,9 @@ public:
     virtual const Card *askForSinglePeach(ServerPlayer *dying);
 
     virtual bool useCard(const Card *card);
+    
+    virtual QList<int> askForExchange(const char *, const char *pattern, int, int min_num, const char *expand_pile);
+
 };
 
 class LuaAI: public TrustAI {
@@ -91,7 +96,9 @@ public:
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const char *reason);
     virtual const Card *askForSinglePeach(ServerPlayer *dying);
     virtual const Card *askForPindian(ServerPlayer *requestor, const char *reanson);
-    virtual Card::Suit askForSuit(const QString&);
+    virtual Card::Suit askForSuit(const char *);
+    
+    virtual QList<int> askForExchange(const char *reason, const char *pattern, int max_num, int min_num, const char *expand_pile);
 
     LuaFunction callback;
 };
@@ -329,12 +336,29 @@ QList<ServerPlayer *> LuaAI::askForPlayersChosen(const QList<ServerPlayer *> &ta
     
     QList<ServerPlayer *> return_result;
     
-    if (!lua_istable(L,-1)) {
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
         room->output(QString("The result of function %1 should all a table!").arg(__FUNCTION__));
         return TrustAI::askForPlayersChosen(targets, reason,max_num,min_num);
     }
+
+    size_t len = lua_rawlen(L, -1);
+    size_t i;
+    int fails = 0;
+    for (i = 0; i < len; i++) {
+        lua_rawgeti(L, -1, i + 1);
+        void *player_ptr;
+        int result = SWIG_ConvertPtr(L, -1, &player_ptr, SWIGTYPE_p_ServerPlayer, 0);
+        lua_pop(L, 1);
+        if (SWIG_IsOK(result))
+            return_result << static_cast<ServerPlayer *>(player_ptr);
+        else
+            ++fails;
+    }
+
+    lua_pop(L, 1);
     
-    lua_pushnil(L);
+    /* lua_pushnil(L);
     int fails = 0;
     while (lua_next(L,-2)) {
         void *player_ptr;
@@ -345,7 +369,7 @@ QList<ServerPlayer *> LuaAI::askForPlayersChosen(const QList<ServerPlayer *> &ta
         else
             ++fails;
     }
-    lua_pop(L,1);
+    lua_pop(L,1); */
     if (fails > 0) {
         room->output(QString("The result of function %1 should all be ServerPlayers!").arg(__FUNCTION__));
         return TrustAI::askForPlayersChosen(targets, reason,max_num,min_num);

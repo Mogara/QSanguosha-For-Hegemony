@@ -157,6 +157,9 @@ RoomScene::RoomScene(QMainWindow *main_window)
     choose_skill = new ChoosePlayerSkill;
     choose_skill->setParent(this);
 
+    exchange_skill = new ExchangeSkill;
+    exchange_skill->setParent(this);
+
     miscellaneous_menu = new QMenu(main_window);
 
     // do signal-slot connections
@@ -2178,7 +2181,15 @@ void RoomScene::useSelectedCard()
         dashboard->unselectAll();
         break;
     }
-    case Client::Discarding:
+    case Client::Discarding:{
+        const Card *card = dashboard->getPendingCard();
+        if (card) {
+            ClientInstance->onPlayerDiscardCards(card);
+            dashboard->stopPending();
+            prompt_box->disappear();
+        }
+        break;
+    }
     case Client::Exchanging: {
         const Card *card = dashboard->getPendingCard();
         if (card) {
@@ -2608,8 +2619,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         discard_button->setEnabled(true);
         break;
     }
-    case Client::Discarding:
-    case Client::Exchanging: {
+    case Client::Discarding: {
         showPromptBox();
 
         ok_button->setEnabled(false);
@@ -2619,9 +2629,28 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         discard_skill->setNum(ClientInstance->discard_num);
         discard_skill->setMinNum(ClientInstance->min_num);
         discard_skill->setIncludeEquip(ClientInstance->m_canDiscardEquip);
-        discard_skill->setIsDiscard(newStatus != Client::Exchanging);
+        discard_skill->setIsDiscard(true);
         highlightSkillButton(ClientInstance->discard_reason);
         dashboard->startPending(discard_skill);
+        break;
+    }
+    case Client::Exchanging: {
+        showPromptBox();
+
+        ok_button->setEnabled(false);
+        cancel_button->setEnabled(ClientInstance->m_isDiscardActionRefusable);
+        discard_button->setEnabled(false);
+
+//        discard_skill->setNum(ClientInstance->discard_num);
+//        discard_skill->setMinNum(ClientInstance->min_num);
+//        discard_skill->setIncludeEquip(ClientInstance->m_canDiscardEquip);
+//        discard_skill->setIsDiscard(newStatus != Client::Exchanging);
+//        highlightSkillButton(ClientInstance->discard_reason);
+//        dashboard->startPending(discard_skill);
+        exchange_skill->initialize(ClientInstance->exchange_max,ClientInstance->exchange_min
+                                   ,ClientInstance->exchange_expand_pile,ClientInstance->exchange_pattern);
+        highlightSkillButton(ClientInstance->exchange_reason);
+        dashboard->startPending(exchange_skill);
         break;
     }
     case Client::ExecDialog: {
@@ -2832,7 +2861,13 @@ void RoomScene::doCancelButton()
         dashboard->stopPending();
         break;
     }
-    case Client::Discarding:
+    case Client::Discarding: {
+        dashboard->unselectAll();
+        dashboard->stopPending();
+        ClientInstance->onPlayerDiscardCards(NULL);
+        prompt_box->disappear();
+        break;
+    }
     case Client::Exchanging: {
         dashboard->unselectAll();
         dashboard->stopPending();

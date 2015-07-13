@@ -278,6 +278,7 @@ private:
     DiscardSkill *discard_skill;
     YijiViewAsSkill *yiji_skill;
     ChoosePlayerSkill *choose_skill;
+    ExchangeSkill *exchange_skill;
 
     QList<const Player *> selected_targets;
 

@@ -354,8 +354,8 @@ public:
     bool askForSkillInvoke(ServerPlayer *player, const QString &skill_name, const QVariant &data = QVariant());
     QString askForChoice(ServerPlayer *player, const QString &skill_name, const QString &choices, const QVariant &data = QVariant());
     bool askForDiscard(ServerPlayer *target, const QString &reason, int discard_num, int min_num, bool optional = false, bool include_equip = false, const QString &prompt = QString(), bool notify_skill = false);
-    const Card *askForExchange(ServerPlayer *player, const QString &reason, int discard_num, bool include_equip = false,
-        const QString &prompt = QString(), bool optional = false);
+    const Card *askForExchange(ServerPlayer *player, const QString &reason, int exchange_num, int min_num = 0, const QString &prompt = QString(),
+        const QString &expand_pile = QString(), const QString &pattern = QString());
     bool askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
     bool isCanceled(const CardEffectStruct &effect);
     int askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QString &flags, const QString &reason,
@@ -394,6 +394,13 @@ public:
     const Card *askForSinglePeach(ServerPlayer *player, ServerPlayer *dying);
     QString askForTriggerOrder(ServerPlayer *player, const QString &reason, SPlayerDataMap &skills, bool optional = true, const QVariant &data = QVariant());
     void addPlayerHistory(ServerPlayer *player, const QString &key, int times = 1);
+
+    //just for convenience
+
+    QList <int> notifyChooseCards(ServerPlayer *player, const QList<int> &cards,
+                                  const QString &reason, Player::Place notify_from_place,
+                                  Player::Place notify_to_place, int max_num,
+                                  int min_num = 0, const QString &prompt = QString());
 
     //notification callbacks
     void toggleReadyCommand(ServerPlayer *player, const QVariant &);

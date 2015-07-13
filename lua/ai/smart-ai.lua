@@ -57,6 +57,7 @@ sgs.ai_skill_askforyiji =   {}
 sgs.ai_skill_pindian =      {}
 sgs.ai_skill_playerchosen = {}
 sgs.ai_skill_discard =      {}
+sgs.ai_skill_exchange = 	{}
 sgs.ai_cardshow =           {}
 sgs.ai_nullification =      {}
 sgs.ai_skill_cardchosen =   {}
@@ -2063,6 +2064,23 @@ function SmartAI:askForChoice(skill_name, choices, data)
 		local r = math.random(1, #choice_table)
 		return choice_table[r]
 	end
+end
+
+function SmartAI:askForExchange(reason,pattern,max_num,min_num,expand_pile)
+	min_num = min_num or 0
+	local callback = sgs.ai_skill_exchange[reason]
+	if type(callback) == "function" then
+		local result = callback(self,pattern,max_num,min_num,expand_pile)
+		if type(result) == "number" then
+			return {result}
+		elseif type(result) == "table" then
+			return result
+		else
+			assert(false,"the Exchange result should be a number or a table")
+			return {}
+		end
+	end
+	return {}
 end
 
 function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_equip)
