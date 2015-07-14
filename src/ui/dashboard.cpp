@@ -1346,8 +1346,11 @@ void Dashboard::expandPileCards(const QString &pile_name)
         card_item->setPos(mapFromScene(card_item->scenePos()));
         card_item->setParentItem(this);
     }
-    foreach(CardItem *card_item, card_items)
-        _addHandCard(card_item, true, Sanguosha->translate(new_name));
+//    foreach(CardItem *card_item, card_items)
+//        _addHandCard(card_item, true, Sanguosha->translate(new_name));
+   for(int i = card_items.length() - 1 ;i >= 0 ;--i)
+        _addHandCard(card_items[i], true, Sanguosha->translate(new_name));
+
     adjustCards();
     _playMoveCardsAnimation(card_items, false);
     update();

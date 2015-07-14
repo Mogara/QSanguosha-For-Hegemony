@@ -1312,34 +1312,12 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     return result;
 }
 
-static bool checkCard(ServerPlayer *to_check,const QString &flags)
-{
-    if (to_check && to_check->isAlive() && !flags.isEmpty()){
-        if(flags.length() == 1){
-            if(flags == "h" && !to_check->isKongcheng())
-                return true;
-            else if (flags == "e" && !to_check->getEquips().isEmpty())
-                return true;
-            else if (flags == "j" && !to_check->getJudgingArea().isEmpty())
-                return true;
-        } else {
-            for (int i = 0; i < flags.length(); ++i)
-            {
-                QString flag = flags.at(i);
-                if (checkCard(to_check,flag))
-                    return true;
-            }
-        }
-    }
-    return false;
-}
-
 int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QString &flags, const QString &reason,
     bool handcard_visible, Card::HandlingMethod method, const QList<int> &disabled_ids)
 {
     tryPause();
     notifyMoveFocus(player, S_COMMAND_CHOOSE_CARD);
-    Q_ASSERT(checkCard(who,flags)); //a very six solution...
+    Q_ASSERT(!who->getCards(flags).isEmpty()); //a very six solution...
     if ((handcard_visible && !who->isKongcheng())) {
         QList<int> handcards = who->handCards();
         JsonArray arg;
@@ -1414,7 +1392,7 @@ QList<int> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee,
             if (src.isEmpty()) continue;
             QStringList handle = src.split("^");
             if (handle[0].isEmpty()) continue;
-            if (!checkCard(choosee,handle[0])) continue;
+            if (choosee->getCards(handle[0]).isEmpty()) continue;
             if (handle.length() == 1) handle.append("false");
             if (handle.length() == 2) handle.append("none");
             QList<int> ids;
