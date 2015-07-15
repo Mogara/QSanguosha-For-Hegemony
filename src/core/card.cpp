@@ -902,6 +902,11 @@ Card::HandlingMethod Card::getHandlingMethod() const
     return handling_method;
 }
 
+void Card::setCanRecast(bool can)
+{
+    can_recast = can;
+}
+
 void Card::setFlags(const QString &flag) const
 {
     static char symbol_c = '-';
