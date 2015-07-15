@@ -361,7 +361,6 @@ public:
 
     virtual QStringList getBigKingdoms(const char *reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const = 0;
 
-    QStringList getAcquiredSkills(const char *flags) const;
 };
 
 %extend Player {
