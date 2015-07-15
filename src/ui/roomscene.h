@@ -37,6 +37,7 @@ class Window;
 class Button;
 class CardContainer;
 class GuanxingBox;
+class CardChooseBox;
 class QSanButton;
 class QGroupBox;
 class ChooseGeneralBox;
@@ -283,6 +284,8 @@ private:
     QList<const Player *> selected_targets;
 
     GuanxingBox *m_guanxingBox;
+
+    CardChooseBox *m_cardchooseBox;
 
     ChooseGeneralBox *m_chooseGeneralBox;
 

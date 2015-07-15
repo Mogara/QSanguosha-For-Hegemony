@@ -55,4 +55,39 @@ private:
     QString zhuge;
 };
 
+
+class CardChooseBox : public CardContainer
+{
+    Q_OBJECT
+
+public:
+    CardChooseBox();
+    void reply();
+    virtual QRectF boundingRect() const;
+
+protected:
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+public slots:
+    void doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &pattern);
+    void clear();
+
+    void mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern);
+    void mirrorCardChooseMove(int from, int to);
+
+private slots:
+    void onItemReleased();
+    void onItemClicked();
+
+private:
+    QList<CardItem *> upItems, downItems;
+    bool up_only;
+    QString reason;
+    QString pattern;
+    void adjust();
+    int itemNumberOfFirstRow() const;
+    bool isOneRow() const;
+    QString zhuge;
+};
+
 #endif // GUANXINGBOX_H

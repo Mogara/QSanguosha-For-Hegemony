@@ -99,6 +99,7 @@ Client::Client(QObject *parent, const QString &filename)
     callbacks[S_COMMAND_CARD_FLAG] = &Client::setCardFlag;
     callbacks[S_COMMAND_UPDATE_HANDCARD_NUM] = &Client::setHandcardNum;
     callbacks[S_COMMAND_MIRROR_GUANXING_STEP] = &Client::mirrorGuanxingStep;
+    callbacks[S_COMMAND_MIRROR_MOVECARDS_STEP] = &Client::mirrorMoveCardsStep;
 
     // interactive methods
     interactions[S_COMMAND_CHOOSE_GENERAL] = &Client::askForGeneral;
@@ -107,6 +108,7 @@ Client::Client(QObject *parent, const QString &filename)
     interactions[S_COMMAND_EXCHANGE_CARD] = &Client::askForExchange;
     interactions[S_COMMAND_ASK_PEACH] = &Client::askForSinglePeach;
     interactions[S_COMMAND_SKILL_GUANXING] = &Client::askForGuanxing;
+    interactions[S_COMMAND_SKILL_MOVECARDS] = &Client::askForMoveCards;
     interactions[S_COMMAND_SKILL_GONGXIN] = &Client::askForGongxin;
     interactions[S_COMMAND_SKILL_YIJI] = &Client::askForYiji;
     interactions[S_COMMAND_PLAY_CARD] = &Client::activate;
@@ -238,6 +240,40 @@ void Client::mirrorGuanxingStep(const QVariant &args)
                 JsonUtils::tryParse(arg.at(3), cards);
             }
             emit mirror_guanxing_start(who, upOnly, cards);
+        }
+    } else if (step == S_GUANXING_MOVE) {
+        if (arg.size() >= 3) {
+            int from = arg.at(1).toInt();
+            int to = arg.at(2).toInt();
+            emit mirror_guanxing_move(from, to);
+        }
+    } else if (step == S_GUANXING_FINISH) {
+        emit mirror_guanxing_finish();
+    }
+}
+
+void Client::mirrorMoveCardsStep(const QVariant &args)
+{
+    JsonArray arg = args.value<JsonArray>();
+    if (arg.isEmpty()) return;
+
+    GuanxingStep step = static_cast<GuanxingStep>(arg.at(0).toInt());
+    if (step == S_GUANXING_START) {
+        if (arg.size() >= 3) {
+            QString who = arg.at(1).toString();
+            QString reason = arg.at(2).toString();
+            QString pattern = arg.at(4).toString();
+
+            QList<int> cards;
+            if (JsonUtils::isNumber(arg.at(3))) {
+                int cardNum = arg.at(3).toInt();
+                for (int i = 0; i < cardNum; i++) {
+                    cards << -1;
+                }
+            } else {
+                JsonUtils::tryParse(arg.at(3), cards);
+            }
+            emit mirror_cardchoose_start(who, reason, cards, pattern);
         }
     } else if (step == S_GUANXING_MOVE) {
         if (arg.size() >= 3) {
@@ -1801,6 +1837,35 @@ void Client::askForGuanxing(const QVariant &arg)
     }
 }
 
+void Client::askForMoveCards(const QVariant &arg)
+{
+    JsonArray args = arg.value<JsonArray>();
+    if (args.isEmpty())
+        return;
+
+    JsonArray deck = args[0].value<JsonArray>();
+
+    QString reason = args[1].toString();
+    QString pattern = args[2].toString();
+    QString skillName = args[3].toString();
+
+    QList<int> card_ids;
+    JsonUtils::tryParse(deck, card_ids);
+
+    skill_name = skillName;
+
+    emit cardchoose(card_ids, reason, pattern);
+    setStatus(AskForMoveCards);
+
+    if (recorder) {
+        JsonArray stepArgs;
+        stepArgs << S_GUANXING_START << QVariant() << false << args[0];
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_GUANXING_STEP);
+        packet.setMessageBody(stepArgs);
+        recorder->recordLine(packet.toJson());
+    }
+}
+
 void Client::showAllCards(const QVariant &arg)
 {
     JsonArray args = arg.value<JsonArray>();
@@ -1956,6 +2021,23 @@ void Client::onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> 
     decks << JsonUtils::toJsonArray(down_cards);
 
     replyToServer(S_COMMAND_SKILL_GUANXING, decks);
+
+    setStatus(NotActive);
+
+    if (recorder) {
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_GUANXING_STEP);
+        packet.setMessageBody(JsonArray() << S_GUANXING_FINISH);
+        recorder->recordLine(packet.toJson());
+    }
+}
+
+void Client::onPlayerReplyMoveCards(const QList<int> &up_cards, const QList<int> &down_cards)
+{
+    JsonArray decks;
+    decks << JsonUtils::toJsonArray(up_cards);
+    decks << JsonUtils::toJsonArray(down_cards);
+
+    replyToServer(S_COMMAND_SKILL_MOVECARDS, decks);
 
     setStatus(NotActive);
 

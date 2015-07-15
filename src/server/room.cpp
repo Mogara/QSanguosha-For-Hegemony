@@ -5639,6 +5639,50 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
 }
 
+QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const QString &reason, const QString &pattern, const QString &skillName)
+{
+    QList<int> top_cards, bottom_cards;
+    tryPause();
+    notifyMoveFocus(zhuge, S_COMMAND_SKILL_MOVECARDS);
+
+    JsonArray stepArgs;
+    if (visible){
+        stepArgs << S_GUANXING_START << zhuge->objectName() << reason << JsonUtils::toJsonArray(cards) << pattern;
+        doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
+    }
+
+    QList<int> empty;
+    JsonArray CardChooseArgs;
+    CardChooseArgs << JsonUtils::toJsonArray(cards);
+    CardChooseArgs << (reason);
+    CardChooseArgs << (pattern);
+    CardChooseArgs << (skillName);
+    bool success = doRequest(zhuge, S_COMMAND_SKILL_MOVECARDS, CardChooseArgs, true);
+    if (!success)
+        return empty;
+    JsonArray clientReply = zhuge->getClientReply().value<JsonArray>();
+    if (clientReply.size() == 2) {
+        success &= JsonUtils::tryParse(clientReply[0], top_cards);
+        success &= JsonUtils::tryParse(clientReply[1], bottom_cards);
+    }
+
+    if (visible){
+        stepArgs.clear();
+        stepArgs << S_GUANXING_FINISH;
+        doBroadcastNotify(S_COMMAND_MIRROR_GUANXING_STEP, stepArgs, zhuge);
+    }
+
+    bool length_equal = top_cards.length() + bottom_cards.length() == cards.length();
+    bool result_equal = top_cards.toSet() + bottom_cards.toSet() == cards.toSet();
+    if (length_equal && result_equal){
+        if (pattern == "")
+            empty = top_cards;
+        else
+            empty = bottom_cards;
+    }
+    return empty;
+}
+
 int Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids, const QString &skill_name)
 {
     Q_ASSERT(!target->isKongcheng());
