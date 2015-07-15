@@ -106,6 +106,7 @@ public:
     void onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> &down_cards);
     void onPlayerReplyMoveCards(const QList<int> &up_cards, const QList<int> &down_cards);
     void onPlayerDoGuanxingStep(int from, int to);
+    void onPlayerDoMoveCardsStep(int from, int to);
     QList<const ClientPlayer *> getPlayers() const;
     void speakToServer(const QString &text);
     ClientPlayer *getPlayer(const QString &name);
@@ -386,6 +387,8 @@ signals:
     void mirror_guanxing_finish();
 
     void mirror_cardchoose_start(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern);
+    void mirror_cardchoose_move(int from, int to);
+    void mirror_cardchoose_finish();
 
     void ag_filled(const QList<int> &card_ids, const QList<int> &disabled_ids);
     void ag_taken(ClientPlayer *taker, int card_id, bool move_cards);

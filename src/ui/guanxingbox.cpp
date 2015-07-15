@@ -362,7 +362,6 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
     }
 
     zhuge.clear();//self
-    this->up_only = false;
     this->reason = reason;
     this->pattern = pattern;
     upItems.clear();
@@ -484,7 +483,7 @@ void CardChooseBox::onItemReleased()
     const int cardHeight = G_COMMON_LAYOUT.m_cardNormalHeight;
     const int middleY = 45 + (isOneRow() ? cardHeight : (cardHeight * 2 + cardInterval));
 
-    bool toUpItems = (up_only || item->y() + cardHeight / 2 <= middleY);
+    bool toUpItems = (item->y() + cardHeight / 2 <= middleY);
     QList<CardItem *> *items = toUpItems ? &upItems : &downItems;
     bool oddRow = true;
     if (!isOneRow() && count % 2) {
@@ -498,14 +497,14 @@ void CardChooseBox::onItemReleased()
     items->insert(c, item);
 
     int toPos = toUpItems ? c + 1 : -c - 1;
-    ClientInstance->onPlayerDoGuanxingStep(fromPos, toPos);
+    ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos);
     adjust();
 }
 
 void CardChooseBox::onItemClicked()
 {
     CardItem *item = qobject_cast<CardItem *>(sender());
-    if (item == NULL || up_only) return;
+    if (item == NULL) return;
 
     int fromPos, toPos;
     if (upItems.contains(item)) {
@@ -520,7 +519,7 @@ void CardChooseBox::onItemClicked()
         upItems.append(item);
     }
 
-    ClientInstance->onPlayerDoGuanxingStep(fromPos, toPos);
+    ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos);
     adjust();
 }
 
@@ -620,13 +619,14 @@ QRectF CardChooseBox::boundingRect() const
     const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
     bool one_row = true;
-    int width = (card_width + cardInterval) * itemCount - cardInterval + 50;
+    int min = itemCount >= 3 ? itemCount : 3;
+    int width = (card_width + cardInterval) * min - cardInterval + 50;
     if (width * 1.5 > (scene_width ? scene_width : 800)) {
         width = (card_width + cardInterval) * ((itemCount + 1) / 2) - cardInterval + 50;
         one_row = false;
     }
     int height = (one_row ? 1 : 2) * card_height + (one_row ? 0 : cardInterval);
-    if (!up_only) height = height * 2 + cardInterval;
+    height = height * 2 + cardInterval;
     height += 90;
 
     return QRectF(0, 0, width, height);
@@ -634,18 +634,12 @@ QRectF CardChooseBox::boundingRect() const
 
 void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    QString title = QString("%1:%2").arg(Sanguosha->translate(reason)).arg(Sanguosha->translate("@" + reason));
-    QByteArray ba;
+    QString title = QString("%1: %2").arg(Sanguosha->translate(reason)).arg(Sanguosha->translate("@" + reason));
     if (zhuge.isEmpty()) {
-        ba = title.toLatin1();
-        char* titlech = ba.data();
-        GraphicsBox::paintGraphicsBoxStyle(painter, tr(titlech), boundingRect());
+        GraphicsBox::paintGraphicsBoxStyle(painter, title, boundingRect());
     } else {
         QString playerName = ClientInstance->getPlayerName(zhuge);
-        QString atitle = QString("%1 2% is choosing").arg(playerName).arg(title);
-        ba = atitle.toLatin1();
-        char* titlech = ba.data();
-        GraphicsBox::paintGraphicsBoxStyle(painter, tr(titlech), boundingRect());
+        GraphicsBox::paintGraphicsBoxStyle(painter, tr("%1 is Choosing: %2").arg(playerName).arg(Sanguosha->translate(reason)), boundingRect());
     }
 
     const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
@@ -673,25 +667,21 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
         }
         QRect top_rect(x, y, card_width, card_height);
         painter->drawPixmap(top_rect, G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CHOOSE_GENERAL_BOX_DEST_SEAT));
-        if (!up_only) {
-            QString description1;
-            QString description2;
-            if (pattern != ""){
-                description1 = Sanguosha->translate("cardsbechosen");
-                description2 = Sanguosha->translate("cardstoget");
-            }else{
-                description1 = Sanguosha->translate("cardstoget");
-                description2 = Sanguosha->translate("cardstodrop");
-            }
-            ba = description1.toLatin1();
-            char* description1ch = ba.data();
-            ba = description2.toLatin1();
-            char* description2ch = ba.data();
-            IQSanComponentSkin::QSanSimpleTextFont font = G_COMMON_LAYOUT.m_chooseGeneralBoxDestSeatFont;
-            font.paintText(painter, top_rect, Qt::AlignCenter, tr(description1ch));
-            QRect bottom_rect(x, y + (card_height + cardInterval) * (one_row ? 1 : 2), card_width, card_height);
-            painter->drawPixmap(bottom_rect, G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CHOOSE_GENERAL_BOX_DEST_SEAT));
-            font.paintText(painter, bottom_rect, Qt::AlignCenter, tr(description2ch));
+
+        QString description1;
+        QString description2;
+        if (pattern != ""){
+            description1 = tr("CardsSelectable");
+            description2 = tr("CardsSelected");
+        }else{
+            description1 = tr("CardstoGet");
+            description2 = tr("CardstoDrop");
         }
+        IQSanComponentSkin::QSanSimpleTextFont font = G_COMMON_LAYOUT.m_chooseGeneralBoxDestSeatFont;
+        font.paintText(painter, top_rect, Qt::AlignCenter, description1);
+        QRect bottom_rect(x, y + (card_height + cardInterval) * (one_row ? 1 : 2), card_width, card_height);
+        painter->drawPixmap(bottom_rect, G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CHOOSE_GENERAL_BOX_DEST_SEAT));
+        font.paintText(painter, bottom_rect, Qt::AlignCenter, description2);
+
     }
 }

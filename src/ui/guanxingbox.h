@@ -81,7 +81,6 @@ private slots:
 
 private:
     QList<CardItem *> upItems, downItems;
-    bool up_only;
     QString reason;
     QString pattern;
     void adjust();

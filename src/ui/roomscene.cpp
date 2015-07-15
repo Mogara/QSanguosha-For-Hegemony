@@ -219,6 +219,8 @@ RoomScene::RoomScene(QMainWindow *main_window)
 
     connect(ClientInstance, &Client::cardchoose, m_cardchooseBox, &CardChooseBox::doCardChoose);
     connect(ClientInstance, &Client::mirror_cardchoose_start, m_cardchooseBox, &CardChooseBox::mirrorCardChooseStart);
+    connect(ClientInstance, &Client::mirror_cardchoose_move, m_cardchooseBox, &CardChooseBox::mirrorCardChooseMove);
+    connect(ClientInstance, &Client::mirror_cardchoose_finish, m_cardchooseBox, &CardChooseBox::clear);
 
     m_chooseGeneralBox = new ChooseGeneralBox;
     m_chooseGeneralBox->hide();

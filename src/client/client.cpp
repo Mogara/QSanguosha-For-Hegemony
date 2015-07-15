@@ -279,10 +279,10 @@ void Client::mirrorMoveCardsStep(const QVariant &args)
         if (arg.size() >= 3) {
             int from = arg.at(1).toInt();
             int to = arg.at(2).toInt();
-            emit mirror_guanxing_move(from, to);
+            emit mirror_cardchoose_move(from, to);
         }
     } else if (step == S_GUANXING_FINISH) {
-        emit mirror_guanxing_finish();
+        emit mirror_cardchoose_finish();
     }
 }
 
@@ -1859,8 +1859,8 @@ void Client::askForMoveCards(const QVariant &arg)
 
     if (recorder) {
         JsonArray stepArgs;
-        stepArgs << S_GUANXING_START << QVariant() << false << args[0];
-        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_GUANXING_STEP);
+        stepArgs << S_GUANXING_START << QVariant() << args[1] << args[0] << args[2] << args[3];
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_MOVECARDS_STEP);
         packet.setMessageBody(stepArgs);
         recorder->recordLine(packet.toJson());
     }
@@ -2042,7 +2042,7 @@ void Client::onPlayerReplyMoveCards(const QList<int> &up_cards, const QList<int>
     setStatus(NotActive);
 
     if (recorder) {
-        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_GUANXING_STEP);
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_MOVECARDS_STEP);
         packet.setMessageBody(JsonArray() << S_GUANXING_FINISH);
         recorder->recordLine(packet.toJson());
     }
@@ -2060,6 +2060,20 @@ void Client::onPlayerDoGuanxingStep(int from, int to)
         recorder->recordLine(packet.toJson());
     }
 }
+
+void Client::onPlayerDoMoveCardsStep(int from, int to)
+{
+    JsonArray args;
+    args << S_GUANXING_MOVE << from << to;
+    notifyServer(S_COMMAND_MIRROR_MOVECARDS_STEP, args);
+
+    if (recorder) {
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_MOVECARDS_STEP);
+        packet.setMessageBody(args);
+        recorder->recordLine(packet.toJson());
+    }
+}
+
 
 void Client::log(const QVariant &log_str)
 {
