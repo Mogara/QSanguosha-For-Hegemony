@@ -397,6 +397,8 @@ public:
 
     //just for convenience
 
+    void notifyMoveToPile(ServerPlayer *player, const QList<int> &cards,const QString &reason, Player::Place place, bool in, bool is_visible);
+
     QList <int> notifyChooseCards(ServerPlayer *player, const QList<int> &cards,
                                   const QString &reason, Player::Place notify_from_place,
                                   Player::Place notify_to_place, int max_num,
