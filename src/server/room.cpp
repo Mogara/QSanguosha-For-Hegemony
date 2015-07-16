@@ -115,6 +115,7 @@ void Room::initCallbacks()
     callbacks[S_COMMAND_PAUSE] = &Room::pauseCommand;
     callbacks[S_COMMAND_NETWORK_DELAY_TEST] = &Room::networkDelayTestCommand;
     callbacks[S_COMMAND_MIRROR_GUANXING_STEP] = &Room::mirrorGuanxingStepCommand;
+    callbacks[S_COMMAND_MIRROR_MOVECARDS_STEP] = &Room::mirrorMoveCardsStepCommand;
     callbacks[S_COMMAND_CHANGE_SKIN] = &Room::changeSkinCommand;
 
     // Cheat commands
@@ -1312,34 +1313,12 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     return result;
 }
 
-static bool checkCard(ServerPlayer *to_check,const QString &flags)
-{
-    if (to_check && to_check->isAlive() && !flags.isEmpty()){
-        if(flags.length() == 1){
-            if(flags == "h" && !to_check->isKongcheng())
-                return true;
-            else if (flags == "e" && !to_check->getEquips().isEmpty())
-                return true;
-            else if (flags == "j" && !to_check->getJudgingArea().isEmpty())
-                return true;
-        } else {
-            for (int i = 0; i < flags.length(); ++i)
-            {
-                QString flag = flags.at(i);
-                if (checkCard(to_check,flag))
-                    return true;
-            }
-        }
-    }
-    return false;
-}
-
 int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QString &flags, const QString &reason,
     bool handcard_visible, Card::HandlingMethod method, const QList<int> &disabled_ids)
 {
     tryPause();
     notifyMoveFocus(player, S_COMMAND_CHOOSE_CARD);
-    Q_ASSERT(checkCard(who,flags)); //a very six solution...
+    Q_ASSERT(!who->getCards(flags).isEmpty()); //a very six solution...
     if ((handcard_visible && !who->isKongcheng())) {
         QList<int> handcards = who->handCards();
         JsonArray arg;
@@ -1414,7 +1393,7 @@ QList<int> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee,
             if (src.isEmpty()) continue;
             QStringList handle = src.split("^");
             if (handle[0].isEmpty()) continue;
-            if (!checkCard(choosee,handle[0])) continue;
+            if (choosee->getCards(handle[0]).isEmpty()) continue;
             if (handle.length() == 1) handle.append("false");
             if (handle.length() == 2) handle.append("none");
             QList<int> ids;
@@ -1939,6 +1918,42 @@ void Room::addPlayerHistory(ServerPlayer *player, const QString &key, int times)
         doNotify(player, S_COMMAND_ADD_HISTORY, arg);
     else
         doBroadcastNotify(S_COMMAND_ADD_HISTORY, arg);
+}
+
+QList<int> Room::notifyChooseCards(ServerPlayer *player, const QList<int> &cards, const QString &reason, Player::Place notify_from_place, Player::Place notify_to_place, int max_num, int min_num, const QString &prompt, const QString &pattern)
+{
+    setPlayerFlag(player,"Global_InTempMoving");
+    CardsMoveStruct move(cards,NULL,player,notify_from_place,Player::PlaceSpecial,
+                         CardMoveReason(CardMoveReason::S_REASON_UNKNOWN,player->objectName()));
+    move.to_pile_name = "#"+reason;
+    QList<CardsMoveStruct> moves;
+    moves.append(move);
+    QList<ServerPlayer *> _player;
+    _player.append(player);
+    notifyMoveCards(true,moves,true,_player);
+    notifyMoveCards(false,moves,true,_player);
+    QString new_pattern;
+    if (pattern.isEmpty())
+        new_pattern = ".|.|.|#"+reason;
+    else
+        new_pattern = pattern;
+
+    const Card *result = askForExchange(player,reason,max_num,min_num,prompt,"#"+reason,new_pattern);
+
+    CardsMoveStruct move2(cards,player,NULL,Player::PlaceSpecial,notify_to_place,
+                         CardMoveReason(CardMoveReason::S_REASON_UNKNOWN,player->objectName()));
+    move2.from_pile_name = "#"+reason;
+    moves.clear();
+    moves.append(move2);
+    notifyMoveCards(true,moves,false,_player);
+    notifyMoveCards(false,moves,false,_player);
+
+    setPlayerFlag(player,"-Global_InTempMoving");
+    if(result)
+        return result->getSubcards();
+    else
+        return QList<int>();
+
 }
 
 void Room::setPlayerFlag(ServerPlayer *player, const QString &flag)
@@ -2805,6 +2820,11 @@ void Room::mirrorGuanxingStepCommand(ServerPlayer *player, const QVariant &arg)
     doBroadcastNotify(S_COMMAND_MIRROR_GUANXING_STEP, arg, player);
 }
 
+void Room::mirrorMoveCardsStepCommand(ServerPlayer *player, const QVariant &arg)
+{
+    doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, arg, player);
+}
+
 void Room::changeSkinCommand(ServerPlayer *player, const QVariant &arg)
 {
     JsonArray args = arg.value<JsonArray>();
@@ -3534,6 +3554,7 @@ void Room::loseHp(ServerPlayer *victim, int lose)
     doBroadcastNotify(S_COMMAND_CHANGE_HP, arg);
 
     thread->trigger(PostHpReduced, this, victim, data);
+    thread->trigger(HpLost, this, victim, data);
 }
 
 void Room::loseMaxHp(ServerPlayer *victim, int lose)
@@ -5353,13 +5374,18 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
     return true;
 }
 
-const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, int discard_num, bool include_equip,
-    const QString &prompt, bool optional)
+const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, int exchange_num, int min_num,const QString &prompt, const QString &expand_pile,
+    const QString &pattern)
 {
     if (!player->isAlive())
         return NULL;
     tryPause();
     notifyMoveFocus(player, S_COMMAND_EXCHANGE_CARD);
+
+    QString  new_pattern;
+    if (pattern.isEmpty())
+        new_pattern = ".|.|.|" + (expand_pile.isEmpty() ? "." : expand_pile);
+
 
     AI *ai = player->getAI();
     QList<int> to_exchange;
@@ -5367,8 +5393,8 @@ const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, in
         // share the same callback interface
         player->setFlags("Global_AIDiscardExchanging");
         try {
-            to_exchange = ai->askForDiscard(reason, discard_num, discard_num, optional, include_equip);
-            if (optional && !to_exchange.isEmpty())
+            to_exchange = ai->askForExchange(reason,pattern,exchange_num,min_num,expand_pile);
+            if (min_num == 0 && !to_exchange.isEmpty())
                 thread->delay();
             player->setFlags("-Global_AIDiscardExchanging");
         }
@@ -5379,18 +5405,20 @@ const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, in
         }
     } else {
         JsonArray exchange_str;
-        exchange_str << discard_num;
-        exchange_str << include_equip;
+        exchange_str << exchange_num;
+        exchange_str << min_num;
         exchange_str << prompt;
-        exchange_str << optional;
+        exchange_str << expand_pile;
+        exchange_str << (pattern.isEmpty() ? new_pattern : pattern);
+        exchange_str << reason;
 
         bool success = doRequest(player, S_COMMAND_EXCHANGE_CARD, exchange_str, true);
         //@todo: also check if the player does have that card!!!
         JsonArray clientReply = player->getClientReply().value<JsonArray>();
-        if (!success || (int)clientReply.size() != discard_num
+        if (!success || (int)clientReply.size() < min_num || (int)clientReply.size() > exchange_num
             || !JsonUtils::tryParse(clientReply, to_exchange)) {
-            if (optional) return NULL;
-            to_exchange = player->forceToDiscard(discard_num, include_equip, false);
+            if (min_num == 0) return NULL;
+            to_exchange = player->forceToDiscard(min_num,pattern,expand_pile,false);
         }
     }
 
@@ -5615,6 +5643,50 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
 
     QVariant decisionData = QVariant::fromValue("guanxingViewCards:" + zhuge->objectName() + ":" + IntList2StringList(top_cards).join("+") + ":" + IntList2StringList(bottom_cards).join("+"));
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
+}
+
+QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const QString &reason, const QString &pattern, const QString &skillName)
+{
+    QList<int> top_cards, bottom_cards;
+    tryPause();
+    notifyMoveFocus(zhuge, S_COMMAND_SKILL_MOVECARDS);
+
+    JsonArray stepArgs;
+    if (visible){
+        stepArgs << S_GUANXING_START << zhuge->objectName() << reason << JsonUtils::toJsonArray(cards) << pattern;
+        doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
+    }
+
+    QList<int> empty;
+    JsonArray CardChooseArgs;
+    CardChooseArgs << JsonUtils::toJsonArray(cards);
+    CardChooseArgs << (reason);
+    CardChooseArgs << (pattern);
+    CardChooseArgs << (skillName);
+    bool success = doRequest(zhuge, S_COMMAND_SKILL_MOVECARDS, CardChooseArgs, true);
+    if (!success)
+        return empty;
+    JsonArray clientReply = zhuge->getClientReply().value<JsonArray>();
+    if (clientReply.size() == 2) {
+        success &= JsonUtils::tryParse(clientReply[0], top_cards);
+        success &= JsonUtils::tryParse(clientReply[1], bottom_cards);
+    }
+
+    if (visible){
+        stepArgs.clear();
+        stepArgs << S_GUANXING_FINISH;
+        doBroadcastNotify(S_COMMAND_MIRROR_GUANXING_STEP, stepArgs, zhuge);
+    }
+
+    bool length_equal = top_cards.length() + bottom_cards.length() == cards.length();
+    bool result_equal = top_cards.toSet() + bottom_cards.toSet() == cards.toSet();
+    if (length_equal && result_equal){
+        if (pattern == "")
+            empty = top_cards;
+        else
+            empty = bottom_cards;
+    }
+    return empty;
 }
 
 int Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids, const QString &skill_name)

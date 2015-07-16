@@ -250,6 +250,30 @@ QList<int> ServerPlayer::forceToDiscard(int discard_num, bool include_equip, boo
     return to_discard;
 }
 
+QList<int> ServerPlayer::forceToDiscard(int discard_num, const QString &pattern, const QString &expand_pile , bool is_discard)
+{
+    QList<int> to_discard;
+    QList<const Card *> all_cards;
+    foreach (const Card *c,getCards("he")) {
+        if (Sanguosha->matchExpPattern(pattern,this,c))
+            all_cards << c;
+    }
+    foreach(const QString &pile,expand_pile.split("+"))
+        foreach (int id,getPile(pile)) {
+            all_cards << Sanguosha->getCard(id);
+        }
+    qShuffle(all_cards);
+
+    for (int i = 0; i < all_cards.length(); i++) {
+        if (!is_discard || !isJilei(all_cards.at(i)))
+            to_discard << all_cards.at(i)->getId();
+        if (to_discard.length() == discard_num)
+            break;
+    }
+
+    return to_discard;
+}
+
 int ServerPlayer::aliveCount(bool includeRemoved) const
 {
     int n = room->alivePlayerCount();
@@ -1728,8 +1752,8 @@ void ServerPlayer::sendSkillsToOthers(bool head_skill /* = true */)
     QStringList names = room->getTag(objectName()).toStringList();
     if (names.isEmpty()) return;
 
-    QString general = head_skill ? names.first() : names.last();
-    foreach (const Skill *skill, Sanguosha->getGeneral(general)->getSkillList(true, head_skill)) {
+    const QList<const Skill *> skills = head_skill ? getHeadSkillList() : getDeputySkillList();
+    foreach (const Skill *skill, skills) {
         JsonArray args;
         args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
         args << objectName();

@@ -157,6 +157,9 @@ RoomScene::RoomScene(QMainWindow *main_window)
     choose_skill = new ChoosePlayerSkill;
     choose_skill->setParent(this);
 
+    exchange_skill = new ExchangeSkill;
+    exchange_skill->setParent(this);
+
     miscellaneous_menu = new QMenu(main_window);
 
     // do signal-slot connections
@@ -208,6 +211,16 @@ RoomScene::RoomScene(QMainWindow *main_window)
     connect(ClientInstance, &Client::mirror_guanxing_move, m_guanxingBox, &GuanxingBox::mirrorGuanxingMove);
     connect(ClientInstance, &Client::mirror_guanxing_finish, m_guanxingBox, &GuanxingBox::clear);
     m_guanxingBox->moveBy(-120, 0);
+
+    m_cardchooseBox = new CardChooseBox;
+    m_cardchooseBox->hide();
+    addItem(m_cardchooseBox);
+    m_cardchooseBox->setZValue(20000.0);
+
+    connect(ClientInstance, &Client::cardchoose, m_cardchooseBox, &CardChooseBox::doCardChoose);
+    connect(ClientInstance, &Client::mirror_cardchoose_start, m_cardchooseBox, &CardChooseBox::mirrorCardChooseStart);
+    connect(ClientInstance, &Client::mirror_cardchoose_move, m_cardchooseBox, &CardChooseBox::mirrorCardChooseMove);
+    connect(ClientInstance, &Client::mirror_cardchoose_finish, m_cardchooseBox, &CardChooseBox::clear);
 
     m_chooseGeneralBox = new ChooseGeneralBox;
     m_chooseGeneralBox->hide();
@@ -987,6 +1000,7 @@ void RoomScene::updateTable()
     m_tablePile->adjustCards();
     m_cardContainer->setPos(m_tableCenterPos - QPointF(m_cardContainer->boundingRect().width() / 2, m_cardContainer->boundingRect().height() / 2));
     m_guanxingBox->setPos(m_tableCenterPos - QPointF(m_guanxingBox->boundingRect().width() / 2, m_guanxingBox->boundingRect().height() / 2));
+    m_cardchooseBox->setPos(m_tableCenterPos - QPointF(m_cardchooseBox->boundingRect().width() / 2, m_cardchooseBox->boundingRect().height() / 2));
     m_chooseGeneralBox->setPos(m_tableCenterPos - QPointF(m_chooseGeneralBox->boundingRect().width() / 2, m_chooseGeneralBox->boundingRect().height() / 2));
     m_chooseOptionsBox->setPos(m_tableCenterPos - QPointF(m_chooseOptionsBox->boundingRect().width() / 2, m_chooseOptionsBox->boundingRect().height() / 2));
     m_chooseTriggerOrderBox->setPos(m_tableCenterPos - QPointF(m_chooseTriggerOrderBox->boundingRect().width() / 2, m_chooseTriggerOrderBox->boundingRect().height() / 2));
@@ -2178,7 +2192,15 @@ void RoomScene::useSelectedCard()
         dashboard->unselectAll();
         break;
     }
-    case Client::Discarding:
+    case Client::Discarding:{
+        const Card *card = dashboard->getPendingCard();
+        if (card) {
+            ClientInstance->onPlayerDiscardCards(card);
+            dashboard->stopPending();
+            prompt_box->disappear();
+        }
+        break;
+    }
     case Client::Exchanging: {
         const Card *card = dashboard->getPendingCard();
         if (card) {
@@ -2225,6 +2247,10 @@ void RoomScene::useSelectedCard()
     }
     case Client::AskForGuanxing: {
         m_guanxingBox->reply();
+        break;
+    }
+    case Client::AskForMoveCards: {
+        m_cardchooseBox->reply();
         break;
     }
     case Client::AskForGongxin: {
@@ -2408,6 +2434,10 @@ void RoomScene::doTimeout()
         break;
     }
     case Client::AskForGuanxing:
+    case Client::AskForMoveCards:{
+        ok_button->click();
+        break;
+    }
     case Client::AskForGongxin: {
         ok_button->click();
         break;
@@ -2480,6 +2510,10 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             break;
         }
         case Client::AskForGuanxing:
+        case Client::AskForMoveCards:{
+            m_cardchooseBox->clear();
+            break;
+        }
         case Client::AskForGongxin: {
             m_guanxingBox->clear();
             if (!m_cardContainer->retained())
@@ -2608,8 +2642,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         discard_button->setEnabled(true);
         break;
     }
-    case Client::Discarding:
-    case Client::Exchanging: {
+    case Client::Discarding: {
         showPromptBox();
 
         ok_button->setEnabled(false);
@@ -2619,9 +2652,28 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         discard_skill->setNum(ClientInstance->discard_num);
         discard_skill->setMinNum(ClientInstance->min_num);
         discard_skill->setIncludeEquip(ClientInstance->m_canDiscardEquip);
-        discard_skill->setIsDiscard(newStatus != Client::Exchanging);
+        discard_skill->setIsDiscard(true);
         highlightSkillButton(ClientInstance->discard_reason);
         dashboard->startPending(discard_skill);
+        break;
+    }
+    case Client::Exchanging: {
+        showPromptBox();
+
+        ok_button->setEnabled(false);
+        cancel_button->setEnabled(ClientInstance->m_isDiscardActionRefusable);
+        discard_button->setEnabled(false);
+
+//        discard_skill->setNum(ClientInstance->discard_num);
+//        discard_skill->setMinNum(ClientInstance->min_num);
+//        discard_skill->setIncludeEquip(ClientInstance->m_canDiscardEquip);
+//        discard_skill->setIsDiscard(newStatus != Client::Exchanging);
+//        highlightSkillButton(ClientInstance->discard_reason);
+//        dashboard->startPending(discard_skill);
+        exchange_skill->initialize(ClientInstance->exchange_max,ClientInstance->exchange_min
+                                   ,ClientInstance->exchange_expand_pile,ClientInstance->exchange_pattern);
+        highlightSkillButton(ClientInstance->exchange_reason);
+        dashboard->startPending(exchange_skill);
         break;
     }
     case Client::ExecDialog: {
@@ -2693,6 +2745,13 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         break;
     }
     case Client::AskForGuanxing:
+    case Client::AskForMoveCards:{
+        ok_button->setEnabled(true);
+        cancel_button->setEnabled(true);
+        discard_button->setEnabled(false);
+        highlightSkillButton(ClientInstance->skill_name);
+        break;
+    }
     case Client::AskForGongxin: {
         ok_button->setEnabled(true);
         cancel_button->setEnabled(false);
@@ -2832,7 +2891,13 @@ void RoomScene::doCancelButton()
         dashboard->stopPending();
         break;
     }
-    case Client::Discarding:
+    case Client::Discarding: {
+        dashboard->unselectAll();
+        dashboard->stopPending();
+        ClientInstance->onPlayerDiscardCards(NULL);
+        prompt_box->disappear();
+        break;
+    }
     case Client::Exchanging: {
         dashboard->unselectAll();
         dashboard->stopPending();
@@ -2842,6 +2907,13 @@ void RoomScene::doCancelButton()
     }
     case Client::ExecDialog: {
         m_choiceDialog->reject();
+        break;
+    }
+    case Client::AskForMoveCards: {
+        QList<int> empty;
+        dashboard->highlightEquip(ClientInstance->skill_name, false);
+        m_cardchooseBox->clear();
+        ClientInstance->onPlayerReplyMoveCards(empty, empty);
         break;
     }
     case Client::AskForSkillInvoke: {

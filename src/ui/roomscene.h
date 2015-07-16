@@ -37,6 +37,7 @@ class Window;
 class Button;
 class CardContainer;
 class GuanxingBox;
+class CardChooseBox;
 class QSanButton;
 class QGroupBox;
 class ChooseGeneralBox;
@@ -278,10 +279,13 @@ private:
     DiscardSkill *discard_skill;
     YijiViewAsSkill *yiji_skill;
     ChoosePlayerSkill *choose_skill;
+    ExchangeSkill *exchange_skill;
 
     QList<const Player *> selected_targets;
 
     GuanxingBox *m_guanxingBox;
+
+    CardChooseBox *m_cardchooseBox;
 
     ChooseGeneralBox *m_chooseGeneralBox;
 

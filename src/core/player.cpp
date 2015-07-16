@@ -1016,7 +1016,7 @@ QStringList Player::getHandPileList(bool view_as_skill) const
     if (view_as_skill)
         handlist.append("hand");
     foreach (const QString &pile, this->getPileNames()) {
-        if (pile.startsWith("&") || pile == "wooden_ox")
+        if (pile.startsWith("&") || pile == "wooden_ox" || pile.startsWith("^"))
             handlist.append(pile);
     }
     return handlist;

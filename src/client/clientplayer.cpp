@@ -172,7 +172,7 @@ void ClientPlayer::changePile(const QString &name, bool add, QList<int> card_ids
                 piles[name].takeLast();
         }
     }
-    if (!name.startsWith("#"))
+    if (!name.startsWith("#") && !name.startsWith("^"))
         emit pile_changed(name);
 }
 

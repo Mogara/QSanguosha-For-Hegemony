@@ -535,6 +535,7 @@ enum TriggerEvent
     HpChanged,
     MaxHpChanged,
     PostHpReduced,
+    HpLost,
 
     EventLoseSkill,
     EventAcquireSkill,

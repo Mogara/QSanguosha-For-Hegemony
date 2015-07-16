@@ -46,6 +46,28 @@ private:
     bool is_discard;
 };
 
+//Xusineday:
+
+class ExchangeSkill : public ViewAsSkill
+{
+    Q_OBJECT
+
+public:
+    explicit ExchangeSkill();
+
+    void initialize(int num, int minnum,
+                    const QString &expand_pile, const QString &pattern);
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *card) const;
+    virtual const Card *viewAs(const QList<const Card *> &cards) const;
+
+private:
+    DummyCard *card;
+    int num;
+    int minnum;
+    QString pattern;
+};
+
 class CardPattern;
 
 class ResponseSkill : public OneCardViewAsSkill

@@ -57,6 +57,7 @@ sgs.ai_skill_askforyiji =   {}
 sgs.ai_skill_pindian =      {}
 sgs.ai_skill_playerchosen = {}
 sgs.ai_skill_discard =      {}
+sgs.ai_skill_exchange = 	{}
 sgs.ai_cardshow =           {}
 sgs.ai_nullification =      {}
 sgs.ai_skill_cardchosen =   {}
@@ -2065,6 +2066,23 @@ function SmartAI:askForChoice(skill_name, choices, data)
 	end
 end
 
+function SmartAI:askForExchange(reason,pattern,max_num,min_num,expand_pile)
+	min_num = min_num or 0
+	local callback = sgs.ai_skill_exchange[reason]
+	if type(callback) == "function" then
+		local result = callback(self,pattern,max_num,min_num,expand_pile)
+		if type(result) == "number" then
+			return {result}
+		elseif type(result) == "table" then
+			return result
+		else
+			assert(false,"the Exchange result should be a number or a table")
+			return {}
+		end
+	end
+	return {}
+end
+
 function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_equip)
 	min_num = min_num or discard_num
 	local exchange = self.player:hasFlag("Global_AIDiscardExchanging")
@@ -2443,6 +2461,7 @@ end
 
 function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 	local isDiscard = (method == sgs.Card_MethodDiscard)
+	local disable_list = disable_list or {}
 	local cardchosen = sgs.ai_skill_cardchosen[string.gsub(reason, "%-", "_")]
 	local card
 	if type(cardchosen) == "function" then
@@ -2688,11 +2707,41 @@ function SmartAI:askForCard(pattern, prompt, data)
 end
 
 function SmartAI:askForUseCard(pattern, prompt, method)
-	local use_func = sgs.ai_skill_use[pattern]
-	if use_func then
-		return use_func(self, prompt, method) or "."
+	if string.find(pattern,"%d") then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		local to_choose = {}
+		for _,card in ipairs(cards)do
+			if sgs.Sanguosha:matchExpPattern(pattern,self.player,card) and card:isAvailable(self.player) then
+				local dummy_use = {isDummy = true}
+				if not card:targetFixed() then dummy_use.to = sgs.SPlayerList() end
+				self:useCardByClassName(card,dummy_use)
+				if dummy_use.card then
+					table.insert(to_choose,card)
+				end
+			end
+		end
+		if #to_choose == 0 then return "." end
+		self:sortByUseValue(to_choose)
+		local c = to_choose[1]
+		local dummy_use = {isDummy = true}
+		if not c:targetFixed() then dummy_use.to = sgs.SPlayerList() end
+		self:useCardByClassName(c,dummy_use)
+		local str = c:toString()
+		if not c:targetFixed() then 
+			local target_objectname = {}
+			for _, p in sgs.qlist(dummy_use.to) do
+				table.insert(target_objectname, p:objectName())
+			end
+			str = str .. "->" .. table.concat(target_objectname, "+")
+		end
+		return str
 	else
-		return "."
+		local use_func = sgs.ai_skill_use[pattern]
+		if use_func then
+			return use_func(self, prompt, method) or "."
+		else
+			return "."
+		end
 	end
 end
 
@@ -3187,7 +3236,7 @@ function SmartAI:askForPlayersChosen(targets, reason, max_num, min_num)
 			return {}
 		end
 	end
-	local copy = table.copyFrom(targets)
+	local copy = table.copyFrom(sgs.QList2Table(targets))
 	while (#returns < min_num) do
 		local r = math.random(0, copy:length() - 1)
 		table.insert(returns,copy[r])

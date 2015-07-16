@@ -75,6 +75,7 @@ public:
     virtual void askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &bottom, int guanxing_type) = 0;
     virtual void filterEvent(TriggerEvent triggerEvent, ServerPlayer *player, const QVariant &data);
 
+    virtual QList<int> askForExchange(const QString &reason, const QString &pattern, int max_num, int min_num, const QString &expand_pile) = 0;
 protected:
     Room *room;
     ServerPlayer *self;
@@ -107,6 +108,8 @@ public:
     virtual void askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &bottom, int guanxing_type);
 
     virtual bool useCard(const Card *card);
+
+    virtual QList<int> askForExchange(const QString &, const QString &pattern, int, int min_num, const QString &expand_pile);
 
 private:
     ResponseSkill *response_skill;
@@ -141,6 +144,7 @@ public:
 
     LuaFunction callback;
 
+    virtual QList<int> askForExchange(const QString &reason, const QString &pattern, int max_num, int min_num, const QString &expand_pile);
 private:
     void pushCallback(lua_State *L, const char *function_name);
     void pushQIntList(lua_State *L, const QList<int> &list);

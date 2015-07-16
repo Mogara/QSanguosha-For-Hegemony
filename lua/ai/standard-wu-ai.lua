@@ -1855,7 +1855,7 @@ sgs.ai_skill_use["@@guzheng"] = function(self, data)
 		if peach then
 			if peach_num > 1
 				or (self:getCardsNum("Peach") >= self.player:getMaxCards())
-				or (who:getHp() < getBestHp(who) and who:getHp() < self.player:getHp()) then
+				or who:getHp() < self.player:getHp() then
 					return "@GuzhengCard="..peach
 			end
 		end

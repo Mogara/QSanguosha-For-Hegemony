@@ -361,7 +361,6 @@ public:
 
     virtual QStringList getBigKingdoms(const char *reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const = 0;
 
-    QStringList getAcquiredSkills(const QString &flags) const;
 };
 
 %extend Player {
@@ -409,6 +408,7 @@ public:
     bool askForSkillInvoke(const char *skill_name, const QVariant &data = QVariant());
     bool askForSkillInvoke(const Skill *skill, const QVariant &data = QVariant());
     QList<int> forceToDiscard(int discard_num, bool include_equip, bool is_discard = true);
+    QList<int> forceToDiscard(int discard_num, const char *pattern, const char *expand_pile , bool is_discard);
     QList<int> handCards() const;
     virtual QList<const Card *> getHandcards() const;
     QList<const Card *> getCards(const char *flags) const;
@@ -844,6 +844,7 @@ enum TriggerEvent
     HpChanged,
     MaxHpChanged,
     PostHpReduced,
+    HpLost,
 
     EventLoseSkill,
     EventAcquireSkill,
@@ -1415,6 +1416,7 @@ public:
     QList<int> getNCards(int n, bool update_pile_number = true);
     ServerPlayer *getLord(const char *kingdom, bool include_death = false) const;
     void askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, GuanxingType guanxing_type = GuanxingBothSides);
+    QList<int> askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const char *reason, const char *pattern, const char *skillName);
     int doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids = QList<int>(), const char *skill_name = "shangyi");
     int drawCard();
     void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>());
@@ -1530,8 +1532,7 @@ public:
     bool askForSkillInvoke(ServerPlayer *player, const char *skill_name, const QVariant &data = QVariant());
     QString askForChoice(ServerPlayer *player, const char *skill_name, const char *choices, const QVariant &data = QVariant());
     bool askForDiscard(ServerPlayer *target, const char *reason, int discard_num, int min_num,bool optional = false, bool include_equip = false, const char *prompt = NULL, bool notify_skill = false);
-    const Card *askForExchange(ServerPlayer *player, const char *reason, int discard_num, bool include_equip = false,
-        const char *prompt = NULL, bool optional = false);
+    const Card *askForExchange(ServerPlayer *player, const char *reason, int exchange_num, int min_num = 0,const char *prompt = "", const char *expand_pile = "", const char *pattern = "");
     bool askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
     bool isCanceled(const CardEffectStruct &effect);
     int askForCardChosen(ServerPlayer *player, ServerPlayer *who, const char *flags, const char *reason,
@@ -1566,6 +1567,11 @@ public:
     QList<ServerPlayer *> askForPlayersChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets,
                                               const char *reason,int min_num = 0, int max_num = 2, const char *prompt = "",
                                               bool notify_skill = false);
+                                              
+    QList <int> notifyChooseCards(ServerPlayer *player, const QList<int> &cards,
+                                  const char *reason, Player::Place notify_from_place,
+                                  Player::Place notify_to_place, int max_num,
+                                  int min_num = 0, const char *prompt = "",const char *pattern = "");
 
     inline Card *getCard(int cardId) const;
     inline void resetCard(int cardId);
@@ -1600,6 +1606,23 @@ public:
     void throwEvent(const TriggerEvent event) {
         Q_UNUSED($self);
         throw event;
+    }
+    void returnToDrawPile(const QList<int> &cards, bool isBottom) {
+        if (isBottom) {
+            foreach (int id ,cards) {
+                $self->setCardMapping(id, NULL, Player::DrawPile);
+                $self->getDrawPile().append(id);
+            }
+        } else {
+            QListIterator<int> i(cards);
+            i.toBack();
+            while (i.hasPrevious()) {
+                int id = i.previous();
+                $self->setCardMapping(id, NULL, Player::DrawPile);
+                $self->getDrawPile().prepend(id);
+            }
+        }
+        $self->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, QVariant($self->getDrawPile().length()));
     }
 };
 

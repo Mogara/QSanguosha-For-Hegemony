@@ -45,7 +45,8 @@ Client *ClientInstance = NULL;
 Client::Client(QObject *parent, const QString &filename)
     : QObject(parent), m_isDiscardActionRefusable(true),
     status(NotActive), alive_count(1), swap_pile(0),
-    _m_roomState(true), choose_min_num(0), choose_max_num(0)
+    _m_roomState(true), choose_min_num(0), choose_max_num(0),
+    exchange_min(0), exchange_max(1), discard_num(0)
 {
     ClientInstance = this;
     m_isGameOver = false;
@@ -98,6 +99,7 @@ Client::Client(QObject *parent, const QString &filename)
     callbacks[S_COMMAND_CARD_FLAG] = &Client::setCardFlag;
     callbacks[S_COMMAND_UPDATE_HANDCARD_NUM] = &Client::setHandcardNum;
     callbacks[S_COMMAND_MIRROR_GUANXING_STEP] = &Client::mirrorGuanxingStep;
+    callbacks[S_COMMAND_MIRROR_MOVECARDS_STEP] = &Client::mirrorMoveCardsStep;
 
     // interactive methods
     interactions[S_COMMAND_CHOOSE_GENERAL] = &Client::askForGeneral;
@@ -106,6 +108,7 @@ Client::Client(QObject *parent, const QString &filename)
     interactions[S_COMMAND_EXCHANGE_CARD] = &Client::askForExchange;
     interactions[S_COMMAND_ASK_PEACH] = &Client::askForSinglePeach;
     interactions[S_COMMAND_SKILL_GUANXING] = &Client::askForGuanxing;
+    interactions[S_COMMAND_SKILL_MOVECARDS] = &Client::askForMoveCards;
     interactions[S_COMMAND_SKILL_GONGXIN] = &Client::askForGongxin;
     interactions[S_COMMAND_SKILL_YIJI] = &Client::askForYiji;
     interactions[S_COMMAND_PLAY_CARD] = &Client::activate;
@@ -246,6 +249,40 @@ void Client::mirrorGuanxingStep(const QVariant &args)
         }
     } else if (step == S_GUANXING_FINISH) {
         emit mirror_guanxing_finish();
+    }
+}
+
+void Client::mirrorMoveCardsStep(const QVariant &args)
+{
+    JsonArray arg = args.value<JsonArray>();
+    if (arg.isEmpty()) return;
+
+    GuanxingStep step = static_cast<GuanxingStep>(arg.at(0).toInt());
+    if (step == S_GUANXING_START) {
+        if (arg.size() >= 3) {
+            QString who = arg.at(1).toString();
+            QString reason = arg.at(2).toString();
+            QString pattern = arg.at(4).toString();
+
+            QList<int> cards;
+            if (JsonUtils::isNumber(arg.at(3))) {
+                int cardNum = arg.at(3).toInt();
+                for (int i = 0; i < cardNum; i++) {
+                    cards << -1;
+                }
+            } else {
+                JsonUtils::tryParse(arg.at(3), cards);
+            }
+            emit mirror_cardchoose_start(who, reason, cards, pattern);
+        }
+    } else if (step == S_GUANXING_MOVE) {
+        if (arg.size() >= 3) {
+            int from = arg.at(1).toInt();
+            int to = arg.at(2).toInt();
+            emit mirror_cardchoose_move(from, to);
+        }
+    } else if (step == S_GUANXING_FINISH) {
+        emit mirror_cardchoose_finish();
     }
 }
 
@@ -1348,28 +1385,46 @@ void Client::askForDiscard(const QVariant &reqvar)
 
 void Client::askForExchange(const QVariant &exchange)
 {
+//    JsonArray args = exchange.value<JsonArray>();
+//    if (!JsonUtils::isNumber(args[0]) || !JsonUtils::isBool(args[1])
+//        || !JsonUtils::isString(args[2]) || !JsonUtils::isBool(args[3])) {
+//        QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
+//        return;
+//    }
+
+//    discard_num = args[0].toInt();
+//    m_canDiscardEquip = args[1].toBool();
+//    QString prompt = args[2].toString();
+//    min_num = discard_num;
+//    m_isDiscardActionRefusable = args[3].toBool();
     JsonArray args = exchange.value<JsonArray>();
-    if (!JsonUtils::isNumber(args[0]) || !JsonUtils::isBool(args[1])
-        || !JsonUtils::isString(args[2]) || !JsonUtils::isBool(args[3])) {
+    if (args.size() != 6 || !JsonUtils::isNumber(args[0]) || !JsonUtils::isNumber(args[1])
+           || !JsonUtils::isString(args[2]) || !JsonUtils::isString(args[3])
+            || ! JsonUtils::isString(args[4]) || !JsonUtils::isString(args[5])){
         QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
         return;
     }
-
-    discard_num = args[0].toInt();
-    m_canDiscardEquip = args[1].toBool();
+    exchange_max = args[0].toInt();
+    exchange_min = args[1].toInt();
     QString prompt = args[2].toString();
-    min_num = discard_num;
-    m_isDiscardActionRefusable = args[3].toBool();
-
+    exchange_expand_pile = args[3].toString();
+    exchange_pattern = args[4].toString();
+    exchange_reason = args[5].toString();
+    m_isDiscardActionRefusable = (exchange_min == 0);
     if (prompt.isEmpty()) {
-        prompt = tr("Please give %1 cards to exchange").arg(discard_num);
+        if (m_isDiscardActionRefusable)
+            prompt = tr("Please give %1 cards to exchange at most").arg(exchange_max);
+        else if (exchange_max == exchange_min)
+            prompt = tr("Please give %1 cards to exchange").arg(exchange_max);
+        else
+            prompt = tr("Please give %1 to %2 cards to exchange").arg(exchange_min).arg(exchange_max);
         prompt_doc->setHtml(prompt);
     } else {
         QStringList texts = prompt.split(":");
         if (texts.length() < 4) {
             while (texts.length() < 3)
                 texts.append(QString());
-            texts.append(QString::number(discard_num));
+            texts.append(QString::number(exchange_max));
         }
         setPromptList(texts);
     }
@@ -1782,6 +1837,35 @@ void Client::askForGuanxing(const QVariant &arg)
     }
 }
 
+void Client::askForMoveCards(const QVariant &arg)
+{
+    JsonArray args = arg.value<JsonArray>();
+    if (args.isEmpty())
+        return;
+
+    JsonArray deck = args[0].value<JsonArray>();
+
+    QString reason = args[1].toString();
+    QString pattern = args[2].toString();
+    QString skillName = args[3].toString();
+
+    QList<int> card_ids;
+    JsonUtils::tryParse(deck, card_ids);
+
+    skill_name = skillName;
+
+    emit cardchoose(card_ids, reason, pattern);
+    setStatus(AskForMoveCards);
+
+    if (recorder) {
+        JsonArray stepArgs;
+        stepArgs << S_GUANXING_START << QVariant() << args[1] << args[0] << args[2] << args[3];
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_MOVECARDS_STEP);
+        packet.setMessageBody(stepArgs);
+        recorder->recordLine(packet.toJson());
+    }
+}
+
 void Client::showAllCards(const QVariant &arg)
 {
     JsonArray args = arg.value<JsonArray>();
@@ -1947,6 +2031,23 @@ void Client::onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> 
     }
 }
 
+void Client::onPlayerReplyMoveCards(const QList<int> &up_cards, const QList<int> &down_cards)
+{
+    JsonArray decks;
+    decks << JsonUtils::toJsonArray(up_cards);
+    decks << JsonUtils::toJsonArray(down_cards);
+
+    replyToServer(S_COMMAND_SKILL_MOVECARDS, decks);
+
+    setStatus(NotActive);
+
+    if (recorder) {
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_MOVECARDS_STEP);
+        packet.setMessageBody(JsonArray() << S_GUANXING_FINISH);
+        recorder->recordLine(packet.toJson());
+    }
+}
+
 void Client::onPlayerDoGuanxingStep(int from, int to)
 {
     JsonArray args;
@@ -1959,6 +2060,20 @@ void Client::onPlayerDoGuanxingStep(int from, int to)
         recorder->recordLine(packet.toJson());
     }
 }
+
+void Client::onPlayerDoMoveCardsStep(int from, int to)
+{
+    JsonArray args;
+    args << S_GUANXING_MOVE << from << to;
+    notifyServer(S_COMMAND_MIRROR_MOVECARDS_STEP, args);
+
+    if (recorder) {
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_MOVECARDS_STEP);
+        packet.setMessageBody(args);
+        recorder->recordLine(packet.toJson());
+    }
+}
+
 
 void Client::log(const QVariant &log_str)
 {

@@ -28,14 +28,14 @@ ExpPattern::ExpPattern(const QString &exp)
 
 bool ExpPattern::match(const Player *player, const Card *card) const
 {
-    foreach (const QString &one_exp, this->exp.split('#'))
+    foreach (const QString &one_exp, this->exp.split("___#___"))
         if (this->matchOne(player, card, one_exp)) return true;
 
     return false;
 }
 
-// '|' means 'and', '#' means 'or'.
-// the expression splited by '#' has 3 parts,
+// '|' means 'and', '___#___' means 'or'.
+// the expression splited by '|' has 3 parts,
 // 1st part means the card name, and ',' means more than one options.
 // 2nd patt means the card suit, and ',' means more than one options.
 // 3rd part means the card number, and ',' means more than one options,

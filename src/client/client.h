@@ -62,6 +62,7 @@ public:
         AskForTriggerOrder = 0x010010,
         AskForCardChosen = 0x010011,
         AskForSuit = 0x010012,
+        AskForMoveCards = 0x000013,
 
         RespondingUse = 0x000101,
         RespondingForDiscard = 0x000201,
@@ -103,7 +104,9 @@ public:
     void onPlayerDiscardCards(const Card *card);
     void onPlayerReplyYiji(const Card *card, const Player *to);
     void onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> &down_cards);
+    void onPlayerReplyMoveCards(const QList<int> &up_cards, const QList<int> &down_cards);
     void onPlayerDoGuanxingStep(int from, int to);
+    void onPlayerDoMoveCardsStep(int from, int to);
     QList<const ClientPlayer *> getPlayers() const;
     void speakToServer(const QString &text);
     ClientPlayer *getPlayer(const QString &name);
@@ -163,6 +166,7 @@ public:
     void setCardFlag(const QVariant &pattern_str);
     void updateCard(const QVariant &val);
     void mirrorGuanxingStep(const QVariant &args);
+    void mirrorMoveCardsStep(const QVariant &args);
 
     void fillAG(const QVariant &cards_str);
     void takeAG(const QVariant &take_var);
@@ -186,6 +190,7 @@ public:
     void askForGeneral(const QVariant &);
     void askForYiji(const QVariant &);
     void askForGuanxing(const QVariant &);
+    void askForMoveCards(const QVariant &);
     void showAllCards(const QVariant &);
     void askForGongxin(const QVariant &);
     void askForSurrender(const QVariant &);
@@ -251,6 +256,12 @@ public:
     QStringList players_to_choose;
     int choose_max_num;
     int choose_min_num;
+
+    int exchange_max;
+    int exchange_min;
+    QString exchange_pattern;
+    QString exchange_expand_pile;
+    QString exchange_reason;
 
 public slots:
     void signup();
@@ -343,6 +354,7 @@ signals:
     void card_shown(const QString &player_name, int card_id);
     void log_received(const QStringList &log_str);
     void guanxing(const QList<int> &card_ids, bool single_side);
+    void cardchoose(const QList<int> &card_ids, const QString &reason, const QString &pattern);
     void gongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
     void focus_moved(const QStringList &focus, QSanProtocol::Countdown countdown);
     void emotion_set(const QString &target, const QString &emotion);
@@ -373,6 +385,10 @@ signals:
     void mirror_guanxing_start(const QString &who, bool up_only, const QList<int> &cards);
     void mirror_guanxing_move(int from, int to);
     void mirror_guanxing_finish();
+
+    void mirror_cardchoose_start(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern);
+    void mirror_cardchoose_move(int from, int to);
+    void mirror_cardchoose_finish();
 
     void ag_filled(const QList<int> &card_ids, const QList<int> &disabled_ids);
     void ag_taken(ClientPlayer *taker, int card_id, bool move_cards);
