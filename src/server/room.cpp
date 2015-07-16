@@ -5653,7 +5653,7 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
 
 QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const QString &reason, const QString &pattern, const QString &skillName)
 {
-    QList<int> top_cards, bottom_cards;
+    QList<int> top_cards, bottom_cards, result;
     tryPause();
     notifyMoveFocus(zhuge, S_COMMAND_SKILL_MOVECARDS);
 
@@ -5662,37 +5662,103 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, b
         stepArgs << S_GUANXING_START << zhuge->objectName() << reason << JsonUtils::toJsonArray(cards) << pattern;
         doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
     }
+    AI *ai = zhuge->getAI();
+    if (ai) {
+        result = ai->askForMoveCards(cards, reason, pattern);
 
-    QList<int> empty;
-    JsonArray CardChooseArgs;
-    CardChooseArgs << JsonUtils::toJsonArray(cards);
-    CardChooseArgs << (reason);
-    CardChooseArgs << (pattern);
-    CardChooseArgs << (skillName);
-    bool success = doRequest(zhuge, S_COMMAND_SKILL_MOVECARDS, CardChooseArgs, true);
-    if (!success)
-        return empty;
-    JsonArray clientReply = zhuge->getClientReply().value<JsonArray>();
-    if (clientReply.size() == 2) {
-        success &= JsonUtils::tryParse(clientReply[0], top_cards);
-        success &= JsonUtils::tryParse(clientReply[1], bottom_cards);
+        bool isTrustAI = zhuge->getState() == "trust";
+        if (isTrustAI && visible) {
+            stepArgs[1] = QVariant();
+            stepArgs[3] = JsonUtils::toJsonArray(cards);
+            zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);
+        }
+
+        thread->delay();
+        thread->delay();
+
+        QList<int> realtopcards, realbottomcards, others;
+        QList<int> to_move = cards;
+        foreach (int cardId, cards)
+            if (!result.contains(cardId)) others.append(cardId);
+
+        if (pattern == ""){
+            realtopcards = result;
+            realbottomcards = others;
+        }else {
+            realbottomcards = result;
+            realtopcards = others;
+        }
+        if (to_move != realtopcards) {
+            JsonArray movearg_base;
+            movearg_base << S_GUANXING_MOVE;
+
+            if (!realbottomcards.isEmpty()) {
+                for (int i = 0; i < realbottomcards.length(); ++i) {
+                    int id = realbottomcards.at(i);
+                    int pos = to_move.indexOf(id);
+                    to_move.removeOne(id);
+                    JsonArray movearg = movearg_base;
+                    movearg << pos + 1 << -i - 1;
+                    doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, movearg, isTrustAI ? NULL : zhuge);
+                    thread->delay();
+                }
+            }
+
+            for (int i = 0; i < realtopcards.length() - 1; ++i) {
+                int id = realtopcards.at(i);
+                int pos = to_move.indexOf(id);
+
+                if (pos == i)
+                    continue;
+
+                to_move.removeOne(id);
+                to_move.insert(i, id);
+                JsonArray movearg = movearg_base;
+                movearg << pos + 1 << i + 1;
+                doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, movearg, isTrustAI ? NULL : zhuge);
+                thread->delay();
+            }
+
+            thread->delay();
+            thread->delay();
+        }
+
+        if (isTrustAI && visible) {
+            JsonArray stepArgs;
+            stepArgs << S_GUANXING_FINISH;
+            zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);
+        }
+
+    }else{
+        JsonArray CardChooseArgs;
+        CardChooseArgs << JsonUtils::toJsonArray(cards);
+        CardChooseArgs << (reason);
+        CardChooseArgs << (pattern);
+        CardChooseArgs << (skillName);
+        bool success = doRequest(zhuge, S_COMMAND_SKILL_MOVECARDS, CardChooseArgs, true);
+        if (!success)
+            return result;
+        JsonArray clientReply = zhuge->getClientReply().value<JsonArray>();
+        if (clientReply.size() == 2) {
+            success &= JsonUtils::tryParse(clientReply[0], top_cards);
+            success &= JsonUtils::tryParse(clientReply[1], bottom_cards);
+        }
+
+        bool length_equal = top_cards.length() + bottom_cards.length() == cards.length();
+        bool result_equal = top_cards.toSet() + bottom_cards.toSet() == cards.toSet();
+        if (length_equal && result_equal){
+            if (pattern == "")
+                result = top_cards;
+            else
+                result = bottom_cards;
+        }
     }
-
     if (visible){
         stepArgs.clear();
         stepArgs << S_GUANXING_FINISH;
-        doBroadcastNotify(S_COMMAND_MIRROR_GUANXING_STEP, stepArgs, zhuge);
+        doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
     }
-
-    bool length_equal = top_cards.length() + bottom_cards.length() == cards.length();
-    bool result_equal = top_cards.toSet() + bottom_cards.toSet() == cards.toSet();
-    if (length_equal && result_equal){
-        if (pattern == "")
-            empty = top_cards;
-        else
-            empty = bottom_cards;
-    }
-    return empty;
+    return result;
 }
 
 int Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids, const QString &skill_name)

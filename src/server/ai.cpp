@@ -221,6 +221,15 @@ QList<int> TrustAI::askForDiscard(const QString &, int discard_num, int, bool op
         return self->forceToDiscard(discard_num, include_equip, self->hasFlag("Global_AIDiscardExchanging"));
 }
 
+QList<int> TrustAI::askForMoveCards(const QList<int> &cards, const QString &, const QString &pattern)
+{
+    QList<int> empty;
+    if (pattern != "")
+        return empty;
+    else
+        return cards;
+}
+
 const Card *TrustAI::askForNullification(const Card *, ServerPlayer *, ServerPlayer *, bool)
 {
     return NULL;
@@ -372,16 +381,38 @@ QList<int> LuaAI::askForDiscard(const QString &reason, int discard_num, int min_
         return TrustAI::askForDiscard(reason, discard_num, min_num, optional, include_equip);
 }
 
+QList<int> LuaAI::askForMoveCards(const QList<int> &cards, const QString &reason, const QString &pattern)
+{
+    lua_State *L = room->getLuaState();
+
+    pushCallback(L, __FUNCTION__);
+    pushQIntList(L, cards);
+    lua_pushstring(L, reason.toLatin1());
+    lua_pushstring(L, pattern.toLatin1());
+
+    int error = lua_pcall(L, 4, 1, 0);
+    if (error) {
+        reportError(L);
+        return TrustAI::askForMoveCards(cards, reason, pattern);
+    }
+
+    QList<int> result;
+    if (getTable(L, result))
+        return result;
+    else
+        return TrustAI::askForMoveCards(cards, reason, pattern);
+}
+
 QList<int> LuaAI::askForExchange(const QString &reason, const QString &pattern, int max_num, int min_num, const QString &expand_pile)
 {
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
     lua_pushstring(L, reason.toLatin1());
-    lua_pushstring(L,pattern.toLatin1());
+    lua_pushstring(L, pattern.toLatin1());
     lua_pushinteger(L, max_num);
     lua_pushinteger(L, min_num);
-    lua_pushstring(L,expand_pile.toLatin1());
+    lua_pushstring(L, expand_pile.toLatin1());
 
     int error = lua_pcall(L, 5, 1, 0);
     if (error) {
