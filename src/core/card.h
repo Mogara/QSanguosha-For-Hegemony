@@ -110,6 +110,7 @@ public:
     virtual bool canRecast() const;
     virtual bool hasPreAction() const;
     virtual Card::HandlingMethod getHandlingMethod() const;
+    void setCanRecast(bool can);
 
     virtual void setFlags(const QString &flag) const;
     inline virtual void setFlags(const QStringList &fs)

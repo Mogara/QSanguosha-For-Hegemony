@@ -28,13 +28,13 @@ ExpPattern::ExpPattern(const QString &exp)
 
 bool ExpPattern::match(const Player *player, const Card *card) const
 {
-    foreach (const QString &one_exp, this->exp.split("___#___"))
+    foreach (const QString &one_exp, this->exp.split("#"))
         if (this->matchOne(player, card, one_exp)) return true;
 
     return false;
 }
 
-// '|' means 'and', '___#___' means 'or'.
+// '|' means 'and', '#' means 'or'.
 // the expression splited by '|' has 3 parts,
 // 1st part means the card name, and ',' means more than one options.
 // 2nd patt means the card suit, and ',' means more than one options.
@@ -157,16 +157,20 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
                                 break;
                             }
                         }
-                    } else if (p.startsWith("%")) {
-                        p = p.mid(1);
-                        foreach (const Player *pl, player->getAliveSiblings()) {
-                            if (!pl->getPile(p).isEmpty() && pl->getPile(p).contains(id)) {
-                                checkpoint = true;
-                                break;
+                    } else {
+                        if (p.contains("$"))
+                            p.replace("$", "#");
+                        if (p.startsWith("%")) {
+                            p = p.mid(1);
+                            foreach (const Player *pl, player->getAliveSiblings()) {
+                                if (!pl->getPile(p).isEmpty() && pl->getPile(p).contains(id)) {
+                                    checkpoint = true;
+                                    break;
+                                }
                             }
+                        } else if (!player->getPile(p).isEmpty() && player->getPile(p).contains(id)) {
+                            checkpoint = true;
                         }
-                    } else if (!player->getPile(p).isEmpty() && player->getPile(p).contains(id)) {
-                        checkpoint = true;
                     }
                     if (checkpoint)
                         break;
