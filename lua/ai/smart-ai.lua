@@ -58,7 +58,7 @@ sgs.ai_skill_pindian =      {}
 sgs.ai_skill_playerchosen = {}
 sgs.ai_skill_discard =      {}
 sgs.ai_skill_movecards =    {}
-sgs.ai_skill_exchange = 	{}
+sgs.ai_skill_exchange =     {}
 sgs.ai_cardshow =           {}
 sgs.ai_nullification =      {}
 sgs.ai_skill_cardchosen =   {}
@@ -2161,17 +2161,17 @@ end
 function SmartAI:askForMoveCards(cards, reason, pattern)
 	local callback = sgs.ai_skill_movecards[reason]
 	if type(callback) == "function" then
-		local cb = callback(self, cards, reason, pattern)
+		local cb = callback(self, cards, pattern)
 		if cb then
-			if type(cb) == "number" then return { cb }
+			if type(cb) == "number" then
+				return {cb}
 			elseif type(cb) == "table" then
 				return cb
 			end
-			return {}
 		end
+		return {}
 	end
-	if pattern == "" then return cards
-	else return {} end
+	if pattern == "" then return cards else return {} end
 end
 
 function SmartAI:askForNullification(trick, from, to, positive)
