@@ -83,6 +83,7 @@ private:
     QList<CardItem *> upItems, downItems;
     QString reason;
     QString pattern;
+    bool buttonisenable;
     void adjust();
     int itemNumberOfFirstRow() const;
     bool isOneRow() const;

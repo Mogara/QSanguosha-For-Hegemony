@@ -364,6 +364,7 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
     zhuge.clear();//self
     this->reason = reason;
     this->pattern = pattern;
+    buttonisenable = !pattern.startsWith("!");
     upItems.clear();
     scene_width = RoomSceneInstance->sceneRect().width();
 
@@ -497,7 +498,12 @@ void CardChooseBox::onItemReleased()
     items->insert(c, item);
 
     int toPos = toUpItems ? c + 1 : -c - 1;
-    ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos);
+    if (pattern.startsWith("!") && !downItems.isEmpty())
+        buttonisenable = true;
+    else
+        buttonisenable = false;
+
+    ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos, buttonisenable);
     adjust();
 }
 
@@ -519,7 +525,12 @@ void CardChooseBox::onItemClicked()
         upItems.append(item);
     }
 
-    ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos);
+    if (pattern.startsWith("!") && !downItems.isEmpty())
+        buttonisenable = true;
+    else
+        buttonisenable = false;
+
+    ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos, buttonisenable);
     adjust();
 }
 

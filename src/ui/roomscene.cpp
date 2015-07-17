@@ -221,6 +221,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     connect(ClientInstance, &Client::mirror_cardchoose_start, m_cardchooseBox, &CardChooseBox::mirrorCardChooseStart);
     connect(ClientInstance, &Client::mirror_cardchoose_move, m_cardchooseBox, &CardChooseBox::mirrorCardChooseMove);
     connect(ClientInstance, &Client::mirror_cardchoose_finish, m_cardchooseBox, &CardChooseBox::clear);
+    connect(ClientInstance, &Client::card_moved_incardchoosebox, this, &RoomScene::cardMovedinCardchooseBox);
 
     m_chooseGeneralBox = new ChooseGeneralBox;
     m_chooseGeneralBox->hide();
@@ -2164,100 +2165,100 @@ void RoomScene::updateSkillButtons()
 void RoomScene::useSelectedCard()
 {
     switch (ClientInstance->getStatus() & Client::ClientStatusBasicMask) {
-    case Client::Playing: {
-        const Card *card = dashboard->getSelected();
-        if (card) useCard(card);
-        break;
-    }
-    case Client::Responding: {
-        const Card *card = dashboard->getSelected();
-        if (card) {
-            if (ClientInstance->getStatus() == Client::Responding) {
-                Q_ASSERT(selected_targets.isEmpty());
-                selected_targets.clear();
+        case Client::Playing: {
+            const Card *card = dashboard->getSelected();
+            if (card) useCard(card);
+            break;
+        }
+        case Client::Responding: {
+            const Card *card = dashboard->getSelected();
+            if (card) {
+                if (ClientInstance->getStatus() == Client::Responding) {
+                    Q_ASSERT(selected_targets.isEmpty());
+                    selected_targets.clear();
+                }
+                ClientInstance->onPlayerResponseCard(card, selected_targets);
+                prompt_box->disappear();
             }
-            ClientInstance->onPlayerResponseCard(card, selected_targets);
-            prompt_box->disappear();
-        }
 
-        dashboard->unselectAll();
-        break;
-    }
-    case Client::AskForShowOrPindian: {
-        const Card *card = dashboard->getSelected();
-        if (card) {
-            ClientInstance->onPlayerResponseCard(card);
-            prompt_box->disappear();
+            dashboard->unselectAll();
+            break;
         }
-        dashboard->unselectAll();
-        break;
-    }
-    case Client::Discarding:{
-        const Card *card = dashboard->getPendingCard();
-        if (card) {
-            ClientInstance->onPlayerDiscardCards(card);
-            dashboard->stopPending();
-            prompt_box->disappear();
+        case Client::AskForShowOrPindian: {
+            const Card *card = dashboard->getSelected();
+            if (card) {
+                ClientInstance->onPlayerResponseCard(card);
+                prompt_box->disappear();
+            }
+            dashboard->unselectAll();
+            break;
         }
-        break;
-    }
-    case Client::Exchanging: {
-        const Card *card = dashboard->getPendingCard();
-        if (card) {
-            ClientInstance->onPlayerDiscardCards(card);
-            dashboard->stopPending();
-            prompt_box->disappear();
+        case Client::Discarding:{
+            const Card *card = dashboard->getPendingCard();
+            if (card) {
+                ClientInstance->onPlayerDiscardCards(card);
+                dashboard->stopPending();
+                prompt_box->disappear();
+            }
+            break;
         }
-        break;
-    }
-    case Client::NotActive: {
-        QMessageBox::warning(main_window, tr("Warning"),
-            tr("The OK button should be disabled when client is not active!"));
-        return;
-    }
-    case Client::AskForAG: {
-        ClientInstance->onPlayerChooseAG(-1);
-        return;
-    }
-    case Client::ExecDialog: {
-        QMessageBox::warning(main_window, tr("Warning"),
-            tr("The OK button should be disabled when client is in executing dialog"));
-        return;
-    }
-    case Client::AskForSkillInvoke: {
-        prompt_box->disappear();
-        QString skill_name = ClientInstance->getSkillNameToInvoke();
-        dashboard->highlightEquip(skill_name, false);
-        ClientInstance->onPlayerInvokeSkill(true);
-        break;
-    }
-    case Client::AskForPlayerChoose: {
-        ClientInstance->onPlayerChoosePlayer(selected_targets);
-        prompt_box->disappear();
-        break;
-    }
-    case Client::AskForYiji: {
-        const Card *card = dashboard->getPendingCard();
-        if (card) {
-            ClientInstance->onPlayerReplyYiji(card, selected_targets.first());
-            dashboard->stopPending();
-            prompt_box->disappear();
+        case Client::Exchanging: {
+            const Card *card = dashboard->getPendingCard();
+            if (card) {
+                ClientInstance->onPlayerDiscardCards(card);
+                dashboard->stopPending();
+                prompt_box->disappear();
+            }
+            break;
         }
-        break;
-    }
-    case Client::AskForGuanxing: {
-        m_guanxingBox->reply();
-        break;
-    }
-    case Client::AskForMoveCards: {
-        m_cardchooseBox->reply();
-        break;
-    }
-    case Client::AskForGongxin: {
-        ClientInstance->onPlayerReplyGongxin();
-        m_cardContainer->clear();
-        break;
-    }
+        case Client::NotActive: {
+            QMessageBox::warning(main_window, tr("Warning"),
+                tr("The OK button should be disabled when client is not active!"));
+            return;
+        }
+        case Client::AskForAG: {
+            ClientInstance->onPlayerChooseAG(-1);
+            return;
+        }
+        case Client::ExecDialog: {
+            QMessageBox::warning(main_window, tr("Warning"),
+                tr("The OK button should be disabled when client is in executing dialog"));
+            return;
+        }
+        case Client::AskForSkillInvoke: {
+            prompt_box->disappear();
+            QString skill_name = ClientInstance->getSkillNameToInvoke();
+            dashboard->highlightEquip(skill_name, false);
+            ClientInstance->onPlayerInvokeSkill(true);
+            break;
+        }
+        case Client::AskForPlayerChoose: {
+            ClientInstance->onPlayerChoosePlayer(selected_targets);
+            prompt_box->disappear();
+            break;
+        }
+        case Client::AskForYiji: {
+            const Card *card = dashboard->getPendingCard();
+            if (card) {
+                ClientInstance->onPlayerReplyYiji(card, selected_targets.first());
+                dashboard->stopPending();
+                prompt_box->disappear();
+            }
+            break;
+        }
+        case Client::AskForGuanxing: {
+            m_guanxingBox->reply();
+            break;
+        }
+        case Client::AskForMoveCards: {
+            m_cardchooseBox->reply();
+            break;
+        }
+        case Client::AskForGongxin: {
+            ClientInstance->onPlayerReplyGongxin();
+            m_cardContainer->clear();
+            break;
+        }
     }
 
     const ViewAsSkill *skill = dashboard->currentSkill();
@@ -2435,7 +2436,10 @@ void RoomScene::doTimeout()
     }
     case Client::AskForGuanxing:
     case Client::AskForMoveCards:{
-        ok_button->click();
+        if (ClientInstance->m_isDiscardActionRefusable)
+            ok_button->click();
+        else
+            cancel_button->click();
         break;
     }
     case Client::AskForGongxin: {
@@ -2746,7 +2750,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
     }
     case Client::AskForGuanxing:
     case Client::AskForMoveCards:{
-        ok_button->setEnabled(true);
+        ok_button->setEnabled(ClientInstance->m_isDiscardActionRefusable);
         cancel_button->setEnabled(true);
         discard_button->setEnabled(false);
         highlightSkillButton(ClientInstance->skill_name);
@@ -2787,6 +2791,16 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         QApplication::alert(main_window);
         connect(dashboard, &Dashboard::progressBarTimedOut, this, &RoomScene::doTimeout);
         dashboard->showProgressBar(ClientInstance->getCountdown());
+    }
+}
+
+void RoomScene::cardMovedinCardchooseBox(const bool enable)
+{
+    switch (ClientInstance->getStatus() & Client::ClientStatusBasicMask) {
+        case Client::AskForMoveCards: {
+            ok_button->setEnabled(enable);
+            break;
+        }
     }
 }
 

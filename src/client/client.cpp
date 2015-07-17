@@ -1851,7 +1851,7 @@ void Client::askForMoveCards(const QVariant &arg)
 
     QList<int> card_ids;
     JsonUtils::tryParse(deck, card_ids);
-
+    m_isDiscardActionRefusable = !pattern.startsWith("!");
     skill_name = skillName;
 
     emit cardchoose(card_ids, reason, pattern);
@@ -2061,8 +2061,10 @@ void Client::onPlayerDoGuanxingStep(int from, int to)
     }
 }
 
-void Client::onPlayerDoMoveCardsStep(int from, int to)
+void Client::onPlayerDoMoveCardsStep(int from, int to, bool enable)
 {
+    m_isDiscardActionRefusable = enable;
+    emit card_moved_incardchoosebox(enable);
     JsonArray args;
     args << S_GUANXING_MOVE << from << to;
     notifyServer(S_COMMAND_MIRROR_MOVECARDS_STEP, args);
@@ -2073,7 +2075,6 @@ void Client::onPlayerDoMoveCardsStep(int from, int to)
         recorder->recordLine(packet.toJson());
     }
 }
-
 
 void Client::log(const QVariant &log_str)
 {
