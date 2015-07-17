@@ -397,21 +397,27 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
         CardItem *cardItem = upItems.at(i);
 
         QPointF pos;
+        int X, Y;
         if (i < firstRow) {
-            pos.setX(25 + (cardWidth + cardInterval) * i);
-            pos.setY(45);
+            int fix = i;
+            int app = 0;
+            if (itemCount == 1) fix = 1;
+            if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
+            X = (25 + app + (cardWidth + cardInterval) * fix);
+            Y = (45);
         } else {
             if (upItems.length() % 2 == 1)
-                pos.setX(25 + cardWidth / 2 + cardInterval / 2
+                X = (25 + cardWidth / 2 + cardInterval / 2
                 + (cardWidth + cardInterval) * (i - firstRow));
             else
-                pos.setX(25 + (cardWidth + cardInterval) * (i - firstRow));
-            pos.setY(45 + cardHeight + cardInterval);
+                X = (25 + (cardWidth + cardInterval) * (i - firstRow));
+            Y = (45 + cardHeight + cardInterval);
         }
-
+        pos.setX(X);
+        pos.setY(Y);
         cardItem->resetTransform();
         cardItem->setOuterGlowEffectEnabled(true);
-        cardItem->setPos(25, 45);
+        cardItem->setPos(X, Y);
         cardItem->setHomePos(pos);
         cardItem->goBack(true);
     }
@@ -492,6 +498,11 @@ void CardChooseBox::onItemReleased()
         if ((y >= 45 + cardHeight && y <= 45 + cardHeight * 2 + cardInterval)
             || y >= 45 + cardHeight * 3 + cardInterval * 3) oddRow = false;
     }
+    int fix = 0;
+    if (itemCount == 1)
+        fix = cardWidth + cardInterval;
+    if (itemCount == 2)
+        fix = cardWidth / 2 + cardInterval / 2;
     const int startX = 25 + (oddRow ? 0 : (cardWidth / 2 + cardInterval / 2));
     int c = (item->x() + item->boundingRect().width() / 2 - startX) / cardWidth;
     c = qBound(0, c, items->length());
@@ -544,7 +555,11 @@ void CardChooseBox::adjust()
     for (int i = 0; i < upItems.length(); i++) {
         QPointF pos;
         if (i < firstRowCount) {
-            pos.setX(25 + (cardWidth + cardInterval) * i);
+            int fix = i;
+            int app = 0;
+            if (itemCount == 1) fix = 1;
+            if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
+            pos.setX(25 + app + (cardWidth + cardInterval) * fix);
             pos.setY(45);
         } else {
             if (count % 2 == 1)
@@ -561,7 +576,11 @@ void CardChooseBox::adjust()
     for (int i = 0; i < downItems.length(); i++) {
         QPointF pos;
         if (i < firstRowCount) {
-            pos.setX(25 + (cardWidth + cardInterval) * i);
+            int fix = i;
+            int app = 0;
+            if (itemCount == 1) fix = 1;
+            if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
+            pos.setX(25 + app + (cardWidth + cardInterval) * fix);
             pos.setY(45 + (card_height + cardInterval) * (isOneRow() ? 1 : 2));
         } else {
             if (count % 2 == 1)
@@ -666,7 +685,11 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
     for (int i = 0; i < itemCount; ++i) {
         int x, y = 0;
         if (i < firstRow) {
-            x = 25 + (card_width + cardInterval) * i;
+            int fix = i;
+            int app = 0;
+            if (itemCount == 1) fix = 1;
+            if (itemCount == 2) app = card_width / 2 + cardInterval / 2;
+            x = 25 + app + (card_width + cardInterval) * fix;
             y = 45;
         } else {
             if (itemCount % 2 == 1)
