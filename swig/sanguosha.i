@@ -1604,9 +1604,10 @@ public:
         Q_UNUSED($self);
         throw event;
     }
-    void returnToDrawPile(const QList<int> &cards, bool isBottom) {
+    void returnToDrawPile(const QList<int> &cards, bool isBottom)
+    {
         if (isBottom) {
-            foreach (int id ,cards) {
+            foreach (int id, cards) {
                 $self->setCardMapping(id, NULL, Player::DrawPile);
                 $self->getDrawPile().append(id);
             }

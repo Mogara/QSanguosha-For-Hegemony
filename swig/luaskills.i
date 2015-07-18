@@ -425,11 +425,11 @@ void LuaTriggerSkill::record(TriggerEvent triggerEvent, Room *room, ServerPlayer
             room->output(msg);
             return;
         }
-            
+
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange)
-            onTurnBroken("on_record",triggerEvent,room,player,data,NULL);
+            onTurnBroken("on_record", triggerEvent, room, player, data, NULL);
         throw e;
     }
 }
@@ -498,7 +498,7 @@ TriggerList LuaTriggerSkill::triggerable(TriggerEvent triggerEvent, Room *room, 
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange)
-            onTurnBroken("can_trigger",triggerEvent,room,player,data,NULL);
+            onTurnBroken("can_trigger", triggerEvent, room, player, data, NULL);
         throw e;
     }
 }
@@ -546,7 +546,7 @@ bool LuaTriggerSkill::cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange)
-            onTurnBroken("on_cost",triggerEvent,room,player,data,ask_who);
+            onTurnBroken("on_cost", triggerEvent, room, player, data, ask_who);
         throw e;
     }
 }
@@ -595,16 +595,16 @@ bool LuaTriggerSkill::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange)
-            onTurnBroken("on_effect",triggerEvent,room,player,data,ask_who);
+            onTurnBroken("on_effect", triggerEvent, room, player, data, ask_who);
         throw e;
     }
 }
 
-void LuaTriggerSkill::onTurnBroken(const char *function_name,TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+void LuaTriggerSkill::onTurnBroken(const char *function_name, TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
 {
     if (on_turn_broken == 0)
         return;
-    
+
     lua_State *L = room->getLuaState();
 
     int e = static_cast<int>(triggerEvent);
@@ -614,10 +614,10 @@ void LuaTriggerSkill::onTurnBroken(const char *function_name,TriggerEvent trigge
 
     LuaTriggerSkill *self = const_cast<LuaTriggerSkill *>(this);
     SWIG_NewPointerObj(L, self, SWIGTYPE_p_LuaTriggerSkill, 0);
-    
+
     //first arg: function_name
-    
-    lua_pushstring(L,function_name);
+
+    lua_pushstring(L, function_name);
 
     // the second argument: event
     lua_pushinteger(L, e);
@@ -675,7 +675,7 @@ void LuaBattleArraySkill::record(TriggerEvent triggerEvent, Room *room, ServerPl
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange)
-            onTurnBroken("on_record",triggerEvent,room,player,data,NULL);
+            onTurnBroken("on_record", triggerEvent, room, player, data, NULL);
         throw e;
     }
 }
@@ -689,7 +689,7 @@ TriggerList LuaBattleArraySkill::triggerable(TriggerEvent triggerEvent, Room *ro
 
         return r;
     }
-    
+
     try {
         lua_State *l = room->getLuaState();
 
@@ -752,7 +752,7 @@ TriggerList LuaBattleArraySkill::triggerable(TriggerEvent triggerEvent, Room *ro
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange)
-            onTurnBroken("can_trigger",triggerEvent,room,player,data,NULL);
+            onTurnBroken("can_trigger", triggerEvent, room, player, data, NULL);
         throw e;
     }
 }
@@ -797,11 +797,11 @@ bool LuaBattleArraySkill::cost(TriggerEvent triggerEvent, Room *room, ServerPlay
             lua_pop(L, 1);
             return result;
         }
-    
+
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange)
-            onTurnBroken("on_cost",triggerEvent,room,player,data,ask_who);
+            onTurnBroken("on_cost", triggerEvent, room, player, data, ask_who);
         throw e;
     }
 }
@@ -849,16 +849,16 @@ bool LuaBattleArraySkill::effect(TriggerEvent triggerEvent, Room *room, ServerPl
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange)
-            onTurnBroken("on_effect",triggerEvent,room,player,data,ask_who);
+            onTurnBroken("on_effect", triggerEvent, room, player, data, ask_who);
         throw e;
     }
 }
 
-void LuaBattleArraySkill::onTurnBroken(const char *function_name,TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+void LuaBattleArraySkill::onTurnBroken(const char *function_name, TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
 {
     if (on_turn_broken == 0)
         return;
-    
+
     lua_State *L = room->getLuaState();
 
     int e = static_cast<int>(triggerEvent);
@@ -868,10 +868,10 @@ void LuaBattleArraySkill::onTurnBroken(const char *function_name,TriggerEvent tr
 
     LuaBattleArraySkill *self = const_cast<LuaBattleArraySkill *>(this);
     SWIG_NewPointerObj(L, self, SWIGTYPE_p_LuaBattleArraySkill, 0);
-    
+
     //first arg: function_name
-    
-    lua_pushstring(L,function_name);
+
+    lua_pushstring(L, function_name);
 
     // the second argument: event
     lua_pushinteger(L, e);
@@ -1411,7 +1411,7 @@ void LuaSkillCard::onUse(Room *room, const CardUseStruct &card_use) const
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange) {
             QVariant data = QVariant::fromValue(card_use);
-            onTurnBroken("about_to_use",room,data);
+            onTurnBroken("about_to_use", room, data);
         }
         throw e;
     }
@@ -1447,9 +1447,9 @@ void LuaSkillCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange) {
-            CardUseStruct card_use(this,source,targets);
+            CardUseStruct card_use(this, source, targets);
             QVariant data = QVariant::fromValue(card_use);
-            onTurnBroken("on_use",room,data);
+            onTurnBroken("on_use", room, data);
         }
         throw e;
     }
@@ -1481,7 +1481,7 @@ void LuaSkillCard::onEffect(const CardEffectStruct &effect) const
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange) {
             QVariant data = QVariant::fromValue(effect);
-            onTurnBroken("on_effect",effect.from->getRoom(),data);
+            onTurnBroken("on_effect", effect.from->getRoom(), data);
         }
         throw e;
     }
@@ -1521,7 +1521,7 @@ const Card *LuaSkillCard::validate(CardUseStruct &cardUse) const
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange) {
             QVariant data = QVariant::fromValue(cardUse);
-            onTurnBroken("on_validate",cardUse.from->getRoom(),data);
+            onTurnBroken("on_validate", cardUse.from->getRoom(), data);
         }
         throw e;
     }
@@ -1555,14 +1555,14 @@ const Card *LuaSkillCard::validateInResponse(ServerPlayer *user) const
         if (SWIG_IsOK(result)) {
             const Card *card = static_cast<const Card *>(card_ptr);
             return card;
-        } else 
+        } else
             return SkillCard::validateInResponse(user);
-        
+
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange) {
             QVariant data = QVariant::fromValue(user);
-            onTurnBroken("on_validate_in_response",user->getRoom(),data);
+            onTurnBroken("on_validate_in_response", user->getRoom(), data);
         }
         throw e;
     }
@@ -1573,7 +1573,7 @@ void LuaSkillCard::extraCost(Room *room, const CardUseStruct &card_use) const
     if (extra_cost == 0)
         return SkillCard::extraCost(room, card_use);
 
-    try{
+    try {
         lua_State *L = Sanguosha->getLuaState();
 
         // the callback
@@ -1594,7 +1594,7 @@ void LuaSkillCard::extraCost(Room *room, const CardUseStruct &card_use) const
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange) {
             QVariant data = QVariant::fromValue(card_use);
-            onTurnBroken("extra_cost",room,data);
+            onTurnBroken("extra_cost", room, data);
         }
         throw e;
     }
@@ -1605,18 +1605,18 @@ void LuaSkillCard::onTurnBroken(const char *function_name, Room *room, QVariant 
     if (on_turn_broken == 0)
         return;
     lua_State *L = room->getLuaState();
-    
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, on_turn_broken);
-    
+
     pushSelf(L);
-    
-    lua_pushstring(L,function_name);
-    
+
+    lua_pushstring(L, function_name);
+
     SWIG_NewPointerObj(L, room, SWIGTYPE_p_Room, 0);
-    
-    
+
+
     SWIG_NewPointerObj(L, &value, SWIGTYPE_p_QVariant, 0);
-    
+
     int error = lua_pcall(L, 4, 0, 0);
     if (error) {
         const char *error_msg = lua_tostring(L, -1);
