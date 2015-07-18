@@ -7,6 +7,8 @@ QT += network widgets
 TEMPLATE = app
 CONFIG += audio
 
+CONFIG += c++11
+
 CONFIG += lua
 #CONFIG += lua53
 
