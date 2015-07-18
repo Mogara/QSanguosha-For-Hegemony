@@ -492,11 +492,6 @@ public:
         view_as_skill = new JadeSealViewAsSkill;
     }
 
-    virtual int getPriority() const
-    {
-        return 4;
-    }
-
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const
     {
         if (!TreasureSkill::triggerable(player) || !player->hasShownOneGeneral())
