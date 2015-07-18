@@ -387,7 +387,7 @@ signals:
     void mirror_guanxing_move(int from, int to);
     void mirror_guanxing_finish();
 
-    void mirror_cardchoose_start(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern);
+    void mirror_cardchoose_start(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern, bool button_always_enable);
     void mirror_cardchoose_move(int from, int to);
     void mirror_cardchoose_finish();
 

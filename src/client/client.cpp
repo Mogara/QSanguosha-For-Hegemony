@@ -263,6 +263,7 @@ void Client::mirrorMoveCardsStep(const QVariant &args)
             QString who = arg.at(1).toString();
             QString reason = arg.at(2).toString();
             QString pattern = arg.at(4).toString();
+            bool button_always_enable = arg.at(5).toBool();
 
             QList<int> cards;
             if (JsonUtils::isNumber(arg.at(3))) {
@@ -273,7 +274,7 @@ void Client::mirrorMoveCardsStep(const QVariant &args)
             } else {
                 JsonUtils::tryParse(arg.at(3), cards);
             }
-            emit mirror_cardchoose_start(who, reason, cards, pattern);
+            emit mirror_cardchoose_start(who, reason, cards, pattern, button_always_enable);
         }
     } else if (step == S_GUANXING_MOVE) {
         if (arg.size() >= 3) {
@@ -1848,11 +1849,11 @@ void Client::askForMoveCards(const QVariant &arg)
     QString reason = args[1].toString();
     QString func = args[2].toString();
     QString skillName = args[3].toString();
-    bool optional = args[4].toBool();
+    bool button_always_enable = args[4].toBool();
 
     QList<int> card_ids;
     JsonUtils::tryParse(deck, card_ids);
-    m_isDiscardActionRefusable = optional;
+    m_isDiscardActionRefusable = func.isEmpty() || button_always_enable;
     skill_name = skillName;
 
     emit cardchoose(card_ids, reason, func);
@@ -1860,7 +1861,7 @@ void Client::askForMoveCards(const QVariant &arg)
 
     if (recorder) {
         JsonArray stepArgs;
-        stepArgs << S_GUANXING_START << QVariant() << args[1] << args[0] << args[2] << args[3];
+        stepArgs << S_GUANXING_START << QVariant() << args[1] << args[0] << args[2] << args[4];
         Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_MOVECARDS_STEP);
         packet.setMessageBody(stepArgs);
         recorder->recordLine(packet.toJson());

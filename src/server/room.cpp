@@ -5655,7 +5655,7 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
 }
 
 
-QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const QString &reason, LuaFunction f, const QString &skillName, bool optional)
+QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const QString &reason, LuaFunction f, const QString &skillName, bool button_always_enable)
 {
     QList<int> top_cards, bottom_cards, result;
     tryPause();
@@ -5665,7 +5665,7 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, b
 
     JsonArray stepArgs;
     if (visible){
-        stepArgs << S_GUANXING_START << zhuge->objectName() << reason << JsonUtils::toJsonArray(cards) << func;
+        stepArgs << S_GUANXING_START << zhuge->objectName() << reason << JsonUtils::toJsonArray(cards) << func << button_always_enable;
         doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
     }
     AI *ai = zhuge->getAI();
@@ -5741,7 +5741,7 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, b
         CardChooseArgs << (reason);
         CardChooseArgs << (func);
         CardChooseArgs << (skillName);
-        CardChooseArgs << optional;
+        CardChooseArgs << button_always_enable;
         bool success = doRequest(zhuge, S_COMMAND_SKILL_MOVECARDS, CardChooseArgs, true);
         if (!success)
             return result;
@@ -5765,6 +5765,8 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, b
         stepArgs << S_GUANXING_FINISH;
         doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
     }
+    QVariant decisionData = QVariant::fromValue(reason + "chose:" + zhuge->objectName() + ":" + IntList2StringList(result).join("+"));
+    thread->trigger(ChoiceMade, this, zhuge, decisionData);
     return result;
 }
 

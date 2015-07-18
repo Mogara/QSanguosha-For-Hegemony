@@ -69,10 +69,10 @@ protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 public slots:
-    void doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &pattern);
+    void doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &pattern, bool button_always_enable);
     void clear();
 
-    void mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern);
+    void mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern, bool button_always_enable);
     void mirrorCardChooseMove(int from, int to);
 
 private slots:
@@ -84,6 +84,7 @@ private:
     QString reason;
     QString func;
     bool buttonisenable;
+    bool buttonstate;
     void adjust();
     int itemNumberOfFirstRow() const;
     bool isOneRow() const;

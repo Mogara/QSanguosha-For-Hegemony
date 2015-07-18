@@ -357,7 +357,7 @@ CardChooseBox::CardChooseBox()
 {
 }
 
-void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &func)
+void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &func, bool button_always_enable)
 {
     if (cardIds.isEmpty()) {
         clear();
@@ -367,7 +367,8 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
     zhuge.clear();//self
     this->reason = reason;
     this->func = func;
-    buttonisenable = ClientInstance->m_isDiscardActionRefusable;
+    buttonisenable = func.isEmpty() || button_always_enable;
+    buttonstate = ClientInstance->m_isDiscardActionRefusable;
     upItems.clear();
     scene_width = RoomSceneInstance->sceneRect().width();
 
@@ -429,9 +430,9 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
     }
 }
 
-void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern)
+void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern, bool button_always_enable)
 {
-    doCardChoose(cards, reason, pattern);
+    doCardChoose(cards, reason, pattern, button_always_enable);
 
     foreach (CardItem *item, upItems) {
         item->setFlag(QGraphicsItem::ItemIsMovable, false);
@@ -480,6 +481,12 @@ void CardChooseBox::onItemReleased()
     CardItem *item = qobject_cast<CardItem *>(sender());
     if (item == NULL) return;
 
+    QList<int> down_cards;
+    foreach(CardItem *card_item, downItems)
+        down_cards << card_item->getCard()->getId();
+    bool check = func.isEmpty() ? true : check(down_cards, item->getCard()->getId());
+    if (buttonisenable && !check) return;
+
     int fromPos = 0;
     if (upItems.contains(item)) {
         fromPos = upItems.indexOf(item);
@@ -515,12 +522,11 @@ void CardChooseBox::onItemReleased()
     items->insert(c, item);
 
     int toPos = toUpItems ? c + 1 : -c - 1;
-    if (!ClientInstance->m_isDiscardActionRefusable && !downItems.isEmpty())
-        buttonisenable = true;
-    else
-        buttonisenable = false;
 
-    ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos, buttonisenable);
+    if (!buttonisenable)
+        buttonstate = check;
+
+    ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos, buttonstate);
     adjust();
 }
 
@@ -528,6 +534,12 @@ void CardChooseBox::onItemClicked()
 {
     CardItem *item = qobject_cast<CardItem *>(sender());
     if (item == NULL) return;
+
+    QList<int> down_cards;
+    foreach(CardItem *card_item, downItems)
+        down_cards << card_item->getCard()->getId();
+    bool check = func.isEmpty() ? true : check(down_cards, item->getCard()->getId());
+    if (buttonisenable && !check) return;
 
     int fromPos, toPos;
     if (upItems.contains(item)) {
@@ -542,12 +554,10 @@ void CardChooseBox::onItemClicked()
         upItems.append(item);
     }
 
-    if (!ClientInstance->m_isDiscardActionRefusable && !downItems.isEmpty())
-        buttonisenable = true;
-    else
-        buttonisenable = false;
+    if (!buttonisenable)
+        buttonstate = check;
 
-    ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos, buttonisenable);
+    ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos, buttonstate);
     adjust();
 }
 
