@@ -48,6 +48,8 @@ class LuaTreasure;
 
 struct lua_State;
 
+typedef int LuaFunction;
+
 class Engine : public QObject
 {
     Q_OBJECT
@@ -60,6 +62,8 @@ public:
     QString translate(const QString &toTranslate) const;
     QString translate(const QString &toTranslate, const QString &defaultValue) const;
     lua_State *getLuaState() const;
+
+    QString wrapLuaFunction(lua_State *lua,LuaFunction func);
 
     int getMiniSceneCounts();
 

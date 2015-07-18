@@ -56,6 +56,9 @@
 
 using namespace QSanProtocol;
 
+
+typedef int LuaFunction;
+
 Room::Room(QObject *parent, const QString &mode)
     : QThread(parent), mode(mode), current(NULL), pile1(Sanguosha->getRandomCards()),
     m_drawPile(&pile1), m_discardPile(&pile2),
@@ -5651,20 +5654,23 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
 }
 
-QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const QString &reason, const QString &pattern, const QString &skillName)
+
+QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const QString &reason, LuaFunction f, const QString &skillName, bool optional)
 {
     QList<int> top_cards, bottom_cards, result;
     tryPause();
     notifyMoveFocus(zhuge, S_COMMAND_SKILL_MOVECARDS);
 
+    QString func = Sanguosha->wrapLuaFunction(L, f);
+
     JsonArray stepArgs;
     if (visible){
-        stepArgs << S_GUANXING_START << zhuge->objectName() << reason << JsonUtils::toJsonArray(cards) << pattern;
+        stepArgs << S_GUANXING_START << zhuge->objectName() << reason << JsonUtils::toJsonArray(cards) << func;
         doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
     }
     AI *ai = zhuge->getAI();
     if (ai) {
-        result = ai->askForMoveCards(cards, reason, pattern);
+        result = ai->askForMoveCards(cards, reason, func);
 
         bool isTrustAI = zhuge->getState() == "trust";
         if (isTrustAI && visible) {
@@ -5681,7 +5687,7 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, b
         foreach (int cardId, cards)
             if (!result.contains(cardId)) others.append(cardId);
 
-        if (pattern == ""){
+        if (func.isEmpty()){
             realtopcards = result;
             realbottomcards = others;
         }else {
@@ -5733,8 +5739,9 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, b
         JsonArray CardChooseArgs;
         CardChooseArgs << JsonUtils::toJsonArray(cards);
         CardChooseArgs << (reason);
-        CardChooseArgs << (pattern);
+        CardChooseArgs << (func);
         CardChooseArgs << (skillName);
+        CardChooseArgs << optional;
         bool success = doRequest(zhuge, S_COMMAND_SKILL_MOVECARDS, CardChooseArgs, true);
         if (!success)
             return result;
@@ -5747,7 +5754,7 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, b
         bool length_equal = top_cards.length() + bottom_cards.length() == cards.length();
         bool result_equal = top_cards.toSet() + bottom_cards.toSet() == cards.toSet();
         if (length_equal && result_equal){
-            if (pattern == "")
+            if (func.isEmpty())
                 result = top_cards;
             else
                 result = bottom_cards;

@@ -82,12 +82,13 @@ private slots:
 private:
     QList<CardItem *> upItems, downItems;
     QString reason;
-    QString pattern;
+    QString func;
     bool buttonisenable;
     void adjust();
     int itemNumberOfFirstRow() const;
     bool isOneRow() const;
     QString zhuge;
+    bool check(const QList<int> &selected, int to_select);
 };
 
 #endif // GUANXINGBOX_H

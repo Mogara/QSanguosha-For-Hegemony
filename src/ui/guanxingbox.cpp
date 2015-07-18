@@ -23,6 +23,9 @@
 #include "engine.h"
 #include "client.h"
 #include "graphicsbox.h"
+#include "lualib.h"
+#include "lua.hpp"
+#include <QMessageBox>
 
 GuanxingBox::GuanxingBox()
     : CardContainer()
@@ -354,7 +357,7 @@ CardChooseBox::CardChooseBox()
 {
 }
 
-void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &pattern)
+void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &func)
 {
     if (cardIds.isEmpty()) {
         clear();
@@ -363,8 +366,8 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
 
     zhuge.clear();//self
     this->reason = reason;
-    this->pattern = pattern;
-    buttonisenable = !pattern.startsWith("!");
+    this->func = func;
+    buttonisenable = ClientInstance->m_isDiscardActionRefusable;
     upItems.clear();
     scene_width = RoomSceneInstance->sceneRect().width();
 
@@ -512,7 +515,7 @@ void CardChooseBox::onItemReleased()
     items->insert(c, item);
 
     int toPos = toUpItems ? c + 1 : -c - 1;
-    if (pattern.startsWith("!") && !downItems.isEmpty())
+    if (!ClientInstance->m_isDiscardActionRefusable && !downItems.isEmpty())
         buttonisenable = true;
     else
         buttonisenable = false;
@@ -539,7 +542,7 @@ void CardChooseBox::onItemClicked()
         upItems.append(item);
     }
 
-    if (pattern.startsWith("!") && !downItems.isEmpty())
+    if (!ClientInstance->m_isDiscardActionRefusable && !downItems.isEmpty())
         buttonisenable = true;
     else
         buttonisenable = false;
@@ -618,6 +621,39 @@ bool CardChooseBox::isOneRow() const
     }
 
     return oneRow;
+}
+
+static void pushQIntList(lua_State *L, const QList<int> &list)
+{
+    lua_createtable(L, list.length(), 0);
+
+    for (int i = 0; i < list.length(); i++) {
+        lua_pushinteger(L, list.at(i));
+        lua_rawseti(L, -2, i + 1);
+    }
+}
+
+bool CardChooseBox::check(const QList<int> &selected, int to_select)
+{
+    lua_State *l = Sanguosha->getLuaState();
+    int error = luaL_loadstring(l, func.toLatin1().data());
+    if (error) {
+        QMessageBox::warning(NULL, "lua_error", lua_tostring(l, -1));
+        lua_pop(l, 1);
+        return false;
+    }
+    pushQIntList(l, selected);
+    lua_pushnumber(l, to_select);
+    int result = lua_pcall(l, 2, 1, 0);
+    if (result) {
+        QMessageBox::warning(NULL, "lua_error", lua_tostring(l, -1));
+        lua_pop(l, 1);
+        return false;
+    }
+    bool returns = lua_toboolean(l, -1);
+    lua_pop(l, 1);
+
+    return returns;
 }
 
 void CardChooseBox::clear()
@@ -707,7 +743,7 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
 
         QString description1;
         QString description2;
-        if (pattern != ""){
+        if (!func.isEmpty()){
             description1 = tr("CardsSelectable");
             description2 = tr("CardsSelected");
         }else{

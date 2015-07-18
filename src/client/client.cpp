@@ -1846,15 +1846,16 @@ void Client::askForMoveCards(const QVariant &arg)
     JsonArray deck = args[0].value<JsonArray>();
 
     QString reason = args[1].toString();
-    QString pattern = args[2].toString();
+    QString func = args[2].toString();
     QString skillName = args[3].toString();
+    bool optional = args[4].toBool();
 
     QList<int> card_ids;
     JsonUtils::tryParse(deck, card_ids);
-    m_isDiscardActionRefusable = !pattern.startsWith("!");
+    m_isDiscardActionRefusable = optional;
     skill_name = skillName;
 
-    emit cardchoose(card_ids, reason, pattern);
+    emit cardchoose(card_ids, reason, func);
     setStatus(AskForMoveCards);
 
     if (recorder) {
