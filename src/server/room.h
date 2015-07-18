@@ -42,6 +42,8 @@ struct LogMessage;
 
 typedef QMap<const ServerPlayer *, QStringList> SPlayerDataMap;
 
+typedef int LuaFunction;
+
 class Room : public QThread
 {
     Q_OBJECT

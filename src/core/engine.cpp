@@ -136,6 +136,8 @@ lua_State *Engine::getLuaState() const
 
 QString Engine::wrapLuaFunction(lua_State *lua,LuaFunction func)
 {
+    if (func == 0)
+        return QString();
     lua_getglobal(lua, "string");
     int ori_top = lua_gettop(lua);
     lua_getfield(lua, -1, "dump");
@@ -150,7 +152,7 @@ QString Engine::wrapLuaFunction(lua_State *lua,LuaFunction func)
     QString result = lua_tostring(lua, -1);
     lua_pop(lua, 2);
     luaL_unref(lua,LUA_REGISTRYINDEX,func);
-    Q_ASSERT(ori == lua_gettop(lua));
+    Q_ASSERT(ori_top == lua_gettop(lua));
     return result;
 }
 

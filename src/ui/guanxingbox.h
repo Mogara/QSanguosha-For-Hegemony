@@ -67,6 +67,7 @@ public:
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    bool check(const QList<int> &selected, int to_select);
 
 public slots:
     void doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &pattern, bool button_always_enable);
@@ -89,7 +90,7 @@ private:
     int itemNumberOfFirstRow() const;
     bool isOneRow() const;
     QString zhuge;
-    bool check(const QList<int> &selected, int to_select);
+    
 };
 
 #endif // GUANXINGBOX_H

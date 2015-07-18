@@ -23,7 +23,6 @@
 #include "engine.h"
 #include "client.h"
 #include "graphicsbox.h"
-#include "lualib.h"
 #include "lua.hpp"
 #include <QMessageBox>
 
@@ -484,7 +483,7 @@ void CardChooseBox::onItemReleased()
     QList<int> down_cards;
     foreach(CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
-    bool check = func.isEmpty() ? true : check(down_cards, item->getCard()->getId());
+    bool check = func.isEmpty() ? true : this->check(down_cards, item->getCard()->getId());
     if (buttonisenable && !check) return;
 
     int fromPos = 0;
@@ -538,7 +537,7 @@ void CardChooseBox::onItemClicked()
     QList<int> down_cards;
     foreach(CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
-    bool check = func.isEmpty() ? true : check(down_cards, item->getCard()->getId());
+    bool check = func.isEmpty() ? true : this->check(down_cards, item->getCard()->getId());
     if (buttonisenable && !check) return;
 
     int fromPos, toPos;

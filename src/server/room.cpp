@@ -57,7 +57,7 @@
 using namespace QSanProtocol;
 
 
-typedef int LuaFunction;
+
 
 Room::Room(QObject *parent, const QString &mode)
     : QThread(parent), mode(mode), current(NULL), pile1(Sanguosha->getRandomCards()),

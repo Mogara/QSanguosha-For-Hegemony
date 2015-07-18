@@ -1856,7 +1856,7 @@ void Client::askForMoveCards(const QVariant &arg)
     m_isDiscardActionRefusable = func.isEmpty() || button_always_enable;
     skill_name = skillName;
 
-    emit cardchoose(card_ids, reason, func);
+    emit cardchoose(card_ids, reason, func, button_always_enable);
     setStatus(AskForMoveCards);
 
     if (recorder) {
