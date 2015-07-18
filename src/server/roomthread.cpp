@@ -203,10 +203,10 @@ void RoomThread::run()
     }
 }
 
-static bool compareByPriority(const TriggerSkill *a, const TriggerSkill *b)
-{
-    return a->getCurrentPriority() > b->getCurrentPriority();
-}
+// static bool compareByPriority(const TriggerSkill *a, const TriggerSkill *b)
+// {
+//     return a->getCurrentPriority() > b->getCurrentPriority();
+// }
 
 bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data)
 {
@@ -223,11 +223,11 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
     try {
         QList<const TriggerSkill *> triggered;
         QList<const TriggerSkill *> &skills = skill_table[triggerEvent];
-        foreach (const TriggerSkill *skill,skills){
-            skill->setCurrentPriority(skill->getDynamicPriority(triggerEvent));
-        }
+//         foreach (const TriggerSkill *skill,skills){
+//             skill->setCurrentPriority(skill->getDynamicPriority(triggerEvent));
+//         }
 
-        qStableSort(skills.begin(), skills.end(), compareByPriority);
+		qStableSort(skills.begin(), skills.end(), [triggerEvent](const TriggerSkill *a, const TriggerSkill *b){return a->getDynamicPriority(triggerEvent) > b->getDynamicPriority(triggerEvent); });
 
         do {
             trigger_who.clear();
@@ -595,7 +595,7 @@ void RoomThread::addTriggerSkill(const TriggerSkill *skill)
     foreach (const TriggerEvent &triggerEvent, events) {
         QList<const TriggerSkill *> &table = skill_table[triggerEvent];
         table << skill;
-        qStableSort(table.begin(), table.end(), compareByPriority);
+		qStableSort(table.begin(), table.end(), [triggerEvent](const TriggerSkill *a, const TriggerSkill *b){return a->getDynamicPriority(triggerEvent) > b->getDynamicPriority(triggerEvent); });
     }
 
     if (skill->isVisible()) {

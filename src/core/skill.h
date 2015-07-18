@@ -169,14 +169,14 @@ public:
 
     virtual int getPriority() const;
     virtual double getDynamicPriority(TriggerEvent e) const;
-    double getCurrentPriority() const
-    {
-        return current_priority;
-    }
-    void setCurrentPriority(double p) const
-    {
-        current_priority = p;
-    }
+//     double getCurrentPriority() const
+//     {
+//         return current_priority;
+//     }
+//     void setCurrentPriority(double p) const
+//     {
+//         current_priority = p;
+//     }
 
     void insertPriority(TriggerEvent e,double value);
 
