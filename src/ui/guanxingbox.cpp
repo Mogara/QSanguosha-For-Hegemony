@@ -484,7 +484,6 @@ void CardChooseBox::onItemReleased()
     foreach(CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
     bool check = func.isEmpty() ? true : this->check(down_cards, item->getCard()->getId());
-    if (buttonisenable && !check) return;
 
     int fromPos = 0;
     if (upItems.contains(item)) {
@@ -522,6 +521,13 @@ void CardChooseBox::onItemReleased()
 
     int toPos = toUpItems ? c + 1 : -c - 1;
 
+    if (buttonisenable && !toUpItems && !check){
+        downItems.removeOne(item);
+        upItems.append(item);
+        adjust();
+        return;
+    }
+
     if (!buttonisenable)
         buttonstate = check;
 
@@ -538,7 +544,7 @@ void CardChooseBox::onItemClicked()
     foreach(CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
     bool check = func.isEmpty() ? true : this->check(down_cards, item->getCard()->getId());
-    if (buttonisenable && !check) return;
+    if (buttonisenable && upItems.contains(item) && !check) return;
 
     int fromPos, toPos;
     if (upItems.contains(item)) {
