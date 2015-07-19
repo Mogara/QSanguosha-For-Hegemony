@@ -647,7 +647,7 @@ function sgs.CreateArraySummonSkill(spec)
 	assert(type(spec.name) == "string")
 	assert(spec.array_summon_card)
 
-	local skill = sgs.LuaViewAsSkill(spec.name, "", false, "")
+	local skill = sgs.LuaViewAsSkill(spec.name, "", false, "","")
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
