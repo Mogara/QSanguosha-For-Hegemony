@@ -1417,7 +1417,7 @@ public:
     QList<int> getNCards(int n, bool update_pile_number = true);
     ServerPlayer *getLord(const char *kingdom, bool include_death = false) const;
     void askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, GuanxingType guanxing_type = GuanxingBothSides);
-    QList<int> askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const char *reason, const char *pattern, const char *skillName);
+    QList<int> askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const char *reason, LuaFunction f, const QString &skillName, bool button_always_enable = true);
     int doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids = QList<int>(), const char *skill_name = "shangyi");
     int drawCard();
     void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>());

@@ -76,8 +76,6 @@ sgs.addNewKingdom = function(kingdom_name,color)
 	end
 end
 
-sgs.wrapLuaFunction = string.dump
-
 function table.Shuffle(list)
 	local result = {}
 	while #list > 0 do

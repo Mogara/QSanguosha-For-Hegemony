@@ -28,27 +28,27 @@
 
 class GlobalFakeMoveSkill : public TriggerSkill { 
 public:
-	GlobalFakeMoveSkill() : TriggerSkill("global-fake-move") {
-		events << BeforeCardsMove << CardsMoveOneTime;
-		global = true;
-	}
+    GlobalFakeMoveSkill() : TriggerSkill("global-fake-move") {
+        events << BeforeCardsMove << CardsMoveOneTime;
+        global = true;
+    }
 
-	virtual int getPriority() const{
-		return 10;
-	}
+    virtual int getPriority() const{
+        return 10;
+    }
 
-	virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &) const{
-		return (target != NULL) ? QStringList(objectName()) : QStringList();
-	}
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &) const{
+        return (target != NULL) ? QStringList(objectName()) : QStringList();
+    }
 
-	virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const{
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p->hasFlag("Global_InTempMoving"))
                 return true;
         }
 
-		return false;
-	}
+        return false;
+    }
 
 };
 
@@ -60,7 +60,7 @@ StandardPackage::StandardPackage()
     addWuGenerals();
     addQunGenerals();
 
-	skills << new GlobalFakeMoveSkill;
+    skills << new GlobalFakeMoveSkill;
 
     patterns["."] = new ExpPattern(".|.|.|hand");
     patterns[".S"] = new ExpPattern(".|spade|.|hand");

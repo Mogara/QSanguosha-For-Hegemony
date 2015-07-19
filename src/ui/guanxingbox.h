@@ -67,12 +67,13 @@ public:
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    bool check(const QList<int> &selected, int to_select);
 
 public slots:
-    void doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &pattern);
+    void doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &pattern, bool button_always_enable);
     void clear();
 
-    void mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern);
+    void mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern, bool button_always_enable);
     void mirrorCardChooseMove(int from, int to);
 
 private slots:
@@ -82,12 +83,14 @@ private slots:
 private:
     QList<CardItem *> upItems, downItems;
     QString reason;
-    QString pattern;
+    QString func;
     bool buttonisenable;
+    bool buttonstate;
     void adjust();
     int itemNumberOfFirstRow() const;
     bool isOneRow() const;
     QString zhuge;
+    
 };
 
 #endif // GUANXINGBOX_H
