@@ -2438,8 +2438,12 @@ void RoomScene::doTimeout()
     case Client::AskForMoveCards:{
         if (ClientInstance->m_isDiscardActionRefusable)
             ok_button->click();
-        else
-            cancel_button->click();
+        else {
+            QList<int> empty;
+            dashboard->highlightEquip(ClientInstance->skill_name, false);
+            m_cardchooseBox->clear();
+            ClientInstance->onPlayerReplyMoveCards(empty, empty);
+        }
         break;
     }
     case Client::AskForGongxin: {
@@ -2751,7 +2755,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
     case Client::AskForGuanxing:
     case Client::AskForMoveCards:{
         ok_button->setEnabled(ClientInstance->m_isDiscardActionRefusable);
-        cancel_button->setEnabled(true);
+        cancel_button->setEnabled(ClientInstance->m_canDiscardEquip);
         discard_button->setEnabled(false);
         highlightSkillButton(ClientInstance->skill_name);
         break;

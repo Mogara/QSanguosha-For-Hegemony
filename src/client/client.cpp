@@ -262,19 +262,29 @@ void Client::mirrorMoveCardsStep(const QVariant &args)
         if (arg.size() >= 3) {
             QString who = arg.at(1).toString();
             QString reason = arg.at(2).toString();
-            QString pattern = arg.at(4).toString();
-            bool moverestricted = arg.at(5).toBool();
+            QString pattern = arg.at(5).toString();
+            bool moverestricted = arg.at(6).toBool();
+            int min_num = arg.at(7).toInt();
+            int max_num = arg.at(8).toInt();
 
-            QList<int> cards;
+            QList<int> upcards, downcards;
             if (JsonUtils::isNumber(arg.at(3))) {
                 int cardNum = arg.at(3).toInt();
                 for (int i = 0; i < cardNum; i++) {
-                    cards << -1;
+                    upcards << -1;
                 }
             } else {
-                JsonUtils::tryParse(arg.at(3), cards);
+                JsonUtils::tryParse(arg.at(3), upcards);
             }
-            emit mirror_cardchoose_start(who, reason, cards, pattern, moverestricted);
+            if (JsonUtils::isNumber(arg.at(4))) {
+                int cardNum = arg.at(3).toInt();
+                for (int i = 0; i < cardNum; i++) {
+                    downcards << -1;
+                }
+            } else {
+                JsonUtils::tryParse(arg.at(4), downcards);
+            }
+            emit mirror_cardchoose_start(who, reason, upcards, downcards, pattern, moverestricted, min_num, max_num);
         }
     } else if (step == S_GUANXING_MOVE) {
         if (arg.size() >= 3) {
@@ -1844,24 +1854,29 @@ void Client::askForMoveCards(const QVariant &arg)
     if (args.isEmpty())
         return;
 
-    JsonArray deck = args[0].value<JsonArray>();
+    JsonArray up = args[0].value<JsonArray>();
+    JsonArray down = args[1].value<JsonArray>();
+    QString reason = args[2].toString();
+    QString func = args[3].toString();
+    QString skillName = args[4].toString();
+    bool moverestricted = args[5].toBool();
+    int min_num = args[6].toInt();
+    int max_num = args[7].toInt();
+    bool can_refuse = args[8].toBool();
 
-    QString reason = args[1].toString();
-    QString func = args[2].toString();
-    QString skillName = args[3].toString();
-    bool moverestricted = args[4].toBool();
-
-    QList<int> card_ids;
-    JsonUtils::tryParse(deck, card_ids);
-    m_isDiscardActionRefusable = (func == "") ? true : false;
+    QList<int> upcard_ids, downcard_ids;
+    JsonUtils::tryParse(up, upcard_ids);
+    JsonUtils::tryParse(down, downcard_ids);
+    m_isDiscardActionRefusable = (func == "") ? (down.length() >= min_num) : false;
+    m_canDiscardEquip = (min_num > 0) ? false : can_refuse;
     skill_name = skillName;
 
-    emit cardchoose(card_ids, reason, func, moverestricted);
+    emit cardchoose(upcard_ids, downcard_ids, reason, func, moverestricted, min_num, max_num);
     setStatus(AskForMoveCards);
 
     if (recorder) {
         JsonArray stepArgs;
-        stepArgs << S_GUANXING_START << QVariant() << args[1] << args[0] << args[2] << args[4];
+        stepArgs << S_GUANXING_START << QVariant() << args[2] << args[0] << args[1] << args[3] << args[5] << args[6] << args[7];
         Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_MOVECARDS_STEP);
         packet.setMessageBody(stepArgs);
         recorder->recordLine(packet.toJson());

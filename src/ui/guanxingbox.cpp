@@ -356,9 +356,9 @@ CardChooseBox::CardChooseBox()
 {
 }
 
-void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &func, bool moverestricted)
+void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &downcards, const QString &reason, const QString &func, bool moverestricted, int min_num, int max_num)
 {
-    if (cardIds.isEmpty()) {
+    if (upcards.isEmpty() && downcards.isEmpty()) {
         clear();
         return;
     }
@@ -368,10 +368,12 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
     this->func = func;
     this->moverestricted = (func == "") ? false : moverestricted;
     buttonstate = ClientInstance->m_isDiscardActionRefusable;
+    this->min_num = min_num;
     upItems.clear();
+    downItems.clear();
     scene_width = RoomSceneInstance->sceneRect().width();
 
-    foreach (int cardId, cardIds) {
+    foreach (int cardId, upcards) {
         CardItem *cardItem = new CardItem(Sanguosha->getCard(cardId));
         cardItem->setAutoBack(false);
         cardItem->setFlag(QGraphicsItem::ItemIsFocusable);
@@ -383,7 +385,20 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
         cardItem->setParentItem(this);
     }
 
-    itemCount = upItems.length();
+    foreach (int cardId, downcards) {
+        CardItem *cardItem = new CardItem(Sanguosha->getCard(cardId));
+        cardItem->setAutoBack(false);
+        cardItem->setFlag(QGraphicsItem::ItemIsFocusable);
+
+        connect(cardItem, &CardItem::released, this, &CardChooseBox::onItemReleased);
+        connect(cardItem, &CardItem::clicked, this, &CardChooseBox::onItemClicked);
+
+        downItems << cardItem;
+        cardItem->setParentItem(this);
+    }
+
+    itemCount = qMax(upItems.length(), downItems.length());
+    downCount = (max_num > 0) ? qMax(max_num, downItems.length()) : 0;
     prepareGeometryChange();
     GraphicsBox::moveToCenter(this);
     show();
@@ -406,15 +421,52 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
             int app = 0;
             if (itemCount == 1) fix = 1;
             if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
-            X = (25 + app + (cardWidth + cardInterval) * fix);
+            X = (45 + app + (cardWidth + cardInterval) * fix);
             Y = (45);
         } else {
             if (upItems.length() % 2 == 1)
-                X = (25 + cardWidth / 2 + cardInterval / 2
+                X = (45 + cardWidth / 2 + cardInterval / 2
                 + (cardWidth + cardInterval) * (i - firstRow));
             else
-                X = (25 + (cardWidth + cardInterval) * (i - firstRow));
+                X = (45 + (cardWidth + cardInterval) * (i - firstRow));
             Y = (45 + cardHeight + cardInterval);
+        }
+        pos.setX(X);
+        pos.setY(Y);
+        cardItem->resetTransform();
+        cardItem->setOuterGlowEffectEnabled(true);
+        if (itemCount == 1 || itemCount == 2)
+            cardItem->setPos(X, 45);
+        else
+            cardItem->setPos(25, 45);
+        cardItem->setHomePos(pos);
+        cardItem->goBack(true);
+
+        if (this->moverestricted){
+            QList<int> empty;
+            cardItem->setEnabled(check(empty, cardItem->getCard()->getId()));
+        }
+    }
+
+    for (int i = 0; i < downItems.length(); i++) {
+        CardItem *cardItem = downItems.at(i);
+
+        QPointF pos;
+        int X, Y;
+        if (i < firstRow) {
+            int fix = i;
+            int app = 0;
+            if (itemCount == 1) fix = 1;
+            if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
+            X = (45 + app + (cardWidth + cardInterval) * fix);
+            Y = (45 + cardHeight + cardInterval);
+        } else {
+            if (upItems.length() % 2 == 1)
+                X = (45 + cardWidth / 2 + cardInterval / 2
+                + (cardWidth + cardInterval) * (i - firstRow));
+            else
+                X = (45 + (cardWidth + cardInterval) * (i - firstRow));
+            Y = (45 + (cardHeight + cardInterval) * 2);
         }
         pos.setX(X);
         pos.setY(Y);
@@ -434,11 +486,17 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
     }
 }
 
-void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern, bool moverestricted)
+void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &upcards, const QList<int> &downcards,
+    const QString &pattern, bool moverestricted, int min_num, int max_num)
 {
-    doCardChoose(cards, reason, pattern, moverestricted);
+    doCardChoose(upcards, downcards, reason, pattern, moverestricted, min_num, max_num);
 
     foreach (CardItem *item, upItems) {
+        item->setFlag(QGraphicsItem::ItemIsMovable, false);
+        item->disconnect(this);
+    }
+
+    foreach (CardItem *item, downItems) {
         item->setFlag(QGraphicsItem::ItemIsMovable, false);
         item->disconnect(this);
     }
@@ -521,7 +579,7 @@ void CardChooseBox::onItemReleased()
         fix = cardWidth + cardInterval;
     if (itemCount == 2)
         fix = cardWidth / 2 + cardInterval / 2;
-    const int startX = 25 + (oddRow ? 0 : (cardWidth / 2 + cardInterval / 2));
+    const int startX = 45 + (oddRow ? 0 : (cardWidth / 2 + cardInterval / 2));
     int c = (item->x() + item->boundingRect().width() / 2 - startX) / cardWidth;
     c = qBound(0, c, items->length());
     items->insert(c, item);
@@ -532,8 +590,32 @@ void CardChooseBox::onItemReleased()
         downItems.removeOne(item);
         upItems.append(item);
         toPos = upItems.size();
-        adjust();
     }
+
+    if (upItems.length() > itemCount){
+        int count = upItems.length();
+        QList<CardItem *> readjust;
+        for (int i = itemCount; i < count; i++)
+            readjust << upItems.at(i);
+        foreach (CardItem *item, readjust) {
+            upItems.removeOne(item);
+            downItems.append(item);
+        }
+    }
+
+    int acount = (downCount > 0) ? downCount : itemCount;
+    if (downItems.length() > acount){
+        int count = downItems.length();
+        QList<CardItem *> readjust;
+        for (int i = acount; i < count; i++)
+            readjust << downItems.at(i);
+        foreach (CardItem *item, readjust) {
+            downItems.removeOne(item);
+            upItems.append(item);
+        }
+    }
+
+    if (downItems.length() >= min_num) buttonstate = true;
 
     if (!moverestricted && func != ""){
         down_cards.clear();
@@ -542,6 +624,8 @@ void CardChooseBox::onItemReleased()
         buttonstate = this->check(down_cards, -1);
     }else
         buttonstate = (func == "") || !downItems.isEmpty();
+
+    if (downItems.length() < min_num || downItems.length() > downCount) buttonstate = false;
 
     ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos, buttonstate);
     adjust();
@@ -560,24 +644,30 @@ void CardChooseBox::onItemClicked()
 
     int fromPos, toPos;
     if (upItems.contains(item)) {
+        if (downItems.length() >= itemCount || (downCount > 0 && downItems.length() >= downCount)) return;
         fromPos = upItems.indexOf(item) + 1;
         toPos = -downItems.size() - 1;
         upItems.removeOne(item);
         downItems.append(item);
     } else {
+        if (upItems.length() >= itemCount) return;
         fromPos = -downItems.indexOf(item) - 1;
         toPos = upItems.size() + 1;
         downItems.removeOne(item);
         upItems.append(item);
     }
 
-    if (!moverestricted && func != ""){
+    if (downItems.length() >= min_num) buttonstate = true;
+
+    if (!moverestricted && func != "") {
         down_cards.clear();
         foreach(CardItem *card_item, downItems)
             down_cards << card_item->getCard()->getId();
         buttonstate = this->check(down_cards, -1);
     }else
         buttonstate = (func == "") || !downItems.isEmpty();
+
+    if (downItems.length() < min_num || downItems.length() > downCount) buttonstate = false;
 
     ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos, buttonstate);
     adjust();
@@ -601,14 +691,14 @@ void CardChooseBox::adjust()
             int app = 0;
             if (itemCount == 1) fix = 1;
             if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
-            pos.setX(25 + app + (cardWidth + cardInterval) * fix);
+            pos.setX(45 + app + (cardWidth + cardInterval) * fix);
             pos.setY(45);
         } else {
             if (count % 2 == 1)
-                pos.setX(25 + cardWidth / 2 + cardInterval / 2
+                pos.setX(45 + cardWidth / 2 + cardInterval / 2
                 + (cardWidth + cardInterval) * (i - firstRowCount));
             else
-                pos.setX(25 + (cardWidth + cardInterval) * (i - firstRowCount));
+                pos.setX(45 + (cardWidth + cardInterval) * (i - firstRowCount));
             pos.setY(45 + card_height + cardInterval);
         }
         upItems.at(i)->setHomePos(pos);
@@ -625,14 +715,14 @@ void CardChooseBox::adjust()
             int app = 0;
             if (itemCount == 1) fix = 1;
             if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
-            pos.setX(25 + app + (cardWidth + cardInterval) * fix);
+            pos.setX(45 + app + (cardWidth + cardInterval) * fix);
             pos.setY(45 + (card_height + cardInterval) * (isOneRow() ? 1 : 2));
         } else {
             if (count % 2 == 1)
-                pos.setX(25 + cardWidth / 2 + cardInterval / 2
+                pos.setX(45 + cardWidth / 2 + cardInterval / 2
                 + (cardWidth + cardInterval) * (i - firstRowCount));
             else
-                pos.setX(25 + (cardWidth + cardInterval) * (i - firstRowCount));
+                pos.setX(45 + (cardWidth + cardInterval) * (i - firstRowCount));
             pos.setY(45 + card_height * 3 + cardInterval * 3);
         }
         downItems.at(i)->setHomePos(pos);
@@ -652,10 +742,10 @@ bool CardChooseBox::isOneRow() const
     const int count = upItems.length() + downItems.length();
 
     const int cardWidth = G_COMMON_LAYOUT.m_cardNormalWidth;
-    int width = (cardWidth + cardInterval) * count - cardInterval + 50;
+    int width = (cardWidth + cardInterval) * count - cardInterval + 70;
     bool oneRow = true;
     if (width * 1.5 > RoomSceneInstance->sceneRect().width()) {
-        width = (cardWidth + cardInterval) * (count + 1) / 2 - cardInterval + 50;
+        width = (cardWidth + cardInterval) * (count + 1) / 2 - cardInterval + 70;
         oneRow = false;
     }
 
@@ -725,13 +815,18 @@ QRectF CardChooseBox::boundingRect() const
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
     bool one_row = true;
     int min = itemCount >= 3 ? itemCount : 3;
-    int width = (card_width + cardInterval) * min - cardInterval + 50;
+    int width = (card_width + cardInterval) * min - cardInterval + 70;
     if (width * 1.5 > (scene_width ? scene_width : 800)) {
-        width = (card_width + cardInterval) * ((itemCount + 1) / 2) - cardInterval + 50;
+        width = (card_width + cardInterval) * ((itemCount + 1) / 2) - cardInterval + 70;
         one_row = false;
     }
     int height = (one_row ? 1 : 2) * card_height + (one_row ? 0 : cardInterval);
-    height = height * 2 + cardInterval;
+    bool second_one_row = true;
+    if (width * 1.5 > (scene_width ? scene_width : 800)) {
+        width = (card_width + cardInterval) * ((downCount + 1) / 2) - cardInterval + 70;
+        second_one_row = false;
+    }
+    height = height + cardInterval + (second_one_row ? 1 : 2) * card_height + (second_one_row ? 0 : cardInterval);
     height += 90;
 
     return QRectF(0, 0, width, height);
@@ -750,12 +845,16 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
     const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
     bool one_row = true;
-    int width = (card_width + cardInterval) * itemCount - cardInterval + 50;
+    int width = (card_width + cardInterval) * itemCount - cardInterval + 70;
     if (width * 1.5 > RoomSceneInstance->sceneRect().width()) {
-        width = (card_width + cardInterval) * ((itemCount + 1) / 2) - cardInterval + 50;
+        width = (card_width + cardInterval) * ((itemCount + 1) / 2) - cardInterval + 70;
         one_row = false;
     }
     const int firstRow = itemNumberOfFirstRow();
+
+    QString description1 = Sanguosha->translate(reason + "#up");
+    QRect up_rect(15, 45, 20, card_height);
+    G_COMMON_LAYOUT.playerCardBoxPlaceNameText.paintText(painter, up_rect, Qt::AlignCenter, description1);
 
     for (int i = 0; i < itemCount; ++i) {
         int x, y = 0;
@@ -764,33 +863,48 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
             int app = 0;
             if (itemCount == 1) fix = 1;
             if (itemCount == 2) app = card_width / 2 + cardInterval / 2;
-            x = 25 + app + (card_width + cardInterval) * fix;
+            x = 45 + app + (card_width + cardInterval) * fix;
             y = 45;
         } else {
             if (itemCount % 2 == 1)
-                x = 25 + card_width / 2 + cardInterval / 2
+                x = 45 + card_width / 2 + cardInterval / 2
                 + (card_width + cardInterval) * (i - firstRow);
             else
-                x = 25 + (card_width + cardInterval) * (i - firstRow);
+                x = 45 + (card_width + cardInterval) * (i - firstRow);
             y = 45 + card_height + cardInterval;
         }
+
         QRect top_rect(x, y, card_width, card_height);
         painter->drawPixmap(top_rect, G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CHOOSE_GENERAL_BOX_DEST_SEAT));
-
-        QString description1;
-        QString description2;
-        if (func != ""){
-            description1 = tr("CardsSelectable");
-            description2 = tr("CardsSelected");
-        }else{
-            description1 = tr("CardstoGet");
-            description2 = tr("CardstoDrop");
-        }
         IQSanComponentSkin::QSanSimpleTextFont font = G_COMMON_LAYOUT.m_chooseGeneralBoxDestSeatFont;
         font.paintText(painter, top_rect, Qt::AlignCenter, description1);
+    }
+
+    QString description2 = Sanguosha->translate(reason + "#down");
+    QRect down_rect(15, 45 + (card_height + cardInterval) * (one_row ? 1 : 2), 20, card_height);
+    G_COMMON_LAYOUT.playerCardBoxPlaceNameText.paintText(painter, down_rect, Qt::AlignCenter, description2);
+
+    int count = (downCount > 0) ? downCount : itemCount;
+    for (int i = 0; i < count; ++i) {
+        int x, y = 0;
+        if (i < firstRow) {
+            int fix = i;
+            int app = 0;
+            if (itemCount == 1) fix = 1;
+            if (itemCount == 2) app = card_width / 2 + cardInterval / 2;
+            x = 45 + app + (card_width + cardInterval) * fix;
+            y = 45;
+        } else {
+            if (count % 2 == 1)
+                x = 45 + card_width / 2 + cardInterval / 2
+                + (card_width + cardInterval) * (i - firstRow);
+            else
+                x = 45 + (card_width + cardInterval) * (i - firstRow);
+            y = 45 + card_height + cardInterval;
+        }
         QRect bottom_rect(x, y + (card_height + cardInterval) * (one_row ? 1 : 2), card_width, card_height);
         painter->drawPixmap(bottom_rect, G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CHOOSE_GENERAL_BOX_DEST_SEAT));
+        IQSanComponentSkin::QSanSimpleTextFont font = G_COMMON_LAYOUT.m_chooseGeneralBoxDestSeatFont;
         font.paintText(painter, bottom_rect, Qt::AlignCenter, description2);
-
     }
 }

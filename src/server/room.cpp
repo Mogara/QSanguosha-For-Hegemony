@@ -5655,43 +5655,46 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
 }
 
 
-QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, bool visible, const QString &reason, const QString &pattern, const QString &skillName, bool moverestricted)
+QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
+    const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse, bool moverestricted)
 {
-    QList<int> top_cards, bottom_cards, result;
+    QList<int> top_cards, bottom_cards, result, to_move;
+    to_move << upcards << downcards;
+
     tryPause();
     notifyMoveFocus(zhuge, S_COMMAND_SKILL_MOVECARDS);
 
     JsonArray stepArgs;
     if (visible){
-        stepArgs << S_GUANXING_START << zhuge->objectName() << reason << JsonUtils::toJsonArray(cards) << pattern << moverestricted;
+        stepArgs << S_GUANXING_START;
+        stepArgs << zhuge->objectName();
+        stepArgs << reason;
+        stepArgs << JsonUtils::toJsonArray(upcards);
+        stepArgs << JsonUtils::toJsonArray(downcards);
+        stepArgs << pattern;
+        stepArgs << moverestricted;
+        stepArgs << min_num;
+        stepArgs << max_num;
         doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
     }
     AI *ai = zhuge->getAI();
     if (ai) {
-        result = ai->askForMoveCards(cards, reason, pattern);
+        result = ai->askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
 
         bool isTrustAI = zhuge->getState() == "trust";
         if (isTrustAI && visible) {
             stepArgs[1] = QVariant();
-            stepArgs[3] = JsonUtils::toJsonArray(cards);
             zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);
         }
 
         thread->delay();
         thread->delay();
 
-        QList<int> realtopcards, realbottomcards, others;
-        QList<int> to_move = cards;
-        foreach (int cardId, cards)
-            if (!result.contains(cardId)) others.append(cardId);
+        QList<int> realtopcards, realbottomcards;
+        foreach (int cardId, result)
+            if (!to_move.contains(cardId)) realtopcards.append(cardId);
+        realbottomcards = result;
 
-        if (pattern == ""){
-            realtopcards = result;
-            realbottomcards = others;
-        }else {
-            realbottomcards = result;
-            realtopcards = others;
-        }
         if (to_move != realtopcards) {
             JsonArray movearg_base;
             movearg_base << S_GUANXING_MOVE;
@@ -5735,11 +5738,15 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, b
 
     }else{
         JsonArray CardChooseArgs;
-        CardChooseArgs << JsonUtils::toJsonArray(cards);
-        CardChooseArgs << (reason);
-        CardChooseArgs << (pattern);
-        CardChooseArgs << (skillName);
-        CardChooseArgs << (moverestricted);
+        CardChooseArgs << JsonUtils::toJsonArray(upcards);
+        CardChooseArgs << JsonUtils::toJsonArray(downcards);
+        CardChooseArgs << reason;
+        CardChooseArgs << pattern;
+        CardChooseArgs << skillName;
+        CardChooseArgs << moverestricted;
+        CardChooseArgs << min_num;
+        CardChooseArgs << max_num;
+        CardChooseArgs << can_refuse;
         bool success = doRequest(zhuge, S_COMMAND_SKILL_MOVECARDS, CardChooseArgs, true);
         if (!success)
             return result;
@@ -5749,13 +5756,10 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &cards, b
             success &= JsonUtils::tryParse(clientReply[1], bottom_cards);
         }
 
-        bool length_equal = top_cards.length() + bottom_cards.length() == cards.length();
-        bool result_equal = top_cards.toSet() + bottom_cards.toSet() == cards.toSet();
+        bool length_equal = top_cards.length() + bottom_cards.length() == to_move.length();
+        bool result_equal = top_cards.toSet() + bottom_cards.toSet() == to_move.toSet();
         if (length_equal && result_equal){
-            if (pattern == "")
-                result = top_cards;
-            else
-                result = bottom_cards;
+            result = bottom_cards;
         }
     }
     if (visible){

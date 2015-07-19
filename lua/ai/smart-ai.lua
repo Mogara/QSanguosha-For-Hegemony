@@ -2158,20 +2158,24 @@ sgs.ai_skill_discard.gamerule = function(self, discard_num)
 	return to_discard
 end
 
-function SmartAI:askForMoveCards(cards, reason, pattern)
+function SmartAI:askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num)
 	local callback = sgs.ai_skill_movecards[reason]
 	if type(callback) == "function" then
-		local cb = callback(self, cards, pattern)
+		local cb = callback(self, upcards, downcards, min_num, max_num)
 		if cb then
-			if type(cb) == "number" then
-				return {cb}
+			if type(cb) == "number" then return {cb}
 			elseif type(cb) == "table" then
 				return cb
 			end
 		end
 		return {}
 	end
-	if pattern == "" then return cards else return {} end
+	if #downcards < min_num then
+		for i = 1, (min_num - #downcards), 1 do
+			table.insert(downcards, upcards[i])
+		end
+	end
+	return downcards
 end
 
 function SmartAI:askForNullification(trick, from, to, positive)

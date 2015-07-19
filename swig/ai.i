@@ -42,7 +42,7 @@ public:
     virtual bool askForSkillInvoke(const char *skill_name, const QVariant &data) = 0;
     virtual QString askForChoice(const char *skill_name, const char *choices, const QVariant &data) = 0;
     virtual QList<int> askForDiscard(const char *reason, int discard_num, int min_num, bool optional, bool include_equip) = 0;
-    virtual QList<int>askForMoveCards(const QList<int> &cards, const char *reason, const char *pattern) = 0;
+    virtual QList<int>askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const char *reason, const char *pattern, int min_num, int max_num) = 0;
     virtual const Card *askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive) = 0;
     virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids) = 0;
     virtual const Card *askForCard(const char *pattern, const char *prompt, const QVariant &data) = 0;
@@ -66,7 +66,7 @@ public:
     virtual bool askForSkillInvoke(const char *skill_name, const QVariant &data);
     virtual QString askForChoice(const char *skill_name, const char *choices, const QVariant &data);
     virtual QList<int> askForDiscard(const char *reason, int discard_num, int min_num, bool optional, bool include_equip);
-    virtual QList<int>askForMoveCards(const QList<int> &cards, const char *reason, const char *pattern);
+    virtual QList<int>askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const char *reason, const char *pattern, int min_num, int max_num);
     virtual const Card *askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
     virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids);
     virtual const Card *askForCard(const char *pattern, const char *prompt, const QVariant &data);
@@ -91,7 +91,7 @@ public:
     virtual bool askForSkillInvoke(const char *skill_name, const QVariant &data);
     virtual void activate(CardUseStruct &card_use);
     virtual QList<int> askForDiscard(const char *reason, int discard_num, int min_num, bool optional, bool include_equip) ;
-    virtual QList<int>askForMoveCards(const QList<int> &cards, const char *reason, const char *pattern);
+    virtual QList<int>askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const char *reason, const char *pattern, int min_num, int max_num);
     virtual QString askForChoice(const char *skill_name, const char *choices, const QVariant &data);
     virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids);
     virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max_num, int min_num);

@@ -70,10 +70,10 @@ protected:
     bool check(const QList<int> &selected, int to_select);
 
 public slots:
-    void doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &pattern, bool moverestricted);
+    void doCardChoose(const QList<int> &upcards, const QList<int> &downcards, const QString &reason, const QString &pattern, bool moverestricted, int min_num, int max_num);
     void clear();
 
-    void mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern, bool moverestricted);
+    void mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &upcards, const QList<int> &downcards, const QString &pattern, bool moverestricted, int min_num, int max_num);
     void mirrorCardChooseMove(int from, int to);
 
 private slots:
@@ -84,6 +84,7 @@ private:
     QList<CardItem *> upItems, downItems;
     QString reason;
     QString func;
+    int downCount, min_num;
     bool moverestricted;
     bool buttonstate;
     void adjust();
