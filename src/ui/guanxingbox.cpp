@@ -356,7 +356,7 @@ CardChooseBox::CardChooseBox()
 {
 }
 
-void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &func, bool button_always_enable)
+void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &func)
 {
     if (cardIds.isEmpty()) {
         clear();
@@ -366,7 +366,7 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
     zhuge.clear();//self
     this->reason = reason;
     this->func = func;
-    buttonisenable = func.isEmpty() || button_always_enable;
+    moverestricted = ((func == "") || !func.startsWith('!'));
     buttonstate = ClientInstance->m_isDiscardActionRefusable;
     upItems.clear();
     scene_width = RoomSceneInstance->sceneRect().width();
@@ -426,12 +426,17 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
             cardItem->setPos(25, 45);
         cardItem->setHomePos(pos);
         cardItem->goBack(true);
+
+        if ((func != "") && !func.startsWith('!')){
+            QList<int> empty;
+            cardItem->setEnabled(check(empty, cardItem->getCard()->getId()));
+        }
     }
 }
 
-void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern, bool button_always_enable)
+void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern)
 {
-    doCardChoose(cards, reason, pattern, button_always_enable);
+    doCardChoose(cards, reason, pattern);
 
     foreach (CardItem *item, upItems) {
         item->setFlag(QGraphicsItem::ItemIsMovable, false);
@@ -483,13 +488,15 @@ void CardChooseBox::onItemReleased()
     QList<int> down_cards;
     foreach(CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
-    bool check = func.isEmpty() ? true : this->check(down_cards, item->getCard()->getId());
+    bool check = (func == "") ? true : this->check(down_cards, item->getCard()->getId());
 
+    bool movefromUp = false;
     int fromPos = 0;
     if (upItems.contains(item)) {
         fromPos = upItems.indexOf(item);
         upItems.removeOne(item);
         fromPos = fromPos + 1;
+        movefromUp = true;
     } else {
         fromPos = downItems.indexOf(item);
         downItems.removeOne(item);
@@ -521,15 +528,20 @@ void CardChooseBox::onItemReleased()
 
     int toPos = toUpItems ? c + 1 : -c - 1;
 
-    if (buttonisenable && !toUpItems && !check){
+    if (moverestricted && movefromUp && !toUpItems && !check){
         downItems.removeOne(item);
         upItems.append(item);
+        toPos = upItems.size();
         adjust();
-        return;
     }
 
-    if (!buttonisenable)
-        buttonstate = check;
+    if (!moverestricted){
+        down_cards.clear();
+        foreach(CardItem *card_item, downItems)
+            down_cards << card_item->getCard()->getId();
+        buttonstate = this->check(down_cards, -1);
+    }else
+        buttonstate = (func == "") || !downItems.isEmpty();
 
     ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos, buttonstate);
     adjust();
@@ -543,8 +555,8 @@ void CardChooseBox::onItemClicked()
     QList<int> down_cards;
     foreach(CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
-    bool check = func.isEmpty() ? true : this->check(down_cards, item->getCard()->getId());
-    if (buttonisenable && upItems.contains(item) && !check) return;
+    bool check = (func == "") ? true : this->check(down_cards, item->getCard()->getId());
+    if (moverestricted && upItems.contains(item) && !check) return;
 
     int fromPos, toPos;
     if (upItems.contains(item)) {
@@ -559,8 +571,13 @@ void CardChooseBox::onItemClicked()
         upItems.append(item);
     }
 
-    if (!buttonisenable)
-        buttonstate = check;
+    if (!moverestricted){
+        down_cards.clear();
+        foreach(CardItem *card_item, downItems)
+            down_cards << card_item->getCard()->getId();
+        buttonstate = this->check(down_cards, -1);
+    }else
+        buttonstate = (func == "") || !downItems.isEmpty();
 
     ClientInstance->onPlayerDoMoveCardsStep(fromPos, toPos, buttonstate);
     adjust();
@@ -572,6 +589,10 @@ void CardChooseBox::adjust()
     const int cardWidth = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
     const int count = upItems.length() + downItems.length();
+
+    QList<int> down_cards;
+    foreach(CardItem *card_item, downItems)
+        down_cards << card_item->getCard()->getId();
 
     for (int i = 0; i < upItems.length(); i++) {
         QPointF pos;
@@ -592,6 +613,9 @@ void CardChooseBox::adjust()
         }
         upItems.at(i)->setHomePos(pos);
         upItems.at(i)->goBack(true);
+
+        if ((func != "") && !func.startsWith('!'))
+            upItems.at(i)->setEnabled(check(down_cards, upItems.at(i)->getCard()->getId()));
     }
 
     for (int i = 0; i < downItems.length(); i++) {
@@ -651,14 +675,12 @@ static void pushQIntList(lua_State *L, const QList<int> &list)
 bool CardChooseBox::check(const QList<int> &selected, int to_select)
 {
     lua_State *l = Sanguosha->getLuaState();
-    int error = luaL_loadstring(l, func.toLatin1().data());
-    if (error) {
-        QMessageBox::warning(NULL, "lua_error", lua_tostring(l, -1));
-        lua_pop(l, 1);
-        return false;
-    }
+    QString pattern = func;
+    if (func.startsWith('!')) pattern = func.mid(1);
+
+    lua_getglobal(l, pattern.toLatin1().data());
     pushQIntList(l, selected);
-    lua_pushnumber(l, to_select);
+    lua_pushinteger(l, to_select);
     int result = lua_pcall(l, 2, 1, 0);
     if (result) {
         QMessageBox::warning(NULL, "lua_error", lua_tostring(l, -1));
@@ -758,7 +780,7 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
 
         QString description1;
         QString description2;
-        if (!func.isEmpty()){
+        if (func != ""){
             description1 = tr("CardsSelectable");
             description2 = tr("CardsSelected");
         }else{

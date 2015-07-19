@@ -354,7 +354,7 @@ signals:
     void card_shown(const QString &player_name, int card_id);
     void log_received(const QStringList &log_str);
     void guanxing(const QList<int> &card_ids, bool single_side);
-    void cardchoose(const QList<int> &card_ids, const QString &reason, const QString &pattern, bool button_always_enable);
+    void cardchoose(const QList<int> &card_ids, const QString &reason, const QString &pattern);
     void card_moved_incardchoosebox(bool enable);
     void gongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
     void focus_moved(const QStringList &focus, QSanProtocol::Countdown countdown);
@@ -387,7 +387,7 @@ signals:
     void mirror_guanxing_move(int from, int to);
     void mirror_guanxing_finish();
 
-    void mirror_cardchoose_start(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern, bool button_always_enable);
+    void mirror_cardchoose_start(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern);
     void mirror_cardchoose_move(int from, int to);
     void mirror_cardchoose_finish();
 
