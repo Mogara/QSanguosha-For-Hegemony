@@ -356,7 +356,7 @@ CardChooseBox::CardChooseBox()
 {
 }
 
-void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &func)
+void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &func, bool moverestricted)
 {
     if (cardIds.isEmpty()) {
         clear();
@@ -366,7 +366,7 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
     zhuge.clear();//self
     this->reason = reason;
     this->func = func;
-    moverestricted = ((func == "") || !func.startsWith('!'));
+    this->moverestricted = (func == "") ? false : moverestricted;
     buttonstate = ClientInstance->m_isDiscardActionRefusable;
     upItems.clear();
     scene_width = RoomSceneInstance->sceneRect().width();
@@ -427,16 +427,16 @@ void CardChooseBox::doCardChoose(const QList<int> &cardIds, const QString &reaso
         cardItem->setHomePos(pos);
         cardItem->goBack(true);
 
-        if ((func != "") && !func.startsWith('!')){
+        if (this->moverestricted){
             QList<int> empty;
             cardItem->setEnabled(check(empty, cardItem->getCard()->getId()));
         }
     }
 }
 
-void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern)
+void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern, bool moverestricted)
 {
-    doCardChoose(cards, reason, pattern);
+    doCardChoose(cards, reason, pattern, moverestricted);
 
     foreach (CardItem *item, upItems) {
         item->setFlag(QGraphicsItem::ItemIsMovable, false);
@@ -535,7 +535,7 @@ void CardChooseBox::onItemReleased()
         adjust();
     }
 
-    if (!moverestricted){
+    if (!moverestricted && func != ""){
         down_cards.clear();
         foreach(CardItem *card_item, downItems)
             down_cards << card_item->getCard()->getId();
@@ -571,7 +571,7 @@ void CardChooseBox::onItemClicked()
         upItems.append(item);
     }
 
-    if (!moverestricted){
+    if (!moverestricted && func != ""){
         down_cards.clear();
         foreach(CardItem *card_item, downItems)
             down_cards << card_item->getCard()->getId();
@@ -614,7 +614,7 @@ void CardChooseBox::adjust()
         upItems.at(i)->setHomePos(pos);
         upItems.at(i)->goBack(true);
 
-        if ((func != "") && !func.startsWith('!'))
+        if (moverestricted)
             upItems.at(i)->setEnabled(check(down_cards, upItems.at(i)->getCard()->getId()));
     }
 
@@ -676,7 +676,6 @@ bool CardChooseBox::check(const QList<int> &selected, int to_select)
 {
     lua_State *l = Sanguosha->getLuaState();
     QString pattern = func;
-    if (func.startsWith('!')) pattern = func.mid(1);
 
     lua_getglobal(l, pattern.toLatin1().data());
     pushQIntList(l, selected);

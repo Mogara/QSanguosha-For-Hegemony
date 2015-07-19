@@ -70,10 +70,10 @@ protected:
     bool check(const QList<int> &selected, int to_select);
 
 public slots:
-    void doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &pattern);
+    void doCardChoose(const QList<int> &cardIds, const QString &reason, const QString &pattern, bool moverestricted);
     void clear();
 
-    void mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern);
+    void mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &cards, const QString &pattern, bool moverestricted);
     void mirrorCardChooseMove(int from, int to);
 
 private slots:
