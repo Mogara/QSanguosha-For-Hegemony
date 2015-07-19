@@ -128,7 +128,7 @@ public:
 
 class LuaViewAsSkill: public ViewAsSkill {
 public:
-    LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile);
+    LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile, const char *limit_mark);
 
     void setGuhuoType(const char *type);
     
