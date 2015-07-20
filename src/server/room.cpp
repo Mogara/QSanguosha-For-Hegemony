@@ -5694,12 +5694,12 @@ QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<in
                     top_cards = upcards;
                     bottom_cards = downcards;
                 }else{
+                    top_cards.clear();
                     foreach(int id, to_move) {
-                        if (!bottom_cards.contains(id)){
+                        if (!bottom_cards.contains(id) && bottom_cards.length() < min_num)
                             bottom_cards.append(id);
-                            top_cards.removeOne(id);
-                        }
-                        if (bottom_cards.length() >= min_num) break;
+                        if (!bottom_cards.contains(id))
+                            top_cards.append(id);
                     }
                 }
             }
@@ -5714,14 +5714,12 @@ QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<in
             }
             thread->delay();
 
-            QList<int> realtopcards = top_cards, realbottomcards = bottom_cards;
-
             //LogMessage log1;
             //log1.type = "$askformovecard";
             //log1.from = zhuge;
             //log1.to << getAlivePlayers();
 
-            if (upcards != realtopcards || downcards != realbottomcards) {
+            if (upcards != top_cards || downcards != bottom_cards) {
                 JsonArray movearg_base;
                 movearg_base << S_GUANXING_MOVE;
 
@@ -5731,33 +5729,34 @@ QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<in
                 QList<int> downs = downcards;
                 int upcount = qMax(upcards.length(), downcards.length());
 
-                for (int i = 0; i < realtopcards.length(); ++i) {
+                for (int i = 0; i < top_cards.length(); ++i) {
                     fromPos = 0;
-                    if (realtopcards.at(i) != ups.at(i)){
+                    if (top_cards.at(i) != ups.at(i)){
                         toPos = i + 1;
                         foreach(int id, ups) {
-                            if (id == realtopcards.at(i)){
+                            if (id == top_cards.at(i)){
                                 fromPos = ups.indexOf(id) + 1;
                                 break;
                             }
                         }
                         if (fromPos != 0){
-                            ups.removeOne(realtopcards.at(i));
+                            ups.removeOne(top_cards.at(i));
                         }else {
                             foreach(int id, downs) {
-                                if (id == realtopcards.at(i)) {
+                                if (id == top_cards.at(i)) {
                                     fromPos = -downs.indexOf(id) - 1;
                                     break;
                                 }
                             }
-                            downs.removeOne(realtopcards.at(i));
+                            downs.removeOne(top_cards.at(i));
                         }
-                        QList<int> to_move = ups, empty;
+                        QList<int> to_move, empty;
+                        to_move = ups;
                         for (int c = i; c < to_move.length(); ++c) {
-                            ups.removeOne(to_move.at(i));
-                            empty.append(to_move.at(i));
+                            ups.removeOne(to_move.at(c));
+                            empty.append(to_move.at(c));
                         }
-                        ups.append(realtopcards.at(i));
+                        ups.append(top_cards.at(i));
                         ups << empty;
                         if (ups.length() > upcount) {
                             int adjust_id = ups.last();
@@ -5767,7 +5766,7 @@ QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<in
 
                         //log1.arg = QString::number(fromPos);
                         //log1.arg2 = QString::number(toPos);
-                        //log1.card_str = QString::number(realtopcards.at(i));
+                        //log1.card_str = QString::number(top_cards.at(i));
                         //sendLog(log1);
 
                         JsonArray movearg = movearg_base;
@@ -5777,9 +5776,9 @@ QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<in
                     }
                 }
 
-                if (ups.length() > realtopcards.length()) {
-                    int newcount = ups.length() - realtopcards.length();
-                    for (int i = 1; i = newcount; ++i) {
+                if (ups.length() > top_cards.length()) {
+                    int newcount = ups.length() - top_cards.length();
+                    for (int i = 1; i <= newcount; ++i) {
                         fromPos = ups.length();
                         int adjust_id = ups.last();
                         ups.removeOne(adjust_id);
@@ -5798,28 +5797,29 @@ QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<in
                     }
                 }
 
-                for (int i = 0; i < realbottomcards.length() - 1; ++i) {
-                    if (realbottomcards.at(i) != downs.at(i)){
+                for (int i = 0; i < bottom_cards.length() - 1; ++i) {
+                    if (bottom_cards.at(i) != downs.at(i)){
                         toPos = -i - 1;
                         foreach(int id, downs) {
-                            if (id == realbottomcards.at(i)) {
+                            if (id == bottom_cards.at(i)) {
                                fromPos = -downs.indexOf(id) - 1;
                                 break;
                             }
                         }
-                        downs.removeOne(realbottomcards.at(i));
+                        downs.removeOne(bottom_cards.at(i));
 
-                        QList<int> to_move = downs, empty;
+                        QList<int> to_move, empty;
+                        to_move = downs;
                         for (int c = i; c < to_move.length(); ++c) {
-                            downs.removeOne(to_move.at(i));
-                            empty.append(to_move.at(i));
+                            downs.removeOne(to_move.at(c));
+                            empty.append(to_move.at(c));
                         }
-                        downs.append(realbottomcards.at(i));
+                        downs.append(bottom_cards.at(i));
                         downs << empty;
 
                         //log1.arg = QString::number(fromPos);
                         //log1.arg2 = QString::number(toPos);
-                        //log1.card_str = QString::number(realbottomcards.at(i));
+                        //log1.card_str = QString::number(bottom_cards.at(i));
                         //sendLog(log1);
 
                         JsonArray movearg = movearg_base;
@@ -5866,12 +5866,12 @@ QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<in
                     top_cards = upcards;
                     bottom_cards = downcards;
                 }else{
+                    top_cards.clear();
                     foreach(int id, to_move) {
-                        if (!bottom_cards.contains(id)){
+                        if (!bottom_cards.contains(id) && bottom_cards.length() < min_num)
                             bottom_cards.append(id);
-                            top_cards.removeOne(id);
-                        }
-                        if (bottom_cards.length() >= min_num) break;
+                        if (!bottom_cards.contains(id))
+                            top_cards.append(id);
                     }
                 }
             }

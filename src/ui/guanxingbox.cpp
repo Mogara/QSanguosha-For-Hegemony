@@ -536,6 +536,18 @@ void CardChooseBox::mirrorCardChooseMove(int from, int to)
             toItems->insert(to, card);
             adjust();
         }
+        if (upItems.size() > itemCount){
+            CardItem *adjustCard = upItems.last();
+            upItems.removeOne(adjustCard);
+            downItems.append(adjustCard);
+            adjust();
+        }
+        if (downItems.size() > downCount){
+            CardItem *adjustCard = downItems.last();
+            downItems.removeOne(adjustCard);
+            upItems.append(adjustCard);
+            adjust();
+        }
     }
 }
 
