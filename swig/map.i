@@ -49,4 +49,4 @@ public:
 }
 
 %template(QVariantMap) QMap<QString,QVariant>;
-%template(CardMoveMap) QMap<QString,QList<int> >;
+%template(CardMoveMap) QMap<char *,QList<int> >;
