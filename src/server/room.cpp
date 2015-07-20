@@ -5655,7 +5655,7 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
 }
 
 
-QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
+QMap<QString, QList<int> > Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
     const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse, bool moverestricted)
 {
     QList<int> top_cards, bottom_cards, result, to_move;
@@ -5679,7 +5679,18 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards,
     }
     AI *ai = zhuge->getAI();
     if (ai) {
-        result = ai->askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
+        auto map = ai->askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
+        result = map["bottom"];
+        if (result.length() < min_num && !can_refuse){
+            if (downcards.length() >= min_num && (max_num == 0 || downcards.length() <= qMax(min_num, max_num)))
+                result = downcards;
+            else{
+                foreach(int id, to_move) {
+                    if (!result.contains(id)) result.append(id);
+                    if (result.length() >= min_num) break;
+                }
+            }
+        }
 
         bool isTrustAI = zhuge->getState() == "trust";
         if (isTrustAI && visible) {
@@ -5688,46 +5699,103 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards,
         }
 
         thread->delay();
-        thread->delay();
 
         QList<int> realtopcards, realbottomcards;
-        foreach (int cardId, result)
-            if (!to_move.contains(cardId)) realtopcards.append(cardId);
+        foreach(int cardId, to_move)
+            if (!result.contains(cardId)) realtopcards.append(cardId);
         realbottomcards = result;
 
-        if (to_move != realtopcards) {
+        if (upcards != realtopcards || downcards != realbottomcards) {
             JsonArray movearg_base;
             movearg_base << S_GUANXING_MOVE;
 
-            if (!realbottomcards.isEmpty()) {
-                for (int i = 0; i < realbottomcards.length(); ++i) {
-                    int id = realbottomcards.at(i);
-                    int pos = to_move.indexOf(id);
-                    to_move.removeOne(id);
+            int fromPos = 0;
+            int toPos = 0;
+            QList<int> ups = upcards;
+            QList<int> downs = downcards;
+            int upcount = qMax(upcards.length(), downcards.length());
+
+            for (int i = 0; i < realtopcards.length(); ++i) {
+                if (realtopcards.at(i) != ups.at(i)){
+                    toPos = i + 1;
+                    foreach(int id, ups) {
+                        if (id == realtopcards.at(i)){
+                            fromPos = ups.indexOf(id) + 1;
+                            break;
+                        }
+                    }
+                    if (fromPos != 0){
+                        ups.removeOne(realtopcards.at(i));
+                    }
+                    else {
+                        foreach(int id, downs) {
+                            if (id == realtopcards.at(i)){
+                                fromPos = -downs.indexOf(id) - 1;
+                                break;
+                            }
+                        }
+                        downs.removeOne(realtopcards.at(i));
+                    }
+                    QList<int> to_move = ups, empty;
+                    for (int c = i; c < to_move.length(); ++c) {
+                        ups.removeOne(to_move.at(i));
+                        empty.append(to_move.at(i));
+                    }
+                    ups.append(realtopcards.at(i));
+                    ups << empty;
+                    if (ups.length() > upcount) {
+                        int adjust_id = ups.last();
+                        ups.removeOne(adjust_id);
+                        downs.append(adjust_id);
+                    }
                     JsonArray movearg = movearg_base;
-                    movearg << pos + 1 << -i - 1;
+                    movearg << fromPos << toPos;
                     doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, movearg, isTrustAI ? NULL : zhuge);
                     thread->delay();
                 }
             }
 
-            for (int i = 0; i < realtopcards.length() - 1; ++i) {
-                int id = realtopcards.at(i);
-                int pos = to_move.indexOf(id);
+            if (ups.length() > realtopcards.length()) {
+                int newcount = ups.length() - realtopcards.length();
+                for (int i = 1; i = newcount; ++i) {
+                    fromPos = ups.length();
+                    int adjust_id = ups.last();
+                    ups.removeOne(adjust_id);
+                    toPos = -downs.length() - 1;
+                    downs.append(adjust_id);
 
-                if (pos == i)
-                    continue;
-
-                to_move.removeOne(id);
-                to_move.insert(i, id);
-                JsonArray movearg = movearg_base;
-                movearg << pos + 1 << i + 1;
-                doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, movearg, isTrustAI ? NULL : zhuge);
-                thread->delay();
+                    JsonArray movearg = movearg_base;
+                    movearg << fromPos << toPos;
+                    doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, movearg, isTrustAI ? NULL : zhuge);
+                    thread->delay();
+                }
             }
 
-            thread->delay();
-            thread->delay();
+            for (int i = 0; i < realbottomcards.length() - 1; ++i) {
+                if (realbottomcards.at(i) != downs.at(i)){
+                    toPos = -i - 1;
+                    foreach(int id, downs) {
+                        if (id == realbottomcards.at(i)) {
+                            fromPos = -downs.indexOf(id) - 1;
+                            break;
+                        }
+                    }
+                    downs.removeOne(realbottomcards.at(i));
+
+                    QList<int> to_move = downs, empty;
+                    for (int c = i; c < to_move.length(); ++c) {
+                        downs.removeOne(to_move.at(i));
+                        empty.append(to_move.at(i));
+                    }
+                    downs.append(realbottomcards.at(i));
+                    downs << empty;
+
+                    JsonArray movearg = movearg_base;
+                    movearg << fromPos << toPos;
+                    doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, movearg, isTrustAI ? NULL : zhuge);
+                    thread->delay();
+                }
+            }
         }
 
         if (isTrustAI && visible) {
@@ -5736,7 +5804,8 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards,
             zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);
         }
 
-    }else{
+    }
+    else{
         JsonArray CardChooseArgs;
         CardChooseArgs << JsonUtils::toJsonArray(upcards);
         CardChooseArgs << JsonUtils::toJsonArray(downcards);
@@ -5748,8 +5817,12 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards,
         CardChooseArgs << max_num;
         CardChooseArgs << can_refuse;
         bool success = doRequest(zhuge, S_COMMAND_SKILL_MOVECARDS, CardChooseArgs, true);
-        if (!success)
-            return result;
+        if (!success) {
+            QMap<QString, QList<int> > returns;
+            returns["bottom"] = result;
+            returns["top"] = top_cards;
+            return returns;
+        }
         JsonArray clientReply = zhuge->getClientReply().value<JsonArray>();
         if (clientReply.size() == 2) {
             success &= JsonUtils::tryParse(clientReply[0], top_cards);
@@ -5761,15 +5834,32 @@ QList<int> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards,
         if (length_equal && result_equal){
             result = bottom_cards;
         }
+
+        if (result.length() < min_num && !can_refuse){
+            if (downcards.length() >= min_num && (max_num == 0 || downcards.length() <= qMax(min_num, max_num)))
+                result = downcards;
+            else {
+                foreach(int id, to_move) {
+                    if (!result.contains(id)) result.append(id);
+                    if (result.length() >= min_num) break;
+                }
+            }
+        }
     }
     if (visible){
         stepArgs.clear();
         stepArgs << S_GUANXING_FINISH;
         doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
     }
+
+    if (result.length() < min_num && can_refuse) result.clear();
+
     QVariant decisionData = QVariant::fromValue(reason + "chose:" + zhuge->objectName() + ":" + IntList2StringList(result).join("+"));
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
-    return result;
+    QMap<QString, QList<int> > returns;
+    returns["bottom"] = result;
+    returns["top"] = top_cards;
+    return returns;
 }
 
 int Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids, const QString &skill_name)

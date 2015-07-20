@@ -2434,7 +2434,6 @@ void RoomScene::doTimeout()
         }
         break;
     }
-    case Client::AskForGuanxing:
     case Client::AskForMoveCards:{
         if (ClientInstance->m_isDiscardActionRefusable)
             ok_button->click();
@@ -2446,6 +2445,7 @@ void RoomScene::doTimeout()
         }
         break;
     }
+    case Client::AskForGuanxing:
     case Client::AskForGongxin: {
         ok_button->click();
         break;
@@ -2517,11 +2517,13 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                 m_choiceDialog->hide();
             break;
         }
-        case Client::AskForGuanxing:
         case Client::AskForMoveCards:{
             m_cardchooseBox->clear();
+            if (!m_cardContainer->retained())
+                m_cardContainer->clear();
             break;
         }
+        case Client::AskForGuanxing:
         case Client::AskForGongxin: {
             m_guanxingBox->clear();
             if (!m_cardContainer->retained())
@@ -2752,7 +2754,6 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
 
         break;
     }
-    case Client::AskForGuanxing:
     case Client::AskForMoveCards:{
         ok_button->setEnabled(ClientInstance->m_isDiscardActionRefusable);
         cancel_button->setEnabled(ClientInstance->m_canDiscardEquip);
@@ -2760,6 +2761,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         highlightSkillButton(ClientInstance->skill_name);
         break;
     }
+    case Client::AskForGuanxing:
     case Client::AskForGongxin: {
         ok_button->setEnabled(true);
         cancel_button->setEnabled(false);

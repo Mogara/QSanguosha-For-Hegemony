@@ -397,8 +397,9 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
         cardItem->setParentItem(this);
     }
 
+    int down_num = qMax(min_num, max_num);
     itemCount = qMax(upItems.length(), downItems.length());
-    downCount = (max_num > 0) ? qMax(max_num, downItems.length()) : 0;
+    downCount = (max_num > 0) ? qMax(down_num, downItems.length()) : itemCount;
     prepareGeometryChange();
     GraphicsBox::moveToCenter(this);
     show();
@@ -603,11 +604,10 @@ void CardChooseBox::onItemReleased()
         }
     }
 
-    int acount = (downCount > 0) ? downCount : itemCount;
-    if (downItems.length() > acount){
+    if (downItems.length() > downCount){
         int count = downItems.length();
         QList<CardItem *> readjust;
-        for (int i = acount; i < count; i++)
+        for (int i = downCount; i < count; i++)
             readjust << downItems.at(i);
         foreach (CardItem *item, readjust) {
             downItems.removeOne(item);
@@ -644,7 +644,7 @@ void CardChooseBox::onItemClicked()
 
     int fromPos, toPos;
     if (upItems.contains(item)) {
-        if (downItems.length() >= itemCount || (downCount > 0 && downItems.length() >= downCount)) return;
+        if (downItems.length() >= downCount) return;
         fromPos = upItems.indexOf(item) + 1;
         toPos = -downItems.size() - 1;
         upItems.removeOne(item);
@@ -884,8 +884,7 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
     QRect down_rect(15, 45 + (card_height + cardInterval) * (one_row ? 1 : 2), 20, card_height);
     G_COMMON_LAYOUT.playerCardBoxPlaceNameText.paintText(painter, down_rect, Qt::AlignCenter, description2);
 
-    int count = (downCount > 0) ? downCount : itemCount;
-    for (int i = 0; i < count; ++i) {
+    for (int i = 0; i < downCount; ++i) {
         int x, y = 0;
         if (i < firstRow) {
             int fix = i;
@@ -895,7 +894,7 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
             x = 45 + app + (card_width + cardInterval) * fix;
             y = 45;
         } else {
-            if (count % 2 == 1)
+            if (downCount % 2 == 1)
                 x = 45 + card_width / 2 + cardInterval / 2
                 + (card_width + cardInterval) * (i - firstRow);
             else
