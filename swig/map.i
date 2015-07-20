@@ -48,5 +48,5 @@ public:
     }
 }
 
-%template(QVariantMap) QMap<QString,QVariant>;
-%template(CardMoveMap) QMap<QString,QList<int> >;
+%template(QVariantMap) QMap<QString, QVariant>;
+%template(CardMoveMap) QMap<QString, QList<int> >;

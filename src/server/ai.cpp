@@ -221,10 +221,10 @@ QList<int> TrustAI::askForDiscard(const QString &, int discard_num, int, bool op
         return self->forceToDiscard(discard_num, include_equip, self->hasFlag("Global_AIDiscardExchanging"));
 }
 
-QMap<char *, QList<int> > TrustAI::askForMoveCards(const QList<int> &, const QList<int> &, const QString &, const QString &, int, int)
+QMap<QString, QList<int> > TrustAI::askForMoveCards(const QList<int> &, const QList<int> &, const QString &, const QString &, int, int)
 {
     QList<int> empty;
-    QMap<char *, QList<int> > returns;
+    QMap<QString, QList<int> > returns;
     returns["bottom"] = empty;
     returns["top"] = empty;
     return returns;
@@ -381,7 +381,7 @@ QList<int> LuaAI::askForDiscard(const QString &reason, int discard_num, int min_
         return TrustAI::askForDiscard(reason, discard_num, min_num, optional, include_equip);
 }
 
-QMap<char *, QList<int> > LuaAI::askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const QString &reason, const QString &pattern, int min_num, int max_num)
+QMap<QString, QList<int> > LuaAI::askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const QString &reason, const QString &pattern, int min_num, int max_num)
 {
     lua_State *L = room->getLuaState();
 
@@ -401,7 +401,7 @@ QMap<char *, QList<int> > LuaAI::askForMoveCards(const QList<int> &upcards, cons
 
     QList<int> top_cards, bottom_cards;
     if (getTable(L, bottom_cards) && getTable(L, top_cards)) {
-        QMap<char *, QList<int> > returns;
+        QMap<QString, QList<int> > returns;
         returns["top"] = top_cards;
         returns["bottom"] = bottom_cards;
         return returns;

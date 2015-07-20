@@ -5654,8 +5654,7 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
 }
 
-
-QMap<QString, QList<int> > Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
+QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
     const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse, bool moverestricted)
 {
     QList<int> top_cards, bottom_cards, to_move;
@@ -5891,9 +5890,12 @@ QMap<QString, QList<int> > Room::askForMoveCards(ServerPlayer *zhuge, const QLis
 
     QVariant decisionData = QVariant::fromValue(reason + "chose:" + zhuge->objectName() + ":" + IntList2StringList(top_cards).join("+") + ":" + IntList2StringList(bottom_cards).join("+"));
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
-    QMap<QString, QList<int> > returns;
-    returns["bottom"] = bottom_cards;
-    returns["top"] = top_cards;
+    QList<CardsMoveStruct> returns;
+    CardsMoveStruct up(top_cards, zhuge, Player::PlaceUnknown,
+        CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, QString(), QString(), QString()));
+    CardsMoveStruct down(bottom_cards, zhuge, Player::PlaceUnknown,
+        CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, QString(), QString(), QString()));
+    returns << up << down;
     return returns;
 }
 
