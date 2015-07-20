@@ -76,15 +76,6 @@ sgs.addNewKingdom = function(kingdom_name,color)
 	end
 end
 
-function sgs.WrapLuaFunction(func)
-	return (string.dump(func):gsub(".", function(c) return ("%02X"):format(c:byte()) end));
-end
-
-function hex2func(hex)
-	return loadstring(hex:gsub("..", function(x) return string.char(tonumber(x, 16)) end))
-end
-
-
 function table.Shuffle(list)
 	local result = {}
 	while #list > 0 do

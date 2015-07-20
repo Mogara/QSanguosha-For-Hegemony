@@ -767,13 +767,7 @@ bool CardChooseBox::check(const QList<int> &selected, int to_select)
     lua_State *l = Sanguosha->getLuaState();
     QString pattern = func;
 
-    lua_getglobal(l, "hex2func");
-    lua_pushstring(l, func.toLatin1().data());
-    if (lua_pcall(l, 1, 1, 0)){
-        QMessageBox::warning(NULL, "lua_error", lua_tostring(l, -1));
-        lua_pop(l, 1);
-        return false;
-    }
+    lua_getglobal(l, pattern.toLatin1().data());
     pushQIntList(l, selected);
     lua_pushinteger(l, to_select);
     int result = lua_pcall(l, 2, 1, 0);
