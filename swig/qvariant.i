@@ -33,6 +33,11 @@ public:
     QList<QVariant> toList() const;
 };
 
+class QString {
+public:
+    QString(const char *string);
+};
+
 %extend QVariant {
     void setValue(int value) {
         $self->setValue(QVariant::fromValue(value));
