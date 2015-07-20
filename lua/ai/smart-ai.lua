@@ -2161,30 +2161,25 @@ end
 function SmartAI:askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num)
 	local callback = sgs.ai_skill_movecards[reason]
 	if type(callback) == "function" then
-		local cb,top = callback(self, upcards, downcards, min_num, max_num)
-		local res1,res2 = {},{}
-		if cb then
-			if type(cb) == "number" then res1 = {cb}
-			elseif type(cb) == "table" then
-				res1 = cb
-			end
-		end
+		local top, down = callback(self, upcards, downcards, min_num, max_num)
+		local res1, res2 = {}, {}
 		if top then
-			if type(top) == "number" then res2 = {top}
+			if type(top) == "number" then res1 = {top}
 			elseif type(top) == "table" then
-				res2 = top
+				res1 = top
 			end
 		end
-		if #res1 > 0 and #res2 > 0 then
-			return res1,res2
+		if down then
+			if type(down) == "number" then res2 = {down}
+			elseif type(down) == "table" then
+				res2 = down
+			end
+		end
+		if #upcards + #downcards == #res1 + #res2 then
+			return res1, res2
 		end
 	end
-	if #downcards < min_num then
-		for i = 1, (min_num - #downcards), 1 do
-			table.insert(downcards, upcards[i])
-		end
-	end
-	return downcards
+	return {}, {}
 end
 
 function SmartAI:askForNullification(trick, from, to, positive)

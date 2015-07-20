@@ -221,16 +221,12 @@ QList<int> TrustAI::askForDiscard(const QString &, int discard_num, int, bool op
         return self->forceToDiscard(discard_num, include_equip, self->hasFlag("Global_AIDiscardExchanging"));
 }
 
-QMap<QString, QList<int> > TrustAI::askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const QString &, const QString &, int min, int)
+QMap<char *, QList<int> > TrustAI::askForMoveCards(const QList<int> &, const QList<int> &, const QString &, const QString &, int, int)
 {
-    QList<int> down = downcards;
-    if (downcards.length() < min){
-        for (int i = 0; i < (min - downcards.length()); i++)
-            down.append(upcards.at(i));
-    }
-    QMap<QString, QList<int> > returns;
-    returns["bottom"] = down;
-    returns["top"] = upcards;
+    QList<int> empty;
+    QMap<char *, QList<int> > returns;
+    returns["bottom"] = empty;
+    returns["top"] = empty;
     return returns;
 }
 
@@ -385,7 +381,7 @@ QList<int> LuaAI::askForDiscard(const QString &reason, int discard_num, int min_
         return TrustAI::askForDiscard(reason, discard_num, min_num, optional, include_equip);
 }
 
-QMap<QString, QList<int> > LuaAI::askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const QString &reason, const QString &pattern, int min_num, int max_num)
+QMap<char *, QList<int> > LuaAI::askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const QString &reason, const QString &pattern, int min_num, int max_num)
 {
     lua_State *L = room->getLuaState();
 
@@ -403,12 +399,11 @@ QMap<QString, QList<int> > LuaAI::askForMoveCards(const QList<int> &upcards, con
         return TrustAI::askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
     }
 
-    QList<int> result;
-    QList<int> top_cards;
-    if (getTable(L, top_cards) && getTable(L, result)) {
-        QMap<QString, QList<int> > returns;
+    QList<int> top_cards, bottom_cards;
+    if (getTable(L, bottom_cards) && getTable(L, top_cards)) {
+        QMap<char *, QList<int> > returns;
         returns["top"] = top_cards;
-        returns["bottom"] = result;
+        returns["bottom"] = bottom_cards;
         return returns;
     } else
         return TrustAI::askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
