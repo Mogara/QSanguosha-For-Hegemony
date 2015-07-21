@@ -16,7 +16,7 @@
     See the LICENSE file for more details.
 
     Mogara
-*********************************************************************/
+    *********************************************************************/
 
 #include "cardchoosebox.h"
 #include "roomscene.h"

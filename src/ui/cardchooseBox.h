@@ -16,7 +16,8 @@
     See the LICENSE file for more details.
 
     Mogara
-*********************************************************************/
+    *********************************************************************/
+
 #ifndef CARDCHOOSEBOX_H
 #define CARDCHOOSEBOX_H
 
