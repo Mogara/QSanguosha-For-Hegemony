@@ -54,8 +54,8 @@ private:
     bool moverestricted;
     bool buttonstate;
     void adjust();
-    int itemNumberOfFirstRow() const;
-    bool isOneRow() const;
+    int itemNumberOfFirstRow(bool up) const;
+    bool isOneRow(bool up) const;
     QString zhuge;
 };
 
