@@ -480,6 +480,9 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const
 
     if (!include_lose && !hasEquipSkill(skill_name) && !getAcquiredSkills().contains(skill_name) && ownSkill(skill_name) && !hasShownSkill(skill_name) && !disableShow(inHeadSkills(skill_name)).isEmpty())
         return false;
+    QStringList InvalidSkill = property("invalid_skill_has").toString().split("+");
+    if (InvalidSkill.contains(skill_name))
+        return false;
 
     return head_skills.value(skill_name, false)
         || deputy_skills.value(skill_name, false)
@@ -1401,6 +1404,8 @@ bool Player::hasShownSkill(const Skill *skill) const
 {
     if (skill == NULL)
         return false;
+    QStringList InvalidSkill = property("invalid_skill_shown").toString().split("+");
+    if (InvalidSkill.contains(skill->objectName())) return false;
 
     if (head_acquired_skills.contains(skill->objectName()) || deputy_acquired_skills.contains(skill->objectName()))
         return true;
