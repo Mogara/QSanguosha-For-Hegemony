@@ -134,28 +134,6 @@ lua_State *Engine::getLuaState() const
     return lua;
 }
 
-QString Engine::wrapLuaFunction(lua_State *lua,LuaFunction func)
-{
-    if (func == 0)
-        return QString();
-    lua_getglobal(lua, "string");
-    int ori_top = lua_gettop(lua);
-    lua_getfield(lua, -1, "dump");
-    lua_rawgeti(lua, LUA_REGISTRYINDEX, func);
-    int error = lua_pcall(lua, 1, 1, 0);
-    if (error) {
-        QMessageBox::warning(NULL, "lua_error", lua_tostring(lua, -1));
-        lua_pop(lua, 1);
-        luaL_unref(lua, LUA_REGISTRYINDEX, func);
-        return QString();
-    }
-    QString result = lua_tostring(lua, -1);
-    lua_pop(lua, 2);
-    luaL_unref(lua,LUA_REGISTRYINDEX,func);
-    Q_ASSERT(ori_top == lua_gettop(lua));
-    return result;
-}
-
 void Engine::addTranslationEntry(const char *key, const char *value)
 {
     translations.insert(key, QString::fromUtf8(value));

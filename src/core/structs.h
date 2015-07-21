@@ -628,6 +628,16 @@ struct LogMessage
     QString arg2;
 };
 
+struct AskForMoveCardsStruct
+{
+    AskForMoveCardsStruct();
+
+    QList<int> top;
+    QList<int> bottom;
+
+    bool is_success;
+};
+
 Q_DECLARE_METATYPE(DamageStruct)
 Q_DECLARE_METATYPE(CardEffectStruct)
 Q_DECLARE_METATYPE(SlashEffectStruct)
@@ -644,5 +654,6 @@ Q_DECLARE_METATYPE(const Card *)
 Q_DECLARE_METATYPE(ServerPlayer *)
 Q_DECLARE_METATYPE(JudgeStruct *)
 Q_DECLARE_METATYPE(PindianStruct *)
+Q_DECLARE_METATYPE(AskForMoveCardsStruct)
 #endif
 

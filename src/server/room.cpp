@@ -5654,7 +5654,7 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
 }
 
-QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
+AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
     const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse, bool moverestricted)
 {
     QList<int> top_cards, bottom_cards, to_move;
@@ -5698,11 +5698,12 @@ QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<in
                     foreach(int id, to_move) {
                         if (!bottom_cards.contains(id) && bottom_cards.length() < min_num)
                             bottom_cards.append(id);
-                        if (!bottom_cards.contains(id))
-                            top_cards.append(id);
                     }
                 }
             }
+            foreach(int id, to_move)
+                if (!bottom_cards.contains(id))
+                    top_cards << id;
             success = true;
         }
 
@@ -5870,11 +5871,12 @@ QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<in
                     foreach(int id, to_move) {
                         if (!bottom_cards.contains(id) && bottom_cards.length() < min_num)
                             bottom_cards.append(id);
-                        if (!bottom_cards.contains(id))
-                            top_cards.append(id);
                     }
                 }
             }
+            foreach(int id, to_move)
+                if (!bottom_cards.contains(id))
+                    top_cards << id;
             success = true;
         }
     }
@@ -5890,12 +5892,10 @@ QList<CardsMoveStruct> Room::askForMoveCards(ServerPlayer *zhuge, const QList<in
 
     QVariant decisionData = QVariant::fromValue(reason + "chose:" + zhuge->objectName() + ":" + IntList2StringList(top_cards).join("+") + ":" + IntList2StringList(bottom_cards).join("+"));
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
-    QList<CardsMoveStruct> returns;
-    CardsMoveStruct up(top_cards, zhuge, Player::PlaceUnknown,
-        CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, QString(), QString(), QString()));
-    CardsMoveStruct down(bottom_cards, zhuge, Player::PlaceUnknown,
-        CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, QString(), QString(), QString()));
-    returns << up << down;
+    AskForMoveCardsStruct returns;
+    returns.top = top_cards;
+    returns.bottom = bottom_cards;
+    returns.is_success = success;
     return returns;
 }
 

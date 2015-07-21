@@ -63,8 +63,6 @@ public:
     QString translate(const QString &toTranslate, const QString &defaultValue) const;
     lua_State *getLuaState() const;
 
-    QString wrapLuaFunction(lua_State *lua,LuaFunction func);
-
     int getMiniSceneCounts();
 
     void addPackage(Package *package);
