@@ -5699,9 +5699,8 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
                     }
                 }
             }
-            top_cards.clear();
             foreach(int id, to_move)
-                if (!bottom_cards.contains(id))
+                if (!bottom_cards.contains(id) && !top_cards.contains(id))
                     top_cards << id;
             success = true;
         }
@@ -5873,7 +5872,7 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
             }
             top_cards.clear();
             foreach(int id, to_move)
-                if (!bottom_cards.contains(id))
+                if (!bottom_cards.contains(id) && !top_cards.contains(id))
                     top_cards << id;
             success = true;
         }
