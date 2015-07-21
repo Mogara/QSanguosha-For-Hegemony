@@ -255,13 +255,13 @@ void CardChooseBox::onItemReleased()
         fromPos = -fromPos - 1;
     }
 
-    const int count = upItems.length() + downItems.length();
     const int cardWidth = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int cardHeight = G_COMMON_LAYOUT.m_cardNormalHeight;
     const int middleY = 45 + (isOneRow(true) ? cardHeight : (cardHeight * 2 + cardInterval));
 
     bool toUpItems = (item->y() + cardHeight / 2 <= middleY);
     QList<CardItem *> *items = toUpItems ? &upItems : &downItems;
+    const int count = toUpItems ? itemCount : downCount;
     bool oddRow = true;
     if (!isOneRow(toUpItems) && count % 2) {
         const qreal y = item->y() + cardHeight / 2;
@@ -374,7 +374,6 @@ void CardChooseBox::adjust()
     const int upfirstRowCount = itemNumberOfFirstRow(true);
     const int cardWidth = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
-    const int count = upItems.length() + downItems.length();
 
     QList<int> down_cards;
     foreach(CardItem *card_item, downItems)
@@ -391,7 +390,7 @@ void CardChooseBox::adjust()
             pos.setY(45);
         }
         else {
-            if (count % 2 == 1)
+            if (itemCount % 2 == 1)
                 pos.setX(45 + cardWidth / 2 + cardInterval / 2
                 + (cardWidth + cardInterval) * (i - upfirstRowCount));
             else
@@ -417,7 +416,7 @@ void CardChooseBox::adjust()
             pos.setY(45 + (card_height + cardInterval) * (isOneRow(true) ? 1 : 2));
         }
         else {
-            if (count % 2 == 1)
+            if (downCount % 2 == 1)
                 pos.setX(45 + cardWidth / 2 + cardInterval / 2
                 + (cardWidth + cardInterval) * (i - firstRowCount));
             else
