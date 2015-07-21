@@ -47,6 +47,7 @@
 #include "flatdialog.h"
 #include "choosesuitbox.h"
 #include "guhuobox.h"
+#include "cardchooseBox.h"
 
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>

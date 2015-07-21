@@ -950,6 +950,15 @@
     <ClCompile Include="Release\moc_guhuobox.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\cardchooseBox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_cardchooseBox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_cardchooseBox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">
@@ -1247,6 +1256,9 @@
       <Filter>ui</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\ui\guhuobox.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\cardchooseBox.h">
       <Filter>ui</Filter>
     </CustomBuild>
   </ItemGroup>
