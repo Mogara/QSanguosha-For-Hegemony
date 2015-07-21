@@ -2171,29 +2171,9 @@
 <context>
     <name>CardChooseBox</name>
     <message>
-        <location filename="../src/ui/guanxingbox.cpp" line="642"/>
+        <location filename="../src/ui/cardchooseBox.cpp" line="540"/>
         <source>%1 is Choosing: %2</source>
         <translation>%1 正在选择： %2</translation>
-    </message>
-    <message>
-        <location filename="../src/ui/guanxingbox.cpp" line="674"/>
-        <source>CardsSelectable</source>
-        <translation>可选的牌</translation>
-    </message>
-    <message>
-        <location filename="../src/ui/guanxingbox.cpp" line="675"/>
-        <source>CardsSelected</source>
-        <translation>选中的牌</translation>
-    </message>
-    <message>
-        <location filename="../src/ui/guanxingbox.cpp" line="677"/>
-        <source>CardstoGet</source>
-        <translation>获得的牌</translation>
-    </message>
-    <message>
-        <location filename="../src/ui/guanxingbox.cpp" line="678"/>
-        <source>CardstoDrop</source>
-        <translation>放弃的牌</translation>
     </message>
 </context>
 <context>
