@@ -2171,7 +2171,7 @@
 <context>
     <name>CardChooseBox</name>
     <message>
-        <location filename="../src/ui/cardchooseBox.cpp" line="540"/>
+        <location filename="../src/ui/cardchooseBox.cpp" line="542"/>
         <source>%1 is Choosing: %2</source>
         <translation>%1 正在选择： %2</translation>
     </message>
