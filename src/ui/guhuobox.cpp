@@ -104,6 +104,19 @@ int GuhuoBox::getButtonWidth() const
     return qMax(biggest, width);
 }
 
+bool GuhuoBox::isButtonEnable(const QString &card) const
+{
+    QString allowed_list = Self->property("guhuo_box_allowed_elemet").toString();
+    if (!allowed_list.isEmpty())
+        return allowed_list.split("+").contains(card);
+    else {
+        Card *ca = Sanguosha->cloneCard(card);
+        ca->deleteLater();
+        return ca->isAvailable(Self);
+    }
+   
+}
+
 void GuhuoBox::popup()
 {
     if (play_only && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
@@ -118,10 +131,8 @@ void GuhuoBox::popup()
             button->setObjectName(card_name);
             buttons[card_name] = button;
 
-            Card *ca = Sanguosha->cloneCard(card_name);
-            button->setEnabled(ca->isAvailable(Self));
-            ca->deleteLater();
-
+            button->setEnabled(isButtonEnable(card_name));
+            
             button->setParentItem(this);
 
             QString original_tooltip = QString(":%1").arg(title);

@@ -30,6 +30,8 @@ protected:
 
     int getButtonWidth() const;
 
+    bool isButtonEnable(const QString &card) const;
+
     QString translate(const QString &option) const;
 
     bool play_only;
