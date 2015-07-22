@@ -16,7 +16,7 @@
     See the LICENSE file for more details.
 
     Mogara
-    *********************************************************************/
+*********************************************************************/
 
 #include "cardchoosebox.h"
 #include "roomscene.h"
@@ -75,94 +75,78 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
     int down_num = qMax(min_num, max_num);
     itemCount = qMax(upItems.length(), downItems.length());
     downCount = (max_num > 0) ? qMax(down_num, downItems.length()) : itemCount;
-    prepareGeometryChange();
-    GraphicsBox::moveToCenter(this);
-    show();
 
     int cardWidth = G_COMMON_LAYOUT.m_cardNormalWidth;
     int cardHeight = G_COMMON_LAYOUT.m_cardNormalHeight;
-    int width = (cardWidth + cardInterval) * upItems.length() - cardInterval + 50;
-    if (width * 1.5 > RoomSceneInstance->sceneRect().width())
-        width = (cardWidth + cardInterval) * ((upItems.length() + 1) / 2) - cardInterval + 50;
+    int max = qMax(itemCount, downCount);
+    int count = (max >= 3) ? max : 3;
+    int width = (cardWidth + cardInterval) * count - cardInterval + 70;
+    if (width * 1.5 > (scene_width ? scene_width : 800))
+        width = (cardWidth + cardInterval) * ((count + 1) / 2) - cardInterval + 70;
+    this->width = width;
 
-    const int upfirstRow = itemNumberOfFirstRow(true);
+    const int firstRow = itemNumberOfFirstRow(true);
+    int up_min = qMin(firstRow, itemCount);
+    up_app1 = (width - 70 - ((cardWidth + cardInterval) * up_min - cardInterval)) / 2;
+    if (itemCount - firstRow > 0)
+        up_app2 = (width - 70 - ((cardWidth + cardInterval) * (itemCount - firstRow) - cardInterval)) / 2;
+    const int secondRow = itemNumberOfFirstRow(false);
+    int down_min = qMin(secondRow, downCount);
+    down_app1 = (width - 70 - ((cardWidth + cardInterval) * down_min - cardInterval)) / 2;
+    if (downCount - secondRow > 0)
+        down_app2 = (width - 70 - ((cardWidth + cardInterval) * (downCount - secondRow) - cardInterval)) / 2;
+
+    prepareGeometryChange();
+    GraphicsBox::moveToCenter(this);
+    show();
 
     for (int i = 0; i < upItems.length(); i++) {
         CardItem *cardItem = upItems.at(i);
 
         QPointF pos;
         int X, Y;
-        if (i < upfirstRow) {
-            int fix = i;
-            int app = 0;
-            if (itemCount == 1) fix = 1;
-            if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
-            X = (45 + app + (cardWidth + cardInterval) * fix);
+        if (i < firstRow) {
+            X = (45 + up_app1 + (cardWidth + cardInterval) * i);
             Y = (45);
         }
         else {
-            if (upItems.length() % 2 == 1)
-                X = (45 + cardWidth / 2 + cardInterval / 2
-                + (cardWidth + cardInterval) * (i - upfirstRow));
-            else
-                X = (45 + (cardWidth + cardInterval) * (i - upfirstRow));
+            X = (45 + up_app2 + (cardWidth + cardInterval) * (i - firstRow));
             Y = (45 + cardHeight + cardInterval);
         }
         pos.setX(X);
         pos.setY(Y);
         cardItem->resetTransform();
         cardItem->setOuterGlowEffectEnabled(true);
-        if (itemCount == 1 || itemCount == 2)
-            cardItem->setPos(X, 45);
-        else
-            cardItem->setPos(25, 45);
+        cardItem->setPos(45 + up_app1, 45);
         cardItem->setHomePos(pos);
         cardItem->goBack(true);
 
-        if (this->moverestricted){
-            QList<int> empty;
-            cardItem->setEnabled(check(empty, cardItem->getCard()->getId()));
-        }
     }
 
-    const int firstRow = itemNumberOfFirstRow(false);
     for (int i = 0; i < downItems.length(); i++) {
         CardItem *cardItem = downItems.at(i);
 
         QPointF pos;
         int X, Y;
-        if (i < firstRow) {
-            int fix = i;
-            int app = 0;
-            if (itemCount == 1) fix = 1;
-            if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
-            X = (45 + app + (cardWidth + cardInterval) * fix);
+        if (i < secondRow) {
+            X = (45 + down_app1 + (cardWidth + cardInterval) * i);
             Y = (45 + (cardHeight + cardInterval) * (isOneRow(true) ? 1 : 2));
         }
         else {
-            if (upItems.length() % 2 == 1)
-                X = (45 + cardWidth / 2 + cardInterval / 2
-                + (cardWidth + cardInterval) * (i - firstRow));
-            else
-                X = (45 + (cardWidth + cardInterval) * (i - firstRow));
-            Y = (45 + (cardHeight + cardInterval) * ((isOneRow(true) ? 1 : 2) + (isOneRow(false) ? 1 : 2)));
+            X = (45 + down_app2 + (cardWidth + cardInterval) * (i - secondRow));
+            Y = (45 + (cardHeight + cardInterval) * ((isOneRow(true) ? 1 : 2) + 1));
         }
         pos.setX(X);
         pos.setY(Y);
         cardItem->resetTransform();
         cardItem->setOuterGlowEffectEnabled(true);
-        if (itemCount == 1 || itemCount == 2)
-            cardItem->setPos(X, 45);
-        else
-            cardItem->setPos(25, 45);
+        cardItem->setPos(45 + down_app1, 45 + (cardHeight + cardInterval) * (isOneRow(true) ? 1 : 2));
         cardItem->setHomePos(pos);
         cardItem->goBack(true);
-
-        if (this->moverestricted){
-            QList<int> empty;
-            cardItem->setEnabled(check(empty, cardItem->getCard()->getId()));
-        }
     }
+    if (this->moverestricted)
+        foreach(CardItem *card, upItems)
+            card->setEnabled(check(downcards, card->getCard()->getId()));
 }
 
 void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &upcards, const QList<int> &downcards,
@@ -261,20 +245,29 @@ void CardChooseBox::onItemReleased()
 
     bool toUpItems = (item->y() + cardHeight / 2 <= middleY);
     QList<CardItem *> *items = toUpItems ? &upItems : &downItems;
-    const int count = toUpItems ? itemCount : downCount;
-    bool oddRow = true;
-    if (!isOneRow(toUpItems) && count % 2) {
-        const qreal y = item->y() + cardHeight / 2;
-        if ((y >= 45 + cardHeight && y <= 45 + cardHeight * 2 + cardInterval)
-            || y >= 45 + cardHeight * 3 + cardInterval * 3) oddRow = false;
+    int app = 0;
+    int toRow = 0;
+    int fix_index = 0;
+    if (toUpItems) {
+        app = up_app1;
+        toRow = 1;
+        if (item->y() + cardHeight / 2 >= 45 + cardHeight + cardInterval){
+            app = up_app2;
+            toRow = 2;
+            fix_index = itemNumberOfFirstRow(true);
+        }
     }
-    int fix = 0;
-    if (itemCount == 1)
-        fix = cardWidth + cardInterval;
-    if (itemCount == 2)
-        fix = cardWidth / 2 + cardInterval / 2;
-    const int startX = 45 + (oddRow ? 0 : (cardWidth / 2 + cardInterval / 2));
-    int c = (item->x() + item->boundingRect().width() / 2 - startX) / cardWidth;
+    else {
+        app = down_app1;
+        toRow = 3;
+        if (item->y() + cardHeight / 2 >= 45 + cardHeight * 3 + cardInterval * 3){
+            app = down_app2;
+            toRow = 4;
+            fix_index = itemNumberOfFirstRow(false);
+        }
+    }
+    const int startX = 45 + app;
+    int c = (item->x() + item->boundingRect().width() / 2 - startX) / cardWidth + fix_index;
     c = qBound(0, c, items->length());
     items->insert(c, item);
 
@@ -371,7 +364,8 @@ void CardChooseBox::onItemClicked()
 
 void CardChooseBox::adjust()
 {
-    const int upfirstRowCount = itemNumberOfFirstRow(true);
+    const int firstRowCount = itemNumberOfFirstRow(true);
+    const int secondRowCount = itemNumberOfFirstRow(false);
     const int cardWidth = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
 
@@ -381,20 +375,12 @@ void CardChooseBox::adjust()
 
     for (int i = 0; i < upItems.length(); i++) {
         QPointF pos;
-        if (i < upfirstRowCount) {
-            int fix = i;
-            int app = 0;
-            if (itemCount == 1) fix = 1;
-            if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
-            pos.setX(45 + app + (cardWidth + cardInterval) * fix);
+        if (i < firstRowCount) {
+            pos.setX(45 + up_app1 + (cardWidth + cardInterval) * i);
             pos.setY(45);
         }
         else {
-            if (itemCount % 2 == 1)
-                pos.setX(45 + cardWidth / 2 + cardInterval / 2
-                + (cardWidth + cardInterval) * (i - upfirstRowCount));
-            else
-                pos.setX(45 + (cardWidth + cardInterval) * (i - upfirstRowCount));
+            pos.setX(45 + up_app2 + (cardWidth + cardInterval) * (i - firstRowCount));
             pos.setY(45 + card_height + cardInterval);
         }
         upItems.at(i)->setHomePos(pos);
@@ -404,23 +390,14 @@ void CardChooseBox::adjust()
             upItems.at(i)->setEnabled(check(down_cards, upItems.at(i)->getCard()->getId()));
     }
 
-    const int firstRowCount = itemNumberOfFirstRow(false);
     for (int i = 0; i < downItems.length(); i++) {
         QPointF pos;
-        if (i < firstRowCount) {
-            int fix = i;
-            int app = 0;
-            if (itemCount == 1) fix = 1;
-            if (itemCount == 2) app = cardWidth / 2 + cardInterval / 2;
-            pos.setX(45 + app + (cardWidth + cardInterval) * fix);
+        if (i < secondRowCount) {
+            pos.setX(45 + down_app1 + (cardWidth + cardInterval) * i);
             pos.setY(45 + (card_height + cardInterval) * (isOneRow(true) ? 1 : 2));
         }
         else {
-            if (downCount % 2 == 1)
-                pos.setX(45 + cardWidth / 2 + cardInterval / 2
-                + (cardWidth + cardInterval) * (i - firstRowCount));
-            else
-                pos.setX(45 + (cardWidth + cardInterval) * (i - firstRowCount));
+            pos.setX(45 + down_app2 + (cardWidth + cardInterval) * (i - secondRowCount));
             pos.setY(45 + card_height * 3 + cardInterval * 3);
         }
         downItems.at(i)->setHomePos(pos);
@@ -443,7 +420,6 @@ bool CardChooseBox::isOneRow(bool up) const
     int width = (cardWidth + cardInterval) * count - cardInterval + 70;
     bool oneRow = true;
     if (width * 1.5 > RoomSceneInstance->sceneRect().width()) {
-        width = (cardWidth + cardInterval) * (count + 1) / 2 - cardInterval + 70;
         oneRow = false;
     }
 
@@ -511,12 +487,8 @@ QRectF CardChooseBox::boundingRect() const
 {
     const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
+
     bool one_row = true;
-    int max = qMax(itemCount, downCount);
-    int count = (max >= 3) ? max : 3;
-    int width = (card_width + cardInterval) * count - cardInterval + 70;
-    if (width * 1.5 > (scene_width ? scene_width : 800))
-        width = (card_width + cardInterval) * ((count + 1) / 2) - cardInterval + 70;
     if (((card_width + cardInterval) * itemCount - cardInterval + 70) > width)
         one_row = false;
     int height = (one_row ? 1 : 2) * card_height + (one_row ? 0 : cardInterval);
@@ -550,7 +522,7 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
         width = (card_width + cardInterval) * ((max + 1) / 2) - cardInterval + 70;
     if (((card_width + cardInterval) * itemCount - cardInterval + 70) > width)
         one_row = false;
-    const int upfirstRow = itemNumberOfFirstRow(true);
+    const int firstRow = itemNumberOfFirstRow(true);
 
     QString description1 = Sanguosha->translate(reason + "#up");
     QRect up_rect(15, 45, 20, one_row ? card_height : (card_height * 2 + cardInterval));
@@ -558,21 +530,13 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
 
     for (int i = 0; i < itemCount; ++i) {
         int x, y = 0;
-        if (i < upfirstRow) {
-            int fix = i;
-            int app = 0;
-            if (itemCount == 1) fix = 1;
-            if (itemCount == 2) app = card_width / 2 + cardInterval / 2;
-            x = 45 + app + (card_width + cardInterval) * fix;
-            y = 45;
+        if (i < firstRow) {
+            x = (45 + up_app1 + (card_width + cardInterval) * i);
+            y = (45);
         }
         else {
-            if (itemCount % 2 == 1)
-                x = 45 + card_width / 2 + cardInterval / 2
-                + (card_width + cardInterval) * (i - upfirstRow);
-            else
-                x = 45 + (card_width + cardInterval) * (i - upfirstRow);
-            y = 45 + card_height + cardInterval;
+            x = (45 + up_app2 + (card_width + cardInterval) * (i - firstRow));
+            y = (45 + card_height + cardInterval);
         }
 
         QRect top_rect(x, y, card_width, card_height);
@@ -584,32 +548,22 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
     bool down_one_row = true;
     if (((card_width + cardInterval) * downCount - cardInterval + 70) > width)
         down_one_row = false;
-
+    const int secondRow = itemNumberOfFirstRow(false);
     QString description2 = Sanguosha->translate(reason + "#down");
     QRect down_rect(15, 45 + (card_height + cardInterval) * (one_row ? 1 : 2), 20, down_one_row ? card_height : (card_height * 2 + cardInterval));
     G_COMMON_LAYOUT.playerCardBoxPlaceNameText.paintText(painter, down_rect, Qt::AlignCenter, description2);
 
-    const int firstRow = itemNumberOfFirstRow(false);
-
     for (int i = 0; i < downCount; ++i) {
         int x, y = 0;
-        if (i < firstRow) {
-            int fix = i;
-            int app = 0;
-            if (itemCount == 1) fix = 1;
-            if (itemCount == 2) app = card_width / 2 + cardInterval / 2;
-            x = 45 + app + (card_width + cardInterval) * fix;
-            y = 45;
+        if (i < secondRow) {
+            x = (45 + down_app1 + (card_width + cardInterval) * i);
+            y = (45 + (card_height + cardInterval) * (isOneRow(true) ? 1 : 2));
         }
         else {
-            if (downCount % 2 == 1)
-                x = 45 + card_width / 2 + cardInterval / 2
-                + (card_width + cardInterval) * (i - firstRow);
-            else
-                x = 45 + (card_width + cardInterval) * (i - firstRow);
-            y = 45 + card_height + cardInterval;
+            x = (45 + down_app2 + (card_width + cardInterval) * (i - secondRow));
+            y = (45 + (card_height + cardInterval) * ((isOneRow(true) ? 1 : 2) + 1));
         }
-        QRect bottom_rect(x, y + (card_height + cardInterval) * (one_row ? 1 : 2), card_width, card_height);
+        QRect bottom_rect(x, y, card_width, card_height);
         painter->drawPixmap(bottom_rect, G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CHOOSE_GENERAL_BOX_DEST_SEAT));
         IQSanComponentSkin::QSanSimpleTextFont font = G_COMMON_LAYOUT.m_chooseGeneralBoxDestSeatFont;
         font.paintText(painter, bottom_rect, Qt::AlignCenter, description2);

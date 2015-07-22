@@ -16,8 +16,7 @@
     See the LICENSE file for more details.
 
     Mogara
-    *********************************************************************/
-
+*********************************************************************/
 #ifndef CARDCHOOSEBOX_H
 #define CARDCHOOSEBOX_H
 
@@ -51,7 +50,7 @@ private:
     QList<CardItem *> upItems, downItems;
     QString reason;
     QString func;
-    int downCount, min_num;
+    int downCount, min_num, up_app1 = 0, up_app2 = 0, down_app1 = 0, down_app2 = 0, width;
     bool moverestricted;
     bool buttonstate;
     void adjust();
