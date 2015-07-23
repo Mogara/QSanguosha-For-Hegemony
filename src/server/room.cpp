@@ -1360,19 +1360,30 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
             arg << (int)method;
             arg << JsonUtils::toJsonArray(disabled_ids);
             bool success = doRequest(player, S_COMMAND_CHOOSE_CARD, arg, true);
+
             //@todo: check if the card returned is valid
             const QVariant &clientReply = player->getClientReply();
             if (!success || !JsonUtils::isNumber(clientReply)) {
                 // randomly choose a card
                 QList<const Card *> cards = who->getCards(flags);
+                foreach (int id, disabled_ids)
+                    cards.removeOne(Sanguosha->getCard(id));
+
                 do {
                     card_id = cards.at(qrand() % cards.length())->getId();
                 } while (method == Card::MethodDiscard && !player->canDiscard(who, card_id));
             } else
                 card_id = clientReply.toInt();
 
-            if (card_id == Card::S_UNKNOWN_CARD_ID)
-                card_id = who->getRandomHandCardId();
+            if (card_id == Card::S_UNKNOWN_CARD_ID){
+                QList<const Card *> cards = who->getHandcards();
+                foreach (int id, disabled_ids)
+                    cards.removeOne(Sanguosha->getCard(id));
+
+                do {
+                    card_id = cards.at(qrand() % cards.length())->getId();
+                } while (method == Card::MethodDiscard && !player->canDiscard(who, card_id));
+            }
         }
     }
 

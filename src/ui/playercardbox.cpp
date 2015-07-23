@@ -69,6 +69,16 @@ void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player
     if (flags.contains(handcardFlag) && !player->isKongcheng()) {
         updateNumbers(player->getHandcardNum());
         handcard = true;
+
+        int disable_num = 0;
+        QList<const Card *> cards = player->getJudgingArea();
+        cards << player->getEquips();
+        foreach (const Card *card, cards) {
+            if (disabledIds.contains(card->getEffectiveId())) {
+                disable_num = disable_num + 1;
+            }
+        }
+        this->disable_num = disabledIds.length() - disable_num;
     }
 
     if (flags.contains(equipmentFlag) && player->hasEquip()) {
@@ -243,6 +253,7 @@ void PlayerCardBox::updateNumbers(const int &cardNumber)
 void PlayerCardBox::arrangeCards(const CardList &cards, const QPoint &topLeft)
 {
     QList<CardItem *> areaItems;
+
     foreach (const Card *card, cards) {
         CardItem *item = new CardItem(card);
         item->setAutoBack(false);
@@ -255,7 +266,12 @@ void PlayerCardBox::arrangeCards(const CardList &cards, const QPoint &topLeft)
                 && (method != Card::MethodDiscard
                 || Self->canDiscard(player, card->getEffectiveId())));
         } else {
-            item->setEnabled(method != Card::MethodDiscard || Self->canDiscard(player, "h"));
+            bool OK = true;
+            if (disable_num > 0 || (method == Card::MethodDiscard && !Self->canDiscard(player, "h"))) {
+                OK = false;
+            }
+            if (disable_num > 0) disable_num = disable_num - 1;
+            item->setEnabled(OK);
         }
         connect(item, SIGNAL(clicked()), this, SLOT(reply()));
         items << item;

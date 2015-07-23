@@ -69,6 +69,7 @@ private:
     int intervalsBetweenAreas;
     int intervalsBetweenRows;
     int maxCardsInOneRow;
+    int disable_num = 0;
 
     static const int maxCardNumberInOneRow;
 
