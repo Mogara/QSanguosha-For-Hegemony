@@ -5654,7 +5654,7 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
 }
 
-AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
+AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, const QList<int> &notify_visible_list, const QString &reason,
     const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse, bool moverestricted)
 {
     QList<int> top_cards, bottom_cards, to_move;
@@ -5664,18 +5664,32 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
     notifyMoveFocus(zhuge, S_COMMAND_SKILL_MOVECARDS);
 
     JsonArray stepArgs;
-    if (visible){
-        stepArgs << S_GUANXING_START;
-        stepArgs << zhuge->objectName();
-        stepArgs << reason;
-        stepArgs << JsonUtils::toJsonArray(upcards);
-        stepArgs << JsonUtils::toJsonArray(downcards);
-        stepArgs << pattern;
-        stepArgs << moverestricted;
-        stepArgs << min_num;
-        stepArgs << max_num;
-        doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
+//    if (visible){
+    QList<int> notify_up, notify_down;
+    foreach(int id, upcards) {
+        if (notify_visible_list.contains(id))
+            notify_up << id;
+        else
+            notify_up << -1;
     }
+    foreach(int id, downcards) {
+        if (notify_visible_list.contains(id))
+            notify_down << id;
+        else
+            notify_down << -1;
+    }
+        
+    stepArgs << S_GUANXING_START;
+    stepArgs << zhuge->objectName();
+    stepArgs << reason;
+    stepArgs << JsonUtils::toJsonArray(notify_up);
+    stepArgs << JsonUtils::toJsonArray(notify_down);
+    stepArgs << pattern;
+    stepArgs << moverestricted;
+    stepArgs << min_num;
+    stepArgs << max_num;
+    doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
+//    }
     AI *ai = zhuge->getAI();
     if (ai) {
         auto map = ai->askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
