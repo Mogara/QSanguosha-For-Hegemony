@@ -53,6 +53,7 @@ private:
     int downCount, min_num, up_app1 = 0, up_app2 = 0, down_app1 = 0, down_app2 = 0, width;
     bool moverestricted;
     bool buttonstate;
+    bool noneoperator = false;
     void adjust();
     int itemNumberOfFirstRow(bool up) const;
     bool isOneRow(bool up) const;

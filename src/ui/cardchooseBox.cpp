@@ -58,6 +58,7 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
 
         upItems << cardItem;
         cardItem->setParentItem(this);
+        if (cardId == -1) noneoperator = true;
     }
 
     foreach(int cardId, downcards) {
@@ -70,6 +71,7 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
 
         downItems << cardItem;
         cardItem->setParentItem(this);
+        if (cardId == -1) noneoperator = true;
     }
 
     int down_num = qMax(min_num, max_num);
@@ -120,7 +122,6 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
         cardItem->setPos(45 + up_app1, 45);
         cardItem->setHomePos(pos);
         cardItem->goBack(true);
-
     }
 
     for (int i = 0; i < downItems.length(); i++) {
@@ -144,7 +145,7 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
         cardItem->setHomePos(pos);
         cardItem->goBack(true);
     }
-    if (this->moverestricted)
+    if (this->moverestricted && !noneoperator)
         foreach(CardItem *card, upItems)
             card->setEnabled(check(downcards, card->getCard()->getId()));
 }
@@ -369,10 +370,6 @@ void CardChooseBox::adjust()
     const int cardWidth = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
 
-    QList<int> down_cards;
-    foreach(CardItem *card_item, downItems)
-        down_cards << card_item->getCard()->getId();
-
     for (int i = 0; i < upItems.length(); i++) {
         QPointF pos;
         if (i < firstRowCount) {
@@ -386,8 +383,13 @@ void CardChooseBox::adjust()
         upItems.at(i)->setHomePos(pos);
         upItems.at(i)->goBack(true);
 
-        if (moverestricted)
+        if (moverestricted && !noneoperator){
+            QList<int> down_cards;
+            foreach(CardItem *card_item, downItems)
+                down_cards << card_item->getCard()->getId();
+
             upItems.at(i)->setEnabled(check(down_cards, upItems.at(i)->getCard()->getId()));
+        }
     }
 
     for (int i = 0; i < downItems.length(); i++) {
