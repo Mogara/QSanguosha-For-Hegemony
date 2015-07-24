@@ -69,7 +69,7 @@ private:
     int intervalsBetweenAreas;
     int intervalsBetweenRows;
     int maxCardsInOneRow;
-    int disable_num = 0;
+    QList<int> handcards;
 
     static const int maxCardNumberInOneRow;
 

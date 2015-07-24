@@ -1333,8 +1333,14 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
     if (who != player && !handcard_visible && player->getAI()
         && (flags == "h"
         || (flags == "he" && !who->hasEquip())
-        || (flags == "hej" && !who->hasEquip() && who->getJudgingArea().isEmpty())))
-        card_id = who->getRandomHandCardId();
+        || (flags == "hej" && !who->hasEquip() && who->getJudgingArea().isEmpty()))) {
+        QList<int> handcards =who->handCards();
+        foreach (int id, disabled_ids)
+            handcards.removeOne(id);
+        do {
+            card_id = handcards.at(qrand() % handcards.length());
+        } while (method == Card::MethodDiscard && !player->canDiscard(who, card_id));
+    }
     else {
         AI *ai = player->getAI();
         if (ai) {
@@ -1352,6 +1358,23 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
                 card_id = cards.at(qrand() % cards.length())->getId();
             }
         } else {
+            QList<int> handcards;
+            if (who->hasFlag("continuous_card_chosen")) {
+                handcards = VariantList2IntList(tag["askforCardsChosen"].toList());
+            }
+            else {
+                handcards = who->handCards();
+                qShuffle(handcards);
+            }
+
+            //LogMessage log1;
+            //log1.type = "$askforcardchoseninput";
+            //log1.from = player;
+            //foreach (int id, handcards) {
+            //    log1.card_str = QString::number(id);
+            //    sendLog(log1);
+            //}
+
             JsonArray arg;
             arg << who->objectName();
             arg << flags;
@@ -1359,12 +1382,12 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
             arg << handcard_visible;
             arg << (int)method;
             arg << JsonUtils::toJsonArray(disabled_ids);
-            arg << JsonUtils::toJsonArray(who->handCards());
+            arg << JsonUtils::toJsonArray(handcards);
             bool success = doRequest(player, S_COMMAND_CHOOSE_CARD, arg, true);
 
             //@todo: check if the card returned is valid
-            const QVariant &clientReply = player->getClientReply();
-            if (!success || !JsonUtils::isNumber(clientReply)) {
+            JsonArray clientReply = player->getClientReply().value<JsonArray>();
+            if (!success || clientReply.size() != 2) {
                 // randomly choose a card
                 QList<const Card *> cards = who->getCards(flags);
                 foreach (int id, disabled_ids)
@@ -1373,17 +1396,20 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
                 do {
                     card_id = cards.at(qrand() % cards.length())->getId();
                 } while (method == Card::MethodDiscard && !player->canDiscard(who, card_id));
-            } else
-                card_id = clientReply.toInt();
+            } else {
+                card_id = clientReply.at(0).toInt();
 
-            if (card_id == Card::S_UNKNOWN_CARD_ID){
-                QList<const Card *> cards = who->getHandcards();
-                foreach (int id, disabled_ids)
-                    cards.removeOne(Sanguosha->getCard(id));
+                int index = clientReply.at(1).toInt();
 
-                do {
-                    card_id = cards.at(qrand() % cards.length())->getId();
-                } while (method == Card::MethodDiscard && !player->canDiscard(who, card_id));
+                if (card_id == Card::S_UNKNOWN_CARD_ID)
+                    card_id = handcards.at(index);
+
+                //LogMessage log1;
+                //log1.type = "$askforcardchosenreturn";
+                //log1.from = player;
+                //log1.arg = QString::number(index);
+                //log1.card_str = QString::number(card_id);
+                //sendLog(log1);
             }
         }
     }
@@ -1392,7 +1418,8 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
 
     QVariant decisionData = QVariant::fromValue(QString("cardChosen:%1:%2:%3:%4").arg(reason).arg(card_id)
         .arg(player->objectName()).arg(who->objectName()));
-    thread->trigger(ChoiceMade, this, player, decisionData);
+    if (!who->hasFlag("continuous_card_chosen"))
+        thread->trigger(ChoiceMade, this, player, decisionData);
     return card_id;
 }
 
@@ -1419,7 +1446,7 @@ QList<int> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee,
 //                 Sanguosha->getCardHandlingMethod(handle[2]), ids);
 //             records[id] = getCardPlace(id);
 //             choosee->addToPile("#" + reason, id, false);
-// 
+//
 //         }
 //         foreach (int id, records.keys())
 //             moveCardTo(Sanguosha->getCard(id), choosee, records[id], false);
@@ -1428,6 +1455,12 @@ QList<int> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee,
 //     return records.keys();
     QList<int> result;
     result.clear();
+    setPlayerFlag(choosee, "continuous_card_chosen");
+
+    QList<int> handcard_ids = choosee->handCards();
+    qShuffle(handcard_ids);
+    tag["askforCardsChosen"] = IntList2VariantList(handcard_ids);
+
     if (chooser && chooser->isAlive() && choosee && choosee->isAlive() && !choosee->isAllNude()) {
         foreach(const QString &src, handle_list) {
             if (src.isEmpty()) continue;
@@ -1447,6 +1480,14 @@ QList<int> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee,
             result << id;
         }
     }
+    setPlayerFlag(choosee, "-continuous_card_chosen");
+    tag.remove("askforCardsChosen");
+
+    DummyCard dummy_card(result);
+    QVariant decisionData = QVariant::fromValue(QString("cardChosen:%1:%2:%3:%4").arg(reason).arg(dummy_card.toString())
+        .arg(chooser->objectName()).arg(choosee->objectName()));
+    thread->trigger(ChoiceMade, this, chooser, decisionData);
+
     return result;
 }
 

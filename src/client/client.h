@@ -267,7 +267,7 @@ public slots:
     void signup();
     void onPlayerChooseGeneral(const QString &_name);
     void onPlayerMakeChoice(const QString &choice);
-    void onPlayerChooseCard(int card_id = -2);
+    void onPlayerChooseCard(int index, int card_id = -2);
     void onPlayerChooseAG(int card_id);
     void onPlayerChoosePlayer(const QList<const Player *> &players);
     void onPlayerChooseTriggerOrder(const QString &choice);

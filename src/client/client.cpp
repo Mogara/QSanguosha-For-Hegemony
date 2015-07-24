@@ -1154,12 +1154,15 @@ void Client::askForNullification(const QVariant &arg)
     setStatus(RespondingUse);
 }
 
-void Client::onPlayerChooseCard(int card_id)
+void Client::onPlayerChooseCard(int index, int card_id)
 {
     QVariant reply;
     if (card_id != -2)
         reply = card_id;
-    replyToServer(S_COMMAND_CHOOSE_CARD, reply);
+    JsonArray args;
+    args << reply << index;
+
+    replyToServer(S_COMMAND_CHOOSE_CARD, args);
     setStatus(NotActive);
 }
 
