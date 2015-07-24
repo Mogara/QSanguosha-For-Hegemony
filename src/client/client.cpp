@@ -1588,7 +1588,7 @@ void Client::askForChoice(const QVariant &ask_str)
 void Client::askForCardChosen(const QVariant &ask_str)
 {
     JsonArray ask = ask_str.value<JsonArray>();
-    if (ask.size() != 6 || !JsonUtils::isStringArray(ask, 0, 2)
+    if (ask.size() != 7 || !JsonUtils::isStringArray(ask, 0, 2)
         || !JsonUtils::isBool(ask[3]) || !JsonUtils::isNumber(ask[4])) return;
 
     QString player_name = ask[0].toString();
@@ -1603,7 +1603,10 @@ void Client::askForCardChosen(const QVariant &ask_str)
     QList<int> disabled_ids;
     JsonUtils::tryParse(ask[5], disabled_ids);
 
-    emit cards_got(player, flags, reason, handcard_visible, method, disabled_ids);
+    QList<int> handcards;
+    JsonUtils::tryParse(ask[6], handcards);
+
+    emit cards_got(player, flags, reason, handcard_visible, method, disabled_ids, handcards);
     setStatus(AskForCardChosen);
 }
 

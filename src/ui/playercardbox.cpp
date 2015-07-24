@@ -51,7 +51,7 @@ PlayerCardBox::PlayerCardBox()
 
 void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player,
     const QString &flags, bool handcardVisible,
-    Card::HandlingMethod method, const QList<int> &disabledIds)
+    Card::HandlingMethod method, const QList<int> &disabledIds, const QList<int> &handcards)
 {
     nameRects.clear();
     rowCount = 0;

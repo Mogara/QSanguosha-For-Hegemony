@@ -1644,14 +1644,14 @@ void RoomScene::chooseOption(const QString &skillName, const QStringList &option
 }
 
 void RoomScene::chooseCard(const ClientPlayer *player, const QString &flags, const QString &reason,
-    bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids)
+    bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids, QList<int> handcards)
 {
     QApplication::alert(main_window);
     if (!main_window->isActiveWindow())
         Sanguosha->playSystemAudioEffect("pop-up");
 
     m_playerCardBox->chooseCard(Sanguosha->translate(reason), player, flags,
-        handcard_visible, method, disabled_ids);
+        handcard_visible, method, disabled_ids, handcards);
 }
 
 /*void RoomScene::chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand reason) {
