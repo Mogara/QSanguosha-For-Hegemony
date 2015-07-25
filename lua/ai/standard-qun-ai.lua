@@ -827,11 +827,11 @@ sgs.ai_skill_use["@@lirang"] = function(self, prompt)
 		self:sort(self.friends_noself, "handcard")
 		for _, afriend in ipairs(self.friends_noself) do
 			if not self:needKongcheng(afriend, true) then
-				return "@LirangCard=" .. id .. "->" .. self.friends_noself[1]:objectName()
+				return "@LirangCard=" .. id .. "->" .. afriend:objectName()
 			end
 		end
 		self:sort(self.friends_noself, "defense")
-		return "@LirangCard=" .. id .. "->" .. afriend:objectName()
+		return "@LirangCard=" .. id .. "->" .. self.friends_noself[1]:objectName()
 	end
 	return "."
 end
