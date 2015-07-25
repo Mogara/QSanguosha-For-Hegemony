@@ -1321,7 +1321,14 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
 {
     tryPause();
     notifyMoveFocus(player, S_COMMAND_CHOOSE_CARD);
-    Q_ASSERT(!who->getCards(flags).isEmpty()); //a very six solution...
+    //Q_ASSERT(!who->getCards(flags).isEmpty()); //a very six solution...
+    QList<const Card *> available = who->getCards(flags);
+    foreach (int id, disabled_ids) {
+        const Card *c = getCard(id);
+        if (c && available.contains(c))
+            available.removeOne(c);
+    }
+    if (available.isEmpty()) return Card::S_UNKNOWN_CARD_ID;
     if ((handcard_visible && !who->isKongcheng())) {
         QList<int> handcards = who->handCards();
         JsonArray arg;
@@ -1477,7 +1484,8 @@ QList<int> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee,
             }
             int id = askForCardChosen(chooser, choosee, handle[0], reason, handle[1] == "true",
                 Sanguosha->getCardHandlingMethod(handle[2]), ids + result);
-            result << id;
+            if (id != Card::S_UNKNOWN_CARD_ID)
+                result << id;
         }
     }
     setPlayerFlag(choosee, "-continuous_card_chosen");
