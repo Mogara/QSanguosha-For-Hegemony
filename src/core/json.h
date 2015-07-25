@@ -77,7 +77,8 @@ protected:
     QString error;
 };
 
-namespace JsonUtils {
+namespace JsonUtils
+{
 
     inline bool isNumber(const QVariant &var)
     {

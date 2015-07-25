@@ -248,11 +248,11 @@ bool ViewAsSkill::isAvailable(const Player *invoker, CardUseStruct::CardUseReaso
         return false;
     }
     switch (reason) {
-    case CardUseStruct::CARD_USE_REASON_PLAY: return isEnabledAtPlay(invoker);
-    case CardUseStruct::CARD_USE_REASON_RESPONSE:
-    case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: return isEnabledAtResponse(invoker, pattern);
-    default:
-        return false;
+        case CardUseStruct::CARD_USE_REASON_PLAY: return isEnabledAtPlay(invoker);
+        case CardUseStruct::CARD_USE_REASON_RESPONSE:
+        case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: return isEnabledAtResponse(invoker, pattern);
+        default:
+            return false;
     }
 }
 
@@ -376,7 +376,7 @@ int TriggerSkill::getPriority() const
 
 double TriggerSkill::getDynamicPriority(TriggerEvent e) const
 {
-    if(priority.keys().contains(e))
+    if (priority.keys().contains(e))
         return priority.key(e);
     else
         return this->getPriority();
@@ -413,10 +413,10 @@ bool TriggerSkill::triggerable(const ServerPlayer *target) const
 
 void TriggerSkill::insertPriority(TriggerEvent e, double value)
 {
-    priority.insert(e,value);
+    priority.insert(e, value);
 }
 
-void TriggerSkill::record(TriggerEvent , Room *, ServerPlayer *, QVariant &) const
+void TriggerSkill::record(TriggerEvent, Room *, ServerPlayer *, QVariant &) const
 {
 
 }
@@ -558,41 +558,41 @@ bool ArraySummonSkill::isEnabledAtPlay(const Player *player) const
     if (skill) {
         ArrayType type = skill->getArrayType();
         switch (type) {
-        case Siege: {
-            if (player->willBeFriendWith(player->getNextAlive())
-                && player->willBeFriendWith(player->getLastAlive()))
-                return false;
-            if (!player->willBeFriendWith(player->getNextAlive())) {
-                if (!player->getNextAlive(2)->hasShownOneGeneral() && player->getNextAlive()->hasShownOneGeneral())
-                    return true;
-            }
-            if (!player->willBeFriendWith(player->getLastAlive()))
-                return !player->getLastAlive(2)->hasShownOneGeneral() && player->getLastAlive()->hasShownOneGeneral();
-            break;
-        }
-        case Formation: {
-            int n = player->aliveCount(false);
-            int asked = n;
-            for (int i = 1; i < n; ++i) {
-                Player *target = player->getNextAlive(i);
-                if (player->isFriendWith(target))
-                    continue;
-                else if (!target->hasShownOneGeneral())
-                    return true;
-                else {
-                    asked = i;
-                    break;
+            case Siege: {
+                if (player->willBeFriendWith(player->getNextAlive())
+                    && player->willBeFriendWith(player->getLastAlive()))
+                    return false;
+                if (!player->willBeFriendWith(player->getNextAlive())) {
+                    if (!player->getNextAlive(2)->hasShownOneGeneral() && player->getNextAlive()->hasShownOneGeneral())
+                        return true;
                 }
+                if (!player->willBeFriendWith(player->getLastAlive()))
+                    return !player->getLastAlive(2)->hasShownOneGeneral() && player->getLastAlive()->hasShownOneGeneral();
+                break;
             }
-            n -= asked;
-            for (int i = 1; i < n; ++i) {
-                Player *target = player->getLastAlive(i);
-                if (player->isFriendWith(target))
-                    continue;
-                else return !target->hasShownOneGeneral();
+            case Formation: {
+                int n = player->aliveCount(false);
+                int asked = n;
+                for (int i = 1; i < n; ++i) {
+                    Player *target = player->getNextAlive(i);
+                    if (player->isFriendWith(target))
+                        continue;
+                    else if (!target->hasShownOneGeneral())
+                        return true;
+                    else {
+                        asked = i;
+                        break;
+                    }
+                }
+                n -= asked;
+                for (int i = 1; i < n; ++i) {
+                    Player *target = player->getLastAlive(i);
+                    if (player->isFriendWith(target))
+                        continue;
+                    else return !target->hasShownOneGeneral();
+                }
+                break;
             }
-            break;
-        }
         }
     }
     return false;

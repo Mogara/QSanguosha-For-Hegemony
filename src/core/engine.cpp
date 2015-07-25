@@ -148,9 +148,8 @@ Engine::~Engine()
     Audio::quit();
 #endif
 
-    foreach (ExpPattern * const &pattern, enginePatterns) {
+    foreach (ExpPattern * const &pattern, enginePatterns)
         delete pattern;
-    }
 }
 
 QStringList Engine::getModScenarioNames() const
@@ -373,7 +372,7 @@ Card::HandlingMethod Engine::getCardHandlingMethod(const QString &method_name) c
         return Card::MethodRecast;
     else if (method_name == "pindian")
         return Card::MethodPindian;
-    else if(method_name == "none")
+    else if (method_name == "none")
         return Card::MethodNone;
     else {
         Q_ASSERT(false);
@@ -829,10 +828,10 @@ QStringList Engine::getRoleList(const QString &mode) const
     for (int i = 0; roles[i] != '\0'; i++) {
         QString role;
         switch (roles[i].toLatin1()) {
-        case 'Z': role = "lord"; break;
-        case 'C': role = "loyalist"; break;
-        case 'N': role = "renegade"; break;
-        case 'F': role = "rebel"; break;
+            case 'Z': role = "lord"; break;
+            case 'C': role = "loyalist"; break;
+            case 'N': role = "renegade"; break;
+            case 'F': role = "rebel"; break;
         }
         role_list << role;
     }

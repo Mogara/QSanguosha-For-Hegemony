@@ -24,7 +24,8 @@
 #include <QByteArray>
 #include <QVariant>
 
-namespace QSanProtocol {
+namespace QSanProtocol
+{
 
     enum PacketDescription
     {

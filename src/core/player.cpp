@@ -174,9 +174,8 @@ void Player::removeDisableShow(const QString &reason)
 
     if (remove_list.isEmpty()) return;
 
-    foreach (const QString &to_remove, remove_list) {
+    foreach (const QString &to_remove, remove_list)
         disable_show.removeOne(to_remove);
-    }
 
     emit disable_show_changed();
 }
@@ -565,16 +564,16 @@ void Player::loseSkill(const QString &skill_name)
 QString Player::getPhaseString() const
 {
     switch (phase) {
-    case RoundStart: return "round_start";
-    case Start: return "start";
-    case Judge: return "judge";
-    case Draw: return "draw";
-    case Play: return "play";
-    case Discard: return "discard";
-    case Finish: return "finish";
-    case NotActive:
-    default:
-        return "not_active";
+        case RoundStart: return "round_start";
+        case Start: return "start";
+        case Judge: return "judge";
+        case Draw: return "draw";
+        case Play: return "play";
+        case Discard: return "discard";
+        case Finish: return "finish";
+        case NotActive:
+        default:
+            return "not_active";
     }
 }
 
@@ -600,11 +599,11 @@ void Player::setEquip(WrappedCard *equip)
     const EquipCard *card = qobject_cast<const EquipCard *>(equip->getRealCard());
     Q_ASSERT(card != NULL);
     switch (card->location()) {
-    case EquipCard::WeaponLocation: weapon = equip; break;
-    case EquipCard::ArmorLocation: armor = equip; break;
-    case EquipCard::DefensiveHorseLocation: defensive_horse = equip; break;
-    case EquipCard::OffensiveHorseLocation: offensive_horse = equip; break;
-    case EquipCard::TreasureLocation: treasure = equip; break;
+        case EquipCard::WeaponLocation: weapon = equip; break;
+        case EquipCard::ArmorLocation: armor = equip; break;
+        case EquipCard::DefensiveHorseLocation: defensive_horse = equip; break;
+        case EquipCard::OffensiveHorseLocation: offensive_horse = equip; break;
+        case EquipCard::TreasureLocation: treasure = equip; break;
     }
 }
 
@@ -613,11 +612,11 @@ void Player::removeEquip(WrappedCard *equip)
     const EquipCard *card = qobject_cast<const EquipCard *>(Sanguosha->getEngineCard(equip->getId()));
     Q_ASSERT(card != NULL);
     switch (card->location()) {
-    case EquipCard::WeaponLocation: weapon = NULL; break;
-    case EquipCard::ArmorLocation: armor = NULL; break;
-    case EquipCard::DefensiveHorseLocation: defensive_horse = NULL; break;
-    case EquipCard::OffensiveHorseLocation: offensive_horse = NULL; break;
-    case EquipCard::TreasureLocation: treasure = NULL; break;
+        case EquipCard::WeaponLocation: weapon = NULL; break;
+        case EquipCard::ArmorLocation: armor = NULL; break;
+        case EquipCard::DefensiveHorseLocation: defensive_horse = NULL; break;
+        case EquipCard::OffensiveHorseLocation: offensive_horse = NULL; break;
+        case EquipCard::TreasureLocation: treasure = NULL; break;
     }
 }
 
@@ -694,13 +693,13 @@ const EquipCard *Player::getEquip(int index) const
 {
     WrappedCard *equip;
     switch (index) {
-    case 0: equip = weapon; break;
-    case 1: equip = armor; break;
-    case 2: equip = defensive_horse; break;
-    case 3: equip = offensive_horse; break;
-    case 4: equip = treasure; break;
-    default:
-        return NULL;
+        case 0: equip = weapon; break;
+        case 1: equip = armor; break;
+        case 2: equip = defensive_horse; break;
+        case 3: equip = offensive_horse; break;
+        case 4: equip = treasure; break;
+        default:
+            return NULL;
     }
     if (equip != NULL)
         return qobject_cast<const EquipCard *>(equip->getRealCard());

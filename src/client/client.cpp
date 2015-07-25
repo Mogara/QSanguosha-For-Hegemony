@@ -1034,10 +1034,10 @@ void Client::askForCardOrUseCard(const QVariant &cardUsage)
     if (usage.size() >= 3 && JsonUtils::isNumber(usage[2])) {
         Card::HandlingMethod method = (Card::HandlingMethod)(usage[2].toInt());
         switch (method) {
-        case Card::MethodDiscard: status = RespondingForDiscard; break;
-        case Card::MethodUse: status = RespondingUse; break;
-        case Card::MethodResponse: status = Responding; break;
-        default: status = RespondingNonTrigger; break;
+            case Card::MethodDiscard: status = RespondingForDiscard; break;
+            case Card::MethodUse: status = RespondingUse; break;
+            case Card::MethodResponse: status = Responding; break;
+            default: status = RespondingNonTrigger; break;
         }
     }
     setStatus(status);
@@ -1170,13 +1170,14 @@ void Client::onPlayerChoosePlayer(const QList<const Player *> &players)
 {
     if (replayer) return;
     QStringList names;
-    foreach (const Player *p,players)
+    foreach (const Player *p, players)
         names << p->objectName();
     if (players.length() < choose_min_num && !m_isDiscardActionRefusable) {
         QList<const Player*> to_choose;
-        foreach (const Player *p,findChildren<const Player *>())
+        foreach (const Player *p, findChildren<const Player *>()) {
             if (!players.contains(p))
                 to_choose.append(p);
+        }
         //player = findChild<const Player *>(players_to_choose.first());
         while (names.length() < choose_min_num)
             names << to_choose.takeAt(qrand() % to_choose.length())->objectName();
@@ -1399,22 +1400,22 @@ void Client::askForDiscard(const QVariant &reqvar)
 
 void Client::askForExchange(const QVariant &exchange)
 {
-//    JsonArray args = exchange.value<JsonArray>();
-//    if (!JsonUtils::isNumber(args[0]) || !JsonUtils::isBool(args[1])
-//        || !JsonUtils::isString(args[2]) || !JsonUtils::isBool(args[3])) {
-//        QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
-//        return;
-//    }
+    //    JsonArray args = exchange.value<JsonArray>();
+    //    if (!JsonUtils::isNumber(args[0]) || !JsonUtils::isBool(args[1])
+    //        || !JsonUtils::isString(args[2]) || !JsonUtils::isBool(args[3])) {
+    //        QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
+    //        return;
+    //    }
 
-//    discard_num = args[0].toInt();
-//    m_canDiscardEquip = args[1].toBool();
-//    QString prompt = args[2].toString();
-//    min_num = discard_num;
-//    m_isDiscardActionRefusable = args[3].toBool();
+    //    discard_num = args[0].toInt();
+    //    m_canDiscardEquip = args[1].toBool();
+    //    QString prompt = args[2].toString();
+    //    min_num = discard_num;
+    //    m_isDiscardActionRefusable = args[3].toBool();
     JsonArray args = exchange.value<JsonArray>();
     if (args.size() != 6 || !JsonUtils::isNumber(args[0]) || !JsonUtils::isNumber(args[1])
-           || !JsonUtils::isString(args[2]) || !JsonUtils::isString(args[3])
-            || ! JsonUtils::isString(args[4]) || !JsonUtils::isString(args[5])){
+        || !JsonUtils::isString(args[2]) || !JsonUtils::isString(args[3])
+        || !JsonUtils::isString(args[4]) || !JsonUtils::isString(args[5])) {
         QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
         return;
     }

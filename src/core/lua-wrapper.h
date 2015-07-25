@@ -61,7 +61,7 @@ public:
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
-    void onTurnBroken(const char *function_name,TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    void onTurnBroken(const char *function_name, TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
     LuaFunction on_record;
@@ -96,7 +96,7 @@ public:
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
-    void onTurnBroken(const char *function_name,TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    void onTurnBroken(const char *function_name, TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
     LuaFunction on_record;
@@ -387,14 +387,14 @@ public:
         else {
             if (Card::isKindOf(cardType)) return true;
             switch (subclass) {
-            case TypeSingleTargetTrick: return strcmp(cardType, "SingleTargetTrick") == 0; break;
-            case TypeDelayedTrick: return strcmp(cardType, "DelayedTrick") == 0; break;
-            case TypeAOE: return strcmp(cardType, "AOE") == 0; break;
-            case TypeGlobalEffect: return strcmp(cardType, "GlobalEffect") == 0; break;
-            case TypeNormal:
-            default:
-                return false;
-                break;
+                case TypeSingleTargetTrick: return strcmp(cardType, "SingleTargetTrick") == 0; break;
+                case TypeDelayedTrick: return strcmp(cardType, "DelayedTrick") == 0; break;
+                case TypeAOE: return strcmp(cardType, "AOE") == 0; break;
+                case TypeGlobalEffect: return strcmp(cardType, "GlobalEffect") == 0; break;
+                case TypeNormal:
+                default:
+                    return false;
+                    break;
             }
         }
     }

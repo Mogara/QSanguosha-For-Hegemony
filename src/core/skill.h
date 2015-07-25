@@ -169,16 +169,16 @@ public:
 
     virtual int getPriority() const;
     virtual double getDynamicPriority(TriggerEvent e) const;
-//     double getCurrentPriority() const
-//     {
-//         return current_priority;
-//     }
-//     void setCurrentPriority(double p) const
-//     {
-//         current_priority = p;
-//     }
+    //     double getCurrentPriority() const
+    //     {
+    //         return current_priority;
+    //     }
+    //     void setCurrentPriority(double p) const
+    //     {
+    //         current_priority = p;
+    //     }
 
-    void insertPriority(TriggerEvent e,double value);
+    void insertPriority(TriggerEvent e, double value);
 
     virtual bool triggerable(const ServerPlayer *target) const;
 
@@ -200,7 +200,7 @@ protected:
     const ViewAsSkill *view_as_skill;
     QList<TriggerEvent> events;
     bool global;
-    QHash<TriggerEvent,double> priority;
+    QHash<TriggerEvent, double> priority;
 
 private:
     mutable double current_priority;
@@ -329,7 +329,7 @@ public:
 class TargetModSkill : public Skill
 {
     Q_OBJECT
-    Q_ENUMS(ModType)
+        Q_ENUMS(ModType)
 
 public:
     enum ModType

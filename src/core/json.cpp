@@ -88,18 +88,16 @@ bool JsonUtils::isNumberArray(const QVariant &var, unsigned from, unsigned to)
 QVariant JsonUtils::toJsonArray(const QList<int> &intArray)
 {
     JsonArray json;
-    foreach (int number, intArray) {
+    foreach (int number, intArray)
         json << number;
-    }
     return json;
 }
 
 QVariant JsonUtils::toJsonArray(const QStringList &stringArray)
 {
     JsonArray json;
-    foreach (const QString &string, stringArray) {
+    foreach(const QString &string, stringArray)
         json << string;
-    }
     return json;
 }
 
@@ -135,14 +133,12 @@ bool JsonUtils::tryParse(const QVariant &var, QStringList &list)
     JsonArray array = var.value<JsonArray>();
 
     foreach (const QVariant &var, array) {
-        if (!var.canConvert<QString>()) {
+        if (!var.canConvert<QString>()) 
             return false;
-        }
     }
 
-    foreach (const QVariant &var, array) {
+    foreach (const QVariant &var, array)
         list << var.toString();
-    }
 
     return true;
 }
@@ -155,14 +151,12 @@ bool JsonUtils::tryParse(const QVariant &var, QList<int> &list)
     JsonArray array = var.value<JsonArray>();
 
     foreach (const QVariant &var, array) {
-        if (!var.canConvert<int>()) {
+        if (!var.canConvert<int>())
             return false;
-        }
     }
 
-    foreach (const QVariant &var, array) {
+    foreach (const QVariant &var, array)
         list << var.toInt();
-    }
 
     return true;
 }
@@ -238,42 +232,42 @@ QByteArray clearComment(const QByteArray &src)
     int max = result.size() - 1;
     for (int i = 0; i < max; i++) {
         switch (result.at(i)) {
-        case '/':
-            if (result.at(i + 1) == '*') { // multi-line comment
-                int offset = i;
-                i++;
-                while (i < max && (result.at(i) != '*' || result.at(i + 1) != '/')) {
+            case '/':
+                if (result.at(i + 1) == '*') { // multi-line comment
+                    int offset = i;
                     i++;
-                }
+                    while (i < max && (result.at(i) != '*' || result.at(i + 1) != '/')) {
+                        i++;
+                    }
 
-                int length = i + 2 - offset;
-                result.remove(offset, length);
-                i = offset - 1;
-                max -= length;
+                    int length = i + 2 - offset;
+                    result.remove(offset, length);
+                    i = offset - 1;
+                    max -= length;
 
-            } else if (result.at(i + 1) == '/') { // single-line comment
-                int offset = i;
-                i++;
-                while (i < max + 1 && result.at(i) != '\n') {
+                } else if (result.at(i + 1) == '/') { // single-line comment
+                    int offset = i;
                     i++;
-                }
+                    while (i < max + 1 && result.at(i) != '\n') {
+                        i++;
+                    }
 
-                int length = i + 1 - offset;
-                result.remove(offset, length);
-                i = offset - 1;
-                max -= length;
-            }
-            break;
-        case '"': // string
-            while (i < max + 1 && result.at(i) != '"') {
-                if (result.at(i) == '\\') {
-                    i += 2;
-                } else {
-                    i++;
+                    int length = i + 1 - offset;
+                    result.remove(offset, length);
+                    i = offset - 1;
+                    max -= length;
                 }
-            }
-            break;
-        default:;
+                break;
+            case '"': // string
+                while (i < max + 1 && result.at(i) != '"') {
+                    if (result.at(i) == '\\') {
+                        i += 2;
+                    } else {
+                        i++;
+                    }
+                }
+                break;
+            default:;
         }
     }
     return result;

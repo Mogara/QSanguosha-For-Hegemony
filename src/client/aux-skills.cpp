@@ -201,7 +201,7 @@ public:
         target_fixed = false;
     }
 
-    void setPlayerNames(const QStringList &names,int max,int min)
+    void setPlayerNames(const QStringList &names, int max, int min)
     {
         set = names.toSet();
         this->max = max;
@@ -231,9 +231,9 @@ ChoosePlayerSkill::ChoosePlayerSkill()
     card->setParent(this);
 }
 
-void ChoosePlayerSkill::setPlayerNames(const QStringList &names,int max,int min)
+void ChoosePlayerSkill::setPlayerNames(const QStringList &names, int max, int min)
 {
-    card->setPlayerNames(names,max,min);
+    card->setPlayerNames(names, max, min);
 }
 
 const Card *ChoosePlayerSkill::viewAs() const
@@ -289,7 +289,7 @@ bool ExchangeSkill::viewFilter(const QList<const Card *> &selected, const Card *
     if (selected.length() >= num)
         return false;
 
-    return Sanguosha->matchExpPattern(pattern,Self,card);
+    return Sanguosha->matchExpPattern(pattern, Self, card);
 }
 
 const Card *ExchangeSkill::viewAs(const QList<const Card *> &cards) const

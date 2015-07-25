@@ -55,8 +55,7 @@ class ExchangeSkill : public ViewAsSkill
 public:
     explicit ExchangeSkill();
 
-    void initialize(int num, int minnum,
-                    const QString &expand_pile, const QString &pattern);
+    void initialize(int num, int minnum, const QString &expand_pile, const QString &pattern);
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *card) const;
     virtual const Card *viewAs(const QList<const Card *> &cards) const;
