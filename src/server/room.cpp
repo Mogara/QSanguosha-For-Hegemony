@@ -5784,15 +5784,15 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
     }
     AI *ai = zhuge->getAI();
     if (ai) {
-        auto map = ai->askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
+        QMap< QString,QList<int> > map = ai->askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
 
         top_cards = map["top"];
         bottom_cards = map["bottom"];
         bool length_equal = top_cards.length() + bottom_cards.length() == to_move.length();
         bool result_equal = top_cards.toSet() + bottom_cards.toSet() == to_move.toSet();
-        if (length_equal && result_equal){
+        if (length_equal && result_equal)
             success = true;
-        }
+        
 
         if (!can_refuse){
             if (bottom_cards.length() < min_num){
