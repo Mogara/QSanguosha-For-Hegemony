@@ -811,14 +811,9 @@ sgs.ai_use_priority.XiongyiCard = 9.31
 
 sgs.ai_skill_invoke.mingshi = true
 
-sgs.ai_skill_invoke.lirang = function(self, data)
-	if not self:willShowForAttack() then
-		return false
-	end
-	return #self.friends_noself > 0
-end
-
-sgs.ai_skill_askforyiji.lirang = function(self, card_ids)
+sgs.ai_skill_use["@@lirang"] = function(self, prompt)
+	if not self:willShowForAttack() or #self.friends_noself == 0 then return "." end
+	local card_ids = self.player:getTag("lirang_give"):toString():split("+")
 	self:updatePlayers()
 	local cards = {}
 	for _, card_id in ipairs(card_ids) do
@@ -827,18 +822,18 @@ sgs.ai_skill_askforyiji.lirang = function(self, card_ids)
 	local id = card_ids[1]
 
 	local card, friend = self:getCardNeedPlayer(cards, self.friends_noself)
-	if card and friend then return friend, card:getId() end
+	if card and friend then return "@LirangCard=" .. id .. "->" .. friend:objectName() end
 	if #self.friends_noself > 0 then
 		self:sort(self.friends_noself, "handcard")
 		for _, afriend in ipairs(self.friends_noself) do
 			if not self:needKongcheng(afriend, true) then
-				return afriend, id
+				return "@LirangCard=" .. id .. "->" .. self.friends_noself[1]:objectName()
 			end
 		end
 		self:sort(self.friends_noself, "defense")
-		return self.friends_noself[1], id
+		return "@LirangCard=" .. id .. "->" .. afriend:objectName()
 	end
-	return nil, -1
+	return "."
 end
 
 sgs.ai_skill_playerchosen.shuangren = function(self, targets)
