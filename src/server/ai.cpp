@@ -420,7 +420,7 @@ QList<int> LuaAI::askForExchange(const QString &reason, const QString &pattern, 
     lua_pushinteger(L, min_num);
     lua_pushstring(L, expand_pile.toLatin1());
 
-    int error = lua_pcall(L, 5, 1, 0);
+    int error = lua_pcall(L, 6, 1, 0);
     if (error) {
         reportError(L);
         return TrustAI::askForExchange(reason,pattern,max_num,min_num,expand_pile);
