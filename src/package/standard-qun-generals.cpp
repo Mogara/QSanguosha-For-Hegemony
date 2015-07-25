@@ -1155,7 +1155,6 @@ public:
     Lirang() : TriggerSkill("lirang")
     {
         events << CardsMoveOneTime;
-        frequency = Frequent;
         view_as_skill = new LirangViewAsSkill;
     }
 
