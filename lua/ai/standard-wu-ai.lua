@@ -1944,6 +1944,12 @@ sgs.ai_skill_use["@@guzheng"] = function(self, data)
 	end
 end
 
+sgs.ai_skill_exchange.guzheng = function(self,pattern,max_num,min_num,expand_pile)
+	local ca = sgs.Card_Parse(sgs.ai_skill_use["@@guzheng"](self))
+	self.player:speak(ca:toString())
+	return sgs.QList2Table(ca:getSubcards())
+end
+
 sgs.ai_skill_invoke["_Guzheng"] = function(self, data)
 	return not (self:needKongcheng() and self.player:isKongcheng())
 end

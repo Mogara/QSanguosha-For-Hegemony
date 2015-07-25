@@ -329,16 +329,29 @@ function SmartAI:findTuxiTarget()
 	end
 end
 
-sgs.ai_skill_use["@@tuxi"] = function(self, prompt)
-	if not self:willShowForAttack() then
-		return "."
-	end
-	if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return "." end
+-- sgs.ai_skill_use["@@tuxi"] = function(self, prompt)
+	-- if not self:willShowForAttack() then
+		-- return "."
+	-- end
+	-- if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return "." end
+	-- local targets = self:findTuxiTarget()
+	-- if type(targets) == "table" and #targets > 0 then
+		-- return ("@TuxiCard=.&->" .. table.concat(targets, "+"))
+	-- end
+	-- return "."
+-- end
+
+sgs.ai_skill_playerchosen.tuxi = function(self)
+	if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return {} end
 	local targets = self:findTuxiTarget()
 	if type(targets) == "table" and #targets > 0 then
-		return ("@TuxiCard=.&->" .. table.concat(targets, "+"))
+		local result = {}
+		for _,name in pairs(targets)do
+			table.insert(result,findPlayerByObjectName(name))
+		end
+		return result
 	end
-	return "."
+	return {}
 end
 
 sgs.ai_skill_invoke.luoyi = function(self,data)
@@ -850,10 +863,11 @@ sgs.ai_skill_discard.qiaobian = function(self, discard_num, min_num, optional, i
 			return to_discard
 		elseif self.player:containsTrick("supply_shortage") then
 			if self.player:getHp() > self.player:getHandcardNum() then return to_discard end
-			local cardstr = sgs.ai_skill_use["@@tuxi"](self, "@tuxi")
-			if cardstr:match("->") then
-				local targetstr = cardstr:split("->")[2]
-				local targets = targetstr:split("+")
+			--local cardstr = sgs.ai_skill_use["@@tuxi"](self, "@tuxi")
+			local targets = sgs.ai_skill_playerchosen.tuxi(self)
+			if #targets == 2 then
+				--local targetstr = cardstr:split("->")[2]
+				--local targets = targetstr:split("+")
 				if #targets == 2 then
 					return to_discard
 				end
@@ -868,15 +882,12 @@ sgs.ai_skill_discard.qiaobian = function(self, discard_num, min_num, optional, i
 		end
 	elseif current_phase == sgs.Player_Draw and not self.player:isSkipped(sgs.Player_Draw) and not self.player:hasShownSkill("tuxi") then
 		self.qiaobian_draw_targets = {}
-		local cardstr = sgs.ai_skill_use["@@tuxi"](self, "@tuxi")
-		if cardstr:match("->") then
-			local targetstr = cardstr:split("->")[2]
-			local targets = targetstr:split("+")
-			if #targets == 2 then
-				table.insert(self.qiaobian_draw_targets, targets[1])
-				table.insert(self.qiaobian_draw_targets, targets[2])
-				return to_discard
-			end
+		--local cardstr = sgs.ai_skill_use["@@tuxi"](self, "@tuxi")
+		local targets = sgs.ai_skill_playerchosen.tuxi(self)
+		if #targets == 2  then
+			table.insert(self.qiaobian_draw_targets, targets[1]:objectName())
+			table.insert(self.qiaobian_draw_targets, targets[2]:objectName())
+			return to_discard
 		end
 		return {}
 	elseif current_phase == sgs.Player_Play and not self.player:isSkipped(sgs.Player_Play) then
