@@ -5482,7 +5482,6 @@ const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, in
     AI *ai = player->getAI();
     QList<int> to_exchange;
     if (ai) {
-        // share the same callback interface
         player->setFlags("Global_AIDiscardExchanging");
         try {
             to_exchange = ai->askForExchange(reason, pattern, exchange_num, min_num, _expand_pile);

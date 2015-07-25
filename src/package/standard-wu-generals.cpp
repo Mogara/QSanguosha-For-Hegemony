@@ -1516,6 +1516,7 @@ public:
         events << EventPhaseEnd << CardsMoveOneTime;
         //view_as_skill = new GuzhengVS;
     }
+
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *erzhang, QVariant &data) const
     {
         if (!erzhang || !erzhang->isAlive() || !erzhang->hasSkill("guzheng") || triggerEvent != CardsMoveOneTime) return;
