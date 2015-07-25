@@ -1491,8 +1491,7 @@ QList<int> Room::askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee,
     setPlayerFlag(choosee, "-continuous_card_chosen");
     tag.remove("askforCardsChosen");
 
-    DummyCard dummy_card(result);
-    QVariant decisionData = QVariant::fromValue(QString("cardChosen:%1:%2:%3:%4").arg(reason).arg(dummy_card.toString())
+    QVariant decisionData = QVariant::fromValue(QString("cardChosen:%1:%2:%3:%4").arg(reason).arg(IntList2StringList(result).join("+"))
         .arg(chooser->objectName()).arg(choosee->objectName()));
     thread->trigger(ChoiceMade, this, chooser, decisionData);
 
