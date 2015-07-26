@@ -284,7 +284,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
 
             if (!will_trigger.isEmpty()) {
                 will_trigger.clear();
-                foreach (ServerPlayer *p, room->getPlayers()) {
+                //foreach (ServerPlayer *p, room->getPlayers()) {
+                foreach (ServerPlayer *p, room->getAllPlayers(true)) {
                     if (!trigger_who.contains(p)) continue;
                     QStringList already_triggered;
                     forever{
