@@ -242,7 +242,7 @@ void PlayerCardBox::arrangeCards(const CardList &cards, const QPoint &topLeft)
 
     foreach (const Card *card, cards) {
         CardItem *item = new CardItem(card);
-        if (handcards.contains(card->getId()) && !handcardVisible && Self != player)
+        if (handcards.contains(card->getId()) && !handcardVisible && Self != player && !player->getVisiblecards().contains(card))
             item = new CardItem(NULL);
         item->setAutoBack(false);
         item->setOuterGlowEffectEnabled(true);

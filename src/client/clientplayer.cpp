@@ -111,8 +111,10 @@ void ClientPlayer::removeCard(const Card *card, Place place)
     switch (place) {
         case PlaceHand: {
             handcard_num--;
-            if (card)
+            if (card) {
                 known_cards.removeOne(card);
+                visible_cards.removeOne(card);
+            }
             break;
         }
         case PlaceEquip:{
@@ -139,6 +141,23 @@ void ClientPlayer::setCards(const QList<int> &card_ids)
     known_cards.clear();
     foreach(int cardId, card_ids)
         known_cards.append(Sanguosha->getCard(cardId));
+}
+
+QList<const Card *> ClientPlayer::getVisiblecards() const
+{
+    return visible_cards;
+}
+
+void ClientPlayer::addVisibleCards(const QList<int> &card_ids)
+{
+    foreach(int cardId, card_ids)
+        visible_cards.append(Sanguosha->getCard(cardId));
+}
+
+void ClientPlayer::removeVisibleCards(const QList<int> &card_ids)
+{
+    foreach(int cardId, card_ids)
+        visible_cards.removeOne(Sanguosha->getCard(cardId));
 }
 
 QTextDocument *ClientPlayer::getMarkDoc() const
