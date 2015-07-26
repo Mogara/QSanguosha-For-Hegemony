@@ -51,14 +51,6 @@ GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
                 card_list["DelayedTrick"].append(card->objectName());
         }
     }
-    //    if(flags.contains("e")){
-    //        QList<const EquipCard*> equips = Sanguosha->findChildren<const EquipCard*>();
-    //        foreach(const EquipCard *card,equips){
-    //            if(!card_list["EquipCard"].contains(card->objectName())
-    //                    && !ServerInfo.Extensions.contains("!" + card->getPackage()))
-    //                card_list["EquipCard"].append(card->objectName());
-    //        }
-    //    }
 }
 
 
@@ -75,8 +67,6 @@ QRectF GuhuoBox::boundingRect() const
         + (((card_list["MultiTarget"].length() + 3) / 4) - 1) * interval
         + ((card_list["DelayedTrick"].length() + 3) / 4) * defaultButtonHeight
         + (((card_list["DelayedTrick"].length() + 3) / 4) - 1) * interval
-        //            +((card_list["EquipCard"].length()+3)/4) * defaultButtonHeight
-        //            + (((card_list["EquipCard"].length()+3)/4) - 1) * interval
         + card_list.keys().length()*titleWidth * 2 //add some titles......
         + bottomBlankWidth;
 
@@ -195,9 +185,8 @@ void GuhuoBox::clear()
 
     buttons.values().clear();
 
-    foreach (Title *title, titles.values()) {
+    foreach (Title *title, titles.values())
         title->deleteLater();
-    }
 
     titles.values().clear();
 
@@ -211,11 +200,3 @@ QString GuhuoBox::translate(const QString &option) const
         translated = Sanguosha->translate(option);
     return translated;
 }
-
-//GuhuoBox *GuhuoBox::getInstance(const QString &skill_name, const QString &flags, bool play_only){
-//    static GuhuoBox *instance;
-//    if(instance == NULL || instance->getSkillName() != skill_name){
-//        instance = new GuhuoBox(skill_name,flags,play_only);
-//    }
-//    return instance;
-//}
