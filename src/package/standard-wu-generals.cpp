@@ -1615,31 +1615,14 @@ public:
         room->setPlayerProperty(erzhang, "guzheng_toget", toGetList);
 
         QList<int> result = room->notifyChooseCards(erzhang, cards, objectName(), Player::DiscardPile, Player::DiscardPile, 1, 0, "@guzheng:" + player->objectName(), IntList2StringList(cardsToGet).join(","));
-        //         room->setPlayerFlag(erzhang, "guzheng_InTempMoving");
-        //         CardMoveReason r(CardMoveReason::S_REASON_UNKNOWN, erzhang->objectName());
-        //         CardsMoveStruct fake_move(cards, NULL, erzhang, Player::DiscardPile, Player::PlaceHand, r);
-        //         QList<CardsMoveStruct> moves;
-        //         moves << fake_move;
-        //         QList<ServerPlayer *> _erzhang;
-        //         _erzhang << erzhang;
-        //         room->notifyMoveCards(true, moves, true, _erzhang);
-        //         room->notifyMoveCards(false, moves, true, _erzhang);
-        //         bool invoke = room->askForUseCard(erzhang, "@@guzheng", "@guzheng:" + player->objectName(), -1, Card::MethodNone);
-        //         CardsMoveStruct fake_move2(cards, erzhang, NULL, Player::PlaceHand, Player::DiscardPile, r);
-        //         QList<CardsMoveStruct> moves2;
-        //         moves2 << fake_move2;
-        //         room->notifyMoveCards(true, moves2, true, _erzhang);
-        //         room->notifyMoveCards(false, moves2, true, _erzhang);
-        //         room->setPlayerFlag(erzhang, "-guzheng_InTempMoving");
 
         if (result.length() > 0) {
+            room->broadcastSkillInvoke(objectName(), erzhang);
             int to_back = result.first();
-            /*            if (ok) {*/
             player->obtainCard(Sanguosha->getCard(to_back));
             cards.removeOne(to_back);
             erzhang->tag["GuzhengCards"] = IntList2VariantList(cards);
             return true;
-            /*            }*/
         }
         return false;
     }
