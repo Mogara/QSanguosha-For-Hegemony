@@ -385,6 +385,7 @@ private:
     void doAppearingAnimation(const QString &name, const QStringList &args);
     void doLightboxAnimation(const QString &name, const QStringList &args);
     void doIndicate(const QString &name, const QStringList &args);
+    void doHuashen(const QString &, const QStringList &args);
     EffectAnimation *animations;
     bool pindian_success;
 

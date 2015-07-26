@@ -195,7 +195,8 @@ namespace QSanProtocol
         S_ANIMATE_LIGHTBOX,
         S_ANIMATE_NULLIFICATION,
         S_ANIMATE_FIRE,
-        S_ANIMATE_LIGHTNING
+        S_ANIMATE_LIGHTNING,
+        S_ANIMATE_HUASHEN,
     };
 
     enum Game3v3ChooseOrderCommand
