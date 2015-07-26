@@ -5787,6 +5787,7 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
                 zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);
             }
             thread->delay();
+            thread->delay();
 
             if (upcards != top_cards || downcards != bottom_cards) {
                 JsonArray movearg_base;
@@ -5884,6 +5885,8 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
                 }
             }
         }
+        thread->delay();
+        thread->delay();
 
         if (isTrustAI) {
             JsonArray stepArgs;
