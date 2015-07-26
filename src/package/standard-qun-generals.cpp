@@ -1110,14 +1110,10 @@ LirangCard::LirangCard()
     handling_method = Card::MethodNone;
 }
 
-void LirangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+void LirangCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
-    QList<int> lirang_back = StringList2IntList(source->tag["lirang_give"].toString().split("+"));
-    room->notifyMoveToPile(source, lirang_back, "lirang", Player::DiscardPile, false, false);
-    CardMoveReason reason(CardMoveReason::S_REASON_PREVIEWGIVE, source->objectName(), targets.first()->objectName(), "lirang", QString());
-    room->obtainCard(targets.first(), this, reason, true);
-    foreach (int id, this->getSubcards()) lirang_back.removeOne(id); 
-    source->tag["lirang_give"] = IntList2StringList(lirang_back).join("+");
+    source->tag["lirang_target"] = QVariant::fromValue(targets.first());
+    source->tag["lirang_get"] = IntList2StringList(this->getSubcards()).join("+");
 }
 
 class LirangViewAsSkill : public ViewAsSkill
@@ -1144,7 +1140,6 @@ public:
         if (cards.isEmpty()) return NULL;
         LirangCard *Lirang_card = new LirangCard;
         Lirang_card->addSubcards(cards);
-        Lirang_card->setShowSkill(objectName());
         return Lirang_card;
     }
 };
@@ -1165,8 +1160,8 @@ public:
 
     virtual void record(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (!TriggerSkill::triggerable(player)) {
-            player->tag.remove("lirang_strings");
+        if (!TriggerSkill::triggerable(player)) { 
+            player->tag.remove("lirang_strings"); 
             return;
         }
 
@@ -1218,25 +1213,39 @@ public:
         QStringList lirang_strings_list = player->tag["lirang_strings"].toString().split("|");
         lirang_strings_list.removeOne(lirang_strings_list.last());
         player->tag["lirang_strings"] = lirang_strings_list.join("|");
-        QList<int> lirang_card;
-        while (true) {
-            lirang_card = StringList2IntList(player->tag["lirang_give"].toString().split("+"));
-            if (lirang_card.isEmpty()) break;
+
+        QList<int> lirang_card = StringList2IntList(player->tag["lirang_give"].toString().split("+"));
+        if (!lirang_card.isEmpty()) {
             room->notifyMoveToPile(player, lirang_card, "lirang", Player::DiscardPile, true, true);
             const Card *card = room->askForUseCard(player, "@@lirang", "@lirang-distribute:::" + QString::number(lirang_card.length()), -1, Card::MethodNone);
-            if (!card || !player->isAlive()) {
-                room->notifyMoveToPile(player, lirang_card, "lirang", Player::DiscardPile, false, false);
-                break;
-            }
+            room->notifyMoveToPile(player, lirang_card, "lirang", Player::DiscardPile, false, false);
+            if (card) return true;
         }
+
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
+        QList<int> lirang_card = StringList2IntList(player->tag["lirang_give"].toString().split("+"));
+        const Card *card = NULL;
+        do {
+            ServerPlayer *target = player->tag["lirang_target"].value<ServerPlayer *>();
+            QList<int> lirang_get = StringList2IntList(player->tag["lirang_get"].toString().split("+"));
+            DummyCard dummy(lirang_get);
+            CardMoveReason reason(CardMoveReason::S_REASON_PREVIEWGIVE, player->objectName(), target->objectName(), "lirang", QString());
+            room->obtainCard(target, &dummy, reason, true);
+
+            foreach (int id, lirang_get) lirang_card.removeOne(id);
+            if (lirang_card.isEmpty() || !player->isAlive()) break;
+
+            room->notifyMoveToPile(player, lirang_card, "lirang", Player::DiscardPile, true, true);
+            card = room->askForUseCard(player, "@@lirang", "@lirang-distribute:::" + QString::number(lirang_card.length()), -1, Card::MethodNone);
+            room->notifyMoveToPile(player, lirang_card, "lirang", Player::DiscardPile, false, false);
+        } while (card);
+
         return false;
     }
-
 };
 
 class Shuangren : public PhaseChangeSkill
