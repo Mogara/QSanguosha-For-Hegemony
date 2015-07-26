@@ -87,6 +87,7 @@ Client::Client(QObject *parent, const QString &filename)
     callbacks[S_COMMAND_ENABLE_SURRENDER] = &Client::enableSurrender;
     callbacks[S_COMMAND_EXCHANGE_KNOWN_CARDS] = &Client::exchangeKnownCards;
     callbacks[S_COMMAND_SET_KNOWN_CARDS] = &Client::setKnownCards;
+    callbacks[S_COMMAND_SET_VISIBLE_CARDS] = &Client::setVisibleCards;
     callbacks[S_COMMAND_VIEW_GENERALS] = &Client::viewGenerals;
     callbacks[S_COMMAND_SET_DASHBOARD_SHADOW] = &Client::setDashboardShadow;
     callbacks[S_COMMAND_UPDATE_STATE_ITEM] = &Client::updateStateItem;
@@ -895,6 +896,26 @@ void Client::setKnownCards(const QVariant &set_str)
     JsonUtils::tryParse(set[1], ids);
     player->setCards(ids);
 
+}
+
+void Client::setVisibleCards(const QVariant &set_str)
+{
+    JsonArray set = set_str.value<JsonArray>();
+    if (set.size() != 2) return;
+    QString name = set[0].toString();
+    ClientPlayer *player = getPlayer(name);
+    if (player == NULL) return;
+    QStringList ids;
+    QList<int> add_ids, remove_ids;
+    JsonUtils::tryParse(set[1], ids);
+    foreach (const QString &src, ids) {
+        if (src.startsWith('-')) {
+            remove_ids << src.mid(1).toInt();
+        } else
+            add_ids << src.toInt();
+    }
+    player->addVisibleCards(add_ids);
+    player->removeVisibleCards(remove_ids);
 }
 
 void Client::viewGenerals(const QVariant &arg)

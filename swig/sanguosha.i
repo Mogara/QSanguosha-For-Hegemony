@@ -513,6 +513,9 @@ public:
     explicit ClientPlayer(Client *client);
     virtual QList<const Card *> getHandcards() const;
     void setCards(const QList<int> &card_ids);
+    virtual QList<const Card *> getVisiblecards() const;
+    void addVisibleCards(const QList<int> &card_ids);
+    void removeVisibleCards(const QList<int> &card_ids);
     void setHandcardNum(int n);
     virtual QString getGameMode() const;
     virtual void setFlags(const char *flag);

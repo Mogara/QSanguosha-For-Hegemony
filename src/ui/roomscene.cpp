@@ -4101,6 +4101,34 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args)
     }
 }
 
+void RoomScene::doHuashen(const QString &, const QStringList &args)
+{
+    Q_ASSERT(args.length() >= 2);
+
+    QStringList hargs = args;
+    QString name = hargs.first();
+    hargs.removeOne(name);
+    hargs = hargs.first().split(":");
+    ClientPlayer *player = ClientInstance->getPlayer(name);
+
+    QList<CardItem *> generals;
+
+    foreach (QString arg, hargs) {
+        CardItem *item = new CardItem(arg);
+        item->setPos(this->m_tableCenterPos);
+        addItem(item);
+        generals.append(item);
+    }
+    CardsMoveStruct move;
+    move.to = player;
+    move.from_place = Player::DrawPile;
+    move.to_place = Player::PlaceSpecial;
+    move.to_pile_name = "huashen";
+
+    GenericCardContainer *container = _getGenericCardContainer(Player::PlaceHand, player);
+    container->addCardItems(generals, move);
+}
+
 void RoomScene::showIndicator(const QString &from, const QString &to)
 {
     if (Config.value("NoIndicator", false).toBool())
@@ -4142,6 +4170,7 @@ void RoomScene::doAnimation(int name, const QStringList &args)
 
         map[S_ANIMATE_LIGHTBOX] = &RoomScene::doLightboxAnimation;
         map[S_ANIMATE_INDICATE] = &RoomScene::doIndicate;
+        map[S_ANIMATE_HUASHEN] = &RoomScene::doHuashen;
     }
 
     static QMap<AnimateType, QString> anim_name;

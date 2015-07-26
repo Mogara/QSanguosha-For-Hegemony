@@ -159,6 +159,7 @@ public:
     void enableSurrender(const QVariant &enabled);
     void exchangeKnownCards(const QVariant &players);
     void setKnownCards(const QVariant &set_str);
+    void setVisibleCards(const QVariant &set_str);
     void viewGenerals(const QVariant &arg);
     void setFixedDistance(const QVariant &set_str);
     void updateStateItem(const QVariant &state);
