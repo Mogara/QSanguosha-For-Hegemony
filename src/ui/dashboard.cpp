@@ -781,7 +781,7 @@ void Dashboard::skillButtonDeactivated()
 void Dashboard::selectAll()
 {
     foreach (const QString &pile, Self->getHandPileList(false))
-            retractPileCards(pile);
+        retractPileCards(pile);
     selectCards(".");
 }
 
@@ -1178,10 +1178,10 @@ void Dashboard::beginSorting()
         type = (SortType)(action->data().toInt());
 
     switch (type) {
-    case ByType: qSort(m_handCards.begin(), m_handCards.end(), CompareByType); break;
-    case BySuit: qSort(m_handCards.begin(), m_handCards.end(), CompareBySuit); break;
-    case ByNumber: qSort(m_handCards.begin(), m_handCards.end(), CompareByNumber); break;
-    default: Q_ASSERT(false);
+        case ByType: qSort(m_handCards.begin(), m_handCards.end(), CompareByType); break;
+        case BySuit: qSort(m_handCards.begin(), m_handCards.end(), CompareBySuit); break;
+        case ByNumber: qSort(m_handCards.begin(), m_handCards.end(), CompareByNumber); break;
+        default: Q_ASSERT(false);
     }
 
     adjustCards();

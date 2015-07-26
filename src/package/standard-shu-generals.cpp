@@ -443,19 +443,19 @@ public:
         const Card *card = to_select;
 
         switch (Sanguosha->currentRoomState()->getCurrentCardUseReason()) {
-        case CardUseStruct::CARD_USE_REASON_PLAY: {
-            return card->isKindOf("Jink");
-        }
-        case CardUseStruct::CARD_USE_REASON_RESPONSE:
-        case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: {
-            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
-            if (pattern == "slash")
+            case CardUseStruct::CARD_USE_REASON_PLAY: {
                 return card->isKindOf("Jink");
-            else if (pattern == "jink")
-                return card->isKindOf("Slash");
-        }
-        default:
-            return false;
+            }
+            case CardUseStruct::CARD_USE_REASON_RESPONSE:
+            case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: {
+                QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+                if (pattern == "slash")
+                    return card->isKindOf("Jink");
+                else if (pattern == "jink")
+                    return card->isKindOf("Slash");
+            }
+            default:
+                return false;
         }
     }
 

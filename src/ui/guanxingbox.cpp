@@ -168,12 +168,11 @@ void GuanxingBox::onItemReleased()
 
     int fix_index = 0;
     if (toUpItems) {
-        if (item->y() + cardHeight / 2 >= 45 + cardHeight + cardInterval){
+        if (item->y() + cardHeight / 2 >= 45 + cardHeight + cardInterval) {
             fix_index = itemNumberOfFirstRow();
         }
-    }
-    else {
-        if (item->y() + cardHeight / 2 >= 45 + cardHeight * 3 + cardInterval * 3){
+    } else {
+        if (item->y() + cardHeight / 2 >= 45 + cardHeight * 3 + cardInterval * 3) {
             fix_index = itemNumberOfFirstRow();
         }
     }

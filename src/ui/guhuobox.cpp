@@ -114,7 +114,7 @@ bool GuhuoBox::isButtonEnable(const QString &card) const
         ca->deleteLater();
         return ca->isAvailable(Self);
     }
-   
+
 }
 
 void GuhuoBox::popup()
@@ -132,7 +132,7 @@ void GuhuoBox::popup()
             buttons[card_name] = button;
 
             button->setEnabled(isButtonEnable(card_name));
-            
+
             button->setParentItem(this);
 
             QString original_tooltip = QString(":%1").arg(title);

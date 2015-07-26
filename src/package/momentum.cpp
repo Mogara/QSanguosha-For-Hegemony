@@ -56,23 +56,23 @@ public:
         Room *room = lidian->getRoom();
         room->notifySkillInvoked(lidian, objectName());
 
-         QList<int> card_ids = room->getNCards(4);
-//         QList<int> original_card_ids = card_ids;
-//         QList<int> obtained;
-//         room->fillAG(card_ids, lidian);
-//         int id1 = room->askForAG(lidian, card_ids, false, objectName());
-//         card_ids.removeOne(id1);
-//         obtained << id1;
-//         room->clearAG(lidian);
-//         room->fillAG(original_card_ids, lidian, obtained);
-//         int id2 = room->askForAG(lidian, card_ids, false, objectName());
-//         card_ids.removeOne(id2);
-//         obtained << id2;
-//         room->clearAG(lidian);
-// 
-//         DummyCard dummy(obtained);
-//         lidian->obtainCard(&dummy, false);
-//         room->askForGuanxing(lidian, card_ids, Room::GuanxingDownOnly);
+        QList<int> card_ids = room->getNCards(4);
+        //         QList<int> original_card_ids = card_ids;
+        //         QList<int> obtained;
+        //         room->fillAG(card_ids, lidian);
+        //         int id1 = room->askForAG(lidian, card_ids, false, objectName());
+        //         card_ids.removeOne(id1);
+        //         obtained << id1;
+        //         room->clearAG(lidian);
+        //         room->fillAG(original_card_ids, lidian, obtained);
+        //         int id2 = room->askForAG(lidian, card_ids, false, objectName());
+        //         card_ids.removeOne(id2);
+        //         obtained << id2;
+        //         room->clearAG(lidian);
+        // 
+        //         DummyCard dummy(obtained);
+        //         lidian->obtainCard(&dummy, false);
+        //         room->askForGuanxing(lidian, card_ids, Room::GuanxingDownOnly);
 
         AskForMoveCardsStruct result = room->askForMoveCards(lidian, card_ids, QList<int>(), true, objectName(), "", objectName(), 2, 2, false, false, QList<int>() << -1);
         DummyCard dummy(result.bottom);
@@ -1706,9 +1706,9 @@ public:
             l.to << damage.to;
             l.arg = QString::number(damage.damage);
             switch (damage.nature) {
-            case DamageStruct::Normal: l.arg2 = "normal_nature"; break;
-            case DamageStruct::Fire: l.arg2 = "fire_nature"; break;
-            case DamageStruct::Thunder: l.arg2 = "thunder_nature"; break;
+                case DamageStruct::Normal: l.arg2 = "normal_nature"; break;
+                case DamageStruct::Fire: l.arg2 = "fire_nature"; break;
+                case DamageStruct::Thunder: l.arg2 = "thunder_nature"; break;
             }
 
             room->sendLog(l);

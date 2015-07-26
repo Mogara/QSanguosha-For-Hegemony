@@ -258,9 +258,9 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-//         room->askForUseCard(player, "@@tuxi", "@tuxi-card");
-//         if (player->hasFlag("tuxi") && player->tag.contains("tuxi_invoke"))
-//             return true;
+        //         room->askForUseCard(player, "@@tuxi", "@tuxi-card");
+        //         if (player->hasFlag("tuxi") && player->tag.contains("tuxi_invoke"))
+        //             return true;
         QList<ServerPlayer *> to_choose;
         foreach(ServerPlayer *p, room->getOtherPlayers(player)) {
             if (!p->isKongcheng())
@@ -908,16 +908,16 @@ public:
         room->setPlayerMark(player, "qiaobianPhase", (int)change.to);
         int index = 0;
         switch (change.to) {
-        case Player::RoundStart:
-        case Player::Start:
-        case Player::Finish:
-        case Player::NotActive: return QStringList();
+            case Player::RoundStart:
+            case Player::Start:
+            case Player::Finish:
+            case Player::NotActive: return QStringList();
 
-        case Player::Judge: index = 1; break;
-        case Player::Draw: index = 2; break;
-        case Player::Play: index = 3; break;
-        case Player::Discard: index = 4; break;
-        case Player::PhaseNone: Q_ASSERT(false);
+            case Player::Judge: index = 1; break;
+            case Player::Draw: index = 2; break;
+            case Player::Play: index = 3; break;
+            case Player::Discard: index = 4; break;
+            case Player::PhaseNone: Q_ASSERT(false);
         }
         if (TriggerSkill::triggerable(player) && index > 0 && player->canDiscard(player, "h"))
             return QStringList(objectName());
@@ -966,16 +966,16 @@ public:
         zhanghe->skip(change.to);
         int index = 0;
         switch (change.to) {
-        case Player::RoundStart:
-        case Player::Start:
-        case Player::Finish:
-        case Player::NotActive: return false;
+            case Player::RoundStart:
+            case Player::Start:
+            case Player::Finish:
+            case Player::NotActive: return false;
 
-        case Player::Judge: index = 1; break;
-        case Player::Draw: index = 2; break;
-        case Player::Play: index = 3; break;
-        case Player::Discard: index = 4; break;
-        case Player::PhaseNone: Q_ASSERT(false);
+            case Player::Judge: index = 1; break;
+            case Player::Draw: index = 2; break;
+            case Player::Play: index = 3; break;
+            case Player::Discard: index = 4; break;
+            case Player::PhaseNone: Q_ASSERT(false);
         }
         if (index == 2 || index == 3) {
             QString use_prompt = QString("@qiaobian-%1").arg(index);
@@ -1444,7 +1444,7 @@ void StandardPackage::addWeiGenerals()
     General *yuejin = new General(this, "yuejin", "wei", 4); // WEI 016
     yuejin->addSkill(new Xiaoguo);
 
-//    addMetaObject<TuxiCard>();
+    //    addMetaObject<TuxiCard>();
     addMetaObject<ShensuCard>();
     addMetaObject<QiaobianCard>();
     addMetaObject<QiangxiCard>();

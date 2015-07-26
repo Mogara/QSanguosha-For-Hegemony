@@ -843,31 +843,31 @@ public:
 
         Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
         switch (suit) {
-        case Card::Heart: {
-            RecoverStruct recover;
-            recover.who = caiwenji;
-            room->recover(player, recover);
+            case Card::Heart: {
+                RecoverStruct recover;
+                recover.who = caiwenji;
+                room->recover(player, recover);
 
-            break;
-        }
-        case Card::Diamond: {
-            player->drawCards(2);
-            break;
-        }
-        case Card::Club: {
-            if (damage.from && damage.from->isAlive())
-                room->askForDiscard(damage.from, "beige_discard", 2, 2, false, true);
+                break;
+            }
+            case Card::Diamond: {
+                player->drawCards(2);
+                break;
+            }
+            case Card::Club: {
+                if (damage.from && damage.from->isAlive())
+                    room->askForDiscard(damage.from, "beige_discard", 2, 2, false, true);
 
-            break;
-        }
-        case Card::Spade: {
-            if (damage.from && damage.from->isAlive())
-                damage.from->turnOver();
+                break;
+            }
+            case Card::Spade: {
+                if (damage.from && damage.from->isAlive())
+                    damage.from->turnOver();
 
-            break;
-        }
-        default:
-            break;
+                break;
+            }
+            default:
+                break;
         }
         return false;
     }
@@ -1131,7 +1131,7 @@ public:
 
     virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
     {
-        return Self->getPile("#lirang").contains(to_select->getId()) ;
+        return Self->getPile("#lirang").contains(to_select->getId());
     }
 
     virtual bool isEnabledAtPlay(const Player *) const
@@ -1165,8 +1165,8 @@ public:
 
     virtual void record(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (!TriggerSkill::triggerable(player)) { 
-            player->tag.remove("lirang_strings"); 
+        if (!TriggerSkill::triggerable(player)) {
+            player->tag.remove("lirang_strings");
             return;
         }
 
@@ -1180,7 +1180,7 @@ public:
                     if (room->getCardPlace(card_id) == Player::PlaceTable
                         && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)) {
                         lirang_card << card_id;
-                    }                
+                    }
                 }
                 if (!lirang_card.isEmpty()) {
                     QString lirang_strings = player->tag["lirang_strings"].toString();
@@ -1226,7 +1226,7 @@ public:
             const Card *card = room->askForUseCard(player, "@@lirang", "@lirang-distribute:::" + QString::number(lirang_card.length()), -1, Card::MethodNone);
             if (!card || !player->isAlive()) {
                 room->notifyMoveToPile(player, lirang_card, "lirang", Player::DiscardPile, false, false);
-                break;             
+                break;
             }
         }
         return false;
@@ -1236,7 +1236,7 @@ public:
     {
         return false;
     }
-    
+
 };
 
 class Shuangren : public PhaseChangeSkill
