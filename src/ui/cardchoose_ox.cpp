@@ -16,7 +16,7 @@
     See the LICENSE file for more details.
 
     Mogara
-*********************************************************************/
+    *********************************************************************/
 
 #include "cardchoosebox.h"
 #include "roomscene.h"
@@ -48,7 +48,7 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
     downItems.clear();
     scene_width = RoomSceneInstance->sceneRect().width();
 
-    foreach(int cardId, upcards) {
+    foreach (int cardId, upcards) {
         CardItem *cardItem = new CardItem(Sanguosha->getCard(cardId));
         cardItem->setAutoBack(false);
         cardItem->setFlag(QGraphicsItem::ItemIsFocusable);
@@ -61,7 +61,7 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
         if (cardId == -1) noneoperator = true;
     }
 
-    foreach(int cardId, downcards) {
+    foreach (int cardId, downcards) {
         CardItem *cardItem = new CardItem(Sanguosha->getCard(cardId));
         cardItem->setAutoBack(false);
         cardItem->setFlag(QGraphicsItem::ItemIsFocusable);
@@ -110,8 +110,7 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
         if (i < firstRow) {
             X = (45 + up_app1 + (cardWidth + cardInterval) * i);
             Y = (45);
-        }
-        else {
+        } else {
             X = (45 + up_app2 + (cardWidth + cardInterval) * (i - firstRow));
             Y = (45 + cardHeight + cardInterval);
         }
@@ -132,8 +131,7 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
         if (i < secondRow) {
             X = (45 + down_app1 + (cardWidth + cardInterval) * i);
             Y = (45 + (cardHeight + cardInterval) * (isOneRow(true) ? 1 : 2));
-        }
-        else {
+        } else {
             X = (45 + down_app2 + (cardWidth + cardInterval) * (i - secondRow));
             Y = (45 + (cardHeight + cardInterval) * ((isOneRow(true) ? 1 : 2) + 1));
         }
@@ -145,9 +143,10 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
         cardItem->setHomePos(pos);
         cardItem->goBack(true);
     }
-    if (this->moverestricted && !noneoperator)
-        foreach(CardItem *card, upItems)
+    if (this->moverestricted && !noneoperator) {
+        foreach (CardItem *card, upItems)
             card->setEnabled(check(downcards, card->getCard()->getId()));
+    }
 }
 
 void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &upcards, const QList<int> &downcards,
@@ -155,12 +154,12 @@ void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &rea
 {
     doCardChoose(upcards, downcards, reason, pattern, moverestricted, min_num, max_num);
 
-    foreach(CardItem *item, upItems) {
+    foreach (CardItem *item, upItems) {
         item->setFlag(QGraphicsItem::ItemIsMovable, false);
         item->disconnect(this);
     }
 
-    foreach(CardItem *item, downItems) {
+    foreach (CardItem *item, downItems) {
         item->setFlag(QGraphicsItem::ItemIsMovable, false);
         item->disconnect(this);
     }
@@ -177,8 +176,7 @@ void CardChooseBox::mirrorCardChooseMove(int from, int to)
     if (from > 0) {
         fromItems = &upItems;
         from = from - 1;
-    }
-    else {
+    } else {
         fromItems = &downItems;
         from = -from - 1;
     }
@@ -190,8 +188,7 @@ void CardChooseBox::mirrorCardChooseMove(int from, int to)
         if (to > 0) {
             toItems = &upItems;
             to = to - 1;
-        }
-        else {
+        } else {
             toItems = &downItems;
             to = -to - 1;
         }
@@ -201,13 +198,13 @@ void CardChooseBox::mirrorCardChooseMove(int from, int to)
             toItems->insert(to, card);
             adjust();
         }
-        if (upItems.size() > itemCount){
+        if (upItems.size() > itemCount) {
             CardItem *adjustCard = upItems.last();
             upItems.removeOne(adjustCard);
             downItems.append(adjustCard);
             adjust();
         }
-        if (downItems.size() > downCount){
+        if (downItems.size() > downCount) {
             CardItem *adjustCard = downItems.last();
             downItems.removeOne(adjustCard);
             upItems.append(adjustCard);
@@ -222,7 +219,7 @@ void CardChooseBox::onItemReleased()
     if (item == NULL) return;
 
     QList<int> down_cards;
-    foreach(CardItem *card_item, downItems)
+    foreach (CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
     bool check = (func == "") ? true : this->check(down_cards, item->getCard()->getId());
 
@@ -233,8 +230,7 @@ void CardChooseBox::onItemReleased()
         upItems.removeOne(item);
         fromPos = fromPos + 1;
         movefromUp = true;
-    }
-    else {
+    } else {
         fromPos = downItems.indexOf(item);
         downItems.removeOne(item);
         fromPos = -fromPos - 1;
@@ -252,16 +248,15 @@ void CardChooseBox::onItemReleased()
     if (toUpItems) {
         app = up_app1;
         toRow = 1;
-        if (item->y() + cardHeight / 2 >= 45 + cardHeight + cardInterval){
+        if (item->y() + cardHeight / 2 >= 45 + cardHeight + cardInterval) {
             app = up_app2;
             toRow = 2;
             fix_index = itemNumberOfFirstRow(true);
         }
-    }
-    else {
+    } else {
         app = down_app1;
         toRow = 3;
-        if (item->y() + cardHeight / 2 >= 45 + cardHeight * 3 + cardInterval * 3){
+        if (item->y() + cardHeight / 2 >= 45 + cardHeight * 3 + cardInterval * 3) {
             app = down_app2;
             toRow = 4;
             fix_index = itemNumberOfFirstRow(false);
@@ -274,29 +269,29 @@ void CardChooseBox::onItemReleased()
 
     int toPos = toUpItems ? c + 1 : -c - 1;
 
-    if (moverestricted && movefromUp && !toUpItems && !check){
+    if (moverestricted && movefromUp && !toUpItems && !check) {
         downItems.removeOne(item);
         upItems.append(item);
         toPos = upItems.size();
     }
 
-    if (upItems.length() > itemCount){
+    if (upItems.length() > itemCount) {
         int count = upItems.length();
         QList<CardItem *> readjust;
         for (int i = itemCount; i < count; i++)
             readjust << upItems.at(i);
-        foreach(CardItem *item, readjust) {
+        foreach (CardItem *item, readjust) {
             upItems.removeOne(item);
             downItems.append(item);
         }
     }
 
-    if (downItems.length() > downCount){
+    if (downItems.length() > downCount) {
         int count = downItems.length();
         QList<CardItem *> readjust;
         for (int i = downCount; i < count; i++)
             readjust << downItems.at(i);
-        foreach(CardItem *item, readjust) {
+        foreach (CardItem *item, readjust) {
             downItems.removeOne(item);
             upItems.append(item);
         }
@@ -304,13 +299,12 @@ void CardChooseBox::onItemReleased()
 
     if (downItems.length() >= min_num) buttonstate = true;
 
-    if (!moverestricted && func != ""){
+    if (!moverestricted && func != "") {
         down_cards.clear();
-        foreach(CardItem *card_item, downItems)
+        foreach (CardItem *card_item, downItems)
             down_cards << card_item->getCard()->getId();
         buttonstate = this->check(down_cards, -1);
-    }
-    else
+    } else
         buttonstate = (func == "") || !downItems.isEmpty();
 
     if (downItems.length() < min_num || downItems.length() > downCount) buttonstate = false;
@@ -325,7 +319,7 @@ void CardChooseBox::onItemClicked()
     if (item == NULL) return;
 
     QList<int> down_cards;
-    foreach(CardItem *card_item, downItems)
+    foreach (CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
     bool check = (func == "") ? true : this->check(down_cards, item->getCard()->getId());
     if (moverestricted && upItems.contains(item) && !check) return;
@@ -337,8 +331,7 @@ void CardChooseBox::onItemClicked()
         toPos = -downItems.size() - 1;
         upItems.removeOne(item);
         downItems.append(item);
-    }
-    else {
+    } else {
         if (upItems.length() >= itemCount) return;
         fromPos = -downItems.indexOf(item) - 1;
         toPos = upItems.size() + 1;
@@ -350,11 +343,10 @@ void CardChooseBox::onItemClicked()
 
     if (!moverestricted && func != "") {
         down_cards.clear();
-        foreach(CardItem *card_item, downItems)
+        foreach (CardItem *card_item, downItems)
             down_cards << card_item->getCard()->getId();
         buttonstate = this->check(down_cards, -1);
-    }
-    else
+    } else
         buttonstate = (func == "") || !downItems.isEmpty();
 
     if (downItems.length() < min_num || downItems.length() > downCount) buttonstate = false;
@@ -375,15 +367,14 @@ void CardChooseBox::adjust()
         if (i < firstRowCount) {
             pos.setX(45 + up_app1 + (cardWidth + cardInterval) * i);
             pos.setY(45);
-        }
-        else {
+        } else {
             pos.setX(45 + up_app2 + (cardWidth + cardInterval) * (i - firstRowCount));
             pos.setY(45 + card_height + cardInterval);
         }
         upItems.at(i)->setHomePos(pos);
         upItems.at(i)->goBack(true);
 
-        if (moverestricted && !noneoperator){
+        if (moverestricted && !noneoperator) {
             QList<int> down_cards;
             foreach(CardItem *card_item, downItems)
                 down_cards << card_item->getCard()->getId();
@@ -397,8 +388,7 @@ void CardChooseBox::adjust()
         if (i < secondRowCount) {
             pos.setX(45 + down_app1 + (cardWidth + cardInterval) * i);
             pos.setY(45 + (card_height + cardInterval) * (isOneRow(true) ? 1 : 2));
-        }
-        else {
+        } else {
             pos.setX(45 + down_app2 + (cardWidth + cardInterval) * (i - secondRowCount));
             pos.setY(45 + card_height * 3 + cardInterval * 3);
         }
@@ -509,8 +499,7 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
     QString title = QString("%1: %2").arg(Sanguosha->translate(reason)).arg(Sanguosha->translate("@" + reason));
     if (zhuge.isEmpty()) {
         GraphicsBox::paintGraphicsBoxStyle(painter, title, boundingRect());
-    }
-    else {
+    } else {
         QString playerName = ClientInstance->getPlayerName(zhuge);
         GraphicsBox::paintGraphicsBoxStyle(painter, tr("%1 is Choosing: %2").arg(playerName).arg(Sanguosha->translate(reason)), boundingRect());
     }
@@ -535,8 +524,7 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
         if (i < firstRow) {
             x = (45 + up_app1 + (card_width + cardInterval) * i);
             y = (45);
-        }
-        else {
+        } else {
             x = (45 + up_app2 + (card_width + cardInterval) * (i - firstRow));
             y = (45 + card_height + cardInterval);
         }
@@ -560,8 +548,7 @@ void CardChooseBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
         if (i < secondRow) {
             x = (45 + down_app1 + (card_width + cardInterval) * i);
             y = (45 + (card_height + cardInterval) * (isOneRow(true) ? 1 : 2));
-        }
-        else {
+        } else {
             x = (45 + down_app2 + (card_width + cardInterval) * (i - secondRow));
             y = (45 + (card_height + cardInterval) * ((isOneRow(true) ? 1 : 2) + 1));
         }
