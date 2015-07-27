@@ -839,7 +839,7 @@ sgs.ai_skill_use["@@lirang"] = function(self, prompt)
 		self:sort(self.friends_noself, "defense")
 		return "@LirangCard=" .. id .. "->" .. self.friends_noself[1]:objectName()
 	end
-	return pattern:endsWith("!") and "@LirangCard=" .. id .. "->" .. self.player:getAliveSiblings():first():objectName() or "."
+	return "."
 end
 
 sgs.ai_skill_use["@@lirang!"] = function(self, prompt)
