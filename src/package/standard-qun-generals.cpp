@@ -1122,7 +1122,6 @@ public:
     LirangViewAsSkill() : ViewAsSkill("lirang")
     {
         expand_pile = "#lirang";
-        response_pattern = "@@lirang";
     }
 
     virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
@@ -1133,6 +1132,11 @@ public:
     virtual bool isEnabledAtPlay(const Player *) const
     {
         return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        return pattern.startsWith("@@lirang");
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
@@ -1196,30 +1200,30 @@ public:
             if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile) {
                 QString lirang_strings = player->tag["lirang_strings"].toString();
                 QList<int> lirang_card = StringList2IntList(lirang_strings.split("|").last().split("+"));
-                QList<int> lirangs;
+                
+                QList<int> lirang_give;
                 foreach (int id, lirang_card) {
                     if (!move.card_ids.contains(id)) return QStringList();
-                    if (room->getCardPlace(id) == Player::DiscardPile) lirangs << id;
+                    if (room->getCardPlace(id) == Player::DiscardPile) lirang_give << id;
                 }
-                player->tag["lirang_give"] = IntList2StringList(lirangs).join("+");
-                if (!lirangs.isEmpty()) return QStringList(objectName());
+                player->tag["lirang_give"] = IntList2StringList(lirang_give).join("+");
+                if (!lirang_give.isEmpty()) return QStringList(objectName());
             }
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QStringList lirang_strings_list = player->tag["lirang_strings"].toString().split("|");
         lirang_strings_list.removeOne(lirang_strings_list.last());
         player->tag["lirang_strings"] = lirang_strings_list.join("|");
 
-        QList<int> lirang_card = StringList2IntList(player->tag["lirang_give"].toString().split("+"));
-        if (!lirang_card.isEmpty()) {
-            room->notifyMoveToPile(player, lirang_card, "lirang", Player::DiscardPile, true, true);
-            const Card *card = room->askForUseCard(player, "@@lirang", "@lirang-distribute:::" + QString::number(lirang_card.length()), -1, Card::MethodNone);
-            room->notifyMoveToPile(player, lirang_card, "lirang", Player::DiscardPile, false, false);
-            if (card) return true;
+        if (player->askForSkillInvoke(this)) {
+            QStringList lirang_gives = player->tag["lirang_gives"].toStringList();
+            lirang_gives.append(player->tag["lirang_give"].toString());
+            player->tag["lirang_gives"] = lirang_gives;
+            return true;
         }
 
         return false;
@@ -1227,22 +1231,26 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        QList<int> lirang_card = StringList2IntList(player->tag["lirang_give"].toString().split("+"));
-        const Card *card = NULL;
+        QStringList lirang_gives = player->tag["lirang_gives"].toStringList();
+        QList<int> lirang_give = StringList2IntList(lirang_gives.last().split("+"));
+        lirang_gives.removeLast();
+        player->tag["lirang_gives"] = lirang_gives;
+
+        QString pattern = "@@lirang!";
+        QString prompt = "@lirang-distribute1:::";
         do {
+            room->notifyMoveToPile(player, lirang_give, "lirang", Player::DiscardPile, true, true);
+            const Card *card = room->askForUseCard(player, pattern, prompt + QString::number(lirang_give.length()), -1, Card::MethodNone);
+            room->notifyMoveToPile(player, lirang_give, "lirang", Player::DiscardPile, false, false);
+            if (!card) break;
+            foreach (int id, card->getSubcards()) lirang_give.removeOne(id);
+            DummyCard dummy(card->getSubcards());
             ServerPlayer *target = player->tag["lirang_target"].value<ServerPlayer *>();
-            QList<int> lirang_get = StringList2IntList(player->tag["lirang_get"].toString().split("+"));
-            DummyCard dummy(lirang_get);
             CardMoveReason reason(CardMoveReason::S_REASON_PREVIEWGIVE, player->objectName(), target->objectName(), "lirang", QString());
             room->obtainCard(target, &dummy, reason, true);
-
-            foreach (int id, lirang_get) lirang_card.removeOne(id);
-            if (lirang_card.isEmpty() || !player->isAlive()) break;
-
-            room->notifyMoveToPile(player, lirang_card, "lirang", Player::DiscardPile, true, true);
-            card = room->askForUseCard(player, "@@lirang", "@lirang-distribute:::" + QString::number(lirang_card.length()), -1, Card::MethodNone);
-            room->notifyMoveToPile(player, lirang_card, "lirang", Player::DiscardPile, false, false);
-        } while (card);
+            pattern = "@@lirang";
+            prompt = "@lirang-distribute2:::";
+        } while (!lirang_give.isEmpty() && player->isAlive());
 
         return false;
     }
