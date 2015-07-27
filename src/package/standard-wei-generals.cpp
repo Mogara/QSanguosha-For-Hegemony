@@ -1322,7 +1322,10 @@ public:
         ServerPlayer *to = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "fangzhu-invoke", true, true);
         if (to != NULL) {
             room->broadcastSkillInvoke(objectName(), (to->faceUp() ? 1 : 2), player);
-            player->tag["fangzhu_invoke"] = QVariant::fromValue(to);
+            //player->tag["fangzhu_invoke"] = QVariant::fromValue(to);
+            QStringList target_list = player->tag["fangzhu_target"].toStringList();
+            target_list.append(to->objectName());
+            player->tag["fangzhu_target"] = target_list;
             return true;
         }
         return false;
@@ -1330,8 +1333,19 @@ public:
 
     virtual void onDamaged(ServerPlayer *caopi, const DamageStruct &) const
     {
-        ServerPlayer *to = caopi->tag["fangzhu_invoke"].value<ServerPlayer *>();
-        caopi->tag.remove("fangzhu_invoke");
+        //ServerPlayer *to = caopi->tag["fangzhu_invoke"].value<ServerPlayer *>();
+        QStringList target_list = caopi->tag["fangzhu_target"].toStringList();
+        QString target_name = target_list.last();
+        target_list.removeLast();
+        caopi->tag["fangzhu_target"] = target_list;
+        ServerPlayer *to = NULL;
+        foreach (ServerPlayer *p, caopi->getRoom()->getAllPlayers()) {
+            if (p->objectName() == target_name) {
+                to = p;
+                break;
+            }
+        }
+
         if (to) {
             if (caopi->isWounded())
                 to->drawCards(caopi->getLostHp(), objectName());
