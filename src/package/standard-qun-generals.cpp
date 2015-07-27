@@ -1239,6 +1239,7 @@ public:
         QString pattern = "@@lirang!";
         QString prompt = "@lirang-distribute1:::";
         do {
+            player->tag["lirang_forAI"] = IntList2StringList(lirang_give).join("+");
             room->notifyMoveToPile(player, lirang_give, "lirang", Player::DiscardPile, true, true);
             const Card *card = room->askForUseCard(player, pattern, prompt + QString::number(lirang_give.length()), -1, Card::MethodNone);
             room->notifyMoveToPile(player, lirang_give, "lirang", Player::DiscardPile, false, false);
