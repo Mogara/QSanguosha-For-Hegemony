@@ -23,7 +23,8 @@ local transfer_skill = {}
 transfer_skill.name = "transfer"
 table.insert(sgs.ai_skills, transfer_skill)
 transfer_skill.getTurnUseCard = function(self, inclusive)
-	for _, c in sgs.qlist(self.player:getCards("he")) do
+	for _, c in sgs.qlist(self.player:getCards("h")) do
+		if c:isKindOf("BurningCamps") then continue end
 		if c:isTransferable() then return sgs.Card_Parse("@TransferCard=.") end
 	end
 end

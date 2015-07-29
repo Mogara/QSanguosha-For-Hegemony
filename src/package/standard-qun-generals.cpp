@@ -1242,10 +1242,10 @@ public:
             room->notifyMoveToPile(player, lirang_give, "lirang", Player::DiscardPile, true, true);
             const Card *card = room->askForUseCard(player, pattern, prompt + QString::number(lirang_give.length()), -1, Card::MethodNone);
             room->notifyMoveToPile(player, lirang_give, "lirang", Player::DiscardPile, false, false);
+            player->tag.remove("lirang_forAI");
             if (!card) break;
             if (card->getSubcards().length() == 0) break;
             foreach (int id, card->getSubcards()) lirang_give.removeOne(id);
-            player->tag["lirang_give"] = IntList2StringList(lirang_give).join("+");
             DummyCard dummy(card->getSubcards());
             ServerPlayer *target = player->tag["lirang_target"].value<ServerPlayer *>();
             CardMoveReason reason(CardMoveReason::S_REASON_PREVIEWGIVE, player->objectName(), target->objectName(), "lirang", QString());
@@ -1253,7 +1253,6 @@ public:
             pattern = "@@lirang";
             prompt = "@lirang-distribute2:::";
         } while (!lirang_give.isEmpty() && player->isAlive());
-        player->tag.remove("lirang_give");
         return false;
     }
 };
