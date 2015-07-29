@@ -1202,10 +1202,9 @@ public:
                 QList<int> lirang_card = StringList2IntList(lirang_strings.split("|").last().split("+"));
                 
                 QList<int> lirang_give;
-                foreach (int id, lirang_card) {
-                    if (!move.card_ids.contains(id)) return QStringList();
-                    if (room->getCardPlace(id) == Player::DiscardPile) lirang_give << id;
-                }
+                foreach (int id, move.card_ids) if (!lirang_card.contains(id)) return QStringList();
+                foreach (int id, lirang_card) if (room->getCardPlace(id) == Player::DiscardPile) lirang_give << id;
+
                 player->tag["lirang_give"] = IntList2StringList(lirang_give).join("+");
                 if (!lirang_give.isEmpty()) return QStringList(objectName());
             }
@@ -1239,6 +1238,7 @@ public:
         QString pattern = "@@lirang!";
         QString prompt = "@lirang-distribute1:::";
         do {
+            player->tag["lirang_forAI"] = IntList2StringList(lirang_give).join("+");
             room->notifyMoveToPile(player, lirang_give, "lirang", Player::DiscardPile, true, true);
             const Card *card = room->askForUseCard(player, pattern, prompt + QString::number(lirang_give.length()), -1, Card::MethodNone);
             room->notifyMoveToPile(player, lirang_give, "lirang", Player::DiscardPile, false, false);

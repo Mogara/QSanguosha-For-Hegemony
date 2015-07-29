@@ -819,7 +819,7 @@ sgs.ai_skill_invoke.lirang = function(self, data)
 end
 
 sgs.ai_skill_use["@@lirang"] = function(self, prompt)
-	local card_ids = self.player:getTag("lirang_give"):toString():split("+")
+	local card_ids = self.player:getTag("lirang_forAI"):toString():split("+")
 	self:updatePlayers()
 	local cards = {}
 	for _, card_id in ipairs(card_ids) do
@@ -843,7 +843,7 @@ sgs.ai_skill_use["@@lirang"] = function(self, prompt)
 end
 
 sgs.ai_skill_use["@@lirang!"] = function(self, prompt)
-	local card_ids = self.player:getTag("lirang_give"):toString():split("+")
+	local card_ids = self.player:getTag("lirang_forAI"):toString():split("+")
 	self:updatePlayers()
 	local cards = {}
 	for _, card_id in ipairs(card_ids) do
