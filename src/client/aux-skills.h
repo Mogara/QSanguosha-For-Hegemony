@@ -109,9 +109,8 @@ class YijiViewAsSkill : public ViewAsSkill
 
 public:
     explicit YijiViewAsSkill();
-    void setCards(const QString &card_str);
-    void setMaxNum(int max_num);
-    void setPlayerNames(const QStringList &names);
+
+    void initialize(const QString &card_str, int max_num, const QStringList &player_names, const QString &expand_pile);
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const;
     virtual const Card *viewAs(const QList<const Card *> &cards) const;

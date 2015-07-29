@@ -579,7 +579,9 @@ duoshi_skill.getTurnUseCard = function(self, inclusive)
 		end
 	end
 
+	
 	if red_card then
+		if self:getUseValue(red_card) > self:getUseValue(sgs.Sanguosha:cloneCard("await_exhausted")) + DuoTime/ 1.3 then return end
 		local card_id = red_card:getEffectiveId()
 		local card_str = string.format("await_exhausted:duoshi[%s:%d]=%d&duoshi",red_card:getSuitString(), red_card:getNumber(), red_card:getEffectiveId())
 		local await = sgs.Card_Parse(card_str)
@@ -1214,6 +1216,8 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data, method)
 			if (enemy:getHandcardNum() <= 2)
 				or enemy:containsTrick("indulgence") or enemy:hasShownSkills("guose|leiji|ganglie|qingguo|kongcheng")
 				and self:canAttack(enemy, (dmg.from or self.room:getCurrent()), dmg.nature) then
+				if enemy:hasSkill("kuanggu") and damage.card and damage.card:getSubtype() == "aoe"  then continue end
+				if enemy:hasSkill("jijiu") and not enemy:isNude() then continue end
 				return "@TianxiangCard=" .. card_id .. "&tianxiang->" .. enemy:objectName() end
 		end
 	end
@@ -1221,7 +1225,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data, method)
 	for i = #self.enemies, 1, -1 do
 		local enemy = self.enemies[i]
 		if not enemy:isWounded() and not enemy:hasShownSkills(sgs.masochism_skill) and enemy:isAlive()
-			and self:canAttack(enemy, dmg.from or self.room:getCurrent(), dmg.nature) and self:isWeak() then
+			and self:canAttack(enemy, dmg.from or self.room:getCurrent(), dmg.nature) and self:isWeak() and not enemy:hasSkill("jijiu") then
 			return "@TianxiangCard=" .. card_id .. "&tianxiang->" .. enemy:objectName()
 		end
 	end

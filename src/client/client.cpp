@@ -1973,14 +1973,14 @@ void Client::askForPindian(const QVariant &ask_str)
 void Client::askForYiji(const QVariant &ask_str)
 {
     JsonArray ask = ask_str.value<JsonArray>();
-    if (ask.size() != 4 && ask.size() != 5) return;
+    if (ask.size() != 5 && ask.size() != 6) return;
 
     JsonArray card_list = ask[0].value<JsonArray>();
     int count = ask[2].toInt();
     m_isDiscardActionRefusable = ask[1].toBool();
 
-    if (ask.size() == 5) {
-        QString prompt = ask[4].toString();
+    if (ask.size() == 6) {
+        QString prompt = ask[5].toString();
         QStringList texts = prompt.split(":");
         if (texts.length() < 4) {
             while (texts.length() < 3)
@@ -2003,7 +2003,9 @@ void Client::askForYiji(const QVariant &ask_str)
     QStringList names;
     JsonUtils::tryParse(players, names);
 
-    _m_roomState.setCurrentCardUsePattern(QString("%1=%2=%3").arg(count).arg(card_str.join("+")).arg(names.join("+")));
+    QString expand_pile = ask[4].toString();
+
+    _m_roomState.setCurrentCardUsePattern(QString("%1=%2=%3=%4").arg(count).arg(card_str.join("+")).arg(names.join("+")).arg(expand_pile));
     setStatus(AskForYiji);
 }
 

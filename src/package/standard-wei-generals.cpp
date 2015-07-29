@@ -271,6 +271,7 @@ public:
         if (choosees.length() > 0) {
             room->sortByActionOrder(choosees);
             player->tag["tuxi_invoke"] = QVariant::fromValue(choosees);
+            room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
 

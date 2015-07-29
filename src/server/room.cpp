@@ -2367,6 +2367,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
     names_orig.removeAll("sujiangf");
     if (player->isAlive())
         return;
+    player->throwAllHandCardsAndEquips();
     if (player->getGeneral())
         player->removeGeneral(true);
     if (player->getGeneral2())
@@ -6663,7 +6664,7 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, c
 bool Room::askForYiji(ServerPlayer *guojia, QList<int> &cards, const QString &skill_name,
     bool is_preview, bool visible, bool optional, int max_num,
     QList<ServerPlayer *> players, CardMoveReason reason, const QString &prompt,
-    bool notify_skill)
+    const QString &expand_pile, bool notify_skill)
 {
     if (max_num == -1)
         max_num = cards.length();
@@ -6704,6 +6705,7 @@ bool Room::askForYiji(ServerPlayer *guojia, QList<int> &cards, const QString &sk
             foreach (ServerPlayer *player, players)
                 player_names << player->objectName();
             arg << QVariant(player_names);
+            arg << expand_pile;
             if (!prompt.isEmpty())
                 arg << prompt;
             bool success = doRequest(guojia, S_COMMAND_SKILL_YIJI, arg, true);

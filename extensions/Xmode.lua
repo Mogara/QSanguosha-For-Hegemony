@@ -21,6 +21,7 @@ XmodeRule = sgs.CreateTriggerSkill{
 	name = "XmodeRule",
 	events = {sgs.BuryVictim},
 	on_effect = function(self, evnet, room, player, data,ask_who)
+		player:bury()
 		local times = room:getTag(player:getKingdom().."_Change"):toInt()
 		player:speak(times)
 		if times >= 3 then return false end
@@ -31,11 +32,12 @@ XmodeRule = sgs.CreateTriggerSkill{
 		room:setTag("Xmode_UsedGeneral",sgs.QVariant(table.concat(used,"+")))
 		room:doDragonPhoenix(player,choice[1], choice[2],true,player:getKingdom(),false,"",true)
 		player:drawCards(4)
-		--room:broadcastProperty(player,"kingdom")
+		room:broadcastProperty(player,"kingdom")
 		times = times + 1
 		room:setTag(player:getKingdom().."_Change",sgs.QVariant(times))
 		return true --不知道能不能处理飞龙
 	end,
+	priority = 1,
 }
 Xmode = {
 	name = "Xmode_hegemony",

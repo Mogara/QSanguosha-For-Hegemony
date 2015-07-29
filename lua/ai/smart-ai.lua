@@ -1117,6 +1117,7 @@ function SmartAI:adjustKeepValue(card, v)
 end
 
 function SmartAI:getUseValue(card)
+	if card == nil then global_room:writeToConsole(debug.traceback()) end
 	local class_name = card:isKindOf("LuaSkillCard") and card:objectName() or card:getClassName()
 	local v = sgs.ai_use_value[class_name] or 0
 
@@ -4699,6 +4700,15 @@ function SmartAI:useEquipCard(card, use)
 		if armor and armor:objectName() == "PeaceSpell" and card:isKindOf("Armor") then
 			if (self:getAllPeachNum() == 0 and self.player:getHp() < 3) and not (self.player:getHp() < 2 and self:getCardsNum("Analeptic") > 0) then
 				return
+			end
+		end
+		if self.player:getWeapon():objectName() == "Crossbow" and self:getCardsNum("Slash") > 2 then
+			local d_use = {isDummy = true,to = sgs.SPlayerList()}
+			local slash = sgs.Sanguosha:cloneCard("slash")
+			slash:deleteLater()
+			self:useCardSlash(slash,d_use)
+			if d_use.card then
+				return 
 			end
 		end
 		use.card = card

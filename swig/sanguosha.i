@@ -1570,7 +1570,7 @@ public:
     bool askForYiji(ServerPlayer *guojia, QList<int> &cards, const char *skill_name = NULL,
         bool is_preview = false, bool visible = false, bool optional = true, int max_num = -1,
         QList<ServerPlayer *> players = QList<ServerPlayer *>(), CardMoveReason reason = CardMoveReason(),
-        const char *prompt = NULL, bool notify_skill = false);
+        const char *prompt = "", const char *expand_pile = "", bool notify_skill = false);
     const Card *askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const char *reason);
     QList<const Card *> askForPindianRace(ServerPlayer *from, ServerPlayer *to, const char *reason);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const char *reason,

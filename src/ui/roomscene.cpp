@@ -2729,9 +2729,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             discard_button->setEnabled(false);
 
             QStringList yiji_info = Sanguosha->currentRoomState()->getCurrentCardUsePattern().split("=");
-            yiji_skill->setCards(yiji_info.at(1));
-            yiji_skill->setMaxNum(yiji_info.first().toInt());
-            yiji_skill->setPlayerNames(yiji_info.last().split("+"));
+            yiji_skill->initialize(yiji_info.at(1), yiji_info.first().toInt(), yiji_info.at(2).split("+"), yiji_info.length() == 4 ? yiji_info.at(3) : "");
             dashboard->startPending(yiji_skill);
 
             showPromptBox();

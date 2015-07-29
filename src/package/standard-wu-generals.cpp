@@ -760,6 +760,7 @@ public:
     {
     }
 
+
     static WrappedCard *changeToHeart(int cardId)
     {
         WrappedCard *new_card = Sanguosha->getWrappedCard(cardId);
@@ -773,16 +774,17 @@ public:
     {
         Room *room = Sanguosha->currentRoom();
         if (room != NULL) { // Server
-            foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                if (p->ownSkill(objectName()) && p->hasShownSkill(objectName()))
-                    return to_select->getSuit() == Card::Spade;
-            }
-        } else { //Client
-            foreach (const Player *p, Self->getAliveSiblings()) {
+            foreach(ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->ownSkill(objectName()) && p->hasShownSkill(objectName()))
                     return to_select->getSuit() == Card::Spade;
             }
         }
+//         } else { //Client
+//             foreach (const Player *p, Self->getAliveSiblings()) {
+//                 if (p->ownSkill(objectName()) && p->hasShownSkill(objectName()))
+//                     return to_select->getSuit() == Card::Spade;
+//             }
+//         }
 
         return false;
     }
@@ -806,6 +808,10 @@ public:
         events << FinishRetrial;
         frequency = Compulsory;
         view_as_skill = new HongyanFilter;
+    }
+
+    virtual bool canPreshow() const {
+        return true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const

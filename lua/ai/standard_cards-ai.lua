@@ -2052,6 +2052,7 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
 			tricks = player:getCards("j")
 			for _, trick in sgs.qlist(tricks) do
 				if trick:isKindOf("Lightning") and (not isDiscard or self.player:canDiscard(player, trick:getId())) then
+					if trick:isBlack() and self.player:hasSkill("weimu") then continue end
 					if addTarget(player, trick:getEffectiveId()) then return end
 				end
 			end
@@ -3220,6 +3221,7 @@ function SmartAI:useCardBefriendAttacking(BefriendAttacking, use)
 		for _, to_select in ipairs(players) do
 			if BefriendAttacking:targetFilter(targets, to_select, self.player) and not targets:contains(to_select)
 				and self:hasTrickEffective(BefriendAttacking, to_select, self.player) then
+				if self:isEnemy(to_select) and to_select:hasShownSkills("jijiu|qingnang|kanpo") then continue end
 				targets:append(to_select)
 				if use.to then use.to:append(to_select) end
 			end

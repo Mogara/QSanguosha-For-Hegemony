@@ -160,20 +160,16 @@ YijiViewAsSkill::YijiViewAsSkill()
     card->setParent(this);
 }
 
-void YijiViewAsSkill::setCards(const QString &card_str)
+void YijiViewAsSkill::initialize(const QString &card_str, int max_num, const QStringList &player_names, const QString &expand_pile)
 {
     QStringList cards = card_str.split("+");
     ids = StringList2IntList(cards);
-}
 
-void YijiViewAsSkill::setMaxNum(int max_num)
-{
     this->max_num = max_num;
-}
 
-void YijiViewAsSkill::setPlayerNames(const QStringList &names)
-{
-    card->setPlayerNames(names);
+    card->setPlayerNames(player_names);
+
+    this->expand_pile = expand_pile;
 }
 
 bool YijiViewAsSkill::viewFilter(const QList<const Card *> &selected, const Card *card) const

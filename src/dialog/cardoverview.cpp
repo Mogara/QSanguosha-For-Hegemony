@@ -189,6 +189,7 @@ void CardOverview::comboBoxChanged() {
     ui->cardLabel->setPixmap(pixmap_path);
 
     ui->cardDescriptionBox->setText(card->getDescription(false));
+    ui->cardDescriptionBox->setTextColor(Config.SkillDescriptionInToolTipColor.name());
     ui->packageLine->setText(Sanguosha->translate(card->getPackage()));
     ui->subtypeLine->setText(Sanguosha->translate(card->getSubtype()));
     ui->typeLine->setText(Sanguosha->translate(card->getType()));
@@ -213,7 +214,9 @@ void CardOverview::on_tableWidget_itemSelectionChanged()
     QString pixmap_path = QString("image/big-card/%1.png").arg(card->objectName());
     ui->cardLabel->setPixmap(pixmap_path);
 
+    ui->cardDescriptionBox->setTextColor(Config.SkillDescriptionInToolTipColor);
     ui->cardDescriptionBox->setText(card->getDescription(false));
+
 
     if (card->getTypeId() == Card::TypeEquip) {
         ui->playAudioEffectButton->show();
