@@ -4702,7 +4702,7 @@ function SmartAI:useEquipCard(card, use)
 				return
 			end
 		end
-		if self.player:getWeapon():objectName() == "Crossbow" and self:getCardsNum("Slash") > 2 then
+		if self.player:getWeapon() and self.player:getWeapon():objectName() == "Crossbow" and self:getCardsNum("Slash") > 2 then
 			local d_use = {isDummy = true,to = sgs.SPlayerList()}
 			local slash = sgs.Sanguosha:cloneCard("slash")
 			slash:deleteLater()
