@@ -2052,7 +2052,14 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
 			tricks = player:getCards("j")
 			for _, trick in sgs.qlist(tricks) do
 				if trick:isKindOf("Lightning") and (not isDiscard or self.player:canDiscard(player, trick:getId())) then
-					if trick:isBlack() and self.player:hasSkill("weimu") then continue end
+					local invoke
+					for _, p in ipairs(self.friends) do
+						if self:hasTrickEffective(trick, p) then
+							invoke = true
+							break
+						end
+					end
+					if not invoke then continue end
 					if addTarget(player, trick:getEffectiveId()) then return end
 				end
 			end
