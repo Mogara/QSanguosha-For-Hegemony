@@ -263,9 +263,8 @@ void HeroSkinContainer::wheelEvent(QGraphicsSceneWheelEvent *event)
 void HeroSkinContainer::scrollBarValueChanged(int newValue)
 {
     int diff = newValue - m_oldScrollValue;
-    foreach (SkinItem *skinItem, m_skins) {
+    foreach (SkinItem *skinItem, m_skins)
         skinItem->moveBy(0, -diff);
-    }
 
     m_oldScrollValue = newValue;
 }

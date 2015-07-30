@@ -23,7 +23,8 @@
 
 #include <QString>
 
-namespace HegemonyMode {
+namespace HegemonyMode
+{
     QString GetMappedRole(const QString &kingdom);
     QString GetMappedKingdom(const QString &role);
 
@@ -34,7 +35,8 @@ namespace HegemonyMode {
     };
 }
 
-namespace MaxCardsType {
+namespace MaxCardsType
+{
     enum MaxCardsCount
     {
         Max = 1,

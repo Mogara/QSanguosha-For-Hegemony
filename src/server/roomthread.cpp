@@ -203,10 +203,10 @@ void RoomThread::run()
     }
 }
 
-static bool compareByPriority(const TriggerSkill *a, const TriggerSkill *b)
-{
-    return a->getPriority() > b->getPriority();
-}
+// static bool compareByPriority(const TriggerSkill *a, const TriggerSkill *b)
+// {
+//     return a->getCurrentPriority() > b->getCurrentPriority();
+// }
 
 bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data)
 {
@@ -223,7 +223,11 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
     try {
         QList<const TriggerSkill *> triggered;
         QList<const TriggerSkill *> &skills = skill_table[triggerEvent];
-        qStableSort(skills.begin(), skills.end(), compareByPriority);
+        //         foreach (const TriggerSkill *skill,skills){
+        //             skill->setCurrentPriority(skill->getDynamicPriority(triggerEvent));
+        //         }
+
+        qStableSort(skills.begin(), skills.end(), [triggerEvent](const TriggerSkill *a, const TriggerSkill *b) {return a->getDynamicPriority(triggerEvent) > b->getDynamicPriority(triggerEvent); });
 
         do {
             trigger_who.clear();
@@ -233,17 +237,17 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         && room->getScenario()->objectName() == skill->objectName())) {
                         room->tryPause();
                         if (will_trigger.isEmpty()
-                            || skill->getPriority() == will_trigger.last()->getPriority()) {
+                            || skill->getDynamicPriority(triggerEvent) == will_trigger.last()->getDynamicPriority(triggerEvent)) {
                             will_trigger.append(skill);
                             trigger_who[NULL].append(skill->objectName());// Don't assign game rule to some player.
                             rules.append(skill);
-                        } else if (skill->getPriority() != will_trigger.last()->getPriority())
+                        } else if (skill->getDynamicPriority(triggerEvent) != will_trigger.last()->getDynamicPriority(triggerEvent))
                             break;
                         triggered.prepend(skill);
                     } else {
                         room->tryPause();
                         if (will_trigger.isEmpty()
-                            || skill->getPriority() == will_trigger.last()->getPriority()) {
+                            || skill->getDynamicPriority(triggerEvent) == will_trigger.last()->getDynamicPriority(triggerEvent)) {
                             skill->record(triggerEvent, room, target, data); //to record something for next.
                             TriggerList triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
                             foreach (ServerPlayer *p, room->getPlayers()) {
@@ -269,7 +273,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                     }
                                 }
                             }
-                        } else if (skill->getPriority() != will_trigger.last()->getPriority())
+                        } else if (skill->getDynamicPriority(triggerEvent) != will_trigger.last()->getDynamicPriority(triggerEvent))
                             break;
 
                         triggered.prepend(skill);
@@ -280,7 +284,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
 
             if (!will_trigger.isEmpty()) {
                 will_trigger.clear();
-                foreach (ServerPlayer *p, room->getPlayers()) {
+                //foreach (ServerPlayer *p, room->getPlayers()) {
+                foreach (ServerPlayer *p, room->getAllPlayers(true)) {
                     if (!trigger_who.contains(p)) continue;
                     QStringList already_triggered;
                     forever{
@@ -437,7 +442,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                 continue; // dont assign them to some person.
                             } else {
                                 room->tryPause();
-                                if (skill->getPriority() == triggered.first()->getPriority()) {
+                                if (skill->getDynamicPriority(triggerEvent) == triggered.first()->getDynamicPriority(triggerEvent)) {
                                     TriggerList triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
                                     foreach (ServerPlayer *player, room->getAllPlayers(true)) {
                                         if (triggerSkillList.contains(player) && !triggerSkillList.value(player).isEmpty()) {
@@ -591,7 +596,7 @@ void RoomThread::addTriggerSkill(const TriggerSkill *skill)
     foreach (const TriggerEvent &triggerEvent, events) {
         QList<const TriggerSkill *> &table = skill_table[triggerEvent];
         table << skill;
-        qStableSort(table.begin(), table.end(), compareByPriority);
+        qStableSort(table.begin(), table.end(), [triggerEvent](const TriggerSkill *a, const TriggerSkill *b) {return a->getDynamicPriority(triggerEvent) > b->getDynamicPriority(triggerEvent); });
     }
 
     if (skill->isVisible()) {

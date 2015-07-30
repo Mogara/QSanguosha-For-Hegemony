@@ -10,7 +10,6 @@ class GuhuoBox : public GraphicsBox
     Q_OBJECT
 
 public:
-    //static GuhuoBox *getInstance(const QString &skill_name,const QString &flags,bool play_only);
     GuhuoBox(const QString& skill_name, const QString& flags, bool playonly = true);
     QString getSkillName()const
     {
@@ -29,6 +28,8 @@ protected:
     virtual QRectF boundingRect() const;
 
     int getButtonWidth() const;
+
+    bool isButtonEnable(const QString &card) const;
 
     QString translate(const QString &option) const;
 

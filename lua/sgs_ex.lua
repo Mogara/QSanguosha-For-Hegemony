@@ -87,7 +87,11 @@ function sgs.CreateTriggerSkill(spec)
 	if spec.on_turn_broken then
 		skill.on_turn_broken = spec.on_turn_broken
 	end
-	
+	if spec.dynamic_priority and type(spec.dynamic_priority) == "table" then
+		for e,v in pairs(spec.dynamic_priority)do
+			skill:insertPriority(e,v)
+		end
+	end
 	return skill
 end
 
@@ -533,8 +537,9 @@ function sgs.CreateViewAsSkill(spec)
 	local response_or_use = spec.response_or_use or false
 	if spec.expand_pile then assert(type(spec.expand_pile) == "string") end
 	local expand_pile = spec.expand_pile or ""
+	local limit_mark = spec.limit_mark or ""
 
-	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, expand_pile)
+	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, expand_pile, limit_mark)
 
 	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
 		skill:setGuhuoType(spec.guhuo_type)
@@ -566,8 +571,9 @@ function sgs.CreateOneCardViewAsSkill(spec)
 	if spec.filter_pattern then assert(type(spec.filter_pattern) == "string") end
 	if spec.expand_pile then assert(type(spec.expand_pile) == "string") end
 	local expand_pile = spec.expand_pile or ""
+	local limit_mark = spec.limit_mark or ""
 
-	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, expand_pile)
+	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, expand_pile, limit_mark)
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
@@ -609,8 +615,9 @@ function sgs.CreateZeroCardViewAsSkill(spec)
 	if spec.response_pattern then assert(type(spec.response_pattern) == "string") end
 	local response_pattern = spec.response_pattern or ""
 	local response_or_use = spec.response_or_use or false
+	local limit_mark = spec.limit_mark or ""
 
-	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, "")
+	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, "", limit_mark)
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
@@ -640,7 +647,7 @@ function sgs.CreateArraySummonSkill(spec)
 	assert(type(spec.name) == "string")
 	assert(spec.array_summon_card)
 
-	local skill = sgs.LuaViewAsSkill(spec.name, "", false, "")
+	local skill = sgs.LuaViewAsSkill(spec.name, "", false, "","")
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)

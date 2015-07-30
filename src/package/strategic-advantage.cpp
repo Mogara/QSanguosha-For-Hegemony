@@ -239,21 +239,21 @@ Breastplate::Breastplate(Card::Suit suit, int number)
     transferable = true;
 }
 
-class BreastplateViewAsSkill : public ZeroCardViewAsSkill
-{
-public:
-    BreastplateViewAsSkill() : ZeroCardViewAsSkill("Breastplate")
-    {
-    }
-
-    virtual const Card *viewAs() const
-    {
-        TransferCard *card = new TransferCard;
-        card->addSubcard(Self->getArmor());
-        card->setSkillName("transfer");
-        return card;
-    }
-};
+// class BreastplateViewAsSkill : public ZeroCardViewAsSkill
+// {
+// public:
+//     BreastplateViewAsSkill() : ZeroCardViewAsSkill("Breastplate")
+//     {
+//     }
+// 
+//     virtual const Card *viewAs() const
+//     {
+//         TransferCard *card = new TransferCard;
+//         card->addSubcard(Self->getArmor());
+//         card->setSkillName("transfer");
+//         return card;
+//     }
+// };
 
 class BreastplateSkill : public ArmorSkill
 {
@@ -262,7 +262,7 @@ public:
     {
         events << DamageInflicted;
         frequency = Compulsory;
-        view_as_skill = new BreastplateViewAsSkill;
+        //view_as_skill = new BreastplateViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
@@ -1299,22 +1299,6 @@ void ImperialOrder::onEffect(const CardEffectStruct &effect) const
     }
 }
 
-class JingFanSkill : public ZeroCardViewAsSkill
-{
-public:
-    JingFanSkill() : ZeroCardViewAsSkill("JingFan")
-    {
-    }
-
-    virtual const Card *viewAs() const
-    {
-        TransferCard *card = new TransferCard;
-        card->addSubcard(Self->getOffensiveHorse());
-        card->setSkillName("transfer");
-        return card;
-    }
-};
-
 StrategicAdvantagePackage::StrategicAdvantagePackage()
     : Package("strategic_advantage", Package::CardPack)
 {
@@ -1394,7 +1378,6 @@ StrategicAdvantagePackage::StrategicAdvantagePackage()
         << new BladeSkill
         << new JadeSealSkill
         << new BreastplateSkill
-        << new JingFanSkill
         << new WoodenOxSkill << new WoodenOxTriggerSkill
         << new HalberdSkill << new HalberdTrigger << new HalberdTargetMod
         << new LureTigerSkill << new LureTigerProhibit

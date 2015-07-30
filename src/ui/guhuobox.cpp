@@ -51,14 +51,6 @@ GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
                 card_list["DelayedTrick"].append(card->objectName());
         }
     }
-    //    if(flags.contains("e")){
-    //        QList<const EquipCard*> equips = Sanguosha->findChildren<const EquipCard*>();
-    //        foreach(const EquipCard *card,equips){
-    //            if(!card_list["EquipCard"].contains(card->objectName())
-    //                    && !ServerInfo.Extensions.contains("!" + card->getPackage()))
-    //                card_list["EquipCard"].append(card->objectName());
-    //        }
-    //    }
 }
 
 
@@ -75,8 +67,6 @@ QRectF GuhuoBox::boundingRect() const
         + (((card_list["MultiTarget"].length() + 3) / 4) - 1) * interval
         + ((card_list["DelayedTrick"].length() + 3) / 4) * defaultButtonHeight
         + (((card_list["DelayedTrick"].length() + 3) / 4) - 1) * interval
-        //            +((card_list["EquipCard"].length()+3)/4) * defaultButtonHeight
-        //            + (((card_list["EquipCard"].length()+3)/4) - 1) * interval
         + card_list.keys().length()*titleWidth * 2 //add some titles......
         + bottomBlankWidth;
 
@@ -104,6 +94,19 @@ int GuhuoBox::getButtonWidth() const
     return qMax(biggest, width);
 }
 
+bool GuhuoBox::isButtonEnable(const QString &card) const
+{
+    QString allowed_list = Self->property("guhuo_box_allowed_elemet").toString();
+    if (!allowed_list.isEmpty())
+        return allowed_list.split("+").contains(card);
+    else {
+        Card *ca = Sanguosha->cloneCard(card);
+        ca->deleteLater();
+        return ca->isAvailable(Self);
+    }
+
+}
+
 void GuhuoBox::popup()
 {
     if (play_only && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
@@ -118,9 +121,7 @@ void GuhuoBox::popup()
             button->setObjectName(card_name);
             buttons[card_name] = button;
 
-            Card *ca = Sanguosha->cloneCard(card_name);
-            button->setEnabled(ca->isAvailable(Self));
-            ca->deleteLater();
+            button->setEnabled(isButtonEnable(card_name));
 
             button->setParentItem(this);
 
@@ -184,9 +185,8 @@ void GuhuoBox::clear()
 
     buttons.values().clear();
 
-    foreach (Title *title, titles.values()) {
+    foreach (Title *title, titles.values())
         title->deleteLater();
-    }
 
     titles.values().clear();
 
@@ -200,11 +200,3 @@ QString GuhuoBox::translate(const QString &option) const
         translated = Sanguosha->translate(option);
     return translated;
 }
-
-//GuhuoBox *GuhuoBox::getInstance(const QString &skill_name, const QString &flags, bool play_only){
-//    static GuhuoBox *instance;
-//    if(instance == NULL || instance->getSkillName() != skill_name){
-//        instance = new GuhuoBox(skill_name,flags,play_only);
-//    }
-//    return instance;
-//}

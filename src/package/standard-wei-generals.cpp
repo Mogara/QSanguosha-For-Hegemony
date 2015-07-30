@@ -186,49 +186,49 @@ public:
     }
 };
 
-TuxiCard::TuxiCard()
-{
-}
+// TuxiCard::TuxiCard()
+// {
+// }
+// 
+// bool TuxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+// {
+//     if (targets.length() >= 2 || to_select == Self)
+//         return false;
+// 
+//     return !to_select->isKongcheng();
+// }
+// 
+// void TuxiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+// {
+//     QVariantList target_list;
+//     foreach (ServerPlayer *target, targets) {
+//         target_list << QVariant::fromValue(target);
+//     }
+// 
+//     source->tag["tuxi_invoke"] = target_list;
+//     source->setFlags("tuxi");
+// }
 
-bool TuxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
-{
-    if (targets.length() >= 2 || to_select == Self)
-        return false;
-
-    return !to_select->isKongcheng();
-}
-
-void TuxiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const
-{
-    QVariantList target_list;
-    foreach (ServerPlayer *target, targets) {
-        target_list << QVariant::fromValue(target);
-    }
-
-    source->tag["tuxi_invoke"] = target_list;
-    source->setFlags("tuxi");
-}
-
-class TuxiViewAsSkill : public ZeroCardViewAsSkill
-{
-public:
-    TuxiViewAsSkill() : ZeroCardViewAsSkill("tuxi")
-    {
-        response_pattern = "@@tuxi";
-    }
-
-    virtual const Card *viewAs() const
-    {
-        return new TuxiCard;
-    }
-};
+// class TuxiViewAsSkill : public ZeroCardViewAsSkill
+// {
+// public:
+//     TuxiViewAsSkill() : ZeroCardViewAsSkill("tuxi")
+//     {
+//         response_pattern = "@@tuxi";
+//     }
+// 
+//     virtual const Card *viewAs() const
+//     {
+//         return new TuxiCard;
+//     }
+// };
 
 class Tuxi : public PhaseChangeSkill
 {
 public:
     Tuxi() : PhaseChangeSkill("tuxi")
     {
-        view_as_skill = new TuxiViewAsSkill;
+        //view_as_skill = new TuxiViewAsSkill;
     }
 
     virtual bool canPreshow() const
@@ -242,7 +242,6 @@ public:
             return QStringList();
 
         if (player->getPhase() == Player::Draw) {
-            player->tag.remove("tuxi_invoke");
             bool can_invoke = false;
             QList<ServerPlayer *> other_players = room->getOtherPlayers(player);
             foreach (ServerPlayer *player, other_players) {
@@ -259,29 +258,42 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        room->askForUseCard(player, "@@tuxi", "@tuxi-card");
-        if (player->hasFlag("tuxi") && player->tag.contains("tuxi_invoke"))
+        //         room->askForUseCard(player, "@@tuxi", "@tuxi-card");
+        //         if (player->hasFlag("tuxi") && player->tag.contains("tuxi_invoke"))
+        //             return true;
+        QList<ServerPlayer *> to_choose;
+        foreach(ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (!p->isKongcheng())
+                to_choose << p;
+        }
+
+        QList<ServerPlayer *> choosees = room->askForPlayersChosen(player, to_choose, objectName(), 0, 2, "@tuxi-card", true);
+        if (choosees.length() > 0) {
+            room->sortByActionOrder(choosees);
+            player->tag["tuxi_invoke"] = QVariant::fromValue(choosees);
+            room->broadcastSkillInvoke(objectName(), player);
             return true;
+        }
 
         return false;
     }
 
     virtual bool onPhaseChange(ServerPlayer *source) const
     {
-        QVariantList targets = source->tag["tuxi_invoke"].toList();
+        QList<ServerPlayer *> targets = source->tag["tuxi_invoke"].value<QList<ServerPlayer *> >();
         source->tag.remove("tuxi_invoke");
 
         Room *room = source->getRoom();
 
         QList<CardsMoveStruct> moves;
         CardsMoveStruct move1;
-        move1.card_ids << room->askForCardChosen(source, targets[0].value<ServerPlayer *>(), "h", "tuxi");
+        move1.card_ids << room->askForCardChosen(source, targets[0], "h", "tuxi");
         move1.to = source;
         move1.to_place = Player::PlaceHand;
         moves.push_back(move1);
         if (targets.length() == 2) {
             CardsMoveStruct move2;
-            move2.card_ids << room->askForCardChosen(source, targets[1].value<ServerPlayer *>(), "h", "tuxi");
+            move2.card_ids << room->askForCardChosen(source, targets[1], "h", "tuxi");
             move2.to = source;
             move2.to_place = Player::PlaceHand;
             moves.push_back(move2);
@@ -897,16 +909,16 @@ public:
         room->setPlayerMark(player, "qiaobianPhase", (int)change.to);
         int index = 0;
         switch (change.to) {
-        case Player::RoundStart:
-        case Player::Start:
-        case Player::Finish:
-        case Player::NotActive: return QStringList();
+            case Player::RoundStart:
+            case Player::Start:
+            case Player::Finish:
+            case Player::NotActive: return QStringList();
 
-        case Player::Judge: index = 1; break;
-        case Player::Draw: index = 2; break;
-        case Player::Play: index = 3; break;
-        case Player::Discard: index = 4; break;
-        case Player::PhaseNone: Q_ASSERT(false);
+            case Player::Judge: index = 1; break;
+            case Player::Draw: index = 2; break;
+            case Player::Play: index = 3; break;
+            case Player::Discard: index = 4; break;
+            case Player::PhaseNone: Q_ASSERT(false);
         }
         if (TriggerSkill::triggerable(player) && index > 0 && player->canDiscard(player, "h"))
             return QStringList(objectName());
@@ -955,16 +967,16 @@ public:
         zhanghe->skip(change.to);
         int index = 0;
         switch (change.to) {
-        case Player::RoundStart:
-        case Player::Start:
-        case Player::Finish:
-        case Player::NotActive: return false;
+            case Player::RoundStart:
+            case Player::Start:
+            case Player::Finish:
+            case Player::NotActive: return false;
 
-        case Player::Judge: index = 1; break;
-        case Player::Draw: index = 2; break;
-        case Player::Play: index = 3; break;
-        case Player::Discard: index = 4; break;
-        case Player::PhaseNone: Q_ASSERT(false);
+            case Player::Judge: index = 1; break;
+            case Player::Draw: index = 2; break;
+            case Player::Play: index = 3; break;
+            case Player::Discard: index = 4; break;
+            case Player::PhaseNone: Q_ASSERT(false);
         }
         if (index == 2 || index == 3) {
             QString use_prompt = QString("@qiaobian-%1").arg(index);
@@ -1311,7 +1323,10 @@ public:
         ServerPlayer *to = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "fangzhu-invoke", true, true);
         if (to != NULL) {
             room->broadcastSkillInvoke(objectName(), (to->faceUp() ? 1 : 2), player);
-            player->tag["fangzhu_invoke"] = QVariant::fromValue(to);
+            //player->tag["fangzhu_invoke"] = QVariant::fromValue(to);
+            QStringList target_list = player->tag["fangzhu_target"].toStringList();
+            target_list.append(to->objectName());
+            player->tag["fangzhu_target"] = target_list;
             return true;
         }
         return false;
@@ -1319,8 +1334,19 @@ public:
 
     virtual void onDamaged(ServerPlayer *caopi, const DamageStruct &) const
     {
-        ServerPlayer *to = caopi->tag["fangzhu_invoke"].value<ServerPlayer *>();
-        caopi->tag.remove("fangzhu_invoke");
+        //ServerPlayer *to = caopi->tag["fangzhu_invoke"].value<ServerPlayer *>();
+        QStringList target_list = caopi->tag["fangzhu_target"].toStringList();
+        QString target_name = target_list.last();
+        target_list.removeLast();
+        caopi->tag["fangzhu_target"] = target_list;
+        ServerPlayer *to = NULL;
+        foreach (ServerPlayer *p, caopi->getRoom()->getAllPlayers()) {
+            if (p->objectName() == target_name) {
+                to = p;
+                break;
+            }
+        }
+
         if (to) {
             if (caopi->isWounded())
                 to->drawCards(caopi->getLostHp(), objectName());
@@ -1433,7 +1459,7 @@ void StandardPackage::addWeiGenerals()
     General *yuejin = new General(this, "yuejin", "wei", 4); // WEI 016
     yuejin->addSkill(new Xiaoguo);
 
-    addMetaObject<TuxiCard>();
+    //    addMetaObject<TuxiCard>();
     addMetaObject<ShensuCard>();
     addMetaObject<QiaobianCard>();
     addMetaObject<QiangxiCard>();

@@ -131,6 +131,8 @@ return {
 	["@guzheng"] = "你可以令 %src 获得其弃置的其中一张牌。" ,
 	["~guzheng"] = "选择一张牌 -> 点击确定" ,
 	["_Guzheng:GuzhengObtain"] = "你可以获得弃牌堆里的其余于此阶段内弃置的牌",
+	["#guzheng"] = "固政",
+	["#guzhengOther"] = "固政",
 
 	["#dingfeng"] = "清侧重臣",
 	["dingfeng"] = "丁奉",

@@ -174,9 +174,8 @@ void Player::removeDisableShow(const QString &reason)
 
     if (remove_list.isEmpty()) return;
 
-    foreach (const QString &to_remove, remove_list) {
+    foreach (const QString &to_remove, remove_list)
         disable_show.removeOne(to_remove);
-    }
 
     emit disable_show_changed();
 }
@@ -480,6 +479,9 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const
 
     if (!include_lose && !hasEquipSkill(skill_name) && !getAcquiredSkills().contains(skill_name) && ownSkill(skill_name) && !hasShownSkill(skill_name) && !disableShow(inHeadSkills(skill_name)).isEmpty())
         return false;
+    QStringList InvalidSkill = property("invalid_skill_has").toString().split("+");
+    if (InvalidSkill.contains(skill_name))
+        return false;
 
     return head_skills.value(skill_name, false)
         || deputy_skills.value(skill_name, false)
@@ -562,16 +564,16 @@ void Player::loseSkill(const QString &skill_name)
 QString Player::getPhaseString() const
 {
     switch (phase) {
-    case RoundStart: return "round_start";
-    case Start: return "start";
-    case Judge: return "judge";
-    case Draw: return "draw";
-    case Play: return "play";
-    case Discard: return "discard";
-    case Finish: return "finish";
-    case NotActive:
-    default:
-        return "not_active";
+        case RoundStart: return "round_start";
+        case Start: return "start";
+        case Judge: return "judge";
+        case Draw: return "draw";
+        case Play: return "play";
+        case Discard: return "discard";
+        case Finish: return "finish";
+        case NotActive:
+        default:
+            return "not_active";
     }
 }
 
@@ -597,11 +599,11 @@ void Player::setEquip(WrappedCard *equip)
     const EquipCard *card = qobject_cast<const EquipCard *>(equip->getRealCard());
     Q_ASSERT(card != NULL);
     switch (card->location()) {
-    case EquipCard::WeaponLocation: weapon = equip; break;
-    case EquipCard::ArmorLocation: armor = equip; break;
-    case EquipCard::DefensiveHorseLocation: defensive_horse = equip; break;
-    case EquipCard::OffensiveHorseLocation: offensive_horse = equip; break;
-    case EquipCard::TreasureLocation: treasure = equip; break;
+        case EquipCard::WeaponLocation: weapon = equip; break;
+        case EquipCard::ArmorLocation: armor = equip; break;
+        case EquipCard::DefensiveHorseLocation: defensive_horse = equip; break;
+        case EquipCard::OffensiveHorseLocation: offensive_horse = equip; break;
+        case EquipCard::TreasureLocation: treasure = equip; break;
     }
 }
 
@@ -610,11 +612,11 @@ void Player::removeEquip(WrappedCard *equip)
     const EquipCard *card = qobject_cast<const EquipCard *>(Sanguosha->getEngineCard(equip->getId()));
     Q_ASSERT(card != NULL);
     switch (card->location()) {
-    case EquipCard::WeaponLocation: weapon = NULL; break;
-    case EquipCard::ArmorLocation: armor = NULL; break;
-    case EquipCard::DefensiveHorseLocation: defensive_horse = NULL; break;
-    case EquipCard::OffensiveHorseLocation: offensive_horse = NULL; break;
-    case EquipCard::TreasureLocation: treasure = NULL; break;
+        case EquipCard::WeaponLocation: weapon = NULL; break;
+        case EquipCard::ArmorLocation: armor = NULL; break;
+        case EquipCard::DefensiveHorseLocation: defensive_horse = NULL; break;
+        case EquipCard::OffensiveHorseLocation: offensive_horse = NULL; break;
+        case EquipCard::TreasureLocation: treasure = NULL; break;
     }
 }
 
@@ -691,13 +693,13 @@ const EquipCard *Player::getEquip(int index) const
 {
     WrappedCard *equip;
     switch (index) {
-    case 0: equip = weapon; break;
-    case 1: equip = armor; break;
-    case 2: equip = defensive_horse; break;
-    case 3: equip = offensive_horse; break;
-    case 4: equip = treasure; break;
-    default:
-        return NULL;
+        case 0: equip = weapon; break;
+        case 1: equip = armor; break;
+        case 2: equip = defensive_horse; break;
+        case 3: equip = offensive_horse; break;
+        case 4: equip = treasure; break;
+        default:
+            return NULL;
     }
     if (equip != NULL)
         return qobject_cast<const EquipCard *>(equip->getRealCard());
@@ -719,7 +721,7 @@ bool Player::hasArmorEffect(const QString &armor_name) const
         || getMark("Equips_Nullified_to_Yourself") > 0)
         return false;
     if (armor_name == "bazhen")
-        return armor == NULL && alive && hasSkill("bazhen");
+        return armor == NULL && alive && (hasSkill("bazhen") || hasSkill("linglong"));
     else {
         if (!armor) return false;
         if (armor->objectName() == armor_name || armor->isKindOf(armor_name.toStdString().c_str())) return true;
@@ -1401,6 +1403,8 @@ bool Player::hasShownSkill(const Skill *skill) const
 {
     if (skill == NULL)
         return false;
+    QStringList InvalidSkill = property("invalid_skill_shown").toString().split("+");
+    if (InvalidSkill.contains(skill->objectName())) return false;
 
     if (head_acquired_skills.contains(skill->objectName()) || deputy_acquired_skills.contains(skill->objectName()))
         return true;

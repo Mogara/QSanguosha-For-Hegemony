@@ -51,7 +51,7 @@ PlayerCardBox::PlayerCardBox()
 
 void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player,
     const QString &flags, bool handcardVisible,
-    Card::HandlingMethod method, const QList<int> &disabledIds)
+    Card::HandlingMethod method, const QList<int> &disabledIds, const QList<int> &handcards)
 {
     nameRects.clear();
     rowCount = 0;
@@ -59,6 +59,7 @@ void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player
     intervalsBetweenRows = 0;
     maxCardsInOneRow = 0;
 
+    this->handcards = handcards;
     this->player = player;
     this->title = tr("%1: please choose %2's card").arg(reason).arg(ClientInstance->getPlayerName(player->objectName()));
     this->flags = flags;
@@ -98,15 +99,10 @@ void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player
     int index = 0;
 
     if (handcard) {
-        if (Self == player || handcardVisible) {
-            arrangeCards(player->getHandcards(), QPoint(startX, nameRects.at(index).y()));
-        } else {
-            const int handcardNumber = player->getHandcardNum();
-            CardList cards;
-            for (int i = 0; i < handcardNumber; ++i)
-                cards << NULL;
-            arrangeCards(cards, QPoint(startX, nameRects.at(index).y()));
-        }
+        QList<const Card *> cards;
+        for (int i = 0; i < handcards.length(); ++i)
+            cards << Sanguosha->getCard(handcards.at(i));
+        arrangeCards(cards, QPoint(startX, nameRects.at(index).y()));
 
         ++index;
     }
@@ -243,20 +239,18 @@ void PlayerCardBox::updateNumbers(const int &cardNumber)
 void PlayerCardBox::arrangeCards(const CardList &cards, const QPoint &topLeft)
 {
     QList<CardItem *> areaItems;
+
     foreach (const Card *card, cards) {
         CardItem *item = new CardItem(card);
+        if (handcards.contains(card->getId()) && !handcardVisible && Self != player && !player->getVisiblecards().contains(card))
+            item = new CardItem(NULL);
         item->setAutoBack(false);
         item->setOuterGlowEffectEnabled(true);
         item->resetTransform();
         item->setParentItem(this);
         item->setFlag(ItemIsMovable, false);
-        if (card) {
-            item->setEnabled(!disabledIds.contains(card->getEffectiveId())
-                && (method != Card::MethodDiscard
-                || Self->canDiscard(player, card->getEffectiveId())));
-        } else {
-            item->setEnabled(method != Card::MethodDiscard || Self->canDiscard(player, "h"));
-        }
+        item->setEnabled(!disabledIds.contains(card->getEffectiveId())
+            && (method != Card::MethodDiscard || Self->canDiscard(player, card->getEffectiveId())));
         connect(item, SIGNAL(clicked()), this, SLOT(reply()));
         items << item;
         areaItems << item;
@@ -290,10 +284,13 @@ void PlayerCardBox::arrangeCards(const CardList &cards, const QPoint &topLeft)
 void PlayerCardBox::reply()
 {
     CardItem *item = qobject_cast<CardItem *>(sender());
+
+    int index = items.indexOf(item);
+
     int id = -2;
 
     if (item)
         id = item->getId();
 
-    ClientInstance->onPlayerChooseCard(id);
+    ClientInstance->onPlayerChooseCard(index, id);
 }

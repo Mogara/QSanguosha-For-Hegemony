@@ -339,3 +339,10 @@ void CardUseStruct::parse(const QString &str, Room *room)
             to << room->findChild<ServerPlayer *>(target_name);
     }
 }
+
+AskForMoveCardsStruct::AskForMoveCardsStruct()
+{
+    is_success = false;
+    top.clear();
+    bottom.clear();
+}

@@ -57,7 +57,8 @@ sgs.ai_skill_askforyiji =   {}
 sgs.ai_skill_pindian =      {}
 sgs.ai_skill_playerchosen = {}
 sgs.ai_skill_discard =      {}
-sgs.ai_skill_exchange = 	{}
+sgs.ai_skill_movecards =    {}
+sgs.ai_skill_exchange =     {}
 sgs.ai_cardshow =           {}
 sgs.ai_nullification =      {}
 sgs.ai_skill_cardchosen =   {}
@@ -220,6 +221,7 @@ function SmartAI:initialize(player)
 			end
 		end
 		local method_name = string.sub(full_method_name, method_name_start)
+		--self.room:writeToConsole("callback:" .. method_name)
 		local method = self[method_name]
 		if method then
 			local success, result1, result2
@@ -1115,6 +1117,7 @@ function SmartAI:adjustKeepValue(card, v)
 end
 
 function SmartAI:getUseValue(card)
+	if card == nil then global_room:writeToConsole(debug.traceback()) end
 	local class_name = card:isKindOf("LuaSkillCard") and card:objectName() or card:getClassName()
 	local v = sgs.ai_use_value[class_name] or 0
 
@@ -2157,6 +2160,29 @@ sgs.ai_skill_discard.gamerule = function(self, discard_num)
 	return to_discard
 end
 
+function SmartAI:askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num)
+	local callback = sgs.ai_skill_movecards[reason]
+	if type(callback) == "function" then
+		local top, down = callback(self, upcards, downcards, min_num, max_num)
+		local res1, res2 = {}, {}
+		if top then
+			if type(top) == "number" then res1 = {top}
+			elseif type(top) == "table" then
+				res1 = top
+			end
+		end
+		if down then
+			if type(down) == "number" then res2 = {down}
+			elseif type(down) == "table" then
+				res2 = down
+			end
+		end
+		if #upcards + #downcards == #res1 + #res2 then
+			return res1, res2
+		end
+	end
+	return {}, {}
+end
 
 function SmartAI:askForNullification(trick, from, to, positive)
 	if self.player:isDead() then return nil end
@@ -2545,18 +2571,18 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 			and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 			return who:getArmor():getId()
 			end
-		if flags:match("e") and who:hasShownSkills("jijiu|beige|weimu|qingcheng|LuaJijiu") and not self:doNotDiscard(who, "e", false, 1, reason) then
+		if flags:match("e") and who:hasShownSkills("jijiu|beige|weimu|qingcheng") and not self:doNotDiscard(who, "e", false, 1, reason) then
 			if who:getDefensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getDefensiveHorse():getEffectiveId())) and not table.contains(disable_list, who:getDefensiveHorse():getEffectiveId()) then
 				return who:getDefensiveHorse():getEffectiveId()
 			end
 			if who:getArmor() and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId())) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 				return who:getArmor():getEffectiveId()
 			end
-			if who:getOffensiveHorse() and (not who:hasShownSkills("jijiu|LuaJijiu") or who:getOffensiveHorse():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId()))
+			if who:getOffensiveHorse() and (not who:hasShownSkills("jijiu") or who:getOffensiveHorse():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId()))
 				and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
 				return who:getOffensiveHorse():getEffectiveId()
 			end
-			if who:getWeapon() and (not who:hasShownSkills("jijiu|LuaJijiu") or who:getWeapon():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId()))
+			if who:getWeapon() and (not who:hasShownSkills("jijiu") or who:getWeapon():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId()))
 				and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
 				return who:getWeapon():getEffectiveId()
 			end
@@ -2568,7 +2594,7 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 			end
 		end
 		if flags:match("h") and (not isDiscard or self.player:canDiscard(who, "h")) then
-			if who:hasShownSkills("jijiu|qingnang|qiaobian|jieyin|beige|LuaJijiu")
+			if who:hasShownSkills("jijiu|qingnang|qiaobian|jieyin|beige")
 				and not who:isKongcheng() and who:getHandcardNum() <= 2 and not self:doNotDiscard(who, "h", false, 1, reason) then
 				return self:getCardRandomly(who, "h", disable_list)
 			end
@@ -4674,6 +4700,15 @@ function SmartAI:useEquipCard(card, use)
 		if armor and armor:objectName() == "PeaceSpell" and card:isKindOf("Armor") then
 			if (self:getAllPeachNum() == 0 and self.player:getHp() < 3) and not (self.player:getHp() < 2 and self:getCardsNum("Analeptic") > 0) then
 				return
+			end
+		end
+		if self.player:getWeapon() and self.player:getWeapon():objectName() == "Crossbow" and self:getCardsNum("Slash") > 2 then
+			local d_use = {isDummy = true,to = sgs.SPlayerList()}
+			local slash = sgs.Sanguosha:cloneCard("slash")
+			slash:deleteLater()
+			self:useCardSlash(slash,d_use)
+			if d_use.card then
+				return 
 			end
 		end
 		use.card = card

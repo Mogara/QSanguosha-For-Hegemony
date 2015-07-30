@@ -36,6 +36,9 @@ public:
     explicit ClientPlayer(Client *client);
     virtual QList<const Card *> getHandcards() const;
     void setCards(const QList<int> &card_ids);
+    virtual QList<const Card *> getVisiblecards() const;
+    void addVisibleCards(const QList<int> &card_ids);
+    void removeVisibleCards(const QList<int> &card_ids);
     QTextDocument *getMarkDoc() const;
     void changePile(const QString &name, bool add, QList<int> card_ids);
     QString getDeathPixmapPath() const;
@@ -58,7 +61,7 @@ public:
 
 private:
     int handcard_num;
-    QList<const Card *> known_cards;
+    QList<const Card *> known_cards, visible_cards;
     QTextDocument *mark_doc;
 
 signals:

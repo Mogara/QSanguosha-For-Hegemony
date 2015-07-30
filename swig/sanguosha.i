@@ -37,6 +37,7 @@
 %include "native.i"
 %include "qvariant.i"
 %include "list.i"
+%include "map.i"
 
 // ----------------------------------------
 
@@ -512,6 +513,9 @@ public:
     explicit ClientPlayer(Client *client);
     virtual QList<const Card *> getHandcards() const;
     void setCards(const QList<int> &card_ids);
+    virtual QList<const Card *> getVisiblecards() const;
+    void addVisibleCards(const QList<int> &card_ids);
+    void removeVisibleCards(const QList<int> &card_ids);
     void setHandcardNum(int n);
     virtual QString getGameMode() const;
     virtual void setFlags(const char *flag);
@@ -1306,6 +1310,11 @@ public:
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
 
     bool isGlobal() const;
+    
+    virtual double getDynamicPriority(TriggerEvent e) const;
+    
+    // for Lua 
+    void insertPriority(TriggerEvent e,double value);
 
     virtual ~TriggerSkill();
 };
@@ -1335,6 +1344,16 @@ struct LogMessage
     QString card_str;
     QString arg;
     QString arg2;
+};
+
+struct AskForMoveCardsStruct
+{
+    AskForMoveCardsStruct();
+
+    QList<int> top;
+    QList<int> bottom;
+
+    bool is_success;
 };
 
 class RoomThread: public QThread {
@@ -1412,6 +1431,7 @@ public:
     QList<int> getNCards(int n, bool update_pile_number = true);
     ServerPlayer *getLord(const char *kingdom, bool include_death = false) const;
     void askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, GuanxingType guanxing_type = GuanxingBothSides);
+    AskForMoveCardsStruct askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const char *reason, const char *pattern, const char *skillName, int min_num, int max_num, bool can_refuse = true, bool moverestricted = false, const QList<int> &notify_visible_list = QList<int>());
     int doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids = QList<int>(), const char *skill_name = "shangyi");
     int drawCard();
     void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>());
@@ -1550,7 +1570,7 @@ public:
     bool askForYiji(ServerPlayer *guojia, QList<int> &cards, const char *skill_name = NULL,
         bool is_preview = false, bool visible = false, bool optional = true, int max_num = -1,
         QList<ServerPlayer *> players = QList<ServerPlayer *>(), CardMoveReason reason = CardMoveReason(),
-        const char *prompt = NULL, bool notify_skill = false);
+        const char *prompt = "", const char *expand_pile = "", bool notify_skill = false);
     const Card *askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const char *reason);
     QList<const Card *> askForPindianRace(ServerPlayer *from, ServerPlayer *to, const char *reason);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const char *reason,

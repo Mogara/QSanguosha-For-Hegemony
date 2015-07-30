@@ -818,7 +818,8 @@ sgs.ai_skill_invoke.lirang = function(self, data)
 	return #self.friends_noself > 0
 end
 
-sgs.ai_skill_askforyiji.lirang = function(self, card_ids)
+sgs.ai_skill_use["@@lirang"] = function(self, prompt)
+	local card_ids = self.player:getTag("lirang_forAI"):toString():split("+")
 	self:updatePlayers()
 	local cards = {}
 	for _, card_id in ipairs(card_ids) do
@@ -827,18 +828,42 @@ sgs.ai_skill_askforyiji.lirang = function(self, card_ids)
 	local id = card_ids[1]
 
 	local card, friend = self:getCardNeedPlayer(cards, self.friends_noself)
-	if card and friend then return friend, card:getId() end
+	if card and friend then return "@LirangCard=" .. id .. "->" .. friend:objectName() end
 	if #self.friends_noself > 0 then
 		self:sort(self.friends_noself, "handcard")
 		for _, afriend in ipairs(self.friends_noself) do
 			if not self:needKongcheng(afriend, true) then
-				return afriend, id
+				return "@LirangCard=" .. id .. "->" .. afriend:objectName()
 			end
 		end
 		self:sort(self.friends_noself, "defense")
-		return self.friends_noself[1], id
+		return "@LirangCard=" .. id .. "->" .. self.friends_noself[1]:objectName()
 	end
-	return nil, -1
+	return "."
+end
+
+sgs.ai_skill_use["@@lirang!"] = function(self, prompt)
+	local card_ids = self.player:getTag("lirang_forAI"):toString():split("+")
+	self:updatePlayers()
+	local cards = {}
+	for _, card_id in ipairs(card_ids) do
+		table.insert(cards, sgs.Sanguosha:getCard(card_id))
+	end
+	local id = card_ids[1]
+
+	local card, friend = self:getCardNeedPlayer(cards, self.friends_noself)
+	if card and friend then return "@LirangCard=" .. id .. "->" .. friend:objectName() end
+	if #self.friends_noself > 0 then
+		self:sort(self.friends_noself, "handcard")
+		for _, afriend in ipairs(self.friends_noself) do
+			if not self:needKongcheng(afriend, true) then
+				return "@LirangCard=" .. id .. "->" .. afriend:objectName()
+			end
+		end
+		self:sort(self.friends_noself, "defense")
+		return "@LirangCard=" .. id .. "->" .. self.friends_noself[1]:objectName()
+	end
+	return "@LirangCard=" .. id .. "->" .. self.player:getAliveSiblings():first():objectName()
 end
 
 sgs.ai_skill_playerchosen.shuangren = function(self, targets)

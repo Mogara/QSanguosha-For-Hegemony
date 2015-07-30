@@ -23,7 +23,8 @@ local transfer_skill = {}
 transfer_skill.name = "transfer"
 table.insert(sgs.ai_skills, transfer_skill)
 transfer_skill.getTurnUseCard = function(self, inclusive)
-	for _, c in sgs.qlist(self.player:getCards("he")) do
+	for _, c in sgs.qlist(self.player:getCards("h")) do
+		if c:isKindOf("BurningCamps") then continue end
 		if c:isTransferable() then return sgs.Card_Parse("@TransferCard=.") end
 	end
 end
@@ -133,7 +134,7 @@ function SmartAI:useCardDrowning(card, use)
 			and not (enemy:hasArmorEffect("Breastplate") and enemy:getHp() == 1) then
 			local dangerous
 			local chained = {}
-			if enemy:isChained() and not self.player:hasShownSkill("jueqing") then
+			 if enemy:isChained() --[[and not self.player:hasShownSkill("jueqing")]] then
 				for _, p in sgs.qlist(self.room:getOtherPlayers(enemy)) do
 					if not self:isGoodChainTarget(enemy, p, sgs.DamageStruct_Thunder) and self:damageIsEffective(p, sgs.DamageStruct_Thunder) and self:isFriend(p) then
 						table.insert(chained, p)
@@ -271,7 +272,7 @@ sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, kee
 		if from:objectName() == self.player:objectName() then return false end
 		local chained = {}
 		local dangerous
-		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasShownSkill("jueqing") then
+		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() --[[and not from:hasShownSkill("jueqing")]] then
 			for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
 				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isFriend(p) then
 					table.insert(chained, p)
@@ -298,7 +299,7 @@ sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, kee
 		local dangerous
 		local enemies = {}
 		local good
-		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasShownSkill("jueqing") then
+		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() --[[and not from:hasShownSkill("jueqing")]] then
 			for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
 				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isFriend(p) then
 					table.insert(chained, p)

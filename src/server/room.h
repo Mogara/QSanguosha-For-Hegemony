@@ -42,6 +42,8 @@ struct LogMessage;
 
 typedef QMap<const ServerPlayer *, QStringList> SPlayerDataMap;
 
+typedef int LuaFunction;
+
 class Room : public QThread
 {
     Q_OBJECT
@@ -123,6 +125,8 @@ public:
     QList<int> getNCards(int n, bool update_pile_number = true);
     ServerPlayer *getLord(const QString &kingdom, bool include_death = false) const;
     void askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, GuanxingType guanxing_type = GuanxingBothSides);
+    AskForMoveCardsStruct askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
+        const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse = true, bool moverestricted = false,const QList<int> &notify_visible_list = QList<int>());
     int doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids = QList<int>(), const QString &skill_name = "shangyi");
     int drawCard();
     void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>());
@@ -379,7 +383,7 @@ public:
     bool askForYiji(ServerPlayer *guojia, QList<int> &cards, const QString &skill_name = QString(),
         bool is_preview = false, bool visible = false, bool optional = true, int max_num = -1,
         QList<ServerPlayer *> players = QList<ServerPlayer *>(), CardMoveReason reason = CardMoveReason(),
-        const QString &prompt = QString(), bool notify_skill = false);
+        const QString &prompt = QString(),const QString &expand_pile = QString(), bool notify_skill = false);
     const Card *askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const QString &reason);
     QList<const Card *> askForPindianRace(ServerPlayer *from, ServerPlayer *to, const QString &reason);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const QString &reason,
@@ -412,6 +416,7 @@ public:
     void addRobotCommand(ServerPlayer *player, const QVariant &arg = QVariant());
     void fillRobotsCommand(ServerPlayer *player, const QVariant &arg = QVariant());
     void mirrorGuanxingStepCommand(ServerPlayer *player, const QVariant &arg);
+    void mirrorMoveCardsStepCommand(ServerPlayer *player, const QVariant &arg);
     void changeSkinCommand(ServerPlayer *player, const QVariant &arg);
 
     void processClientReply(ServerPlayer *player, const QSanProtocol::Packet &packet);

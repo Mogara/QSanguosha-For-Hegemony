@@ -128,7 +128,7 @@ public:
 
 class LuaViewAsSkill: public ViewAsSkill {
 public:
-    LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile);
+    LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile, const char *limit_mark);
 
     void setGuhuoType(const char *type);
     
@@ -425,7 +425,6 @@ void LuaTriggerSkill::record(TriggerEvent triggerEvent, Room *room, ServerPlayer
             room->output(msg);
             return;
         }
-
     }
     catch (TriggerEvent e) {
         if (e == TurnBroken || e == StageChange)
@@ -2253,5 +2252,6 @@ void LuaScenario::onTagSet(Room *room, const char *key) const
         return;
     }
 }
+
 
 %}

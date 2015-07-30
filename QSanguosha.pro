@@ -7,6 +7,8 @@ QT += network widgets
 TEMPLATE = app
 CONFIG += audio
 
+CONFIG += c++11
+
 CONFIG += lua
 #CONFIG += lua53
 
@@ -117,7 +119,8 @@ SOURCES += \
     src/util/nativesocket.cpp \
     src/util/recorder.cpp \
     swig/sanguosha_wrap.cxx \
-    src/ui/guhuobox.cpp
+    src/ui/guhuobox.cpp \
+	src/ui/cardchoosebox.cpp 
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -228,7 +231,8 @@ HEADERS += \
     src/util/nativesocket.h \
     src/util/recorder.h \
     src/util/socket.h \
-    src/ui/guhuobox.h
+    src/ui/guhuobox.h \
+	src/ui/cardchoosebox.h
 
 FORMS += \
     src/dialog/cardoverview.ui \

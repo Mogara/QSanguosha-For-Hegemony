@@ -37,6 +37,7 @@ class Window;
 class Button;
 class CardContainer;
 class GuanxingBox;
+class CardChooseBox;
 class QSanButton;
 class QGroupBox;
 class ChooseGeneralBox;
@@ -176,7 +177,7 @@ public slots:
     void chooseGeneral(const QStringList &generals, const bool single_result);
     void chooseSuit(const QStringList &suits);
     void chooseCard(const ClientPlayer *playerName, const QString &flags, const QString &reason,
-        bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids);
+        bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids, QList<int> handcards);
     void chooseKingdom(const QStringList &kingdoms);
     void chooseOption(const QString &skillName, const QStringList &options);
     //void chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand reason);
@@ -190,6 +191,7 @@ public slots:
     void enableTargets(const Card *card);
     void useSelectedCard();
     void updateStatus(Client::Status oldStatus, Client::Status newStatus);
+    void cardMovedinCardchooseBox(const bool enable);
     void killPlayer(const QString &who);
     void revivePlayer(const QString &who);
     void setDashboardShadow(const QString &who);
@@ -283,6 +285,8 @@ private:
     QList<const Player *> selected_targets;
 
     GuanxingBox *m_guanxingBox;
+
+    CardChooseBox *m_cardchooseBox;
 
     ChooseGeneralBox *m_chooseGeneralBox;
 
@@ -381,6 +385,7 @@ private:
     void doAppearingAnimation(const QString &name, const QStringList &args);
     void doLightboxAnimation(const QString &name, const QStringList &args);
     void doIndicate(const QString &name, const QStringList &args);
+    void doHuashen(const QString &, const QStringList &args);
     EffectAnimation *animations;
     bool pindian_success;
 

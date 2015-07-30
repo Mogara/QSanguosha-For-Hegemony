@@ -62,6 +62,7 @@ public:
         AskForTriggerOrder = 0x010010,
         AskForCardChosen = 0x010011,
         AskForSuit = 0x010012,
+        AskForMoveCards = 0x000013,
 
         RespondingUse = 0x000101,
         RespondingForDiscard = 0x000201,
@@ -103,7 +104,9 @@ public:
     void onPlayerDiscardCards(const Card *card);
     void onPlayerReplyYiji(const Card *card, const Player *to);
     void onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> &down_cards);
+    void onPlayerReplyMoveCards(const QList<int> &up_cards, const QList<int> &down_cards);
     void onPlayerDoGuanxingStep(int from, int to);
+    void onPlayerDoMoveCardsStep(int from, int to, bool enable);
     QList<const ClientPlayer *> getPlayers() const;
     void speakToServer(const QString &text);
     ClientPlayer *getPlayer(const QString &name);
@@ -156,6 +159,7 @@ public:
     void enableSurrender(const QVariant &enabled);
     void exchangeKnownCards(const QVariant &players);
     void setKnownCards(const QVariant &set_str);
+    void setVisibleCards(const QVariant &set_str);
     void viewGenerals(const QVariant &arg);
     void setFixedDistance(const QVariant &set_str);
     void updateStateItem(const QVariant &state);
@@ -163,6 +167,7 @@ public:
     void setCardFlag(const QVariant &pattern_str);
     void updateCard(const QVariant &val);
     void mirrorGuanxingStep(const QVariant &args);
+    void mirrorMoveCardsStep(const QVariant &args);
 
     void fillAG(const QVariant &cards_str);
     void takeAG(const QVariant &take_var);
@@ -186,6 +191,7 @@ public:
     void askForGeneral(const QVariant &);
     void askForYiji(const QVariant &);
     void askForGuanxing(const QVariant &);
+    void askForMoveCards(const QVariant &);
     void showAllCards(const QVariant &);
     void askForGongxin(const QVariant &);
     void askForSurrender(const QVariant &);
@@ -262,7 +268,7 @@ public slots:
     void signup();
     void onPlayerChooseGeneral(const QString &_name);
     void onPlayerMakeChoice(const QString &choice);
-    void onPlayerChooseCard(int card_id = -2);
+    void onPlayerChooseCard(int index, int card_id = -2);
     void onPlayerChooseAG(int card_id);
     void onPlayerChoosePlayer(const QList<const Player *> &players);
     void onPlayerChooseTriggerOrder(const QString &choice);
@@ -331,7 +337,7 @@ signals:
     void suits_got(const QStringList &suits);
     void options_got(const QString &skillName, const QStringList &options);
     void cards_got(const ClientPlayer *player, const QString &flags, const QString &reason, bool handcard_visible,
-        Card::HandlingMethod method, QList<int> disabled_ids);
+        Card::HandlingMethod method, QList<int> disabled_ids, QList<int> handcards);
     void roles_got(const QString &scheme, const QStringList &roles);
     void directions_got();
     void orders_got(QSanProtocol::Game3v3ChooseOrderCommand reason);
@@ -349,6 +355,8 @@ signals:
     void card_shown(const QString &player_name, int card_id);
     void log_received(const QStringList &log_str);
     void guanxing(const QList<int> &card_ids, bool single_side);
+    void cardchoose(const QList<int> &upcard_ids, const QList<int> &downcard_ids, const QString &reason, const QString &pattern, bool moverestricted, int min_num, int max_num);
+    void card_moved_incardchoosebox(bool enable);
     void gongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
     void focus_moved(const QStringList &focus, QSanProtocol::Countdown countdown);
     void emotion_set(const QString &target, const QString &emotion);
@@ -379,6 +387,11 @@ signals:
     void mirror_guanxing_start(const QString &who, bool up_only, const QList<int> &cards);
     void mirror_guanxing_move(int from, int to);
     void mirror_guanxing_finish();
+
+    void mirror_cardchoose_start(const QString &who, const QString &reason, const QList<int> &upcards, const QList<int> &downcards,
+        const QString &pattern, bool moverestricted, int min_num, int max_num);
+    void mirror_cardchoose_move(int from, int to);
+    void mirror_cardchoose_finish();
 
     void ag_filled(const QList<int> &card_ids, const QList<int> &disabled_ids);
     void ag_taken(ClientPlayer *taker, int card_id, bool move_cards);

@@ -165,8 +165,20 @@ void GuanxingBox::onItemReleased()
         if ((y >= 45 + cardHeight && y <= 45 + cardHeight * 2 + cardInterval)
             || y >= 45 + cardHeight * 3 + cardInterval * 3) oddRow = false;
     }
+
+    int fix_index = 0;
+    if (toUpItems) {
+        if (item->y() + cardHeight / 2 >= 45 + cardHeight + cardInterval) {
+            fix_index = itemNumberOfFirstRow();
+        }
+    } else {
+        if (item->y() + cardHeight / 2 >= 45 + cardHeight * 3 + cardInterval * 3) {
+            fix_index = itemNumberOfFirstRow();
+        }
+    }
+
     const int startX = 25 + (oddRow ? 0 : (cardWidth / 2 + cardInterval / 2));
-    int c = (item->x() + item->boundingRect().width() / 2 - startX) / cardWidth;
+    int c = (item->x() + item->boundingRect().width() / 2 - startX) / cardWidth + fix_index;
     c = qBound(0, c, items->length());
     items->insert(c, item);
 
@@ -348,3 +360,4 @@ void GuanxingBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWi
         }
     }
 }
+

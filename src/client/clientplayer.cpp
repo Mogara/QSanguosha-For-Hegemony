@@ -57,22 +57,22 @@ int ClientPlayer::getHandcardNum() const
 void ClientPlayer::addCard(const Card *card, Place place)
 {
     switch (place) {
-    case PlaceHand: {
-        if (card) known_cards << card;
-        handcard_num++;
-        break;
-    }
-    case PlaceEquip: {
-        WrappedCard *equip = Sanguosha->getWrappedCard(card->getEffectiveId());
-        setEquip(equip);
-        break;
-    }
-    case PlaceDelayedTrick: {
-        addDelayedTrick(card);
-        break;
-    }
-    default:
-        break;
+        case PlaceHand: {
+            if (card) known_cards << card;
+            handcard_num++;
+            break;
+        }
+        case PlaceEquip: {
+            WrappedCard *equip = Sanguosha->getWrappedCard(card->getEffectiveId());
+            setEquip(equip);
+            break;
+        }
+        case PlaceDelayedTrick: {
+            addDelayedTrick(card);
+            break;
+        }
+        default:
+            break;
     }
 }
 
@@ -109,23 +109,25 @@ bool ClientPlayer::isLastHandCard(const Card *card, bool contain) const
 void ClientPlayer::removeCard(const Card *card, Place place)
 {
     switch (place) {
-    case PlaceHand: {
-        handcard_num--;
-        if (card)
-            known_cards.removeOne(card);
-        break;
-    }
-    case PlaceEquip:{
-        WrappedCard *equip = Sanguosha->getWrappedCard(card->getEffectiveId());
-        removeEquip(equip);
-        break;
-    }
-    case PlaceDelayedTrick:{
-        removeDelayedTrick(card);
-        break;
-    }
-    default:
-        break;
+        case PlaceHand: {
+            handcard_num--;
+            if (card) {
+                known_cards.removeOne(card);
+                visible_cards.removeOne(card);
+            }
+            break;
+        }
+        case PlaceEquip:{
+            WrappedCard *equip = Sanguosha->getWrappedCard(card->getEffectiveId());
+            removeEquip(equip);
+            break;
+        }
+        case PlaceDelayedTrick:{
+            removeDelayedTrick(card);
+            break;
+        }
+        default:
+            break;
     }
 }
 
@@ -139,6 +141,23 @@ void ClientPlayer::setCards(const QList<int> &card_ids)
     known_cards.clear();
     foreach(int cardId, card_ids)
         known_cards.append(Sanguosha->getCard(cardId));
+}
+
+QList<const Card *> ClientPlayer::getVisiblecards() const
+{
+    return visible_cards;
+}
+
+void ClientPlayer::addVisibleCards(const QList<int> &card_ids)
+{
+    foreach(int cardId, card_ids)
+        visible_cards.append(Sanguosha->getCard(cardId));
+}
+
+void ClientPlayer::removeVisibleCards(const QList<int> &card_ids)
+{
+    foreach(int cardId, card_ids)
+        visible_cards.removeOne(Sanguosha->getCard(cardId));
 }
 
 QTextDocument *ClientPlayer::getMarkDoc() const

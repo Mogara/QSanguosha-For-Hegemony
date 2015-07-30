@@ -24,7 +24,8 @@
 #include <QByteArray>
 #include <QVariant>
 
-namespace QSanProtocol {
+namespace QSanProtocol
+{
 
     enum PacketDescription
     {
@@ -160,7 +161,10 @@ namespace QSanProtocol {
         S_COMMAND_DISABLE_SHOW,
         S_COMMAND_TRIGGER_ORDER,
         S_COMMAND_MIRROR_GUANXING_STEP,
-        S_COMMAND_CHANGE_SKIN
+        S_COMMAND_CHANGE_SKIN,
+        S_COMMAND_SKILL_MOVECARDS,
+        S_COMMAND_MIRROR_MOVECARDS_STEP,
+        S_COMMAND_SET_VISIBLE_CARDS
     };
 
     enum GameEventType
@@ -191,7 +195,8 @@ namespace QSanProtocol {
         S_ANIMATE_LIGHTBOX,
         S_ANIMATE_NULLIFICATION,
         S_ANIMATE_FIRE,
-        S_ANIMATE_LIGHTNING
+        S_ANIMATE_LIGHTNING,
+        S_ANIMATE_HUASHEN,
     };
 
     enum Game3v3ChooseOrderCommand

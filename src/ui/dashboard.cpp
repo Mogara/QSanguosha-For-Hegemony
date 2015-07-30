@@ -781,7 +781,7 @@ void Dashboard::skillButtonDeactivated()
 void Dashboard::selectAll()
 {
     foreach (const QString &pile, Self->getHandPileList(false))
-            retractPileCards(pile);
+        retractPileCards(pile);
     selectCards(".");
 }
 
@@ -1178,10 +1178,10 @@ void Dashboard::beginSorting()
         type = (SortType)(action->data().toInt());
 
     switch (type) {
-    case ByType: qSort(m_handCards.begin(), m_handCards.end(), CompareByType); break;
-    case BySuit: qSort(m_handCards.begin(), m_handCards.end(), CompareBySuit); break;
-    case ByNumber: qSort(m_handCards.begin(), m_handCards.end(), CompareByNumber); break;
-    default: Q_ASSERT(false);
+        case ByType: qSort(m_handCards.begin(), m_handCards.end(), CompareByType); break;
+        case BySuit: qSort(m_handCards.begin(), m_handCards.end(), CompareBySuit); break;
+        case ByNumber: qSort(m_handCards.begin(), m_handCards.end(), CompareByNumber); break;
+        default: Q_ASSERT(false);
     }
 
     adjustCards();
@@ -1346,10 +1346,12 @@ void Dashboard::expandPileCards(const QString &pile_name)
         card_item->setPos(mapFromScene(card_item->scenePos()));
         card_item->setParentItem(this);
     }
-//    foreach(CardItem *card_item, card_items)
-//        _addHandCard(card_item, true, Sanguosha->translate(new_name));
-   for(int i = card_items.length() - 1 ;i >= 0 ;--i)
-        _addHandCard(card_items[i], true, Sanguosha->translate(new_name));
+    bool prepend = true;
+    if (new_name.startsWith("#")) {
+        prepend = false;
+    }
+    foreach(CardItem *card_item, card_items)
+        _addHandCard(card_item, prepend, Sanguosha->translate(new_name));
 
     adjustCards();
     _playMoveCardsAnimation(card_items, false);

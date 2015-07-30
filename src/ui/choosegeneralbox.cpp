@@ -228,9 +228,8 @@ static bool sortByKingdom(const QString &gen1, const QString &gen2)
         QStringList kingdoms = Sanguosha->getKingdoms();
         //kingdoms << "god";
         int i = 0;
-        foreach (const QString &kingdom, kingdoms) {
+        foreach (const QString &kingdom, kingdoms)
             kingdom_priority_map[kingdom] = i++;
-        }
     }
     const General *g1 = Sanguosha->getGeneral(gen1);
     const General *g2 = Sanguosha->getGeneral(gen2);
@@ -472,7 +471,7 @@ void ChooseGeneralBox::adjustItems()
 void ChooseGeneralBox::_initializeItems()
 {
     QList<const General *> generals;
-    foreach(GeneralCardItem *item, items)
+    foreach (GeneralCardItem *item, items)
         generals << Sanguosha->getGeneral(item->objectName());
 
     int index = 0;

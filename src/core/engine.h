@@ -48,6 +48,8 @@ class LuaTreasure;
 
 struct lua_State;
 
+typedef int LuaFunction;
+
 class Engine : public QObject
 {
     Q_OBJECT

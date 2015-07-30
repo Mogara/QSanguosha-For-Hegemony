@@ -1394,9 +1394,9 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
         room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
         room->changePlayerGeneral(this, general_name);
 
-        sendSkillsToOthers();
 
         if (!property("Duanchang").toString().split(",").contains("head")) {
+            sendSkillsToOthers();
             foreach (const Skill *skill, getHeadSkillList()) {
                 if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && hasShownSkill(skill)) {
                     JsonArray arg;
@@ -1463,9 +1463,9 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
         room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
         room->changePlayerGeneral2(this, general_name);
 
-        sendSkillsToOthers(false);
 
         if (!property("Duanchang").toString().split(",").contains("deputy")) {
+            sendSkillsToOthers(false);
             foreach (const Skill *skill, getDeputySkillList()) {
                 if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && hasShownSkill(skill)) {
                     JsonArray arg;

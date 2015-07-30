@@ -405,14 +405,14 @@ public:
 
         foreach (int id, ids) {
             switch (Sanguosha->getCard(id)->getTypeId()) {
-            case Card::TypeTrick:
-                has_trick = true;
-                break;
-            case Card::TypeEquip:
-                has_equip = true;
-                break;
-            default:
-                break;
+                case Card::TypeTrick:
+                    has_trick = true;
+                    break;
+                case Card::TypeEquip:
+                    has_equip = true;
+                    break;
+                default:
+                    break;
             }
         }
 

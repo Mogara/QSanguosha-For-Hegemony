@@ -117,7 +117,10 @@ return {
 	[":mingshi"] = "锁定技，每当你受到伤害时，若来源有暗置的武将牌，你令此伤害-1。",
 	["lirang"] = "礼让",
 	[":lirang"] = "每当你的一张被弃置的牌置入弃牌堆后，你可以将之交给一名其他角色。",
-	["@lirang-distribute"] = "你可以发动“礼让”将 %arg 张牌任意分配给任意数量的其他角色",
+	["@lirang-distribute1"] = "礼让：你须将至少 1 张牌任意分配给其他角色",
+	["@lirang-distribute2"] = "礼让：你可将至多 %arg 张牌任意分配给其他角色",
+	["~lirang"] = "选择任意礼让牌和一名其他角色→点击确定",
+	["#lirang"] = "礼让",
 	["#Mingshi"] = "%from 的“<font color=\"yellow\"><b>名士</b></font>”被触发，伤害从 %arg 点减少至 %arg2 点",
 
 	["#jiling"] = "仲家的主将",

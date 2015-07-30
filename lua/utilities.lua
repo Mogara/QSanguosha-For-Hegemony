@@ -75,6 +75,7 @@ sgs.addNewKingdom = function(kingdom_name,color)
 		return false
 	end
 end
+
 function table.Shuffle(list)
 	local result = {}
 	while #list > 0 do
@@ -314,7 +315,10 @@ sgs.CommandType = {
 	"S_COMMAND_DISABLE_SHOW",
 	"S_COMMAND_TRIGGER_ORDER",
 	"S_COMMAND_MIRROR_GUANXING_STEP",
-	"S_COMMAND_CHANGE_SKIN"
+	"S_COMMAND_CHANGE_SKIN",
+	"S_COMMAND_SKILL_MOVECARDS",
+    "S_COMMAND_MIRROR_MOVECARDS_STEP",
+	"S_COMMAND_SET_VISIBLE_CARDS"
 }
 
 local i = 0
