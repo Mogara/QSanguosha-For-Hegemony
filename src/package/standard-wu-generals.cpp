@@ -221,9 +221,9 @@ void FanjianCard::onEffect(const CardEffectStruct &effect) const
     ServerPlayer *target = effect.to;
     Room *room = zhouyu->getRoom();
 
-    int card_id = zhouyu->getRandomHandCardId();
-    const Card *card = Sanguosha->getCard(card_id);
     Card::Suit suit = room->askForSuit(target, "fanjian");
+    int card_id = room->askForCardChosen(target, zhouyu, "h", objectName());
+    const Card *card = Sanguosha->getCard(card_id);
 
     LogMessage log;
     log.type = "#ChooseSuit";
