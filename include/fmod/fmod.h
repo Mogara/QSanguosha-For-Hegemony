@@ -27,9 +27,10 @@
     #define F_DECLSPEC __declspec
     #define F_DLLEXPORT ( dllexport )
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(_WIN64)
-    #define F_CDECL _cdecl
-    #define F_STDCALL _stdcall
-    #define F_DECLSPEC __declspec
+    #define F_CDECL __cdecl  // Xusine used "__cdecl" to replace "_cdecl" here.
+    #define F_STDCALL __stdcall // The same thing happened here.
+    #define F_DECLSPEC __declspec // The same thing happened here,too.
+    // Xusine to Fs: when preparing to update FMOD, do the same thing as I do.
     #define F_DLLEXPORT ( dllexport )
 #elif defined(__MACH__) || defined(__ANDROID__) || defined(__linux__) || defined(__QNX__)
     #define F_CDECL
