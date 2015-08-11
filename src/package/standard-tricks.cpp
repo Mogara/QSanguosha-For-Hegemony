@@ -680,7 +680,7 @@ bool IronChain::targetFilter(const QList<const Player *> &targets, const Player 
 
 bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
 {
-    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast;
     QList<int> sub;
     if (isVirtualCard())
         sub = subcards;
@@ -916,7 +916,7 @@ bool KnownBoth::isAvailable(const Player *player) const
         can_use = true;
         break;
     }
-    bool can_rec = true;
+    bool can_rec = can_recast;
     QList<int> sub;
     if (isVirtualCard())
         sub = subcards;
@@ -925,7 +925,7 @@ bool KnownBoth::isAvailable(const Player *player) const
     if (sub.isEmpty() || sub.contains(-1))
         can_rec = false;
     return (can_use && !player->isCardLimited(this, Card::MethodUse))
-        || (can_rec && can_recast && !player->isCardLimited(this, Card::MethodRecast));
+        || (can_rec && !player->isCardLimited(this, Card::MethodRecast));
 }
 
 bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const

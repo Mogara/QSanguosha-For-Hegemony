@@ -858,7 +858,7 @@ bool FightTogether::isAvailable(const Player *player) const
 {
     if (player->hasFlag("Global_FightTogetherFailed"))
         return false;
-    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast;
     QList<int> sub;
     if (isVirtualCard())
         sub = subcards;
