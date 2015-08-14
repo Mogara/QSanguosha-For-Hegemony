@@ -95,6 +95,8 @@ const char *QSanRoomSkin::S_SKIN_KEY_HEAD_ICON = "headIcon";
 const char *QSanRoomSkin::S_SKIN_KEY_DEPUTY_ICON = "deputyIcon";
 const char *QSanRoomSkin::S_SKIN_KEY_DISABLE_SHOW_LOCK = "%1DisableShowLock";
 
+const char *QSanRoomSkin::S_SKIN_KEY_CARD_TINY_ICON = "cardTiny-%1";
+
 //CardContainer
 const char *QSanRoomSkin::S_SKIN_KEY_CARD_CONTAINER_TOP = "cardContainerTop";
 const char *QSanRoomSkin::S_SKIN_KEY_CARD_CONTAINER_MIDDLE = "cardContainerMiddle";
@@ -434,6 +436,16 @@ QPixmap QSanRoomSkin::getGeneralPixmap(const QString &generalName, GeneralIconSi
     key = QString(S_SKIN_KEY_PLAYER_GENERAL_ICON) //try the default match
         .arg(size);
     return getPixmap(key, name, id, true);
+}
+
+QPixmap QSanRoomSkin::getCardTinyPixmap(const QString &card_object_name) const
+{
+    QString key = QString(S_SKIN_KEY_CARD_TINY_ICON).arg(card_object_name);
+    if (isImageKeyDefined(key))
+        return getPixmap(key);
+    key = QString(S_SKIN_KEY_CARD_TINY_ICON);
+    if (isImageKeyDefined(key.arg(S_SKIN_KEY_DEFAULT)))
+        return getPixmap(key, card_object_name);
 }
 
 QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index, const Player *player) const

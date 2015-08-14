@@ -227,6 +227,46 @@
 "handCardMainPhoto-default2": "image/card/%1.png",
 "handCardMainPhoto-unknown": "image/system/card-back.png",
 
+//Added By Xusine:
+"cardTiny-amazing_grace": ["image/big-card/amazing_grace.png",[57, 62, 115, 115],[40, 40]],
+"cardTiny-archery_attack": ["image/big-card/archery_attack.png",[48, 48, 120, 120],[40, 40]],
+"cardTiny-await_exhausted": ["image/big-card/await_exhausted.png",[49, 59, 119, 119],[40, 40]],
+"cardTiny-befriend_attacking": ["image/big-card/befriend_attacking.png",[40, 57, 120, 120],[40, 40]],
+"cardTiny-collateral": ["image/big-card/collateral.png",[40, 57, 120, 120],[40, 40]],
+"cardTiny-dismantlement": ["image/big-card/dismantlement.png",[48,56,120,120],[40, 40]],
+"cardTiny-duel": ["image/big-card/duel.png",[47,53, 120, 120],[40, 40]],
+"cardTiny-ex_nihilo": ["image/big-card/ex_nihilo.png",[48, 53, 120, 120],[40, 40]],
+"cardTiny-god_salvation": ["image/big-card/god_salvation.png",[50, 60, 110, 110],[40, 40]],
+"cardTiny-heg_nullification": ["image/big-card/heg_nullification.png",[40, 52, 130, 130],[40, 40]],
+"cardTiny-indulgence": ["image/big-card/indulgence.png",[40, 65, 126, 126],[40, 40]],
+"cardTiny-fire_attack": ["image/big-card/fire_attack.png",[50, 60, 110, 110],[40, 40]],
+"cardTiny-known_both": ["image/big-card/known_both.png",[30, 53, 128, 128],[40, 40]],
+"cardTiny-lightning": ["image/big-card/lightning.png",[40, 52, 130, 130],[40, 40]],
+"cardTiny-nullification": ["image/big-card/nullification.png",[40, 52, 130, 130],[40, 40]],
+"cardTiny-savage_assault": ["image/big-card/savage_assault.png",[30, 53, 128, 128],[40, 40]],
+"cardTiny-snatch": ["image/big-card/snatch.png",[30, 53, 128, 128],[40, 40]],
+"cardTiny-iron_chain": ["image/big-card/iron_chain.png",[40, 57, 120, 120],[40, 40]],
+"cardTiny-supply_shortage": ["image/big-card/supply_shortage.png",[40, 65, 126, 126],[40, 40]],
+
+"cardTiny-threaten_emperor": ["image/big-card/threaten_emperor.png",[55, 60, 105, 105],[40, 40]],
+"cardTiny-alliance_feast": ["image/big-card/alliance_feast.png",[50, 70, 110, 110],[40, 40]],
+"cardTiny-burning_camps": ["image/big-card/burning_camps.png",[45, 60, 110, 110],[40, 40]],
+"cardTiny-imperial_order": ["image/big-card/imperial_order.png",[45, 63, 110, 110],[40, 40]],
+"cardTiny-fight_together": ["image/big-card/fight_together.png",[40, 55, 125, 125],[40, 40]],
+"cardTiny-lure_tiger": ["image/big-card/lure_tiger.png",[40, 58, 120, 120],[40, 40]],
+
+
+
+
+"cardTiny-default": ["image/big-card/%1.png",[40, 57, 120, 120],[40, 40]],
+
+"cardTiny-analeptic": ["image/big-card/analeptic.png",[40, 98, 124, 124],[40, 40]],
+"cardTiny-fire_slash": ["image/big-card/fire_slash.png",[20, 98, 145, 145],[40, 40]],
+"cardTiny-jink": ["image/big-card/jink.png",[20, 92, 145, 145],[40, 40]],
+"cardTiny-peach": ["image/big-card/peach.png",[28, 98, 145, 145],[40, 40]],
+"cardTiny-slash": ["image/big-card/slash.png",[20, 98, 145, 145],[40, 40]],
+"cardTiny-thunder_slash": ["image/big-card/thunder_slash.png",[20, 98, 145, 145],[40, 40]],
+
 "handCardNumber-black-default": "image/system/black/%1.png",
 "handCardNumber-red-default": "image/system/red/%1.png",
 "handCardSuit-default": "image/system/cardsuit/%1.png",

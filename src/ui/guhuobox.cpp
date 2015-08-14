@@ -5,12 +5,109 @@
 #include "clientplayer.h"
 #include "skinbank.h"
 
+#include <QPropertyAnimation>
+#include <QGraphicsSceneMouseEvent>
+
+static qreal initialOpacity = 0.8;
+static int optionButtonHeight = 40;
+
+GuhuoButton::GuhuoButton(QGraphicsObject *parent, const QString &card, const int width, const QColor &color)
+{
+    this->setParentItem(parent);
+    this->setObjectName(card);
+    this->width = width;
+    this->color = color;
+
+    setAcceptedMouseButtons(Qt::LeftButton);
+    setAcceptHoverEvents(true);
+    setOpacity(initialOpacity);
+}
+
+void GuhuoButton::needDisabled(bool disabled)
+{
+    if (disabled) {
+        QPropertyAnimation *animation = new QPropertyAnimation(this, "opacity");
+        animation->setEndValue(0.2);
+        animation->setDuration(100);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+    } else {
+        QPropertyAnimation *animation = new QPropertyAnimation(this, "opacity");
+        animation->setEndValue(initialOpacity);
+        animation->setDuration(100);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+    }
+}
+
+void GuhuoButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    painter->setRenderHint(QPainter::HighQualityAntialiasing);
+    painter->save();
+    painter->setBrush(Qt::black);
+    painter->setPen(this->isEnabled() ? color : "gray");
+    QRectF rect = boundingRect();
+    painter->drawRoundedRect(rect, 5, 5);
+    painter->restore();
+
+
+    QPixmap pixmap = G_ROOM_SKIN.getCardTinyPixmap(objectName());
+    const Card *c = Sanguosha->cloneCard(objectName());
+    if (c->isKindOf("DelayedTrick")) {
+        QTransform transform;
+        transform.rotate(90);
+        pixmap = pixmap.transformed(transform);
+    }
+    pixmap = pixmap.scaledToHeight(optionButtonHeight, Qt::SmoothTransformation);
+    QRect pixmapRect(QPoint(0, (rect.height() - pixmap.height()) / 2), pixmap.size());
+    painter->setBrush(pixmap);
+    painter->drawRoundedRect(pixmapRect, 5, 5);
+
+    QRect textArea(optionButtonHeight, 0, width - optionButtonHeight,
+        optionButtonHeight);
+
+    G_COMMON_LAYOUT.optionButtonText.paintText(painter, textArea,
+        Qt::AlignCenter,Sanguosha->translate(this->objectName()));
+}
+
+QRectF GuhuoButton::boundingRect() const
+{
+    return QRectF(0, 0, width, optionButtonHeight);
+}
+
+
+void GuhuoButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    event->accept();
+}
+
+void GuhuoButton::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+{
+    emit clicked();
+}
+
+void GuhuoButton::hoverEnterEvent(QGraphicsSceneHoverEvent *)
+{
+    QPropertyAnimation *animation = new QPropertyAnimation(this, "opacity");
+    animation->setEndValue(1.0);
+    animation->setDuration(100);
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
+    emit hovered(true);
+}
+
+void GuhuoButton::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
+{
+    QPropertyAnimation *animation = new QPropertyAnimation(this, "opacity");
+    animation->setEndValue(initialOpacity);
+    animation->setDuration(100);
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
+    emit hovered(false);
+}
+
 const int GuhuoBox::minButtonWidth = 100;
-const int GuhuoBox::defaultButtonHeight = 30;
+const int GuhuoBox::defaultButtonHeight = 40;
 const int GuhuoBox::topBlankWidth = 42;
-const int GuhuoBox::bottomBlankWidth = 85;
-const int GuhuoBox::interval = 15;
-const int GuhuoBox::outerBlankWidth = 37;
+const int GuhuoBox::bottomBlankWidth = 55; //85
+const int GuhuoBox::interval = 10; //15
+const int GuhuoBox::outerBlankWidth = 25; //37
 
 const int GuhuoBox::titleWidth = 20;
 
@@ -88,7 +185,7 @@ int GuhuoBox::getButtonWidth() const
     }
 
     // Otherwise it would look compact
-    biggest += 20;
+    biggest += 60;
 
     int width = minButtonWidth;
     return qMax(biggest, width);
@@ -104,7 +201,23 @@ bool GuhuoBox::isButtonEnable(const QString &card) const
         ca->deleteLater();
         return ca->isAvailable(Self);
     }
+}
 
+QColor GuhuoBox::getColor(const QString &card) const
+{
+    const Card *c = Sanguosha->cloneCard(card);
+    if (c) {
+        if (c->isKindOf("FireSlash"))
+            return QColor("red");
+        else if (c->isKindOf("ThunderSlash"))
+            return QColor(20,10,90);
+        else if (c->isKindOf("Peach"))
+            return QColor(250,123,123);
+        else if (c->isKindOf("Analeptic"))
+            return QColor(90,10,60);
+
+    }
+    return QColor("gold");
 }
 
 void GuhuoBox::popup()
@@ -116,9 +229,9 @@ void GuhuoBox::popup()
     const int buttonWidth = getButtonWidth();
     foreach (const QString &key, card_list.keys()) {
         foreach (const QString &card_name, card_list.value(key)) {
-            Button *button = new Button(translate(card_name), QSizeF(buttonWidth,
-                defaultButtonHeight));
-            button->setObjectName(card_name);
+            //Button *button = new Button(translate(card_name), QSizeF(buttonWidth,
+              //  defaultButtonHeight));
+            GuhuoButton *button = new GuhuoButton(this,card_name,getButtonWidth(),getColor(card_name));
             buttons[card_name] = button;
 
             button->setEnabled(isButtonEnable(card_name));
@@ -131,7 +244,7 @@ void GuhuoBox::popup()
                 original_tooltip = QString(":%1").arg(card_name);
                 tooltip = Sanguosha->translate(original_tooltip);
             }
-            connect(button, &Button::clicked, this, &GuhuoBox::reply);
+            connect(button, &GuhuoButton::clicked, this, &GuhuoBox::reply);
             if (tooltip != original_tooltip)
                 button->setToolTip(QString("<font color=%1>%2</font>")
                 .arg(Config.SkillDescriptionInToolTipColor.name())
@@ -180,7 +293,7 @@ void GuhuoBox::clear()
     if (!isVisible())
         return;
 
-    foreach(Button *button, buttons.values())
+    foreach(GuhuoButton *button, buttons.values())
         button->deleteLater();
 
     buttons.values().clear();
