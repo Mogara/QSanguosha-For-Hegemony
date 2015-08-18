@@ -111,6 +111,8 @@ RoomScene::RoomScene(QMainWindow *main_window)
 
     connect(this, &RoomScene::sceneRectChanged, this, &RoomScene::onSceneRectChanged);
 
+    current_guhuo_box = NULL;
+
     // create photos
     for (int i = 0; i < player_count - 1; i++) {
         Photo *photo = new Photo;
@@ -2812,6 +2814,8 @@ void RoomScene::onSkillActivated()
     }
 
     if (skill) {
+        if (current_guhuo_box && current_guhuo_box->getSkillName() != skill->objectName())
+            current_guhuo_box->clear();
         dashboard->startPending(skill);
         //ok_button->setEnabled(false);
         cancel_button->setEnabled(true);
@@ -2987,6 +2991,11 @@ HeroSkinContainer *RoomScene::findHeroSkinContainer(const QString &generalName) 
     }
 
     return NULL;
+}
+
+Dashboard *RoomScene::getDasboard() const
+{
+    return dashboard;
 }
 
 void RoomScene::changeHp(const QString &who, int delta, DamageStruct::Nature nature, bool losthp)

@@ -4,6 +4,7 @@
 #include "standard.h"
 #include "clientplayer.h"
 #include "skinbank.h"
+#include "roomscene.h"
 
 #include <QPropertyAnimation>
 #include <QGraphicsSceneMouseEvent>
@@ -109,7 +110,7 @@ const int GuhuoBox::bottomBlankWidth = 55; //85
 const int GuhuoBox::interval = 10; //15
 const int GuhuoBox::outerBlankWidth = 25; //37
 
-const int GuhuoBox::titleWidth = 20;
+const int GuhuoBox::titleWidth = 15; // 20
 
 GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
 {
@@ -226,6 +227,8 @@ void GuhuoBox::popup()
         emit onButtonClick();
         return;
     }
+    RoomSceneInstance->getDasboard()->disableAllCards();
+    RoomSceneInstance->current_guhuo_box = this;
     const int buttonWidth = getButtonWidth();
     foreach (const QString &key, card_list.keys()) {
         foreach (const QString &card_name, card_list.value(key)) {
@@ -286,10 +289,12 @@ void GuhuoBox::reply()
     const QString &answer = sender()->objectName();
     Self->tag[skill_name] = answer;
     emit onButtonClick();
+    RoomSceneInstance->current_guhuo_box = NULL;
     clear();
 }
 void GuhuoBox::clear()
 {
+
     if (!isVisible())
         return;
 
@@ -304,6 +309,7 @@ void GuhuoBox::clear()
     titles.values().clear();
 
     disappear();
+
 }
 QString GuhuoBox::translate(const QString &option) const
 {

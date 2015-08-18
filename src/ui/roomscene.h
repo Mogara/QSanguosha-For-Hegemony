@@ -166,6 +166,10 @@ public:
     void addHeroSkinContainer(HeroSkinContainer *heroSkinContainer);
     HeroSkinContainer *findHeroSkinContainer(const QString &generalName) const;
 
+    Dashboard *getDasboard() const;
+
+    GuhuoBox *current_guhuo_box;
+
 public slots:
     void addPlayer(ClientPlayer *player);
     void removePlayer(const QString &player_name);
