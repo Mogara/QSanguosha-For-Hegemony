@@ -562,7 +562,7 @@ sgs.ai_skill_use["@@shensu1"] = function(self, prompt)
 	
 	if dummy_use.card and not dummy_use.to:isEmpty() then
 		for _, enemy in sgs.qlist(dummy_use.to) do
-			if self:isEnemy(enemy) and sgs.getDefenseSlash(enemy, self) < 2.45 then
+			if self:isEnemy(enemy) and sgs.getDefenseSlash(enemy, self) < 2.95 + self.player:getCards("j"):length() * 0.7 then
 				if  enemy:getHp() <= 1 and (not self.player:inMyAttackRange(enemy) or self:getCardsNum("Slash") == 0) then
 					return "@ShensuCard=.->" .. enemy:objectName()
 				end

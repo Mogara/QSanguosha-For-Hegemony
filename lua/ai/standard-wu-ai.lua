@@ -349,7 +349,7 @@ kurou_skill.getTurnUseCard = function(self, inclusive)
 
 	--Suicide by Kurou
 	local nextplayer = self.player:getNextAlive()
-	if self.player:getHp() == 1 and self:getCardsNum("Armor") == 0 and self:getCardsNum("Jink") == 0 and self:getKingdomCount() > 1 then
+	if self.player:getHp() == 1 and self:getCardsNum("Armor") == 0 and self:getCardsNum("Jink") == 0 and self:getKingdomCount() > 2 then
 		local to_death = false
 		if self:isFriend(nextplayer) then
 			for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
@@ -579,9 +579,14 @@ duoshi_skill.getTurnUseCard = function(self, inclusive)
 		end
 	end
 
+	local duoshiArg = DuoTime/ 1.3 - 042 * self:getOverflow() 
+	
+	
+	--to_do: make the arg more effective.
+	
 	
 	if red_card then
-		if self:getUseValue(red_card) > self:getUseValue(sgs.Sanguosha:cloneCard("await_exhausted")) + DuoTime/ 1.3 then return end
+		if self:getUseValue(red_card) > self:getUseValue(sgs.Sanguosha:cloneCard("await_exhausted")) + duoshiArg then return end
 		local card_id = red_card:getEffectiveId()
 		local card_str = string.format("await_exhausted:duoshi[%s:%d]=%d&duoshi",red_card:getSuitString(), red_card:getNumber(), red_card:getEffectiveId())
 		local await = sgs.Card_Parse(card_str)
