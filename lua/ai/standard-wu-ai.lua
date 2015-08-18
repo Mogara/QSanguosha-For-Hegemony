@@ -1829,7 +1829,7 @@ sgs.ai_skill_exchange.guzheng = function(self,pattern,max_num,min_num,expand_pil
 	local who = self.room:getCurrent()
 
 	if not self.player:hasShownOneGeneral() then
-		if not (self:willShowForAttack() or self:willShowForDefence()) and #card_ids < 3  then
+		if not (self:willShowForAttack() or self:willShowForDefence()) and #card_ids < 2  then
 			return {}
 		end
 	end
