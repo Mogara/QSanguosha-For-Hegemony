@@ -479,33 +479,33 @@ sgs.ai_cardsview.hongfa_slash = function(self, class_name, player)
 	return card_str
 end
 
-sgs.ai_skill_use["@@hongfa1"] = function(self)
+sgs.ai_skill_exchange["hongfa1"] = function(self,pattern,max_num,min_num,expand_pile)
 	local ints = sgs.QList2Table(self.player:getPile("heavenly_army"))
 	local int = getHongfaCard(ints)
 	if int then
-		return "@HongfaCard=" .. tostring(int)
+		return {int}
 	end
-	return "."
+	return {}
 end
 
-sgs.ai_skill_use["@@hongfa2"] = function(self)
-	if self.player:getRole() == "careerist" then return "." end
+sgs.ai_skill_exchange["hongfa2"] = function(self,pattern,max_num,min_num,expand_pile)
+	if self.player:getRole() == "careerist" then return {} end
 	local ints = sgs.QList2Table(self.player:getPile("heavenly_army"))
 	local pn = self.player:getTag("HongfaTianbingData"):toPlayerNum()
-	if pn.m_toCalculate ~= self.player:getKingdom() then return "." end
+	if pn.m_toCalculate ~= self.player:getKingdom() then return {} end
 	if pn.m_reason == "wuxin" or "hongfa" == pn.m_reason or pn.m_reason == "PeaceSpell" then
-		return "@HongfaTianbingCard=" .. table.concat(ints, "+")
+		return ints
 	elseif pn.m_reason == "DragonPhoenix" or pn.m_reason == "xiongyi" then
-		return "."
+		return {}
 	elseif pn.m_reason == "fight_together" then
 		--@todo
-		return "."
+		return {}
 	elseif pn.m_reason == "IronArmor" then
-		return "."
+		return {}
 	else
 		self.room:writeToConsole("@@hongfa2 " .. pn.m_reason .. " is empty!")
 	end
-	return "."
+	return {}
 end
 
 sgs.ai_slash_prohibit.PeaceSpell = function(self, from, enemy, card)

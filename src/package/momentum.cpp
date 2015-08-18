@@ -1324,89 +1324,6 @@ public:
     }
 };
 
-HongfaCard::HongfaCard()
-{
-    target_fixed = true;
-    will_throw = false;
-    handling_method = Card::MethodNone;
-}
-
-void HongfaCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const
-{
-    source->tag["hongfa_prevent"] = subcards.first();
-}
-
-HongfaTianbingCard::HongfaTianbingCard()
-{
-    target_fixed = true;
-    will_throw = false;
-    handling_method = Card::MethodNone;
-}
-
-void HongfaTianbingCard::onUse(Room *room, const CardUseStruct &use) const
-{
-    CardUseStruct card_use = use;
-    ServerPlayer *player = card_use.from;
-
-    LogMessage log;
-    log.type = "#HongfaTianbing";
-    log.from = player;
-    log.arg = "+" + QString::number(subcardsLength());
-    room->sendLog(log);
-
-    QVariant data = QVariant::fromValue(card_use);
-    RoomThread *thread = room->getThread();
-    Q_ASSERT(thread != NULL);
-    thread->trigger(PreCardUsed, room, player, data);
-    card_use = data.value<CardUseStruct>();
-    thread->trigger(CardUsed, room, player, data);
-    thread->trigger(CardFinished, room, player, data);
-}
-
-class HongfaVS : public ViewAsSkill
-{
-public:
-    HongfaVS() : ViewAsSkill("hongfa")
-    {
-        expand_pile = "heavenly_army";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const
-    {
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
-    {
-        return pattern.startsWith("@@hongfa");
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
-    {
-        if (!Self->getPile("heavenly_army").contains(to_select->getId()))
-            return false;
-        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1"))
-            return selected.isEmpty();
-        else
-            return true;
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const
-    {
-        if (cards.isEmpty())
-            return NULL;
-        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1")) {
-            HongfaCard *c = new HongfaCard;
-            c->addSubcards(cards);
-            return c;
-        } else {
-            HongfaTianbingCard *c = new HongfaTianbingCard;
-            c->addSubcards(cards);
-            return c;
-        }
-    }
-};
-
 class Hongfa : public TriggerSkill
 {
 public:
@@ -1416,7 +1333,6 @@ public:
             << EventPhaseStart // get Tianbing
             << PreHpLost << GeneralShown << GeneralHidden << GeneralRemoved << Death; // HongfaSlash
         frequency = Compulsory;
-        view_as_skill = new HongfaVS;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
@@ -1480,10 +1396,16 @@ public:
             else if (player_num.m_type == MaxCardsType::Normal) {
                 player->tag["HongfaTianbingData"] = data; // for AI
                 QString prompt = QString("@hongfa-tianbing:%1").arg(player_num.m_reason);
-                const Card *card = room->askForUseCard(player, "@@hongfa2", prompt, 2, Card::MethodNone);
+                //const Card *card = room->askForUseCard(player, "@@hongfa2", prompt, 2, Card::MethodNone);
+                const Card *card = room->askForExchange(player,"hongfa2",player->getPile("heavenly_army").length(),0,prompt,"heavenly_army");
                 player->tag.remove("HongfaTianbingData");
-                if (card)
+                if (card->subcardsLength() > 0) {
+                    player->showGeneral(player->inHeadSkills(objectName()));
                     player_num.m_num += card->subcardsLength();
+                    room->notifySkillInvoked(player,objectName());
+                    room->broadcastSkillInvoke(objectName(),2);
+                    delete card;
+                }
             }
             data = QVariant::fromValue(player_num);
             return false;
@@ -1492,7 +1414,15 @@ public:
             return true;
         if (triggerEvent == PreHpLost) {
             player->tag.remove("hongfa_prevent");
-            return room->askForUseCard(player, "@@hongfa1", "@hongfa-prevent", 1, Card::MethodNone);
+            //return room->askForUseCard(player, "@@hongfa1", "@hongfa-prevent", 1, Card::MethodNone);
+            const Card *card = room->askForExchange(player,"hongfa1",1,0,"@hongfa-prevent","heavenly_army");
+            if (card->subcardsLength() > 0) {
+                room->notifySkillInvoked(player,objectName());
+                room->broadcastSkillInvoke(objectName(),1);
+                player->tag["hongfa_prevent"] = card->getEffectiveId();
+                delete card;
+                return true;
+            }
         }
         return false;
     }
@@ -1645,8 +1575,6 @@ MomentumPackage::MomentumPackage()
     addMetaObject<CunsiCard>();
     addMetaObject<DuanxieCard>();
     addMetaObject<FengshiSummon>();
-    addMetaObject<HongfaCard>();
-    addMetaObject<HongfaTianbingCard>();
     addMetaObject<WendaoCard>();
 }
 
