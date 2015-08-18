@@ -105,7 +105,7 @@ void GuhuoButton::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 
 const int GuhuoBox::minButtonWidth = 100;
 const int GuhuoBox::defaultButtonHeight = 40;
-const int GuhuoBox::topBlankWidth = 42;
+const int GuhuoBox::topBlankWidth = 30; //42
 const int GuhuoBox::bottomBlankWidth = 55; //85
 const int GuhuoBox::interval = 10; //15
 const int GuhuoBox::outerBlankWidth = 25; //37
@@ -289,11 +289,13 @@ void GuhuoBox::reply()
     const QString &answer = sender()->objectName();
     Self->tag[skill_name] = answer;
     emit onButtonClick();
-    RoomSceneInstance->current_guhuo_box = NULL;
     clear();
 }
 void GuhuoBox::clear()
 {
+    RoomSceneInstance->current_guhuo_box = NULL;
+    if (Self->getPhase() == Player::Play)
+        RoomSceneInstance->getDasboard()->enableCards();
 
     if (!isVisible())
         return;
