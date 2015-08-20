@@ -1981,6 +1981,7 @@ void Room::notifyMoveToPile(ServerPlayer *player, const QList<int> &cards, const
         move = CardsMoveStruct(cards, NULL, player, place, Player::PlaceSpecial,
             CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, player->objectName()));
         move.to_pile_name = "#" + reason;
+        player->tag[reason + "_Pile"] = IntList2StringList(cards).join("+");
     } else {
         move = CardsMoveStruct(cards, player, NULL, Player::PlaceSpecial, place,
             CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, player->objectName()));
