@@ -3264,7 +3264,7 @@ function SmartAI:askForPlayersChosen(targets, reason, max_num, min_num)
 	end
 	local copy = table.copyFrom(sgs.QList2Table(targets))
 	while (#returns < min_num) do
-		local r = math.random(0, copy:length() - 1)
+		local r = math.random(1, #copy)
 		table.insert(returns,copy[r])
 		table.remove(copy,r)
 	end
