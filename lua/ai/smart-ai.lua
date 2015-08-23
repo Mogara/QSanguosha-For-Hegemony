@@ -3529,10 +3529,11 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 	local other_suit, hasSpade = {}
 	for _, card in ipairs(cards) do
 		local card_x = sgs.Sanguosha:getEngineCard(card:getEffectiveId())
+		local is_peach = self:isFriend(who) and who:hasSkill("tiandu") or isCard("Peach", card_x, self.player)  
 		if who:hasShownSkill("hongyan") and card_x:getSuit() == sgs.Card_Spade then
 			card_x = sgs.cloneCard(card_x:objectName(), sgs.Card_Heart, card:getNumber())
 		end
-		if reason == "beige" and not isCard("Peach", card_x, self.player) then
+		if reason == "beige" and not is_peach then
 			local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
 			if damage.from then
 				if self:isFriend(damage.from) then
@@ -3559,10 +3560,10 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 				end
 			end
 		elseif self:isFriend(who) and judge:isGood(card_x)
-				and not (self_card and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and isCard("Peach", card_x, self.player)) then
+				and not (self_card) and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and is_peach then
 			table.insert(can_use, card)
 		elseif self:isEnemy(who) and not judge:isGood(card_x)
-				and not (self_card and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and isCard("Peach", card_x, self.player)) then
+				and not (self_card) and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and is_peach then
 			table.insert(can_use, card)
 		end
 	end
