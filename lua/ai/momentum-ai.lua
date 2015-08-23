@@ -45,6 +45,7 @@ function sgs.ai_skill_invoke.wangxi(self, data)
 		if (self.player:isFriendWith(target) or self:isFriend(target)) and not self:needKongcheng(target)then
 				return true
 		else
+			if self.player:hasShownSkill("fankui") and target:isNude() then return true end
 			if  not ( target:getPhase() ~= sgs.Player_NotActive and (target:hasShownSkills(sgs.Active_cardneed_skill) or target:hasWeapon("Crossbow")) )
 				and not ( target:getPhase() == sgs.Player_NotActive and target:hasShownSkills(sgs.notActive_cardneed_skill) )
 				or self:needKongcheng(target) then
