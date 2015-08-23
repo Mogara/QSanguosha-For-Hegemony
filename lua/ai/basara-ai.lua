@@ -219,6 +219,10 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 
 	if skillTrigger then
 		if string.find(choices, "jieming") then return "jieming" end
+		if string.find(choices, "wangxi") and string.find(choices, "fankui") then 
+			local from = data:toDamage().from
+			if from and from:isNude() then return "wangxi" end
+		end
 		if string.find(choices, "fankui") and string.find(choices, "ganglie") then return "fankui" end
 		if string.find(choices, "wangxi") and string.find(choices, "ganglie") then return "ganglie" end
 		if string.find(choices, "luoshen") and string.find(choices, "guanxing") then return "guanxing" end
