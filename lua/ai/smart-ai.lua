@@ -2752,6 +2752,7 @@ function SmartAI:askForUseCard(pattern, prompt, method)
 		local dummy_use = {isDummy = true}
 		if not c:targetFixed() then dummy_use.to = sgs.SPlayerList() end
 		self:useCardByClassName(c,dummy_use)
+		if dummy_use.card == nil then return "." end
 		local str = c:toString()
 		if not c:targetFixed() then 
 			local target_objectname = {}

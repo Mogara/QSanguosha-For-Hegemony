@@ -568,6 +568,7 @@ sgs.ai_skill_invoke.weimu = function(self, data)
 			return false
 		end
 	end
+	if use.card:isKindOf("ThreatenEmperor") then return false end
 	if self:isWeak() then return true end
 	if not self:willShowForDefence() then return false end
 	return true
