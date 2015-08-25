@@ -1278,7 +1278,7 @@ function SmartAI:getDynamicUsePriority(card)
 
 	local value = self:getUsePriority(card) or 0
 	if card:getTypeId() == sgs.Card_TypeEquip then
-		if self.player:hasSkills("xiaoji+qixi") and self:getSameEquip(card) then return 3 end
+		if self.player:hasSkills("xiaoji+qixi") and self:getSameEquip(card) and self:getSameEquip(card):isBlack() then return 3.3 end
 		if self.player:hasSkills(sgs.lose_equip_skill) then value = value + 12 end
 		if card:isKindOf("Weapon") and self.player:getPhase() == sgs.Player_Play and #self.enemies > 0 then
 			self:sort(self.enemies)
