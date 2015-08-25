@@ -222,15 +222,34 @@ end
 
 function ganglie_discard(self, discard_num, min_num, optional, include_equip, skillName)
 	local xiahou = sgs.findPlayerByShownSkillName(skillName)
-
-	for _, card in sgs.qlist(self.player:getHandcards()) do
-		if isCard("Peach", card, self.player) then
-			return {}
-		end
-	end
-
 	if xiahou and (not self:damageIsEffective(self.player, sgs.DamageStruct_Normal, xiahou) or self:getDamagedEffects(self.player, xiahou)) then return {} end
 	if xiahou and self:needToLoseHp(self.player, xiahou) then return {} end
+	local to_discard = {} --copy from V2 
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	local index = 0
+	local all_peaches = 0
+	for _, card in ipairs(cards) do
+		if isCard("Peach", card, self.player) then
+			all_peaches = all_peaches + 1
+		end
+	end
+	if all_peaches >= 2 and self:getOverflow() <= 0 then return {} end
+	self:sortByKeepValue(cards)
+	cards = sgs.reverse(cards)
+
+	for i = #cards, 1, -1 do
+		local card = cards[i]
+		if not isCard("Peach", card, self.player) and not self.player:isJilei(card) then
+			table.insert(to_discard, card:getEffectiveId())
+			table.remove(cards, i)
+			index = index + 1
+			if index == 2 then break end
+		end
+	end
+	if #to_discard < 2 then return {}
+	else
+		return to_discard
+	end
 end
 
 sgs.ai_skill_discard.ganglie = function(self, discard_num, min_num, optional, include_equip)
