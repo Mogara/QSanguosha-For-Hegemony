@@ -2561,6 +2561,26 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 			end
 		end
 	else
+		if reason == "hengzheng" and self.player:getHp() <= 2 then
+			local hasweapon = self.player:getWeapon()
+			local hasarmor = self.player:getArmor()
+			local hasoffhorse = self.player:getOffensiveHorse()
+			local hasdefhorse = self.player:getDefensiveHorse()
+			for _, id in sgs.qlist(self.player:getHandPile()) do
+				if sgs.Sanguosha:getCard(id):isKindOf("Weapon") then hasweapon = true end
+				if sgs.Sanguosha:getCard(id):isKindOf("Armor") then hasarmor = true end
+				if sgs.Sanguosha:getCard(id):isKindOf("OffensiveHorse") then hasoffhorse = true end
+				if sgs.Sanguosha:getCard(id):isKindOf("DefensiveHorse") then hasdefhorse = true end
+			end
+			if hasweapon and who:getWeapon() then table.insert(disable_list, who:getWeapon():getEffectiveId()) end
+			if hasarmor and who:getgetArmor() then table.insert(disable_list, who:getArmor():getEffectiveId()) end
+			if hasoffhorse and who:getOffensiveHorse() then table.insert(disable_list, who:getOffensiveHorse():getEffectiveId()) end
+			if hasdefhorse and who:getDefensiveHorse() then table.insert(disable_list, who:getDefensiveHorse():getEffectiveId()) end
+			if #disable_list >= who:getEquips():length() + who:getHandcardNum() then
+				disable_list = {}
+			end
+		end
+
 		local dangerous = self:getDangerousCard(who)
 		if flags:match("e") and dangerous and (not isDiscard or self.player:canDiscard(who, dangerous)) and not table.contains(disable_list, dangerous) then return dangerous end
 		if flags:match("e") and who:getTreasure() and (who:getPile("wooden_ox"):length() > 1 or who:hasTreasure("JadeSeal")) and (not isDiscard or self.player:canDiscard(who, who:getTreasure():getId()))
