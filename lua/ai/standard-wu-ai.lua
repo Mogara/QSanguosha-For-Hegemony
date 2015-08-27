@@ -1840,9 +1840,10 @@ sgs.ai_skill_exchange.guzheng = function(self,pattern,max_num,min_num,expand_pil
 					or (self:isEnemy(who) and who:hasSkill("kongcheng") and who:isKongcheng())
 	if not invoke then return {} end
 
-	local cards, except_Equip, except_Key = {}, {}, {}
+	local cards, except_Equip, except_Key , all = {}, {}, {}, {}
 	for _, card_id in ipairs(card_ids) do
 		local card = sgs.Sanguosha:getCard(card_id)
+		table.insert(all, card)
 		if self.player:hasSkill("zhijian") and not card:isKindOf("EquipCard") then
 			table.insert(except_Equip, card)
 		end
@@ -1903,6 +1904,12 @@ sgs.ai_skill_exchange.guzheng = function(self,pattern,max_num,min_num,expand_pil
 			end
 		end
 
+		local card, friend = self:getCardNeedPlayer(all, {who})
+		if card and friend then
+			return {card:getEffectiveId()}
+		else
+			return {all[1]:getEffectiveId()}
+		end
 	else
 
 		for _, card in ipairs(cards) do
