@@ -1053,6 +1053,7 @@ sgs.ai_skill_invoke.IceSword = function(self, data)
 		elseif target:getLostHp() < 1 then return false end
 		return true
 	else
+		if target:hasArmorEffect("PeaceSpell") and damage.nature ~= sgs.DamageStruct_Normal then return true end
 		if self:isWeak(target) then return false end
 		if damage.damage > 1 or self:hasHeavySlashDamage(self.player, damage.card, target) then return false end
 		if target:hasShownSkill("lirang") and #self:getFriendsNoself(target) > 0 then return false end
