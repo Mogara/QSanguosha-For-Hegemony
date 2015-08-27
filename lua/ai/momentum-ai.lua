@@ -510,9 +510,10 @@ sgs.ai_skill_exchange["hongfa2"] = function(self,pattern,max_num,min_num,expand_
 end
 
 sgs.ai_slash_prohibit.PeaceSpell = function(self, from, enemy, card)
-	if enemy:hasArmorEffect("PeaceSpell") and card:isKindOf("NatureSlash") and not IgnoreArmor(from, enemy) then return true end
+	if enemy:hasArmorEffect("PeaceSpell") and card:isKindOf("NatureSlash") and not IgnoreArmor(from, enemy) and not from:hasWeapon("IceSword") then return true end
 	return
 end
+
 function sgs.ai_armor_value.PeaceSpell(player, self)
 	if player:hasShownSkills("hongfa+wendao") then return 1000 end
 	if getCardsNum("Peach", player, player) + getCardsNum("Analeptic", player, player) == 0 and player:getHp() == 1 then
