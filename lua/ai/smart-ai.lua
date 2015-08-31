@@ -696,8 +696,12 @@ function SmartAI:updatePlayers(update, resetAI)
 			for _, aplayer in sgs.qlist(self.room:getOtherPlayers(self.player)) do
 				if self.lua_ai:relationTo(aplayer) == sgs.AI_Neutrality and not aplayer:isDead() then table.insert(neutrality, aplayer) end
 			end
+			local objective_level = {}
+			for _, p in ipairs(neutrality) do
+				objective_level[p:objectName()] = self:objectiveLevel(p)
+			end
 			local function compare_func(a, b)
-				return self:objectiveLevel(a) > self:objectiveLevel(b)
+				return objective_level[a:objectName()] > objective_level[b:objectName()]
 			end
 			table.sort(neutrality, compare_func)
 			table.insert(self.enemies, neutrality[1])
@@ -1370,9 +1374,14 @@ function SmartAI:cardNeed(card)
 end
 
 function SmartAI:sortByKeepValue(cards, inverse, kept)
+	local values = {}
+	for _, card in ipairs(cards) do
+		values[card:getId()] = self:getKeepValue(card)
+	end
+
 	local compare_func = function(a, b)
-		local v1 = self:getKeepValue(a)
-		local v2 = self:getKeepValue(b)
+		local v1 = values[a:getId()]
+		local v2 = values[b:getId()]
 
 		if v1 ~= v2 then
 			if inverse then return v1 > v2 end
@@ -1387,9 +1396,14 @@ function SmartAI:sortByKeepValue(cards, inverse, kept)
 end
 
 function SmartAI:sortByUseValue(cards, inverse)
+	local values = {}
+	for _, card in ipairs(cards) do
+		values[card:getId()] = self:getUseValue(card)
+	end
+
 	local compare_func = function(a, b)
-		local value1 = self:getUseValue(a)
-		local value2 = self:getUseValue(b)
+		local value1 = values[a:getId()]
+		local value2 = values[b:getId()]
 
 		if value1 ~= value2 then
 			if not inverse then return value1 > value2 end
@@ -1404,9 +1418,14 @@ function SmartAI:sortByUseValue(cards, inverse)
 end
 
 function SmartAI:sortByUsePriority(cards)
+	local values = {}
+	for _, card in ipairs(cards) do
+		values[card:getId()] = self:getUsePriority(card)
+	end
+
 	local compare_func = function(a, b)
-		local value1 = self:getUsePriority(a)
-		local value2 = self:getUsePriority(b)
+		local value1 = values[a:getId()]
+		local value2 = values[b:getId()]
 
 		if value1 ~= value2 then
 			return value1 > value2
@@ -1418,9 +1437,14 @@ function SmartAI:sortByUsePriority(cards)
 end
 
 function SmartAI:sortByDynamicUsePriority(cards)
+	local values = {}
+	for _, card in ipairs(cards) do
+		values[card:getId()] = self:getDynamicUsePriority(card)
+	end
+
 	local compare_func = function(a,b)
-		local value1 = self:getDynamicUsePriority(a)
-		local value2 = self:getDynamicUsePriority(b)
+		local value1 = values[a:getId()]
+		local value2 = values[b:getId()]
 
 		if value1 ~= value2 then
 			return value1 > value2
@@ -1433,9 +1457,14 @@ function SmartAI:sortByDynamicUsePriority(cards)
 end
 
 function SmartAI:sortByCardNeed(cards, inverse)
+	local values = {}
+	for _, card in ipairs(cards) do
+		values[card:getId()] = self:cardNeed(card)
+	end
+
 	local compare_func = function(a,b)
-		local value1 = self:cardNeed(a)
-		local value2 = self:cardNeed(b)
+		local value1 = values[a:getId()]
+		local value2 = values[b:getId()]
 
 		if value1 ~= value2 then
 			if inverse then return value1 > value2 end
@@ -2774,7 +2803,7 @@ function SmartAI:askForUseCard(pattern, prompt, method)
 		self:useCardByClassName(c,dummy_use)
 		if dummy_use.card == nil then return "." end
 		local str = c:toString()
-		if not c:targetFixed() then 
+		if not c:targetFixed() then
 			local target_objectname = {}
 			for _, p in sgs.qlist(dummy_use.to) do
 				table.insert(target_objectname, p:objectName())
@@ -3549,7 +3578,7 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 	local other_suit, hasSpade = {}
 	for _, card in ipairs(cards) do
 		local card_x = sgs.Sanguosha:getEngineCard(card:getEffectiveId())
-		local is_peach = self:isFriend(who) and who:hasSkill("tiandu") or isCard("Peach", card_x, self.player)  
+		local is_peach = self:isFriend(who) and who:hasSkill("tiandu") or isCard("Peach", card_x, self.player)
 		if who:hasShownSkill("hongyan") and card_x:getSuit() == sgs.Card_Spade then
 			card_x = sgs.cloneCard(card_x:objectName(), sgs.Card_Heart, card:getNumber())
 		end
@@ -4730,7 +4759,7 @@ function SmartAI:useEquipCard(card, use)
 			slash:deleteLater()
 			self:useCardSlash(slash,d_use)
 			if d_use.card then
-				return 
+				return
 			end
 		end
 		use.card = card
