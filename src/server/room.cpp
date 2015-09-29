@@ -5783,7 +5783,7 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
         }
 
         bool isTrustAI = zhuge->getState() == "trust";
-        if (success) {
+        if (success && visible) {
             if (isTrustAI) {
                 stepArgs[1] = QVariant();
                 zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);
@@ -5886,9 +5886,9 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
                     }
                 }
             }
+            thread->delay();
+            thread->delay();
         }
-        thread->delay();
-        thread->delay();
 
         if (isTrustAI) {
             JsonArray stepArgs;
