@@ -102,8 +102,10 @@ sgs.ai_skill_invoke.wushuang = function(self, data)
 	local current_trigger = data:toPlayer()
 	local index = use.to:indexOf(current_trigger)
 	local left_trigger = sgs.SPlayerList()
-	for i = index, use.to:length() - 1, 1 do
-		left_trigger:append(use.to:at(i))
+	if use.to:length() > index + 1 then
+		for i = index, use.to:length() - 1, 1 do
+			left_trigger:append(use.to:at(i))
+		end
 	end
 	if use.card then
 		if use.card:isKindOf("Duel") then
