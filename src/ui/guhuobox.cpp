@@ -294,7 +294,10 @@ void GuhuoBox::reply()
 void GuhuoBox::clear()
 {
     RoomSceneInstance->current_guhuo_box = NULL;
-    if (Self->getPhase() == Player::Play)
+
+    if (sender() != NULL && Self->tag[skill_name] == sender()->objectName() && Sanguosha->getViewAsSkill(skill_name) != NULL)
+        RoomSceneInstance->getDasboard()->updatePending();
+    else if (Self->getPhase() == Player::Play)
         RoomSceneInstance->getDasboard()->enableCards();
 
     if (!isVisible())
