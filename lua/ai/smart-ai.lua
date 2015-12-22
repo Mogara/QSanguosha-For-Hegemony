@@ -2602,7 +2602,7 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 				if sgs.Sanguosha:getCard(id):isKindOf("DefensiveHorse") then hasdefhorse = true end
 			end
 			if hasweapon and who:getWeapon() then table.insert(disable_list, who:getWeapon():getEffectiveId()) end
-			if hasarmor and who:getgetArmor() then table.insert(disable_list, who:getArmor():getEffectiveId()) end
+			if hasarmor and who:getArmor() then table.insert(disable_list, who:getArmor():getEffectiveId()) end
 			if hasoffhorse and who:getOffensiveHorse() then table.insert(disable_list, who:getOffensiveHorse():getEffectiveId()) end
 			if hasdefhorse and who:getDefensiveHorse() then table.insert(disable_list, who:getDefensiveHorse():getEffectiveId()) end
 			if #disable_list >= who:getEquips():length() + who:getHandcardNum() then
