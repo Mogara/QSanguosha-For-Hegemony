@@ -2782,7 +2782,7 @@ function SmartAI:askForCard(pattern, prompt, data)
 end
 
 function SmartAI:askForUseCard(pattern, prompt, method)
-	if string.find(pattern,"%d") then
+	if string.find(pattern,"%d") and not string.find(pattern,"@@") then
 		local cards = sgs.QList2Table(self.player:getHandcards())
 		local to_choose = {}
 		for _,card in ipairs(cards)do
