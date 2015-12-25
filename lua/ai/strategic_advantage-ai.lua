@@ -102,13 +102,24 @@ sgs.ai_skill_use_func.TransferCard = function(transferCard, use, self)
 				end
 			end
 		elseif card:isKindOf("BurningCamps") then
-			for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
-				if p:hasShownOneGeneral() and transferCard:targetFilter(targets, p, self.player) and card:isAvailable(p) then
-					local np = p:getNextAlive()
-					if not self:isFriend(np) and (not np:isChained() or self:isGoodChainTarget(np, p, sgs.DamageStruct_Fire, 1, use.card)) then
+			local gameProcess = sgs.gameProcess()
+			if string.find(gameProcess, self.player:getKingdom() .. ">") then
+				for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+					if transferCard:targetFilter(targets, p, self.player) and (self:isFriend(p) or (p:hasShownOneGeneral() and self:willSkipPlayPhase(p))) then
 						use.card = sgs.Card_Parse("@TransferCard=" .. card:getEffectiveId())
 						if use.to then use.to:append(p) end
 						return
+					end
+				end
+			else
+				for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+					if p:hasShownOneGeneral() and transferCard:targetFilter(targets, p, self.player) and card:isAvailable(p) then
+						local np = p:getNextAlive()
+						if not self:isFriend(np) and (not np:isChained() or self:isGoodChainTarget(np, p, sgs.DamageStruct_Fire, 1, use.card)) then
+							use.card = sgs.Card_Parse("@TransferCard=" .. card:getEffectiveId())
+							if use.to then use.to:append(p) end
+							return
+						end
 					end
 				end
 			end
