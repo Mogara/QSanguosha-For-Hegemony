@@ -5860,6 +5860,7 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
                 }
 
                 for (int i = 0; i < bottom_cards.length() - 1; ++i) {
+                    fromPos = 0;
                     if (bottom_cards.at(i) != downs.at(i)) {
                         toPos = -i - 1;
                         foreach (int id, downs) {

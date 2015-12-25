@@ -440,12 +440,15 @@ QPixmap QSanRoomSkin::getGeneralPixmap(const QString &generalName, GeneralIconSi
 
 QPixmap QSanRoomSkin::getCardTinyPixmap(const QString &card_object_name) const
 {
+    static QPixmap empty;
     QString key = QString(S_SKIN_KEY_CARD_TINY_ICON).arg(card_object_name);
     if (isImageKeyDefined(key))
         return getPixmap(key);
     key = QString(S_SKIN_KEY_CARD_TINY_ICON);
     if (isImageKeyDefined(key.arg(S_SKIN_KEY_DEFAULT)))
         return getPixmap(key, card_object_name);
+
+    return empty;
 }
 
 QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index, const Player *player) const
