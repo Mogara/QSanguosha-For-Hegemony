@@ -1399,7 +1399,7 @@ public:
                 //const Card *card = room->askForUseCard(player, "@@hongfa2", prompt, 2, Card::MethodNone);
                 const Card *card = room->askForExchange(player,"hongfa2",player->getPile("heavenly_army").length(),0,prompt,"heavenly_army");
                 player->tag.remove("HongfaTianbingData");
-                if (card->subcardsLength() > 0) {
+                if (card != NULL) {
                     player->showGeneral(player->inHeadSkills(objectName()));
                     player_num.m_num += card->subcardsLength();
                     room->notifySkillInvoked(player,objectName());
@@ -1409,14 +1409,13 @@ public:
             }
             data = QVariant::fromValue(player_num);
             return false;
-        }
-        if (triggerEvent == EventPhaseStart)
+        } else if (triggerEvent == EventPhaseStart)
             return true;
-        if (triggerEvent == PreHpLost) {
+        else if (triggerEvent == PreHpLost) {
             player->tag.remove("hongfa_prevent");
             //return room->askForUseCard(player, "@@hongfa1", "@hongfa-prevent", 1, Card::MethodNone);
             const Card *card = room->askForExchange(player,"hongfa1",1,0,"@hongfa-prevent","heavenly_army");
-            if (card->subcardsLength() > 0) {
+            if (card != NULL) {
                 room->notifySkillInvoked(player,objectName());
                 room->broadcastSkillInvoke(objectName(),1);
                 player->tag["hongfa_prevent"] = card->getEffectiveId();
