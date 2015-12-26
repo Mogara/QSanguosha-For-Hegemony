@@ -570,7 +570,6 @@ sgs.ai_skill_use["@@shensu1"] = function(self, prompt)
 
 	if not self.player:containsTrick("indulgence") and not self.player:containsTrick("supply_shortage") then
 		if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return "." end
-		if self.player:getPile("yijipile"):length() > 0 then return "." end
 	end
 
 	local slash = sgs.cloneCard("slash")
