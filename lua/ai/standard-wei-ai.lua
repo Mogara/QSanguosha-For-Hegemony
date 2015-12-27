@@ -561,7 +561,6 @@ sgs.qingguo_suit_value = {
 sgs.ai_suit_priority.qingguo= "diamond|heart|club|spade"
 
 sgs.ai_skill_use["@@shensu1"] = function(self, prompt)
-
 	if not self:willShowForAttack() then return "." end
 
 	if self.player:containsTrick("lightning") and self.player:getCards("j"):length() == 1
@@ -609,20 +608,30 @@ sgs.ai_skill_use["@@shensu1"] = function(self, prompt)
 					break
 				end
 			end
-			if not target then
-				local handcardsValue = 0
-				local cards = sgs.QList2Table(self.player:getCards("h"))
-				for _, c in ipairs(cards) do
-					handcardsValue = handcardsValue + self:getUseValue(c)
-				end
-				if handcardsValue > 16 or self:getOverflow(self.player, true) > 1 then
+		end
+		if not target then
+			local handcardsValue = 0
+			local cards = sgs.QList2Table(self.player:getCards("h"))
+			for _, c in ipairs(cards) do
+				handcardsValue = handcardsValue + self:getUseValue(c)
+			end
+			if handcardsValue > 16 or self:getOverflow(self.player, true) > 1 or (handcardsValue > 6 and self:isWeak()) then
+				if dummy_use.card and not dummy_use.to:isEmpty() then
 					local targets =  sgs.QList2Table(dummy_use.to)
 					self:sort(targets, "defenseSlash")
 					target = targets[1]
+				else
+					local targets = sgs.PlayerList()
+					for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+						if slash:targetFilter(targets, p, self.player) and not self:slashIsEffective(slash, p) then
+							target = p
+							break
+						end
+					end
 				end
 			end
-			if target then return "@ShensuCard=.->" .. target:objectName() end
 		end
+		if target then return "@ShensuCard=.->" .. target:objectName() end
 	end
 	return "."
 end
