@@ -6,7 +6,7 @@
   This game is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
   published by the Free Software Foundation; either version 3.0
-  of the License, or (at your option) any later version.
+  of the License, or (at your option) any later version.vv
 
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -3609,10 +3609,10 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 				end
 			end
 		elseif self:isFriend(who) and judge:isGood(card_x)
-				and not (self_card) and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and is_peach then
+				and not (self_card and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and is_peach ) then
 			table.insert(can_use, card)
 		elseif self:isEnemy(who) and not judge:isGood(card_x)
-				and not (self_card) and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and is_peach then
+				and not (self_card and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and is_peach ) then
 			table.insert(can_use, card)
 		end
 	end
