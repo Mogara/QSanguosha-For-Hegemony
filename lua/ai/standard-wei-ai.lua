@@ -348,17 +348,19 @@ function SmartAI:findTuxiTarget()
 	end
 end
 
--- sgs.ai_skill_use["@@tuxi"] = function(self, prompt)
-	-- if not self:willShowForAttack() then
-		-- return "."
-	-- end
-	-- if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return "." end
-	-- local targets = self:findTuxiTarget()
-	-- if type(targets) == "table" and #targets > 0 then
-		-- return ("@TuxiCard=.&->" .. table.concat(targets, "+"))
-	-- end
-	-- return "."
--- end
+--[[
+sgs.ai_skill_use["@@tuxi"] = function(self, prompt)
+	if not self:willShowForAttack() then
+		return "."
+	end
+	if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return "." end
+	local targets = self:findTuxiTarget()
+	if type(targets) == "table" and #targets > 0 then
+		return ("@TuxiCard=.&->" .. table.concat(targets, "+"))
+	end
+	return "."
+end
+]]
 
 sgs.ai_skill_playerchosen.tuxi = function(self)
 	if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return {} end
@@ -464,6 +466,10 @@ sgs.ai_skill_invoke.tiandu = function(self, data)
 	end
 	local judge = data:toJudge()
 	if judge.reason == "tuntian" and judge.card:getSuit() ~= sgs.Card_Heart then
+		if judge.card:isKindOf("Peach") then
+			return not (self:needKongcheng() and self.player:isKongcheng())
+		end
+		if judge.card:isKindOf("Analeptic") and self:isWeak() then return not (self:needKongcheng() and self.player:isKongcheng()) end
 		return false
 	end
 	return not (self:needKongcheng() and self.player:isKongcheng())
@@ -527,6 +533,7 @@ sgs.ai_need_damaged.yiji = function (self, attacker, player)
 
 	return player:getHp() > 2 and sgs.turncount > 2 and #self.friends > 1
 end
+
 sgs.ai_view_as.qingguo = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
@@ -545,7 +552,6 @@ sgs.ai_skill_invoke.luoshen = function(self, data)
 	if not self:willShowForAttack() and not self:willShowForDefence() and not self.player:hasSkill("fangzhu") then
 		return false
 	end
-
 	if self:willSkipPlayPhase() then
 		local erzhang = sgs.findPlayerByShownSkillName("guzheng")
 		if erzhang and self:isEnemy(erzhang) then return false end
@@ -561,6 +567,7 @@ sgs.qingguo_suit_value = {
 sgs.ai_suit_priority.qingguo= "diamond|heart|club|spade"
 
 sgs.ai_skill_use["@@shensu1"] = function(self, prompt)
+
 	if not self:willShowForAttack() then return "." end
 
 	if self.player:containsTrick("lightning") and self.player:getCards("j"):length() == 1
@@ -891,14 +898,9 @@ sgs.ai_skill_discard.qiaobian = function(self, discard_num, min_num, optional, i
 			return to_discard
 		elseif self.player:containsTrick("supply_shortage") then
 			if self.player:getHp() > self.player:getHandcardNum() then return to_discard end
-			--local cardstr = sgs.ai_skill_use["@@tuxi"](self, "@tuxi")
-			local targets = sgs.ai_skill_playerchosen.tuxi(self)
-			if #targets == 2 then
-				--local targetstr = cardstr:split("->")[2]
-				--local targets = targetstr:split("+")
-				if #targets == 2 then
-					return to_discard
-				end
+			local targets = self:findTuxiTarget()
+			if type(targets) == "table" and #targets == 2 then
+				return to_discard
 			end
 		elseif self.player:containsTrick("indulgence") then
 			if self.player:getHandcardNum() > 3 or self.player:getHandcardNum() > self.player:getHp() - 1 then return to_discard end
@@ -909,12 +911,12 @@ sgs.ai_skill_discard.qiaobian = function(self, discard_num, min_num, optional, i
 			end
 		end
 	elseif current_phase == sgs.Player_Draw and not self.player:isSkipped(sgs.Player_Draw) and not self.player:hasShownSkill("tuxi") then
+		if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return {} end
 		self.qiaobian_draw_targets = {}
-		--local cardstr = sgs.ai_skill_use["@@tuxi"](self, "@tuxi")
-		local targets = sgs.ai_skill_playerchosen.tuxi(self)
-		if #targets == 2  then
-			table.insert(self.qiaobian_draw_targets, targets[1]:objectName())
-			table.insert(self.qiaobian_draw_targets, targets[2]:objectName())
+		local targets = self:findTuxiTarget()
+		if type(targets) == "table" and #targets == 2 then
+			table.insert(self.qiaobian_draw_targets, targets[1])
+			table.insert(self.qiaobian_draw_targets, targets[2])
 			return to_discard
 		end
 		return {}
@@ -1455,7 +1457,7 @@ sgs.ai_skill_cardask["@xiaoguo-discard"] = function(self, data)
 	if not card_id then
 		if player:getWeapon() then card_id = player:getWeapon():getId()
 		elseif player:getOffensiveHorse() then card_id = player:getOffensiveHorse():getId()
-		elseif player:getTreasure() and not (who:getPile("wooden_ox"):length() > 1 or who:hasTreasure("JadeSeal")) then card_id = player:getTreasure():getId()
+		elseif player:getTreasure() and not (player:getPile("wooden_ox"):length() > 1 or player:hasTreasure("JadeSeal")) then card_id = player:getTreasure():getId()
 		elseif self:isWeak(player) and player:getArmor() then card_id = player:getArmor():getId()
 		elseif self:isWeak(player) and player:getDefensiveHorse() then card_id = player:getDefensiveHorse():getId()
 		end

@@ -235,10 +235,9 @@ tiaoxin_skill.getTurnUseCard = function(self)
 end
 
 sgs.ai_skill_use_func.TiaoxinCard = function(TXCard, use, self)
-	local distance = use.defHorse and 1 or 0
 	local targets = {}
 	for _, enemy in ipairs(self.enemies) do
-		if enemy:distanceTo(self.player, distance) <= enemy:getAttackRange() and not self:doNotDiscard(enemy) and self:isTiaoxinTarget(enemy) then
+		if enemy:inMyAttackRange(self.player) and not self:doNotDiscard(enemy) and self:isTiaoxinTarget(enemy) then
 			table.insert(targets, enemy)
 		end
 	end
@@ -265,6 +264,14 @@ end
 sgs.ai_skill_cardask["@tiaoxin-slash"] = function(self, data, pattern, target)
 	if target then
 		local cards = self:getCards("Slash")
+
+		local halberd ={}
+		for _, c in ipairs(cards) do
+			if c:isKindOf("HalberdCard") then table.insert(halberd, c) end
+		end
+		table.removeTable(cards, halberd)
+
+		local theslash
 		self:sortByUseValue(cards)
 		for _, slash in ipairs(cards) do
 			if self:isFriend(target) and self:slashIsEffective(slash, target) then
@@ -596,9 +603,9 @@ sgs.ai_skill_choice.DragonPhoenix = function(self, choices, data)
 		table.removeOne(choices_t, "zhangjiao")
 
 	end
-
-	if #choices_pri > 0 then
-		return choices_pri[math.random(1, #choices_pri)]
+	
+	if #choices_pri > 0 then 
+		return choices_pri[math.random(1, #choices_pri)] 
 	end
 	if #choices_t == 0 then choices_t = string.split(choices, "+") end
 	return choices_t[math.random(1, #choices_t)]

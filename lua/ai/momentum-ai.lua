@@ -17,7 +17,6 @@
 
   Mogara
 *********************************************************************]]
-
 sgs.ai_skill_invoke.xunxun = function(self, data)
 	if not (self:willShowForDefence() or self:willShowForAttack()) then
 		return false
@@ -41,19 +40,19 @@ end
 function sgs.ai_skill_invoke.wangxi(self, data)
 	if not self:willShowForMasochism() then return false end
 	local target = data:toPlayer()
+	if not target then target = data:toDamage().from end
 	if target then
-		if (self.player:isFriendWith(target) or self:isFriend(target)) and not self:needKongcheng(target)then
-				return true
+		if self:isFriend(target) then
+			if not self:needKongcheng(target) then return true end
 		else
-			if self.player:hasShownSkill("fankui") and target:isNude() then return true end
-			if  not ( target:getPhase() ~= sgs.Player_NotActive and (target:hasShownSkills(sgs.Active_cardneed_skill) or target:hasWeapon("Crossbow")) )
-				and not ( target:getPhase() == sgs.Player_NotActive and target:hasShownSkills(sgs.notActive_cardneed_skill) )
+			if not (target:getPhase() ~= sgs.Player_NotActive and (target:hasShownSkills(sgs.Active_cardneed_skill) or target:hasWeapon("Crossbow")))
+				and not (target:getPhase() == sgs.Player_NotActive and target:hasShownSkills(sgs.notActive_cardneed_skill))
 				or self:needKongcheng(target) then
 				return true
 			end
 		end
 	end
-return false
+	return false
 end
 
 
@@ -75,6 +74,7 @@ end
 function sgs.ai_skill_invoke.hengjiang(self, data)
 	if not self:willShowForMasochism() then return false end
 	local target = data:toPlayer()
+	if not target then target = data:toDamage().from end
 	if not target then return end
 	if self:isFriend(target) then
 		return false
@@ -305,7 +305,7 @@ sgs.ai_skill_invoke.jiang = function(self, data)
 	end
 	return true
 end
-
+--[[
 sgs.ai_skill_invoke.hengzheng = function(self, data)
 	local value = 0
 	for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
@@ -313,7 +313,76 @@ sgs.ai_skill_invoke.hengzheng = function(self, data)
 	end
 	return value >= 1.3
 end
+--]]
 
+sgs.ai_skill_invoke.hengzheng = function(self, data)
+	local value = 0
+	for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+		if p:isNude() and p:getJudgingArea():isEmpty() then continue end
+		if self:isFriend(p) then
+			local good = false
+			if not p:getJudgingArea():isEmpty() then
+				value = value + 1.5
+				good = true
+			end
+			if self:needToThrowArmor(p) then
+				value = value + 1.2
+				good = true
+			end
+			if p:getEquips():length() > 0 and p:hasShownSkills(sgs.lose_equip_skill) then
+				value = value + 1
+				good = true
+			end
+			if p:hasShownSkill("tuntian") then
+				value = value + 0.5
+				good = true
+			end
+			if self:needKongcheng(p, false, true) and p:getHandcardNum() == 1 then
+				value = value + 0.8
+				good = true
+			end
+			if not good then
+				value = value - 1
+			end
+		elseif self:isEnemy(p) then
+			if p:isNude() then
+				value = value - 1.5
+			else
+				if self:getDangerousCard(p) or self:getValuableCard(p) then
+					value = value + 0.8
+					if p:hasShownSkills(sgs.lose_equip_skill) then
+						value = value - 1
+					end
+				elseif p:getEquips():isEmpty() then
+					if self:needKongcheng(p, false, true) and p:getHandcardNum() == 1 then
+						value = value - 0.8
+					end
+					if getKnownCard(p, self.player, "Peach", true, "h") > 0 or getKnownCard(p, self.player, "Analeptic", true, "h") > 0 then
+						value = value + 2 / p:getHandcardNum()
+					end
+				elseif p:getHandcardNum() == 0 then
+					if p:getEquips() == 1 and self:needToThrowArmor(p) then
+						value = value - 1
+					end
+					if p:hasShownSkills(sgs.lose_equip_skill) then
+						value = value - 1
+					end
+				end
+				if p:hasShownSkill("tuntian") then
+					value = value - 0.5
+				end
+				value = value + 1
+			end
+		else
+			value = value + 1
+		end
+	end
+	if value > 2 then
+		return true
+	end
+	return false
+end
+	
 sgs.ai_skill_choice.benghuai = function(self, choices, data)
 	for _, friend in ipairs(self.friends) do
 		if friend:hasShownSkill("tianxiang") and (self.player:getHp() >= 3 or (self:getCardsNum("Peach") + self:getCardsNum("Analeptic") > 0 and self.player:getHp() > 1)) then

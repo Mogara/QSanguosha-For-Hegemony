@@ -327,7 +327,7 @@ end
 
 sgs.ai_chat_func[sgs.CardFinished].duoshi = function(self, player, data)
 	local use = data:toCardUse()
-	if use.card:isKindOf("AwaitExhausted") and use.card:getSkillName() == "duoshi" and use.from:usedTimes("ViewAsSkill_duoshiCard") >= 2 then
+	if use.card and use.card:isKindOf("AwaitExhausted") and use.card:getSkillName() == "duoshi" and use.from:usedTimes("ViewAsSkill_duoshiCard") >= 2 then
 		local chat = {
 			"又刷牌了",
 			"快点吧",
