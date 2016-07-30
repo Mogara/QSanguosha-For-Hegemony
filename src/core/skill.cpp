@@ -780,3 +780,8 @@ bool TreasureSkill::triggerable(const ServerPlayer *target) const
         return false;
     return target->hasTreasure(objectName());
 }
+
+FixCardSkill::FixCardSkill(const QString &name)
+    : Skill(name, Skill::Compulsory)
+{
+}

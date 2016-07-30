@@ -1131,6 +1131,12 @@ void Client::askForLuckCard(const QVariant &)
 void Client::askForNullification(const QVariant &arg)
 {
     JsonArray args = arg.value<JsonArray>();
+    if (args.size() == 1 && JsonUtils::isBool(args[0])) {
+        _m_race = false;
+        emit status_changed(RespondingUse, status);
+        return;
+    }
+
     if (args.size() != 3 || !JsonUtils::isString(args[0])
         || !(args[1].isNull() || JsonUtils::isString(args[1]))
         || !JsonUtils::isString(args[2]))
@@ -1171,7 +1177,7 @@ void Client::askForNullification(const QVariant &arg)
 
     _m_roomState.setCurrentCardUsePattern("nullification");
     m_isDiscardActionRefusable = true;
-
+    _m_race = true;
     setStatus(RespondingUse);
 }
 
@@ -2017,6 +2023,7 @@ void Client::askForPlayerChosen(const QVariant &players)
     JsonArray choices = args[0].value<JsonArray>();
     if (choices.size() == 0) return;
     skill_name = args[1].toString();
+    skill_to_invoke = args[1].toString();
     players_to_choose.clear();
     for (int i = 0; i < choices.size(); i++)
         players_to_choose.push_back(choices[i].toString());

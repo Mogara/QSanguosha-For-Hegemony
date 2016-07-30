@@ -129,7 +129,7 @@ public:
         const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse = true, bool moverestricted = false,const QList<int> &notify_visible_list = QList<int>());
     int doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids = QList<int>(), const QString &skill_name = "shangyi");
     int drawCard();
-    void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>());
+    void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>(), QList<ServerPlayer *> &watchers = QList<ServerPlayer *>());
     void takeAG(ServerPlayer *player, int card_id, bool move_cards = true);
     void clearAG(ServerPlayer *player = NULL);
     void provide(const Card *card);
@@ -591,6 +591,7 @@ private:
     //helper variables for race request function
     bool _m_raceStarted;
     ServerPlayer *_m_raceWinner;
+    ServerPlayer *_m_AIraceWinner;
 
     QMap<int, Player::Place> place_map;
     QMap<int, ServerPlayer *> owner_map;
@@ -638,11 +639,13 @@ private:
     QList<CardsMoveStruct> _breakDownCardMoves(QList<CardsMoveStruct> &cards_moves);
 
 private slots:
+    void endaskfornull();
     void reportDisconnection();
     void processClientPacket(const QSanProtocol::Packet &packet);
     void reportInvalidPacket(const QByteArray &message);
     void assignRoles();
     void startGame();
+
 
 signals:
     void room_message(const QString &msg);

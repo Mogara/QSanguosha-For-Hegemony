@@ -682,12 +682,8 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
         if (triggerEvent == EventPhaseEnd) {
-            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play) {
-                if (!player->hasFlag("ShengxiDamageInPlayPhase"))
-                    return QStringList(objectName());
-                else
-                    player->setFlags("-ShengxiDamageInPlayPhase");
-            }
+            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play && !player->hasFlag("ShengxiDamageInPlayPhase"))
+                return QStringList(objectName());
         } else if (triggerEvent == DamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.from && damage.from->getPhase() == Player::Play && !damage.from->hasFlag("ShengxiDamageInPlayPhase"))
@@ -711,6 +707,26 @@ public:
         player->drawCards(2);
 
         return false;
+    }
+};
+
+class ShengxiClear : public TriggerSkill
+{
+public:
+    ShengxiClear() : TriggerSkill("#shengxi-clear")
+    {
+        events << EventPhaseEnd;
+    }
+
+    virtual int getPriority() const
+    {
+        return -1;
+    }
+
+    virtual void record(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const
+    {
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play && player->hasFlag("ShengxiDamageInPlayPhase"))
+            player->setFlags("-ShengxiDamageInPlayPhase");
     }
 };
 
@@ -781,7 +797,7 @@ void ShangyiCard::onEffect(const CardEffectStruct &effect) const
     if (!effect.to->hasShownAllGenerals())
         choices << "hidden_general";
 
-    QString choice = room->askForChoice(effect.from, "shangyi",
+    QString choice = room->askForChoice(effect.from, "shangyi%to:" + effect.to->objectName(),
         choices.join("+"), QVariant::fromValue(effect.to));
     LogMessage log;
     log.type = "#KnownBothView";
@@ -791,7 +807,7 @@ void ShangyiCard::onEffect(const CardEffectStruct &effect) const
     foreach (ServerPlayer *p, room->getOtherPlayers(effect.from, true))
         room->doNotify(p, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
 
-    if (choice == "handcards") {
+    if (choice.contains("handcards")) {
         room->broadcastSkillInvoke("shangyi", 1, effect.from);
         QList<int> blacks;
         foreach (int card_id, effect.to->handCards()) {
@@ -1168,7 +1184,6 @@ public:
             if (player->getPhase() == Player::NotActive) {
                 foreach (ServerPlayer *p, room->getAllPlayers()) {
                     if (p->getMark(objectName()) > 0 && TriggerSkill::triggerable(p)) {
-                        room->setPlayerMark(p, objectName(), 0);
                         if (p->isAlive())
                             skill_list.insert(p, QStringList(objectName()));
                     }
@@ -1181,6 +1196,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
         ServerPlayer *hetaihou = ask_who;
+        room->setPlayerMark(hetaihou, objectName(), 0);
         if (hetaihou && hetaihou->askForSkillInvoke(this)) {
             room->broadcastSkillInvoke(objectName(), hetaihou);
             return true;
@@ -1315,7 +1331,6 @@ public:
                 return QStringList();
 
             if (player->hasFlag("fldf_removing")) {
-                player->setFlags("-fldf_removing");
                 return QStringList(objectName());
             }
 
@@ -1326,6 +1341,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
+        player->setFlags("-fldf_removing");
         return player->hasShownSkill(this);
     }
 
@@ -1445,6 +1461,8 @@ FormationPackage::FormationPackage()
     General *jiangwanfeiyi = new General(this, "jiangwanfeiyi", "shu", 3); // SHU 018
     jiangwanfeiyi->addSkill(new Shengxi);
     jiangwanfeiyi->addSkill(new Shoucheng);
+    jiangwanfeiyi->addSkill(new ShengxiClear);
+    insertRelatedSkills("shengxi", "#shengxi-clear");
 
     General *jiangqin = new General(this, "jiangqin", "wu"); // WU 017
     jiangqin->addCompanion("zhoutai");

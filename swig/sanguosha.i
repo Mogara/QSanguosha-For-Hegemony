@@ -248,6 +248,8 @@ public:
 
     bool canDiscard(const Player *to, const char *flags) const;
     bool canDiscard(const Player *to, int card_id) const;
+    bool canGetCard(const Player *to, const char *flags) const;
+    bool canGetCard(const Player *to, int card_id) const;
 
     void addMark(const char *mark, int add_num = 1);
     void removeMark(const char *mark, int remove_num = 1);
@@ -932,7 +934,7 @@ public:
     // enumeration type
     enum Suit { Spade, Club, Heart, Diamond, NoSuitBlack, NoSuitRed, NoSuit, SuitToBeDecided = -1 };
     enum Color { Red, Black, Colorless };
-    enum HandlingMethod { MethodNone, MethodUse, MethodResponse, MethodDiscard, MethodRecast, MethodPindian };
+    enum HandlingMethod { MethodNone, MethodUse, MethodResponse, MethodDiscard, MethodRecast, MethodPindian, MethodGet };
 
     static const Suit AllSuits[4];
 
@@ -1229,7 +1231,8 @@ public:
     void playAudioEffect(const char *filename) const;
     void playSkillAudioEffect(const char *skill_name, int index) const;
 
-    //const ProhibitSkill *isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
+    const ProhibitSkill *isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
+    const FixCardSkill *isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const;
     int correctDistance(const Player *from, const Player *to) const;
     int correctMaxCards(const ServerPlayer *target, bool fixed = false, MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     int correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Card *card) const;
@@ -1434,7 +1437,7 @@ public:
     AskForMoveCardsStruct askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const char *reason, const char *pattern, const char *skillName, int min_num, int max_num, bool can_refuse = true, bool moverestricted = false, const QList<int> &notify_visible_list = QList<int>());
     int doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids = QList<int>(), const char *skill_name = "shangyi");
     int drawCard();
-    void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>());
+    void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>(), QList<ServerPlayer *> &watchers = QList<ServerPlayer *>());
     void takeAG(ServerPlayer *player, int card_id, bool move_cards = true);
     void clearAG(ServerPlayer *player = NULL);
     void provide(const Card *card);

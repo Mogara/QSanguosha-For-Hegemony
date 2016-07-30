@@ -167,7 +167,7 @@ GameRule::GameRule(QObject *parent)
         << BeforeGameOverJudge << GameOverJudge
         << SlashHit << SlashEffected << SlashProceed
         << ConfirmDamage << DamageDone << DamageComplete
-        << FinishRetrial << FinishJudge
+        << StartJudge << FinishRetrial << FinishJudge
         << ChoiceMade << GeneralShown
         << BeforeCardsMove << CardsMoveOneTime;
 
@@ -768,6 +768,23 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             }
         }
 
+        break;
+    }
+    case StartJudge: {
+        int card_id = room->drawCard();
+
+        JudgeStruct *judge_struct = data.value<JudgeStruct *>();
+        judge_struct->card = Sanguosha->getCard(card_id);
+
+        LogMessage log;
+        log.type = "$InitialJudge";
+        log.from = judge_struct->who;
+        log.card_str = QString::number(judge_struct->card->getEffectiveId());
+        room->sendLog(log);
+
+        room->moveCardTo(judge_struct->card, NULL, judge_struct->who, Player::PlaceJudge,
+            CardMoveReason(CardMoveReason::S_REASON_JUDGE, judge_struct->who->objectName(), QString(), QString(), judge_struct->reason), true);
+        judge_struct->updateResult();
         break;
     }
     case FinishRetrial: {

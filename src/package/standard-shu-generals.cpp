@@ -1294,8 +1294,8 @@ public:
             if (!success) return false;
 
             room->broadcastSkillInvoke(objectName(), 2, zhurong);
-            if (!target->isNude()) {
-                int card_id = room->askForCardChosen(zhurong, target, "he", objectName());
+            if (zhurong->canGetCard(target, "he")) {
+                int card_id = room->askForCardChosen(zhurong, target, "he", objectName(), false, Card::MethodGet);
                 CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, zhurong->objectName());
                 room->obtainCard(zhurong, Sanguosha->getCard(card_id), reason, room->getCardPlace(card_id) != Player::PlaceHand);
             }

@@ -216,6 +216,10 @@ public:
     {
         return &_m_roomState;
     }
+    inline virtual bool *getRaceState()
+    {
+        return &_m_race;
+    }
     inline virtual Card *getCard(int cardId) const
     {
         return _m_roomState.getCard(cardId);
@@ -263,6 +267,7 @@ public:
     QString exchange_pattern;
     QString exchange_expand_pile;
     QString exchange_reason;
+    bool _m_race = false;
 
 public slots:
     void signup();

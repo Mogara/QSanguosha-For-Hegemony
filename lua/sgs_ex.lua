@@ -95,6 +95,26 @@ function sgs.CreateTriggerSkill(spec)
 	return skill
 end
 
+function sgs.CreateProhibitSkill(spec)
+	assert(type(spec.name) == "string")
+	assert(type(spec.is_prohibited) == "function")
+
+	local skill = sgs.LuaProhibitSkill(spec.name)
+	skill.is_prohibited = spec.is_prohibited
+
+	return skill
+end
+
+function sgs.CreateFixCardSkill(spec)
+	assert(type(spec.name) == "string")
+	assert(type(spec.is_cardfixed) == "function")
+
+	local skill = sgs.LuaFixCardSkill(spec.name)
+	skill.is_cardfixed = spec.is_cardfixed
+
+	return skill
+end
+
 function sgs.CreateFilterSkill(spec)
 	assert(type(spec.name) == "string")
 	assert(type(spec.view_filter) == "function")

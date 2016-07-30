@@ -152,12 +152,14 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class AllianceFeast : public AOE
+class AllianceFeast : public TrickCard
 {
     Q_OBJECT
 
 public:
     Q_INVOKABLE AllianceFeast(Card::Suit suit = Heart, int number = 1);
+
+    virtual QString getSubtype() const;
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;

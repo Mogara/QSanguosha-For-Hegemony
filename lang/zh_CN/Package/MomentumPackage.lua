@@ -32,6 +32,7 @@ return {
 	["@xunxun"] = "选择两张牌作为手牌，将其他的牌调整顺序放到牌堆底",
 	["xunxun#up"] = "置于牌堆底",
 	["xunxun#down"] = "获得",
+	["#XunxunResult"] = "%from “<font color=\"yellow\"><b>恂恂</b></font>” 将 <font color=\"yellow\"><b>2</b></font> 张牌置于牌堆底",
 	["wangxi"] = "忘隙",
 	[":wangxi"] = "每当你对其他角色造成1点伤害后，或受到其他角色造成的1点伤害后，若其存活，你可以令你与其各摸一张牌。",
 
@@ -78,8 +79,9 @@ return {
 	[":hunshang"] = "副将技，此武将牌上单独的阴阳鱼个数-1；副将技，准备阶段开始时，若你的体力值为1，你于此回合内拥有\"英姿\"和\"英魂\"。",
 	["yingzi_sunce"] = "英姿",
 	["yinghun_sunce"] = "英魂",
-	["yinghun_sunce:d1tx"] = "摸一张牌，然后弃置X张牌",
-	["yinghun_sunce:dxt1"] = "摸X张牌，然后弃置一张牌",
+	["#yinghun_sunce"] = "英魂 对 %to",
+	["yinghun_sunce:d1tx"] = "令其摸 1 张牌，然后弃置 %log 张牌",
+	["yinghun_sunce:dxt1"] = "令其摸 %log 张牌，然后弃置 1 张牌",
 
 	["#chenwudongxi"] = "壮怀激烈",
 	["chenwudongxi"] = "陈武＆董袭",

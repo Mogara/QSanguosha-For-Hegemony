@@ -71,6 +71,7 @@ return {
 	["jieyin"] = "结姻",
 	[":jieyin"] = "出牌阶段限一次，你可以弃置两张手牌并选择一名已受伤的其他男性角色，令你与其各回复1点体力。",
 	["xiaoji"] = "枭姬",
+	["xiaojidraw"] = "枭姬",
 	[":xiaoji"] = "每当你失去装备区里的装备牌后，你可以摸两张牌。",
 
 	["#sunjian"] = "武烈帝",
@@ -79,8 +80,9 @@ return {
 	["yinghun_sunjian"] = "英魂",
 	[":yinghun"] = "准备阶段开始时，若你已受伤，你可以选择一项：1.令一名其他角色摸X张牌，然后其弃置一张牌；2.令一名其他角色摸一张牌，然后其弃置X张牌。（X为你已损失的体力值）",
 	["yinghun-invoke"] = "你可以发动“英魂”<br/> <b>操作提示</b>: 选择一名其他角色→点击确定<br/>",
-	["yinghun_sunjian:d1tx"] = "摸一张牌，然后弃置X张牌",
-	["yinghun_sunjian:dxt1"] = "摸X张牌，然后弃置一张牌",
+	["#yinghun_sunjian"] = "英魂 对 %to",
+	["yinghun_sunjian:d1tx"] = "令其摸 1 张牌，然后弃置 %log 张牌",
+	["yinghun_sunjian:dxt1"] = "令其摸 %log 张牌，然后弃置 1 张牌",
 
 	["#xiaoqiao"] = "矫情之花",
 	["xiaoqiao"] = "小乔",

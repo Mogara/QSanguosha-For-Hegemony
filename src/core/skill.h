@@ -439,5 +439,15 @@ public:
     virtual bool triggerable(const ServerPlayer *target) const;
 };
 
+class FixCardSkill : public Skill
+{
+    Q_OBJECT
+
+public:
+    FixCardSkill(const QString &name);
+
+    virtual bool isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const = 0;
+};
+
 #endif
 

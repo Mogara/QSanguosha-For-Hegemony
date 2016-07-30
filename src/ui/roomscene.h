@@ -157,6 +157,11 @@ public:
         return cancel_button != NULL && cancel_button->isEnabled();
     }
 
+    inline bool isOkButtonEnabled() const
+    {
+        return ok_button != NULL && ok_button->isEnabled();
+    }
+
     void stopHeroSkinChangingAnimations();
 
     bool m_skillButtonSank;
@@ -213,6 +218,7 @@ public slots:
     void handleGameEvent(const QVariant &args);
 
     void doOkButton();
+    void resetButton();
     void doCancelButton();
     void doDiscardButton();
 
@@ -224,6 +230,10 @@ public slots:
     }
 
     void doGongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
+
+    void showPile(const QList<int> &card_ids, const QString &nam);
+    QString getCurrentShownPileName();
+    void hidePile();
 
     void onTransferButtonActivated();
     void onSkillDeactivated();
@@ -276,6 +286,7 @@ private:
 
     QList<QGraphicsPixmapItem *> role_items;
     CardContainer *m_cardContainer;
+    CardContainer *pileContainer;
 
     QList<QSanSkillButton *> m_skillButtons;
 

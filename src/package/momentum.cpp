@@ -57,23 +57,23 @@ public:
         room->notifySkillInvoked(lidian, objectName());
 
         QList<int> card_ids = room->getNCards(4);
-        //         QList<int> original_card_ids = card_ids;
-        //         QList<int> obtained;
-        //         room->fillAG(card_ids, lidian);
-        //         int id1 = room->askForAG(lidian, card_ids, false, objectName());
-        //         card_ids.removeOne(id1);
-        //         obtained << id1;
-        //         room->clearAG(lidian);
-        //         room->fillAG(original_card_ids, lidian, obtained);
-        //         int id2 = room->askForAG(lidian, card_ids, false, objectName());
-        //         card_ids.removeOne(id2);
-        //         obtained << id2;
-        //         room->clearAG(lidian);
-        // 
-        //         DummyCard dummy(obtained);
-        //         lidian->obtainCard(&dummy, false);
-        //         room->askForGuanxing(lidian, card_ids, Room::GuanxingDownOnly);
+        /*         QList<int> original_card_ids = card_ids;
+                 QList<int> obtained;
+                 room->fillAG(card_ids, lidian);
+                 int id1 = room->askForAG(lidian, card_ids, false, objectName());
+                 card_ids.removeOne(id1);
+                 obtained << id1;
+                 room->clearAG(lidian);
+                 room->fillAG(original_card_ids, lidian, obtained);
+                 int id2 = room->askForAG(lidian, card_ids, false, objectName());
+                 card_ids.removeOne(id2);
+                 obtained << id2;
+                 room->clearAG(lidian);
 
+                 DummyCard dummy(obtained);
+                 lidian->obtainCard(&dummy, false);
+                 room->askForGuanxing(lidian, card_ids, Room::GuanxingDownOnly);
+        */
         AskForMoveCardsStruct result = room->askForMoveCards(lidian, card_ids, QList<int>(), true, objectName(), "", objectName(), 2, 2, false, false, QList<int>() << -1);
         DummyCard dummy(result.bottom);
         lidian->obtainCard(&dummy, false);
@@ -81,10 +81,8 @@ public:
             room->getDrawPile().append(id);
         room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, QVariant(room->getDrawPile().length()));
         LogMessage a;
-        a.type = "#GuanxingResult";
+        a.type = "#XunxunResult";
         a.from = lidian;
-        a.arg = QString::number(0);
-        a.arg2 = QString::number(2);
         room->sendLog(a);
         LogMessage b;
         b.type = "$GuanxingBottom";
@@ -229,7 +227,6 @@ public:
             QList<ServerPlayer *> zangbas;
             foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->getMark("HengjiangInvoke") > 0) {
-                    room->setPlayerMark(p, "HengjiangInvoke", 0);
                     zangbas << p;
                 }
             }
@@ -245,9 +242,7 @@ public:
                     room->sendLog(log);
 
                     invoke = true;
-                } else
-                    player->setFlags("-HengjiangDiscarded");
-                room->setPlayerMark(player, "@hengjiang", 0);
+                }
                 if (invoke)
                     foreach(ServerPlayer *zangba, zangbas)
                     skill_list.insert(zangba, QStringList(objectName()));
@@ -256,10 +251,43 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
+        room->setPlayerMark(ask_who, "HengjiangInvoke", 0);
+        room->setPlayerMark(player, "@hengjiang", 0);
         ask_who->drawCards(1);
         return false;
+    }
+};
+
+class HengjiangFail : public TriggerSkill
+{
+public:
+    HengjiangFail() : TriggerSkill("#hengjiang-fail")
+    {
+        events << EventPhaseChanging;
+    }
+
+    virtual int getPriority() const
+    {
+        return -1;
+    }
+
+    virtual void record(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to == Player::NotActive) {
+            QList<ServerPlayer *> zangbas;
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (p->getMark("HengjiangInvoke") > 0) {
+                    zangbas << p;
+                }
+            }
+            if (!zangbas.isEmpty() && player->getMark("@hengjiang") > 0 && player->hasFlag("HengjiangDiscarded")) {
+                player->setFlags("-HengjiangDiscarded");
+                room->setPlayerMark(player, "@hengjiang", 0);
+            }
+        }
     }
 };
 
@@ -1011,8 +1039,8 @@ public:
     {
         Room *room = player->getRoom();
         foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (!p->isAllNude()) {
-                int card_id = room->askForCardChosen(player, p, "hej", objectName());
+            if (player->canGetCard(p, "hej")) {
+                int card_id = room->askForCardChosen(player, p, "hej", objectName(), false, Card::MethodGet);
                 room->obtainCard(player, card_id, false);
             }
         }
@@ -1522,8 +1550,9 @@ MomentumPackage::MomentumPackage()
     zangba->addCompanion("zhangliao");
     zangba->addSkill(new Hengjiang);
     zangba->addSkill(new HengjiangDraw);
+    zangba->addSkill(new HengjiangFail);
     zangba->addSkill(new HengjiangMaxCards);
-    insertRelatedSkills("hengjiang", 2, "#hengjiang-draw", "#hengjiang-maxcard");
+    insertRelatedSkills("hengjiang", 3, "#hengjiang-draw", "#hengjiang-fail", "#hengjiang-maxcard");
 
     General *madai = new General(this, "madai", "shu", 4); // SHU 019
     madai->addCompanion("machao");

@@ -193,6 +193,8 @@ void Engine::addSkills(const QList<const Skill *> &all_skills)
 
         if (skill->inherits("ProhibitSkill"))
             prohibit_skills << qobject_cast<const ProhibitSkill *>(skill);
+        else if (skill->inherits("FixCardSkill"))
+            fixcard_skills << qobject_cast<const FixCardSkill *>(skill);
         else if (skill->inherits("DistanceSkill"))
             distance_skills << qobject_cast<const DistanceSkill *>(skill);
         else if (skill->inherits("MaxCardsSkill"))
@@ -372,6 +374,8 @@ Card::HandlingMethod Engine::getCardHandlingMethod(const QString &method_name) c
         return Card::MethodRecast;
     else if (method_name == "pindian")
         return Card::MethodPindian;
+    else if (method_name == "get")
+        return Card::MethodGet;
     else if (method_name == "none")
         return Card::MethodNone;
     else {
@@ -627,7 +631,7 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const
 #ifndef USE_BUILDBOT
 QSanVersionNumber Engine::getVersionNumber() const
 {
-    return QSanVersionNumber(2, 1, 0);
+    return QSanVersionNumber(2, 0, 0);
 }
 #endif
 
@@ -1002,6 +1006,16 @@ const ProhibitSkill *Engine::isProhibited(const Player *from, const Player *to, 
 {
     foreach (const ProhibitSkill *skill, prohibit_skills) {
         if (skill->isProhibited(from, to, card, others))
+            return skill;
+    }
+
+    return NULL;
+}
+
+const FixCardSkill *Engine::isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const
+{
+    foreach (const FixCardSkill *skill, fixcard_skills) {
+        if (skill->isCardFixed(from, to, flags, method))
             return skill;
     }
 

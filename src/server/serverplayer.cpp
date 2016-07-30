@@ -1340,6 +1340,11 @@ void ServerPlayer::addToPile(const QString &pile_name, QList<int> card_ids,
     room->moveCardsAtomic(move, open);
 }
 
+void ServerPlayer::pileadd(const QString &pile_name, QList<int> card_ids)
+{
+    piles[pile_name].append(card_ids);
+}
+
 void ServerPlayer::gainAnExtraTurn()
 {
     QStringList extraTurnList;

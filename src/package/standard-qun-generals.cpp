@@ -142,6 +142,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *ask_who) const
     {
         ask_who->tag["WushuangData"] = data; // for AI
+        ask_who->tag["WushuangTarget"] = QVariant::fromValue(target); // for AI
         bool invoke = ask_who->hasShownSkill(this) ? true : ask_who->askForSkillInvoke(this, QVariant::fromValue(target));
         ask_who->tag.remove("WushuangData");
         if (invoke) {
@@ -183,10 +184,8 @@ bool LijianCard::targetFilter(const QList<const Player *> &targets, const Player
 
     Duel *duel = new Duel(Card::NoSuit, 0);
     duel->deleteLater();
-    if (targets.isEmpty() && Self->isProhibited(to_select, duel))
-        return false;
 
-    if (targets.length() == 1 && to_select->isCardLimited(duel, Card::MethodUse))
+    if (targets.length() == 1 && (to_select->isCardLimited(duel, Card::MethodUse) || to_select->isProhibited(targets.first(), duel)))
         return false;
 
     return targets.length() < 2 && to_select != Self;
@@ -1110,10 +1109,14 @@ LirangCard::LirangCard()
     handling_method = Card::MethodNone;
 }
 
-void LirangCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+void LirangCard::onUse(Room *, const CardUseStruct &card_use) const
 {
-    source->tag["lirang_target"] = QVariant::fromValue(targets.first());
-    source->tag["lirang_get"] = IntList2StringList(this->getSubcards()).join("+");
+    QStringList targets = card_use.from->tag["lirang_target"].toStringList();
+    QStringList cards = card_use.from->tag["lirang_get"].toStringList();
+    targets << card_use.to.first()->objectName();
+    cards.append((IntList2StringList(this->getSubcards())).join("+"));
+    card_use.from->tag["lirang_target"] = targets;
+    card_use.from->tag["lirang_get"] = cards;
 }
 
 class LirangViewAsSkill : public ViewAsSkill
@@ -1164,28 +1167,22 @@ public:
 
     virtual void record(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (!TriggerSkill::triggerable(player)) { 
-            player->tag.remove("lirang_strings"); 
+        if (!TriggerSkill::triggerable(player))
             return;
-        }
 
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.from != player)  return;
-        if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
-            if (move.to_place == Player::PlaceTable) {
-                QList<int> lirang_card;
-                for (int i = 0; i < move.card_ids.length(); i++) {
-                    int card_id = move.card_ids[i];
-                    if (room->getCardPlace(card_id) == Player::PlaceTable
-                        && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)) {
-                        lirang_card << card_id;
-                    }
-                }
-                if (!lirang_card.isEmpty()) {
-                    QString lirang_strings = player->tag["lirang_strings"].toString();
-                    lirang_strings = lirang_strings + "|" + IntList2StringList(lirang_card).join("+");
-                    player->tag["lirang_strings"] = lirang_strings;
-                }
+        if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD && move.to_place == Player::PlaceTable) {
+            QStringList lirang_card = player->tag["lirang_to_judge"].toStringList();
+            QList<int> cards;
+            for (int i = 0; i < move.card_ids.length(); i++) {
+                int card_id = move.card_ids[i];
+                if (room->getCardPlace(card_id) == Player::PlaceTable && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip))
+                    cards << card_id;
+            }
+            if (!cards.isEmpty()) {
+                lirang_card.append((IntList2StringList(cards)).join("+"));
+                player->tag["lirang_to_judge"] = lirang_card;
             }
         }
     }
@@ -1194,65 +1191,108 @@ public:
     {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from != player) return QStringList();
+        if (move.from != player || player->tag["lirang_to_judge"].toStringList().isEmpty()) return QStringList();
 
         if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
             if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile) {
-                QString lirang_strings = player->tag["lirang_strings"].toString();
-                QList<int> lirang_card = StringList2IntList(lirang_strings.split("|").last().split("+"));
-                
-                QList<int> lirang_give;
-                foreach (int id, move.card_ids) if (!lirang_card.contains(id)) return QStringList();
-                foreach (int id, lirang_card) if (room->getCardPlace(id) == Player::DiscardPile) lirang_give << id;
-
-                player->tag["lirang_give"] = IntList2StringList(lirang_give).join("+");
-                if (!lirang_give.isEmpty()) return QStringList(objectName());
+                QStringList lirang_card = player->tag["lirang_to_judge"].toStringList();
+                QList<int> cards = StringList2IntList(lirang_card.last().split("+"));
+                QList<int> this_cards;
+                lirang_card.removeLast();
+                player->tag["lirang_to_judge"] = lirang_card;
+                foreach (int id, move.card_ids) {
+                    if (cards.contains(id) && room->getCardPlace(id) == Player::DiscardPile)
+                        this_cards << id;
+                }
+                if (!this_cards.isEmpty()) {
+                    lirang_card.append((IntList2StringList(this_cards)).join("+"));
+                    player->tag["lirang_to_judge"] = lirang_card;
+                    return QStringList(objectName());
+                }
             }
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        QStringList lirang_strings_list = player->tag["lirang_strings"].toString().split("|");
-        lirang_strings_list.removeOne(lirang_strings_list.last());
-        player->tag["lirang_strings"] = lirang_strings_list.join("|");
+        QStringList lirang_card = player->tag["lirang_to_judge"].toStringList();
+        QList<int> cards = StringList2IntList(lirang_card.last().split("+"));
+        foreach (int id, StringList2IntList(lirang_card.last().split("+"))) {
+            if (room->getCardPlace(id) != Player::DiscardPile)
+                cards.removeOne(id);
+        }
+        lirang_card.removeLast();
+        player->tag["lirang_to_judge"] = lirang_card;
+        if (cards.isEmpty()) return false;
 
-        if (player->askForSkillInvoke(this)) {
-            QStringList lirang_gives = player->tag["lirang_gives"].toStringList();
-            lirang_gives.append(player->tag["lirang_give"].toString());
-            player->tag["lirang_gives"] = lirang_gives;
+        room->notifyMoveToPile(player, cards, objectName(), Player::DiscardPile, true, true);
+        player->tag["lirang_this_time"] = IntList2VariantList(cards);
+        const Card *card = room->askForUseCard(player, "@@lirang", "@lirang-distribute:::" + QString::number(cards.length()), -1, Card::MethodNone);
+
+        if (card) {
+            lirang_card.append((IntList2StringList(cards)).join("+"));
+            player->tag["lirang_to_judge"] = lirang_card;
+
+            LogMessage l;
+            l.type = "#InvokeSkill";
+            l.from = player;
+            l.arg = objectName();
+            room->sendLog(l);
+
             return true;
         }
-
+        room->notifyMoveToPile(player, cards, objectName(), Player::DiscardPile, false, false);
         return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        QStringList lirang_gives = player->tag["lirang_gives"].toStringList();
-        QList<int> lirang_give = StringList2IntList(lirang_gives.last().split("+"));
-        lirang_gives.removeLast();
-        player->tag["lirang_gives"] = lirang_gives;
+        QStringList lirang_card = player->tag["lirang_to_judge"].toStringList();
+        QList<int> cards = StringList2IntList(lirang_card.last().split("+"));
+        lirang_card.removeLast();
 
-        QString pattern = "@@lirang!";
-        QString prompt = "@lirang-distribute1:::";
+        QList<CardsMoveStruct> moves;
+
         do {
-            player->tag["lirang_forAI"] = IntList2StringList(lirang_give).join("+");
-            room->notifyMoveToPile(player, lirang_give, "lirang", Player::DiscardPile, true, true);
-            const Card *card = room->askForUseCard(player, pattern, prompt + QString::number(lirang_give.length()), -1, Card::MethodNone);
-            room->notifyMoveToPile(player, lirang_give, "lirang", Player::DiscardPile, false, false);
-            player->tag.remove("lirang_forAI");
-            if (!card) break;
-            if (card->getSubcards().length() == 0) break;
-            foreach (int id, card->getSubcards()) lirang_give.removeOne(id);
-            DummyCard dummy(card->getSubcards());
-            ServerPlayer *target = player->tag["lirang_target"].value<ServerPlayer *>();
-            CardMoveReason reason(CardMoveReason::S_REASON_PREVIEWGIVE, player->objectName(), target->objectName(), "lirang", QString());
-            room->obtainCard(target, &dummy, reason, true);
-            pattern = "@@lirang";
-            prompt = "@lirang-distribute2:::";
-        } while (!lirang_give.isEmpty() && player->isAlive());
+            room->notifyMoveToPile(player, cards, objectName(), Player::DiscardPile, false, false);
+
+            QStringList targets = player->tag["lirang_target"].toStringList();
+            QStringList cards_get = player->tag["lirang_get"].toStringList();
+            QList<int> get = StringList2IntList(cards_get.last().split("+"));
+            ServerPlayer *target;
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->objectName() == targets.last())
+                    target = p;
+            }
+            targets.removeLast();
+            cards_get.removeLast();
+            player->tag["lirang_target"] = targets;
+            player->tag["lirang_get"] = cards_get;
+
+            CardMoveReason reason(CardMoveReason::S_REASON_PREVIEWGIVE, player->objectName(), target->objectName(), objectName(), QString());
+            CardsMoveStruct move(get, target, Player::PlaceHand, reason);
+            moves.append(move);
+
+            foreach (int id, get)
+                cards.removeOne(id);
+
+            if (!cards.isEmpty()) {
+                room->notifyMoveToPile(player, cards, objectName(), Player::DiscardPile, true, true);
+                player->tag["lirang_this_time"] = IntList2VariantList(cards);
+            }
+        }
+
+        while (!cards.isEmpty() && player->isAlive()
+                    && room->askForUseCard(player, "@@lirang", "@lirang-distribute:::" + QString::number(cards.length()), -1, Card::MethodNone));
+
+        if (!cards.isEmpty()) room->notifyMoveToPile(player, cards, objectName(), Player::DiscardPile, false, false);
+
+        player->tag["lirang_to_judge"] = lirang_card;
+        player->tag.remove("lirang_this_time");
+        room->moveCardsAtomic(moves, true);
+        room->broadcastSkillInvoke(objectName(), player);
+
         return false;
     }
 };
@@ -1481,6 +1521,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *target = damage.to;
 
+        /*
         QStringList equiplist;
         for (int i = 0; i < 5; i++) {
             if (!target->getEquip(i)) continue;
@@ -1497,10 +1538,27 @@ public:
             choicelist << "throw";
         if (equip_index > -1 && panfeng->getEquip(equip_index) == NULL)
             choicelist << "move";
+        */
 
-        QString choice = room->askForChoice(panfeng, "kuangfu", choicelist.join("+"));
+        QList<int> disable_equiplist, equiplist;
+        for (int i = 0; i < 5; i++) {
+            if (target->getEquip(i) && !panfeng->canDiscard(target, target->getEquip(i)->getEffectiveId()) && panfeng->getEquip(i))
+                disable_equiplist << target->getEquip(i)->getEffectiveId();
+            if (target->getEquip(i) && panfeng->getEquip(i))
+                equiplist << target->getEquip(i)->getEffectiveId();
+        }
+        int card_id = room->askForCardChosen(panfeng, target, "e", objectName(), false, Card::MethodNone, disable_equiplist);
+        const Card *card = Sanguosha->getCard(card_id);
 
-        if (choice == "move") {
+        QStringList choicelist;
+        if (panfeng->canDiscard(target, card_id))
+            choicelist << "throw";
+        if (!equiplist.contains(card_id))
+            choicelist << "move";
+
+        QString choice = room->askForChoice(panfeng, "kuangfu%log:" + card->getFullName(true), choicelist.join("+"));
+
+        if (choice.contains("move")) {
             room->broadcastSkillInvoke(objectName(), 2, panfeng);
             room->moveCardTo(card, panfeng, Player::PlaceEquip);
         } else {

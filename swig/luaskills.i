@@ -78,6 +78,20 @@ public:
     int priority;
 };
 
+class ProhibitSkill: public Skill {
+public:
+    ProhibitSkill(const QString &name);
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const = 0;
+};
+
+class FixCardSkill : public Skill {
+public:
+    FixCardSkill(const QString &name);
+
+    virtual bool isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const = 0;
+};
+
 class DistanceSkill: public Skill {
 public:
     DistanceSkill(const QString &name);
@@ -110,6 +124,24 @@ public:
 
 protected:
     QString pattern;
+};
+
+class LuaProhibitSkill: public ProhibitSkill {
+public:
+    LuaProhibitSkill(const char *name);
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
+
+    LuaFunction is_prohibited;
+};
+
+class LuaFixCardSkill: public FixCardSkill {
+public:
+    LuaFixCardSkill(const char *name);
+
+    virtual bool isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const;
+
+    LuaFunction is_cardfixed;
 };
 
 class ViewAsSkill: public Skill {
@@ -901,6 +933,67 @@ static void Error(lua_State *L)
     const char *error_string = lua_tostring(L, -1);
     lua_pop(L, 1);
     QMessageBox::warning(NULL, "Lua script error!", error_string);
+}
+
+bool LuaProhibitSkill::isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others) const
+{
+    if (is_prohibited == 0)
+        return false;
+
+    lua_State *L = Sanguosha->getLuaState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, is_prohibited);
+
+    SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaProhibitSkill, 0);
+    SWIG_NewPointerObj(L, from, SWIGTYPE_p_Player, 0);
+    SWIG_NewPointerObj(L, to, SWIGTYPE_p_Player, 0);
+    SWIG_NewPointerObj(L, card, SWIGTYPE_p_Card, 0);
+
+    lua_createtable(L, others.length(), 0);
+    for (int i = 0; i < others.length(); i++) {
+        const Player *player = others[i];
+        SWIG_NewPointerObj(L, player, SWIGTYPE_p_Player, 0);
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    int error = lua_pcall(L, 5, 1, 0);
+    if (error) {
+        Error(L);
+        return false;
+    }
+
+    bool result = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return result;
+}
+
+bool LuaFixCardSkill::isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const
+{
+    if (is_cardfixed == 0)
+        return false;
+
+    lua_State *L = Sanguosha->getLuaState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, is_cardfixed);
+
+    SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaFixCardSkill, 0);
+    SWIG_NewPointerObj(L, from, SWIGTYPE_p_Player, 0);
+    SWIG_NewPointerObj(L, to, SWIGTYPE_p_Player, 0);
+
+    lua_pushstring(L, flags.toLatin1());
+
+    int e = static_cast<int>(method);
+    lua_pushinteger(L, e);
+
+    int error = lua_pcall(L, 5, 1, 0);
+    if (error) {
+        Error(L);
+        return false;
+    }
+
+    bool result = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return result;
 }
 
 int LuaDistanceSkill::getCorrect(const Player *from, const Player *to) const

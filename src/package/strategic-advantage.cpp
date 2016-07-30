@@ -1011,10 +1011,15 @@ void FightTogether::onEffect(const CardEffectStruct &effect) const
 }
 
 AllianceFeast::AllianceFeast(Card::Suit suit, int number)
-    : AOE(suit, number)
+    : TrickCard(suit, number)
 {
     setObjectName("alliance_feast");
     target_fixed = false;
+}
+
+QString AllianceFeast::getSubtype() const
+{
+    return "alliance_feast";
 }
 
 bool AllianceFeast::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const

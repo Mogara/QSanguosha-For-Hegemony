@@ -76,7 +76,7 @@ public:
     {
         if (MasochismSkill::triggerable(simayi)) {
             ServerPlayer *from = data.value<DamageStruct>().from;
-            return (from && !from->isNude()) ? QStringList(objectName()) : QStringList();
+            return (from && simayi->canGetCard(from, "he")) ? QStringList(objectName()) : QStringList();
         }
         return QStringList();
     }
@@ -97,7 +97,7 @@ public:
         Room *room = simayi->getRoom();
         int aidelay = Config.AIDelay;
         Config.AIDelay = 0;
-        int card_id = room->askForCardChosen(simayi, damage.from, "he", objectName());
+        int card_id = room->askForCardChosen(simayi, damage.from, "he", objectName(), false, Card::MethodGet);
         Config.AIDelay = aidelay;
         CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, simayi->objectName());
         room->obtainCard(simayi, Sanguosha->getCard(card_id), reason, false);
@@ -263,7 +263,7 @@ public:
         //             return true;
         QList<ServerPlayer *> to_choose;
         foreach(ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (!p->isKongcheng())
+            if (player->canGetCard(p, "h"))
                 to_choose << p;
         }
 
@@ -287,13 +287,13 @@ public:
 
         QList<CardsMoveStruct> moves;
         CardsMoveStruct move1;
-        move1.card_ids << room->askForCardChosen(source, targets[0], "h", "tuxi");
+        move1.card_ids << room->askForCardChosen(source, targets[0], "h", "tuxi", false, Card::MethodGet);
         move1.to = source;
         move1.to_place = Player::PlaceHand;
         moves.push_back(move1);
         if (targets.length() == 2) {
             CardsMoveStruct move2;
-            move2.card_ids << room->askForCardChosen(source, targets[1], "h", "tuxi");
+            move2.card_ids << room->askForCardChosen(source, targets[1], "h", "tuxi", false, Card::MethodGet);
             move2.to = source;
             move2.to_place = Player::PlaceHand;
             moves.push_back(move2);
@@ -777,7 +777,7 @@ bool QiaobianCard::targetFilter(const QList<const Player *> &targets, const Play
 {
     Player::Phase phase = (Player::Phase)Self->getMark("qiaobianPhase");
     if (phase == Player::Draw)
-        return targets.length() < 2 && to_select != Self && !to_select->isKongcheng();
+        return targets.length() < 2 && to_select != Self && Self->canGetCard(to_select, "h");
     else if (phase == Player::Play) {
         if (!targets.isEmpty())
             return false;
@@ -809,13 +809,13 @@ void QiaobianCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> 
 
         QList<CardsMoveStruct> moves;
         CardsMoveStruct move1;
-        move1.card_ids << room->askForCardChosen(zhanghe, targets[0], "h", "qiaobian");
+        move1.card_ids << room->askForCardChosen(zhanghe, targets[0], "h", "qiaobian", false, Card::MethodGet);
         move1.to = zhanghe;
         move1.to_place = Player::PlaceHand;
         moves.push_back(move1);
         if (targets.length() == 2) {
             CardsMoveStruct move2;
-            move2.card_ids << room->askForCardChosen(zhanghe, targets[1], "h", "qiaobian");
+            move2.card_ids << room->askForCardChosen(zhanghe, targets[1], "h", "qiaobian", false, Card::MethodGet);
             move2.to = zhanghe;
             move2.to_place = Player::PlaceHand;
             moves.push_back(move2);

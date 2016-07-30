@@ -54,7 +54,7 @@ class LirangCard : public SkillCard
 
 public:
     Q_INVOKABLE LirangCard();
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
 class LuanwuCard : public SkillCard

@@ -164,6 +164,7 @@ public slots:
     void onRemovedChanged();
     virtual void showSeat();
     virtual void showPile();
+    virtual void hidePile();
     virtual void refresh();
 
     QPixmap getHeadAvatarIcon(const QString &generalName);

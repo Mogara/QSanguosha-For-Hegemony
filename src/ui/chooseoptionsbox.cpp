@@ -65,7 +65,38 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
 {
     //repaint background
     this->options = options;
-    title = QString("%1 %2").arg(Sanguosha->translate(skillName)).arg(tr("Please choose:"));
+
+    QStringList titles = skillName.split("%");
+    QString skillname = titles.at(0);
+    QString titile_text;
+    if (titles.length() > 1) {
+        titile_text = translate("#" + skillname);
+        foreach (const QString &element, titles) {
+            if (element.startsWith("from:")) {
+                QStringList froms = element.split(":");
+                if (!froms.at(1).isEmpty()) {
+                    QString from = ClientInstance->getPlayerName(froms.at(1));
+                    titile_text.replace("%from", from);
+                }
+            } else if (element.startsWith("to:")) {
+                QStringList tos = element.split(":");
+                QStringList to_list;
+                for (int i = 1; i < tos.length(); i++)
+                    to_list << ClientInstance->getPlayerName(tos.at(i));
+                QString to = to_list.join(", ");
+                titile_text.replace("%to", to);
+            } else if (element.startsWith("log:")) {
+                QStringList logs = element.split(":");
+                if (!logs.at(1).isEmpty()) {
+                    QString log = logs.at(1);
+                    titile_text.replace("%log", log);
+                }
+            }
+        }
+    } else
+        titile_text = translate(skillName);
+
+    title = QString("%1 %2").arg(Sanguosha->translate(titile_text)).arg(tr("Please choose:"));
     prepareGeometryChange();
 
     const int buttonWidth = getButtonWidth();
@@ -77,7 +108,35 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
         ++x;
         foreach (const QString &choice, option.split("+")) {
             ++y;
-            Button *button = new Button(translate(choice), QSizeF(buttonWidth,
+
+            QStringList choices = choice.split("%");
+            QString choice_ = choices.at(0);
+            QString text = translate(choice_);
+
+            foreach (const QString &element, choices) {
+                if (element.startsWith("from:")) {
+                    QStringList froms = element.split(":");
+                    if (!froms.at(1).isEmpty()) {
+                        QString from = ClientInstance->getPlayerName(froms.at(1));
+                        text.replace("%from", from);
+                    }
+                } else if (element.startsWith("to:")) {
+                    QStringList tos = element.split(":");
+                    QStringList to_list;
+                    for (int i = 1; i < tos.length(); i++)
+                        to_list << ClientInstance->getPlayerName(tos.at(i));
+                    QString to = to_list.join(", ");
+                    text.replace("%to", to);
+                } else if (element.startsWith("log:")) {
+                    QStringList logs = element.split(":");
+                    if (!logs.at(1).isEmpty()) {
+                        QString log = logs.at(1);
+                        text.replace("%log", log);
+                    }
+                }
+            }
+
+            Button *button = new Button(text, QSizeF(buttonWidth,
                 defaultButtonHeight));
             button->setObjectName(choice);
             buttons << button;
@@ -148,7 +207,33 @@ int ChooseOptionsBox::getButtonWidth() const
     int biggest = 0;
     foreach (const QString &section, options) {
         foreach (const QString &choice, section.split("+")) {
-            const int width = fontMetrics.width(translate(choice));
+            QStringList choices = choice.split("%");
+            QString choice_ = choices.at(0);
+            QString text = translate(choice_);
+
+            foreach (const QString &element, choices) {
+                if (element.startsWith("from:")) {
+                    QStringList froms = element.split(":");
+                    if (!froms.at(1).isEmpty()) {
+                        QString from = ClientInstance->getPlayerName(froms.at(1));
+                        text.replace("%from", from);
+                    }
+                } else if (element.startsWith("to:")) {
+                    QStringList tos = element.split(":");
+                    QStringList to_list;
+                    for (int i = 1; i < tos.length(); i++)
+                        to_list << ClientInstance->getPlayerName(tos.at(i));
+                    QString to = to_list.join(", ");
+                    text.replace("%to", to);
+                } else if (element.startsWith("log:")) {
+                    QStringList logs = element.split(":");
+                    if (!logs.at(1).isEmpty()) {
+                        QString log = logs.at(1);
+                        text.replace("%log", log);
+                    }
+                }
+            }
+            const int width = fontMetrics.width(text);
             if (width > biggest)
                 biggest = width;
         }
@@ -163,7 +248,7 @@ int ChooseOptionsBox::getButtonWidth() const
 
 QString ChooseOptionsBox::translate(const QString &option) const
 {
-    QString title = QString("%1:%2").arg(skillName).arg(option);
+    QString title = QString("%1:%2").arg(skillName.split("%").at(0)).arg(option);
     QString translated = Sanguosha->translate(title);
     if (translated == title)
         translated = Sanguosha->translate(option);

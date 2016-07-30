@@ -458,6 +458,9 @@ bool Snatch::targetFilter(const QList<const Player *> &targets, const Player *to
     if (distance == -1 || distance > distance_limit)
         return false;
 
+    if (!Self->canGetCard(to_select, "hej"))
+        return false;
+
     return true;
 }
 
@@ -469,7 +472,10 @@ void Snatch::onEffect(const CardEffectStruct &effect) const
         return;
 
     Room *room = effect.to->getRoom();
-    int card_id = room->askForCardChosen(effect.from, effect.to, "hej", objectName());
+    if (!effect.from->canGetCard(effect.to, "hej"))
+        return;
+
+    int card_id = room->askForCardChosen(effect.from, effect.to, "hej", objectName(), false, Card::MethodGet);
     CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, effect.from->objectName());
     room->obtainCard(effect.from, Sanguosha->getCard(card_id), reason, room->getCardPlace(card_id) != Player::PlaceHand);
 }
@@ -586,6 +592,9 @@ bool Dismantlement::targetFilter(const QList<const Player *> &targets, const Pla
         return false;
 
     if (to_select == Self)
+        return false;
+
+    if (!Self->canDiscard(to_select, "hej"))
         return false;
 
     return true;
@@ -942,7 +951,8 @@ bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player 
 
 bool KnownBoth::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
 {
-    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast
+        && !Self->isCardLimited(this, Card::MethodRecast);
     QList<int> sub;
     if (isVirtualCard())
         sub = subcards;
@@ -955,12 +965,12 @@ bool KnownBoth::targetsFeasible(const QList<const Player *> &targets, const Play
         }
     }
 
-    if (rec && Self->isCardLimited(this, Card::MethodUse))
-        return targets.length() == 0;
+    if (Self->isCardLimited(this, Card::MethodUse))
+        return rec && targets.length() == 0;
     int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
     if (targets.length() > total_num)
         return false;
-    return rec || targets.length() > 0;
+    return targets.length() > 0 || rec;
 }
 
 void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const

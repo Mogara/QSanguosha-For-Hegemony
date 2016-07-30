@@ -385,6 +385,11 @@ void PlayerCardContainer::updatePile(const QString &pile_name)
     if (player->getTreasure()) treasure_name = player->getTreasure()->objectName();
 
     const QList<int> &pile = player->getPile(pile_name);
+
+    QString shownpilename = RoomSceneInstance->getCurrentShownPileName();
+    if (!shownpilename.isEmpty() && shownpilename == pile_name)
+        hidePile();
+
     if (pile.size() == 0) {
         if (_m_privatePiles.contains(pile_name)) {
             delete _m_privatePiles[pile_name];
@@ -414,8 +419,11 @@ void PlayerCardContainer::updatePile(const QString &pile_name)
         if (pile.length() > 0)
             text.append(QString("(%1)").arg(pile.length()));
         button->setText(text);
-        disconnect(button, &QPushButton::clicked, this, &PlayerCardContainer::showPile);
-        connect(button, &QPushButton::clicked, this, &PlayerCardContainer::showPile);
+        disconnect(button, &QPushButton::pressed, this, &PlayerCardContainer::showPile);
+        connect(button, &QPushButton::pressed, this, &PlayerCardContainer::showPile);
+
+        disconnect(button, &QPushButton::released, this, &PlayerCardContainer::hidePile);
+        connect(button, &QPushButton::released, this, &PlayerCardContainer::hidePile);
     }
 
     QPoint start = _m_layout->m_privatePileStartPos;
@@ -444,8 +452,13 @@ void PlayerCardContainer::showPile()
         if (!player) return;
         QList<int> card_ids = player->getPile(button->objectName());
         if (card_ids.isEmpty() || card_ids.contains(-1)) return;
-        RoomSceneInstance->doGongxin(card_ids, false, QList<int>());
+        RoomSceneInstance->showPile(card_ids, button->objectName());
     }
+}
+
+void PlayerCardContainer::hidePile()
+{
+    RoomSceneInstance->hidePile();
 }
 
 void PlayerCardContainer::updateDrankState()

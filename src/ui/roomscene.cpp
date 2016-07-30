@@ -261,6 +261,11 @@ RoomScene::RoomScene(QMainWindow *main_window)
     addItem(m_cardContainer);
     m_cardContainer->setZValue(9.0);
 
+    pileContainer = new CardContainer;
+    pileContainer->hide();
+    addItem(pileContainer);
+    pileContainer->setZValue(9.0);
+
     connect(m_cardContainer, &CardContainer::item_chosen, ClientInstance, &Client::onPlayerChooseAG);
     connect(m_cardContainer, &CardContainer::item_gongxined, ClientInstance, &Client::onPlayerReplyGongxin);
     connect(ClientInstance, &Client::ag_filled, this, &RoomScene::fillCards);
@@ -1003,6 +1008,7 @@ void RoomScene::updateTable()
         _m_roomLayout->m_discardPileMinWidth), _m_commonLayout->m_cardNormalHeight);
     m_tablePile->adjustCards();
     m_cardContainer->setPos(m_tableCenterPos - QPointF(m_cardContainer->boundingRect().width() / 2, m_cardContainer->boundingRect().height() / 2));
+    pileContainer->setPos(m_tableCenterPos - QPointF(pileContainer->boundingRect().width() / 2, pileContainer->boundingRect().height() / 2));
     m_guanxingBox->setPos(m_tableCenterPos - QPointF(m_guanxingBox->boundingRect().width() / 2, m_guanxingBox->boundingRect().height() / 2));
     m_cardchooseBox->setPos(m_tableCenterPos - QPointF(m_cardchooseBox->boundingRect().width() / 2, m_cardchooseBox->boundingRect().height() / 2));
     m_chooseGeneralBox->setPos(m_tableCenterPos - QPointF(m_chooseGeneralBox->boundingRect().width() / 2, m_chooseGeneralBox->boundingRect().height() / 2));
@@ -1790,7 +1796,7 @@ GenericCardContainer *RoomScene::_getGenericCardContainer(Player::Place place, P
         return m_tablePile;
     // @todo: AG must be a pile with name rather than simply using the name special...
     else if (player == NULL && place == Player::PlaceSpecial)
-        return m_cardContainer;
+        return pileContainer;
     else if (player == Self)
         return dashboard;
     else if (player != NULL)
@@ -2416,6 +2422,7 @@ void RoomScene::doTimeout()
             ClientInstance->onPlayerChoosePlayer(null);
             dashboard->stopPending();
             prompt_box->disappear();
+            dashboard->highlightEquip(ClientInstance->skill_name, false);
             break;
         }
         case Client::AskForAG: {
@@ -2703,6 +2710,9 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             break;
         }
         case Client::AskForPlayerChoose: {
+            QString skill_name = ClientInstance->getSkillNameToInvoke();
+            dashboard->highlightEquip(skill_name, true);
+            highlightSkillButton(skill_name);
             showPromptBox();
 
             ok_button->setEnabled(false);
@@ -2767,7 +2777,8 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         }
     }
     if (newStatus != oldStatus) {
-        _cancelAllFocus();
+        if (!ClientInstance->_m_race) _cancelAllFocus();
+
         if (newStatus != Client::Playing && newStatus != Client::NotActive)
             QApplication::alert(QApplication::focusWidget());
     }
@@ -2855,6 +2866,11 @@ void RoomScene::doOkButton()
     useSelectedCard();
 }
 
+void RoomScene::resetButton()
+{
+    ok_button->setEnabled(false);
+}
+
 void RoomScene::doCancelButton()
 {
     if (m_cardContainer->retained()) m_cardContainer->clear();
@@ -2936,6 +2952,7 @@ void RoomScene::doCancelButton()
             break;
         }
         case Client::AskForPlayerChoose: {
+            dashboard->highlightEquip(ClientInstance->skill_name, false);
             dashboard->stopPending();
             QList<const Player *> null;
             ClientInstance->onPlayerChoosePlayer(null);
@@ -3596,6 +3613,7 @@ void RoomScene::takeAmazingGrace(ClientPlayer *taker, int card_id, bool move_car
     m_cardContainer->m_currentPlayer = taker;
     CardItem *copy = m_cardContainer->removeCardItems(card_ids, Player::PlaceHand).first();
     if (copy == NULL) return;
+    if (!m_cardContainer->isVisible()) return;
 
     QList<CardItem *> items;
     items << copy;
@@ -3769,6 +3787,29 @@ void RoomScene::doGongxin(const QList<int> &card_ids, bool enable_heart, QList<i
         m_cardContainer->startGongxin(enabled_ids);
     else if (!m_cardContainer->retained())
         m_cardContainer->addConfirmButton();
+}
+
+void RoomScene::showPile(const QList<int> &card_ids, const QString &name)
+{
+    pileContainer->clear();
+    bringToFront(pileContainer);
+    pileContainer->setObjectName(name);
+    pileContainer->fillCards(card_ids);
+    pileContainer->setPos(m_tableCenterPos - QPointF(pileContainer->boundingRect().width() / 2, pileContainer->boundingRect().height() / 2));
+    pileContainer->show();
+}
+
+QString RoomScene::getCurrentShownPileName()
+{
+    if (pileContainer->isVisible())
+        return pileContainer->objectName();
+    else
+        return NULL;
+}
+
+void RoomScene::hidePile()
+{
+    pileContainer->clear();
 }
 
 void RoomScene::showOwnerButtons(bool owner)
@@ -4114,13 +4155,12 @@ void RoomScene::doHuashen(const QString &, const QStringList &args)
 
     QStringList hargs = args;
     QString name = hargs.first();
-    hargs.removeOne(name);
-    hargs = hargs.first().split(":");
+    QStringList general_names = hargs.last().split(":");
     ClientPlayer *player = ClientInstance->getPlayer(name);
 
     QList<CardItem *> generals;
 
-    foreach (QString arg, hargs) {
+    foreach (QString arg, general_names) {
         CardItem *item = new CardItem(arg);
         item->setPos(this->m_tableCenterPos);
         addItem(item);

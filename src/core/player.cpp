@@ -814,9 +814,45 @@ bool Player::canDiscard(const Player *to, const QString &flags) const
     static QChar equip_flag('e');
     static QChar judging_flag('j');
 
-    if (flags.contains(handcard_flag) && !to->isKongcheng()) return true;
-    if (flags.contains(judging_flag) && !to->getJudgingArea().isEmpty()) return true;
-    if (flags.contains(equip_flag) && to->hasEquip()) return true;
+    QList<int> card_ids;
+    foreach (const Card *card, to->getEquips())
+        card_ids << card->getEffectiveId();
+    QList<int> card_ids_copy = card_ids;
+    foreach (int card_id, card_ids)
+        if (!canDiscard(to, card_id))
+            card_ids_copy.removeOne(card_id);
+
+    bool hand = true;
+    bool judge = true;
+    bool equip = true;
+
+    if (flags.contains(handcard_flag) && (Sanguosha->isCardFixed(this, to, "h", Card::MethodDiscard) || to->isKongcheng()))
+        hand = false;
+
+    if (flags.contains(judging_flag) && (Sanguosha->isCardFixed(this, to, "j", Card::MethodDiscard) || to->getJudgingArea().isEmpty()))
+        judge = false;
+
+    if (flags.contains(equip_flag) && (Sanguosha->isCardFixed(this, to, "e", Card::MethodDiscard) || card_ids_copy.isEmpty()))
+        equip = false;
+
+    if (flags.contains(handcard_flag))
+        if (hand)
+            return true;
+        else if (((flags.contains(judging_flag) && judge) || (flags.contains(equip_flag) && equip)))
+            return true;
+
+    if (flags.contains(judging_flag))
+        if (judge)
+            return true;
+        else if (((flags.contains(handcard_flag) && hand) || (flags.contains(equip_flag) && equip)))
+            return true;
+
+    if (flags.contains(equip_flag))
+        if (equip)
+            return true;
+        else if (((flags.contains(judging_flag) && judge) || (flags.contains(handcard_flag) && hand)))
+            return true;
+
     return false;
 }
 
@@ -824,6 +860,98 @@ bool Player::canDiscard(const Player *to, int card_id) const
 {
     if (this == to) {
         if (isJilei(Sanguosha->getCard(card_id)))
+            return false;
+    }
+
+    bool eq = false;
+    foreach (const Card *card, to->getEquips()) {
+        if (card->getEffectiveId() == card_id) {
+            eq = true;
+            break;
+        }
+    }
+    if (eq) {
+        if (to->getWeapon() && to->getWeapon()->getEffectiveId() == card_id && Sanguosha->isCardFixed(this, to, "w", Card::MethodDiscard))
+            return false;
+        else if (to->getArmor() && to->getArmor()->getEffectiveId() == card_id && Sanguosha->isCardFixed(this, to, "a", Card::MethodDiscard))
+            return false;
+        else if (to->getOffensiveHorse() && to->getOffensiveHorse()->getEffectiveId() == card_id && Sanguosha->isCardFixed(this, to, "o", Card::MethodDiscard))
+            return false;
+        else if (to->getDefensiveHorse() && to->getDefensiveHorse()->getEffectiveId() == card_id && Sanguosha->isCardFixed(this, to, "d", Card::MethodDiscard))
+            return false;
+        else if (to->getTreasure() && to->getTreasure()->getEffectiveId() == card_id && Sanguosha->isCardFixed(this, to, "t", Card::MethodDiscard))
+            return false;
+    }
+    return true;
+}
+
+bool Player::canGetCard(const Player *to, const QString &flags) const
+{
+    static QChar handcard_flag('h');
+    static QChar equip_flag('e');
+    static QChar judging_flag('j');
+
+    QList<int> card_ids;
+    foreach (const Card *card, to->getEquips())
+        card_ids << card->getEffectiveId();
+    QList<int> card_ids_copy = card_ids;
+    foreach (int card_id, card_ids)
+        if (!canGetCard(to, card_id))
+            card_ids_copy.removeOne(card_id);
+
+    bool hand = true;
+    bool judge = true;
+    bool equip = true;
+
+    if (flags.contains(handcard_flag) && (Sanguosha->isCardFixed(this, to, "h", Card::MethodGet) || to->isKongcheng()))
+        hand = false;
+
+    if (flags.contains(judging_flag) && (Sanguosha->isCardFixed(this, to, "j", Card::MethodGet) || to->getJudgingArea().isEmpty()))
+        judge = false;
+
+    if (flags.contains(equip_flag) && (Sanguosha->isCardFixed(this, to, "e", Card::MethodGet) || card_ids_copy.isEmpty()))
+        equip = false;
+
+    if (flags.contains(handcard_flag))
+        if (hand)
+            return true;
+        else if (((flags.contains(judging_flag) && judge) || (flags.contains(equip_flag) && equip)))
+            return true;
+
+    if (flags.contains(judging_flag))
+        if (judge)
+            return true;
+        else if (((flags.contains(handcard_flag) && hand) || (flags.contains(equip_flag) && equip)))
+            return true;
+
+    if (flags.contains(equip_flag))
+        if (equip)
+            return true;
+        else if (((flags.contains(judging_flag) && judge) || (flags.contains(handcard_flag) && hand)))
+            return true;
+
+    return false;
+}
+
+bool Player::canGetCard(const Player *to, int card_id) const
+{
+    bool eq = false;
+    foreach (const Card *card, to->getEquips()) {
+        if (card->getEffectiveId() == card_id) {
+            eq = true;
+            break;
+        }
+    }
+    if (eq) {
+        if (to->getWeapon() && to->getWeapon()->getEffectiveId() == card_id && Sanguosha->isCardFixed(this, to, "w", Card::MethodGet))
+            return false;
+        else if (to->getArmor() && to->getArmor()->getEffectiveId() == card_id && Sanguosha->isCardFixed(this, to, "a", Card::MethodGet))
+            return false;
+        else if (to->getOffensiveHorse() && to->getOffensiveHorse()->getEffectiveId() == card_id && Sanguosha->isCardFixed(this, to, "o", Card::MethodGet))
+            return false;
+        else if (to->getDefensiveHorse() && to->getDefensiveHorse()->getEffectiveId() == card_id && Sanguosha->isCardFixed(this, to, "d", Card::MethodGet))
+            return false;
+        else if (to->getTreasure() && to->getTreasure()->getEffectiveId() == card_id && Sanguosha->isCardFixed(this, to, "t", Card::MethodGet))
             return false;
     }
     return true;
@@ -1309,7 +1437,7 @@ bool Player::isCardLimited(const Card *card, Card::HandlingMethod method, bool i
         }
     }
 
-    return false;
+    return removed;
 }
 
 void Player::addQinggangTag(const Card *card)
