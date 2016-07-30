@@ -504,9 +504,6 @@ sgs.ai_skill_cardask["@luanwu-slash"] = function(self)
 	end
 	local slashes = self:getCards("Slash")
 
-	local huomoslashs = gethuomoSlash(self)
-	table.insertTable(slashes, huomoslashs)
-
 	if #slashes == 0 then return "." end
 	self:sort(players, "defenseSlash")
 	for _, slash in ipairs(slashes) do
