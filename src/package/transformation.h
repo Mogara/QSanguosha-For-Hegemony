@@ -44,6 +44,8 @@ public:
 
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
+private:
+    bool canPutEquipment(Room *room, QList<int> &cards) const;
 };
 
 class TransformationPackage : public Package

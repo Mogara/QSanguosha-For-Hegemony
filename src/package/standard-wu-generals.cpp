@@ -992,25 +992,7 @@ public:
         } else {
             int to_remove = buqu.length() - need;
             for (int i = 0; i < to_remove; i++) {
-                QList<int> buqu(zhoutai->getPile("buqu"));
-                QList<int> duplicate_numbers;
-                foreach (int card_id, buqu) {
-                    const Card *card = Sanguosha->getCard(card_id);
-                    int number = card->getNumber();
-                    foreach (int id, buqu) {
-                        if (Sanguosha->getCard(id)->getNumber() == number && !duplicate_numbers.contains(id) && card_id != id){
-                            duplicate_numbers << id;
-                            if (!duplicate_numbers.contains(card_id))
-                                duplicate_numbers << card_id;
-                        }
-                    }
-                }
-                if (!duplicate_numbers.isEmpty()){
-                    qSort(duplicate_numbers.begin(), duplicate_numbers.end(), compareByNumber);
-                    room->fillAG(duplicate_numbers, zhoutai);
-                }else{
-                    room->fillAG(buqu, zhoutai);
-                }
+                room->fillAG(buqu, zhoutai);
                 int aidelay = Config.AIDelay;
                 Config.AIDelay = 0;
                 int card_id = room->askForAG(zhoutai, buqu, false, "buqu");
@@ -1077,6 +1059,39 @@ public:
                 room->broadcastSkillInvoke("buqu", zhoutai);
                 room->setPlayerFlag(zhoutai, "-Global_Dying");
                 return QStringList(objectName());
+            } else {
+                LogMessage log;
+                log.type = "#BuquDuplicate";
+                log.from = zhoutai;
+                log.arg = QString::number(duplicate_numbers.length());
+                room->sendLog(log);
+
+                for (int i = 0; i < duplicate_numbers.length(); i++) {
+                    int number = duplicate_numbers.at(i);
+
+                    LogMessage log;
+                    log.type = "#BuquDuplicateGroup";
+                    log.from = zhoutai;
+                    log.arg = QString::number(i + 1);
+                    if (number == 10)
+                        log.arg2 = "10";
+                    else {
+                        const char *number_string = "-A23456789-JQK";
+                        log.arg2 = QString(number_string[number]);
+                    }
+                    room->sendLog(log);
+
+                    foreach (int card_id, buqu) {
+                        const Card *card = Sanguosha->getCard(card_id);
+                        if (card->getNumber() == number) {
+                            LogMessage log;
+                            log.type = "$BuquDuplicateItem";
+                            log.from = zhoutai;
+                            log.card_str = QString::number(card_id);
+                            room->sendLog(log);
+                        }
+                    }
+                }
             }
         }
 
@@ -1087,18 +1102,16 @@ public:
     {
         if (triggerEvent == AskForPeachesDone)
             return true;
-
-        int need = 1 - zhoutai->getHp(); // the buqu cards that should be turned over
-        const QList<int> &buqu = zhoutai->getPile("buqu");
-        int n = need - buqu.length();
-        if (n > 0) {
-            if (zhoutai->askForSkillInvoke(this, data)) {
-                room->broadcastSkillInvoke(objectName(), zhoutai);
-
+        if (zhoutai->askForSkillInvoke(this, data)) {
+            room->broadcastSkillInvoke(objectName(), zhoutai);
+            const QList<int> &buqu = zhoutai->getPile("buqu");
+            int need = 1 - zhoutai->getHp(); // the buqu cards that should be turned over
+            int n = need - buqu.length();
+            if (n > 0) {
                 QList<int> card_ids = room->getNCards(n, false);
                 zhoutai->addToPile("buqu", card_ids);
-                return true;
             }
+            return true;
         }
         return false;
     }
@@ -1127,39 +1140,6 @@ public:
             if (duplicate_numbers.isEmpty()) {
                 room->setTag("Buqu", QVariant());
                 return true;
-            }else {
-                LogMessage log;
-                log.type = "#BuquDuplicate";
-                log.from = zhoutai;
-                log.arg = QString::number(duplicate_numbers.length());
-                room->sendLog(log);
-
-                for (int i = 0; i < duplicate_numbers.length(); i++) {
-                    int number = duplicate_numbers.at(i);
-
-                    LogMessage log;
-                    log.type = "#BuquDuplicateGroup";
-                    log.from = zhoutai;
-                    log.arg = QString::number(i + 1);
-                    if (number == 10)
-                        log.arg2 = "10";
-                    else {
-                        const char *number_string = "-A23456789-JQK";
-                        log.arg2 = QString(number_string[number]);
-                    }
-                    room->sendLog(log);
-
-                    foreach (int card_id, buqunew) {
-                        const Card *card = Sanguosha->getCard(card_id);
-                        if (card->getNumber() == number) {
-                            LogMessage log;
-                            log.type = "$BuquDuplicateItem";
-                            log.from = zhoutai;
-                            log.card_str = QString::number(card_id);
-                            room->sendLog(log);
-                        }
-                    }
-                }
             }
         }
         return false;

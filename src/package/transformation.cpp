@@ -184,6 +184,20 @@ void XuanlueCard::onUse(Room *room, const CardUseStruct &card_use) const
     SkillCard::onUse(room, card_use);
 }
 
+bool XuanlueCard::canPutEquipment(Room *room, QList<int> &cards) const
+{
+    foreach (int card_id, cards) {
+        const EquipCard *equip = qobject_cast<const EquipCard *>(Sanguosha->getCard(card_id)->getRealCard());
+        int equip_index = static_cast<int>(equip->location());
+        foreach (ServerPlayer *p, room->getAlivePlayers())
+            if (!p->getEquip(equip_index) && !(equip_index == 0 && p->hasFlag("xuanlue_gotweapon")) && !(equip_index == 1 && p->hasFlag("xuanlue_gotarmor")) &&
+                        !(equip_index == 2 && p->hasFlag("xuanlue_gotoffensivehorse")) && !(equip_index == 3 && p->hasFlag("xuanlue_gotdefensivehorse")) &&
+                        !(equip_index == 4 && p->hasFlag("xuanlue_gottreasure")))
+                return true;
+    }
+    return false;
+}
+
 void XuanlueCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
     QList<ServerPlayer *> targets;
@@ -222,7 +236,8 @@ void XuanlueCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
     QList<CardsMoveStruct> moves2;
     if (!cards.isEmpty()) {
         room->setPlayerProperty(source, "xuanlue_cards", QVariant(IntList2StringList(cards).join("+")));
-        while (!cards.isEmpty() && room->askForUseCard(source, "@@xuanlue_equip!", "@xuanlue-distribute:::" + QString::number(cards.length()), -1, Card::MethodNone)) {
+        while (!cards.isEmpty() && canPutEquipment(room, cards)
+               && room->askForUseCard(source, "@@xuanlue_equip!", "@xuanlue-distribute:::" + QString::number(cards.length()), -1, Card::MethodNone)) {
 
             QStringList targets = source->tag["xuanlue_target"].toStringList();
             QStringList cards_get = source->tag["xuanlue_get"].toStringList();
