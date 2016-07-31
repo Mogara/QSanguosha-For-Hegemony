@@ -318,18 +318,128 @@ public:
     }
 };
 
+//lvfan
+DiaoduequipCard::DiaoduequipCard()
+{
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool DiaoduequipCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (targets.isEmpty() && to_select != Self && to_select->hasShownOneGeneral() && to_select->getRole() != "careerist" && to_select->getKingdom() == Self->getKingdom()) {
+        const Card *card = Sanguosha->getCard(subcards.first());
+        const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+        int equip_index = static_cast<int>(equip->location());
+        return (!to_select->getEquip(equip_index));
+    }
+    return false;
+}
+
+void DiaoduequipCard::onEffect(const CardEffectStruct &effect) const
+{
+    ServerPlayer *player = effect.from, *to = effect.to;
+    Room *room = player->getRoom();
+
+    room->moveCardTo(this, player, to, Player::PlaceEquip, CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, player->objectName(), "diaodu", QString()));
+
+    LogMessage log;
+    log.type = "$DiaoduEquip";
+    log.from = to;
+    log.card_str = QString::number(getEffectiveId());
+    room->sendLog(log);
+}
+
+class Diaoduequip : public OneCardViewAsSkill
+{
+public:
+    Diaoduequip() : OneCardViewAsSkill("diaodu_equip")
+    {
+        filter_pattern = "EquipCard!";
+        response_pattern = "@@diaodu_equip";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const
+    {
+        return false;
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const
+    {
+        foreach (const Card *c, Self->getHandcards())
+            if (c->getEffectiveId() == originalcard->getEffectiveId())
+                return originalcard;
+        if (Self->hasEquip(originalcard)) {
+            DiaoduequipCard *first = new DiaoduequipCard;
+            first->addSubcard(originalcard->getId());
+            return first;
+        }
+        return NULL;
+    }
+};
+
+DiaoduCard::DiaoduCard()
+{
+    target_fixed = true;
+    mute = true;
+}
+
+void DiaoduCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    room->broadcastSkillInvoke("diaodu", card_use.from);
+
+    CardUseStruct new_use = card_use;
+    new_use.to << card_use.from;
+    if (card_use.from->getRole() != "careerist")
+        foreach (ServerPlayer *p, room->getOtherPlayers(card_use.from))
+            if (p->hasShownOneGeneral() && p->getRole() != "careerist" && p->getKingdom() == card_use.from->getKingdom())
+                new_use.to << p;
+    room->sortByActionOrder(new_use.to);
+
+    Card::onUse(room, new_use);
+}
+
+void DiaoduCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.to->getRoom();
+    room->askForUseCard(effect.to, "@@diaodu_equip", "@Diaodu-distribute", -1, Card::MethodUse);
+}
+
+class Diaodu : public ZeroCardViewAsSkill
+{
+public:
+    Diaodu() : ZeroCardViewAsSkill("diaodu")
+    {
+    }
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("DiaoduCard");
+    }
+     virtual const Card *viewAs() const
+    {
+        DiaoduCard *dd = new DiaoduCard;
+        dd->setShowSkill(objectName());
+        return dd;
+    }
+};
+
 TransformationPackage::TransformationPackage()
     : Package("transformation")
 {
-    General *lengtong = new General(this, "lengtong", "wu"); // Wu
-    lengtong->addSkill(new LieFeng);
-    lengtong->addSkill(new Xuanlue);
-    //lengtong->addSkill(new XuanlueViewAsSkill);
+    General *lingtong = new General(this, "lingtong", "wu"); // Wu
+    lingtong->addSkill(new LieFeng);
+    lingtong->addSkill(new Xuanlue);
+
+    General *lvfan = new General(this, "lvfan", "wu", 3); // Wu
+    lvfan->addSkill(new Diaodu);
 
     addMetaObject<XuanlueCard>();
     addMetaObject<XuanlueequipCard>();
+    addMetaObject<DiaoduequipCard>();
+    addMetaObject<DiaoduCard>();
 
     skills << new XuanlueViewAsSkill;
+    skills << new Diaoduequip;
 }
 
 ADD_PACKAGE(Transformation)
