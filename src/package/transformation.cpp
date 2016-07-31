@@ -423,6 +423,63 @@ public:
     }
 };
 
+class Diancai : public TriggerSkill
+{
+public:
+    Diancai() : TriggerSkill("diancai")
+    {
+        events << CardsMoveOneTime << EventPhaseEnd;
+    }
+
+    virtual bool canPreshow() const
+    {
+        return true;
+    }
+
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        if (!(triggerEvent == CardsMoveOneTime && TriggerSkill::triggerable(player) && player != room->getCurrent() && room->getCurrent()->getPhase() == Player::Play))
+            return;
+
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from == player && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
+                && !(move.to == player && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip)))
+            player->setMark(objectName(), player->getMark(objectName()) + move.card_ids.length());
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        if (!(triggerEvent == EventPhaseEnd && player->getPhase() == Player::Play)) return TriggerList();
+        QList<ServerPlayer *> players = room->findPlayersBySkillName(objectName());
+        TriggerList skill_list;
+        foreach (ServerPlayer *p, players) {
+            if (TriggerSkill::triggerable(p))
+                if (p->isWounded() && p->getMark(objectName()) >= p->getLostHp())
+                    skill_list.insert(p, QStringList(objectName()));
+                else
+                    p->setMark(objectName(), 0);
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        ask_who->setMark(objectName(), 0);
+        if (ask_who->askForSkillInvoke(this)) {
+            room->broadcastSkillInvoke(objectName(), ask_who);
+            return true;
+        }
+        return false;
+    }
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->getHandcardNum() < ask_who->getMaxHp())
+            ask_who->drawCards(ask_who->getMaxHp() - ask_who->getHandcardNum(), objectName());
+        //room->transformDupGeneral(ask_who); reserve
+        return false;
+    }
+};
+
 TransformationPackage::TransformationPackage()
     : Package("transformation")
 {
@@ -432,6 +489,7 @@ TransformationPackage::TransformationPackage()
 
     General *lvfan = new General(this, "lvfan", "wu", 3); // Wu
     lvfan->addSkill(new Diaodu);
+    lvfan->addSkill(new Diancai);
 
     addMetaObject<XuanlueCard>();
     addMetaObject<XuanlueequipCard>();
