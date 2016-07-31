@@ -432,7 +432,8 @@ end
 
 function SmartAI:useCardSlash(card, use)
 	if not use.isDummy and not self:slashIsAvailable(self.player, card) then return end
-
+	if self.player:hasSkill("xiaoji") and sgs.Sanguosha:getCard(card:getEffectiveId()) and sgs.Sanguosha:getCard(card:getEffectiveId()):isKindOf("EquipCard")
+		and self.room:getCardPlace(card:getEffectiveId()) == sgs.Player_PlaceHand then return end
 	local cards = self.player:getCards("he")
 	cards = sgs.QList2Table(cards)
 	local no_distance = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_DistanceLimit, self.player, card) > 50
@@ -469,14 +470,20 @@ function SmartAI:useCardSlash(card, use)
 
 	for _, friend in ipairs(self.friends_noself) do
 		if self:isPriorFriendOfSlash(friend, card) and not self:slashProhibit(card, friend) then
-			if self.player:canSlash(friend, card, not no_distance, rangefix) or (use.isDummy and self.player:distanceTo(friend, rangefix) <= self.predictedRange) then
+			if (not use.current_targets or not table.contains(use.current_targets, friend:objectName()))
+				and (self.player:canSlash(friend, card, not no_distance, rangefix)
+				or (use.isDummy and (self.player:distanceTo(friend, rangefix) <= self.predictedRange)))
+				and self:slashIsEffective(card, friend) then
 				use.card = card
-				if use.to and canAppendTarget(friend) then use.to:append(friend) end
-				if not use.to or self.slash_targets <= use.to:length() then return end
+				if use.to and canAppendTarget(friend) then
+					use.to:append(friend)
+				end
+				if not use.to or self.slash_targets <= use.to:length() then	return
+				end
 			end
 		end
 	end
-
+	
 	local targets = {}
 	local forbidden = {}
 	self:sort(self.enemies, "defenseSlash")
@@ -492,12 +499,13 @@ function SmartAI:useCardSlash(card, use)
 		for _, friend in ipairs(self.friends_noself) do
 			if self:canLiuli(target, friend) and self:slashIsEffective(card, friend) and #targets > 1 and friend:getHp() < 3 then canliuli = true end
 		end
-		if (self.player:canSlash(target, card, not no_distance, rangefix)
-				or (use.isDummy and self.predictedRange and self.player:distanceTo(target, rangefix) <= self.predictedRange))
+		if (not use.current_targets or not table.contains(use.current_targets, target:objectName()))
+			and (self.player:canSlash(target, card, not no_distance, rangefix)
+			or (use.isDummy and self.predictedRange and self.player:distanceTo(target, rangefix) <= self.predictedRange))
 			and self:objectiveLevel(target) > 3
 			and not canliuli
 			and not (not self:isWeak(target) and #self.enemies > 1 and #self.friends > 1 and self.player:hasSkill("keji")
-				and self:getOverflow() > 0 and not self:hasCrossbowEffect()) then
+			and self:getOverflow() > 0 and not self:hasCrossbowEffect()) then
 
 			if target:getHp() > 1 and target:hasShownSkill("jianxiong") and self.player:hasWeapon("Spear") and card:getSkillName() == "Spear" then
 				local ids, isGood = card:getSubcards(), true
@@ -553,20 +561,28 @@ function SmartAI:useCardSlash(card, use)
 			end
 
 			use.card = use.card or usecard
-			if use.to and canAppendTarget(target) then use.to:append(target) end
-			if not use.to or self.slash_targets <= use.to:length() then return end
+			if use.to and canAppendTarget(target) then
+				use.to:append(target)
+			end
+			if not use.to or self.slash_targets <= use.to:length() then	return
+			end
 		end
 	end
 
 	for _, friend in ipairs(self.friends_noself) do
-		if not self:slashProhibit(card, friend) and not self:hasHeavySlashDamage(self.player, card, friend)
+		if (not use.current_targets or not table.contains(use.current_targets, friend:objectName()))
+			and not self:slashProhibit(card, friend) and not self:hasHeavySlashDamage(self.player, card, friend)
 			and (self:getDamagedEffects(friend, self.player) or self:needToLoseHp(friend, self.player, true, true))
 			and (self.player:canSlash(friend, card, not no_distance, rangefix)
-				or (use.isDummy and self.predictedRange and self.player:distanceTo(friend, rangefix) <= self.predictedRange)) then
+			or (use.isDummy and self.predictedRange and self.player:distanceTo(friend, rangefix) <= self.predictedRange)) then
 			use.card = card
 			if use.to and canAppendTarget(friend) then use.to:append(friend) end
-			if not use.to or self.slash_targets <= use.to:length() then return end
+			if not use.to or self.slash_targets <= use.to:length() then	return
+			end
 		end
+	end
+	if use.to and use.to:isEmpty() then
+		use.card = nil
 	end
 end
 
