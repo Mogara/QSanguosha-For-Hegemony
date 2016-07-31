@@ -4285,7 +4285,7 @@ void Room::moveCardTo(const Card *card, ServerPlayer *srcPlayer, ServerPlayer *d
     move.to_pile_name = pileName;
 
     if (!pileName.isEmpty())
-        dstPlayer->pileadd(pileName, move.card_ids);
+        dstPlayer->pileAdd(pileName, move.card_ids);
 
     move.from = srcPlayer;
     move.reason = reason;

@@ -52,6 +52,7 @@ config = {
 		"FormationEquip",
 		"MomentumEquip" ,
 		"StrategicAdvantage",
+		"Transformation",
 
 		"Standard",
 		"Formation",

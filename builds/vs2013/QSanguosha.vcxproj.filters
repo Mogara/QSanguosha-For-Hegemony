@@ -959,6 +959,15 @@
     <ClCompile Include="Release\moc_cardchooseBox.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\package\transformation.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_transformation.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_transformation.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">
@@ -1260,6 +1269,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\src\ui\cardchooseBox.h">
       <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\transformation.h">
+      <Filter>package</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
