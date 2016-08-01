@@ -214,6 +214,13 @@ QDialog *Skill::getDialog() const
 
 QString Skill::getGuhuoBox() const
 {
+    if (inherits("TriggerSkill")) {
+        const TriggerSkill *triskill = qobject_cast<const TriggerSkill *>(this);
+        return triskill->getGuhuoBox();
+    } else if (inherits("ViewAsSkill")) {
+        const ViewAsSkill *view_as_skill = qobject_cast<const ViewAsSkill *>(this);
+        return view_as_skill->getGuhuoBox();
+    }
     return "";
 }
 
@@ -239,6 +246,16 @@ bool Skill::relateToPlace(bool head) const
 ViewAsSkill::ViewAsSkill(const QString &name)
     : Skill(name), response_pattern(QString()), response_or_use(false), expand_pile(QString())
 {
+}
+
+QString ViewAsSkill::getGuhuoBox() const
+{
+    return guhuo_type;
+}
+
+QString TriggerSkill::getGuhuoBox() const
+{
+    return guhuo_type;
 }
 
 bool ViewAsSkill::isAvailable(const Player *invoker, CardUseStruct::CardUseReason reason, const QString &pattern) const
@@ -357,6 +374,7 @@ TriggerSkill::TriggerSkill(const QString &name)
     : Skill(name), view_as_skill(NULL), global(false), current_priority(0.0)
 {
     priority.clear();
+    guhuo_type = "";
 }
 
 const ViewAsSkill *TriggerSkill::getViewAsSkill() const

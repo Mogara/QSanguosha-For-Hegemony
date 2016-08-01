@@ -22,6 +22,7 @@
 
 #include "package.h"
 #include "card.h"
+#include "wrappedcard.h"
 #include "skill.h"
 #include "standard.h"
 
@@ -67,6 +68,30 @@ public:
     Q_INVOKABLE DiaoduCard();
 
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class QiceCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE QiceCard();
+
+    virtual bool targetFixed() const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+    virtual const Card *validate(CardUseStruct &card_use) const;
+};
+
+class SanyaoCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE SanyaoCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 

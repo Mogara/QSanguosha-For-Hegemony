@@ -98,6 +98,7 @@ public:
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const = 0;
     virtual const Card *viewAs(const QList<const Card *> &cards) const = 0;
 
+    QString getGuhuoBox() const;
     bool isAvailable(const Player *invoker, CardUseStruct::CardUseReason reason, const QString &pattern) const;
     virtual bool isEnabledAtPlay(const Player *player) const;
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const;
@@ -117,6 +118,7 @@ protected:
     QString response_pattern;
     bool response_or_use;
     QString expand_pile;
+    QString guhuo_type;
 };
 
 class ZeroCardViewAsSkill : public ViewAsSkill
@@ -184,6 +186,7 @@ public:
 
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
+    virtual QString getGuhuoBox() const;
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const;
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
@@ -201,6 +204,7 @@ protected:
     QList<TriggerEvent> events;
     bool global;
     QHash<TriggerEvent, double> priority;
+    QString guhuo_type;
 
 private:
     mutable double current_priority;

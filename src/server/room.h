@@ -296,6 +296,7 @@ public:
     ServerPlayer *findPlayer(const QString &general_name, bool include_dead = false) const;
     QList<ServerPlayer *> findPlayersBySkillName(const QString &skill_name) const;
     ServerPlayer *findPlayerBySkillName(const QString &skill_name) const;
+    ServerPlayer *findPlayerbyobjectName(const QString &general_name, bool include_dead = false) const;
     void installEquip(ServerPlayer *player, const QString &equip_name);
     void resetAI(ServerPlayer *player);
     void doDragonPhoenix(ServerPlayer *target, const QString &general1_name, const QString &general2_name, bool full_state = true,

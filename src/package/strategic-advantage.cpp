@@ -950,12 +950,18 @@ void FightTogether::onUse(Room *room, const CardUseStruct &card_use) const
                 smalls << p;
         }
     }
+    if (this->getSkillName(true) == "qice") {
+        if (!bigs.isEmpty() && bigs.length() > this->getSubcards().length())
+            bigs.clear();
+        if (!smalls.isEmpty() && smalls.length() > this->getSubcards().length())
+            smalls.clear();
+    }
     QStringList choices;
     if (!bigs.isEmpty())
         choices << "big";
     if (!smalls.isEmpty())
         choices << "small";
-    if (!source->isCardLimited(this, Card::MethodRecast))
+    if (!source->isCardLimited(this, Card::MethodRecast) && can_recast)
         choices << "recast";
 
     Q_ASSERT(!choices.isEmpty());
