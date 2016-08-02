@@ -563,6 +563,10 @@ void PlayerCardContainer::repaintAll()
     _updateDeathIcon();
     _updateEquips();
     updateDelayedTricks();
+
+    //if (_m_huashenAnimation1 != NULL)
+    //    startHuaShen(_m_huashenGeneralNames, _m_huashenSkillName);
+
     //we have two avatar areas now...
     _paintPixmap(_m_faceTurnedIcon, _m_layout->m_avatarArea, QSanRoomSkin::S_SKIN_KEY_FACETURNEDMASK,
         _getAvatarParent());
@@ -797,6 +801,68 @@ QList<CardItem *> PlayerCardContainer::removeEquips(const QList<int> &cardIds)
     return result;
 }
 
+void PlayerCardContainer::startHuaShen(QStringList generalName, QString skillName)
+{
+    if (m_player == NULL)
+        return;
+
+    _m_huashenGeneralNames = generalName;
+    _m_huashenSkillName = skillName;
+    Q_ASSERT(m_player->hasSkill("huashen"));
+
+    bool second_zuoci = m_player && m_player->getGeneralName() != "zuoci" && m_player->getGeneral2Name() == "zuoci";
+    int avatarSize = second_zuoci ? _m_layout->m_smallAvatarSize :
+        (m_player->getGeneral2() ? _m_layout->m_primaryAvatarSize :
+        _m_layout->m_avatarSize);
+    QPixmap pixmap1 = G_ROOM_SKIN.getGeneralPixmap(generalName.first(), (QSanRoomSkin::GeneralIconSize)avatarSize);
+    QPixmap pixmap2 = G_ROOM_SKIN.getGeneralPixmap(generalName.last(), (QSanRoomSkin::GeneralIconSize)avatarSize);
+
+    QRect animRect = _m_layout->m_avatarArea;
+    if (pixmap1.size() != animRect.size())
+        pixmap1 = pixmap1.scaled(animRect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    if (second_zuoci)
+        pixmap1 = paintByMask(pixmap1);
+    if (pixmap2.size() != animRect.size())
+        pixmap2 = pixmap2.scaled(animRect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    if (second_zuoci)
+        pixmap2 = paintByMask(pixmap2);
+    QList<QPixmap> pixmaps;
+    pixmaps << pixmap1 << pixmap2;
+
+    stopHuaShen();
+    QList<QAbstractAnimation *> animations = G_ROOM_SKIN.createHuaShenAnimation(pixmaps, animRect, _getAvatarParent(), _m_huashenItem);
+    _m_huashenAnimation1 = animations.first();
+    _m_huashenAnimation1->start();
+    _m_huashenAnimation2 = animations.last();
+    _m_huashenAnimation2->start();
+    _paintPixmap(_m_extraSkillBg, _m_layout->m_extraSkillArea, QSanRoomSkin::S_SKIN_KEY_EXTRA_SKILL_BG, _getAvatarParent());
+    if (!skillName.isEmpty())
+        _m_extraSkillBg->show();
+    _m_layout->m_extraSkillFont.paintText(_m_extraSkillText, _m_layout->m_extraSkillTextArea, Qt::AlignCenter,
+        Sanguosha->translate(skillName).left(2));
+    if (!skillName.isEmpty()) {
+        _m_extraSkillText->show();
+        _m_extraSkillBg->setToolTip(Sanguosha->getSkill(skillName)->getDescription());
+    }
+    _adjustComponentZValues();
+}
+
+void PlayerCardContainer::stopHuaShen()
+{
+    if (_m_huashenAnimation1 != NULL) {
+        _m_huashenAnimation1->stop();
+        _m_huashenAnimation1->deleteLater();
+        _m_huashenAnimation2->stop();
+        _m_huashenAnimation2->deleteLater();
+        delete _m_huashenItem;
+        _m_huashenAnimation1 = NULL;
+        _m_huashenAnimation2 = NULL;
+        _m_huashenItem = NULL;
+        _clearPixmap(_m_extraSkillBg);
+        _clearPixmap(_m_extraSkillText);
+    }
+}
+
 void PlayerCardContainer::updateAvatarTooltip()
 {
     if (m_player) {
@@ -849,6 +915,7 @@ PlayerCardContainer::PlayerCardContainer()
     _m_votesItem = NULL;
     _m_distanceItem = NULL;
     _m_seatItem = NULL;
+    _m_liegongItem = NULL;
     _m_groupMain = new QGraphicsPixmapItem(this);
     _m_groupMain->setFlag(ItemHasNoContents);
     _m_groupMain->setPos(0, 0);
@@ -900,6 +967,7 @@ void PlayerCardContainer::_adjustComponentZValues()
 
     _layUnder(_m_floatingArea);
     _layUnder(_m_distanceItem);
+    _layUnder(_m_liegongItem);
     _layUnder(_m_votesItem);
     foreach(QGraphicsItem *pile, _m_privatePiles)
         _layUnder(pile);
@@ -1093,6 +1161,21 @@ void PlayerCardContainer::hideDistance()
 {
     if (_m_distanceItem && _m_distanceItem->isVisible())
         _m_distanceItem->hide();
+}
+
+void PlayerCardContainer::showLiegong()
+{
+    _paintPixmap(_m_liegongItem, _m_layout->m_saveMeIconRegion,
+        _getPixmap(QSanRoomSkin::S_SKIN_KEY_VOTES_NUMBER, "lie"),
+        _getAvatarParent());
+    if (!_m_liegongItem->isVisible())
+       _m_liegongItem->show();
+}
+
+void PlayerCardContainer::hideLiegong()
+{
+    if (_m_liegongItem && _m_liegongItem->isVisible())
+        _m_liegongItem->hide();
 }
 
 void PlayerCardContainer::onRemovedChanged()

@@ -678,8 +678,7 @@ const Card *QiceCard::validate(CardUseStruct &card_use) const
     ServerPlayer *source = card_use.from;
     Room *room = source->getRoom();
 
-    QString c = toString().split("&").last();   //getUserString() bug here. damn it!
-    c = c.remove(":");
+    QString c = toString().split(":").last();   //getUserString() bug here. damn it!
 
     Card *use_card = Sanguosha->cloneCard(c);
     use_card->setSkillName("qice");
@@ -771,7 +770,7 @@ public:
             return NULL;
     }
 
-    bool isEnabledAtPlay(const Player *player) const
+    virtual bool isEnabledAtPlay(const Player *player) const
     {
         return !player->isKongcheng() && !player->hasUsed("QiceCard");
     }
@@ -935,16 +934,17 @@ public:
         filter_pattern = ".!";
     }
 
-    bool isEnabledAtPlay(const Player *player) const
+    virtual bool isEnabledAtPlay(const Player *player) const
     {
         return player->canDiscard(player, "he") && !player->hasUsed("SanyaoCard");
     }
 
-    const Card *viewAs(const Card *originalcard) const
+    virtual const Card *viewAs(const Card *originalcard) const
     {
         SanyaoCard *first = new SanyaoCard;
         first->addSubcard(originalcard->getId());
         first->setSkillName(objectName());
+        first->setShowSkill(objectName());
         return first;
     }
 };
@@ -1139,6 +1139,136 @@ public:
     }
 };
 
+//lord_sunquan
+LianziCard::LianziCard()
+{
+    target_fixed = true;
+    will_throw = true;
+}
+
+void LianziCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    int num = 0;
+    foreach (ServerPlayer *p, room->getAllPlayers()) {
+        if (p->hasShownOneGeneral() && p->getKingdom() == "wu" && p->getRole() != "careerist")
+            num = num + p->getEquips().length();
+    }
+
+    QList<int> card_ids = room->getNCards(num);
+    Card::CardType type = Sanguosha->getCard(this->getEffectiveId())->getTypeId();
+    foreach (int id, card_ids)
+        if (Sanguosha->getCard(id)->getTypeId() == type)
+            room->setCardFlag(id, "lianzi");
+
+    AskForMoveCardsStruct result = room->askForMoveCards(source, card_ids, QList<int>(), true, "lianzi", "sametype", "lianzi", 0, num, true, true, QList<int>() << -1);
+
+    foreach (int id, result.bottom) {
+        card_ids.removeOne(id);
+        room->setCardFlag(id, "-lianzi");
+        room->moveCardTo(Sanguosha->getCard(id), source, Player::PlaceTable, CardMoveReason(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "lianzi", ""), false);
+        room->getThread()->delay();
+    }
+    room->moveCards(CardsMoveStruct(result.bottom, source, Player::PlaceHand, CardMoveReason(CardMoveReason::S_REASON_GOTBACK, source->objectName(), "lianzi", "")), true);
+
+    if (!card_ids.isEmpty()) {
+        foreach (int id, card_ids)
+            room->setCardFlag(id, "-lianzi");
+
+        QListIterator<int> i(card_ids);
+        i.toBack();
+        while (i.hasPrevious())
+            room->getDrawPile().prepend(i.previous());
+    }
+}
+
+class Lianzi : public OneCardViewAsSkill
+{
+public:
+    Lianzi() : OneCardViewAsSkill("lianzi")
+    {
+        filter_pattern = ".|.|.|hand!";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->canDiscard(player, "h") && !player->hasUsed("LianziCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const
+    {
+        LianziCard *first = new LianziCard;
+        first->addSubcard(originalcard->getId());
+        first->setSkillName(objectName());
+        first->setShowSkill(objectName());
+        return first;
+    }
+};
+
+class Jubao : public TriggerSkill
+{
+public:
+    Jubao() : TriggerSkill("jubao")
+    {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual bool canPreshow() const
+    {
+        return true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const
+    {
+        if (player->getPhase() == Player::Finish && TriggerSkill::triggerable(player))
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (p->getTreasure() && p->getTreasure()->isKindOf("NightLuminescentPearl") && player->canGetCard(p, "he"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->hasShownSkill(this) || player->askForSkillInvoke(this)) {
+            room->broadcastSkillInvoke(objectName(), player);
+            return true;
+        }
+        return false;
+    }
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        QList<CardsMoveStruct> moves;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (p->getTreasure() && p->getTreasure()->isKindOf("NightLuminescentPearl") && player->canGetCard(p, "he")) {
+                int card_id = room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodGet);
+                CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, player->objectName());
+                CardsMoveStruct move(card_id, player, Player::PlaceHand, reason);
+                moves.append(move);
+            }
+        }
+        if (!moves.isEmpty()) room->moveCardsAtomic(moves, true);
+        player->drawCards(1);
+        return false;
+    }
+};
+
+class JubaoCardFixed : public FixCardSkill
+{
+public:
+    JubaoCardFixed() : FixCardSkill("#jubao-treasure")
+    {
+    }
+    virtual bool isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const
+    {
+        if (from != to && method == Card::MethodGet && to->hasShownSkill(this) && (flags.contains("t")))
+            return true;
+
+        return false;
+    }
+};
+
 TransformationPackage::TransformationPackage()
     : Package("transformation")
 {
@@ -1177,12 +1307,19 @@ TransformationPackage::TransformationPackage()
     Masu->addSkill(new Sanyao);
     Masu->addSkill(new Zhiman);
 
+    General *sunquan = new General(this, "lord_sunquan$", "wu", 4, true, true);
+    sunquan->addSkill(new Lianzi);
+    sunquan->addSkill(new Jubao);
+    sunquan->addSkill(new JubaoCardFixed);
+    insertRelatedSkills("jubao", "#jubao-treasure");
+
     addMetaObject<XuanlueCard>();
     addMetaObject<XuanlueequipCard>();
     addMetaObject<DiaoduequipCard>();
     addMetaObject<DiaoduCard>();
     addMetaObject<QiceCard>();
     addMetaObject<SanyaoCard>();
+    addMetaObject<LianziCard>();
 
     skills << new XuanlueViewAsSkill;
     skills << new Diaoduequip;
@@ -1190,3 +1327,58 @@ TransformationPackage::TransformationPackage()
 
 ADD_PACKAGE(Transformation)
 
+NightLuminescentPearl::NightLuminescentPearl(Suit suit, int number) : Treasure(suit, number)
+{
+    setObjectName("night_luminescent_pearl");
+}
+
+ZhihengTreasureCard::ZhihengTreasureCard()
+{
+    target_fixed = true;
+    m_skillName = "ZhihengTreasure";
+}
+
+void ZhihengTreasureCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    if (source->isAlive())
+        room->drawCards(source, subcards.length());
+}
+
+class NightLuminescentPearlSkill : public ViewAsSkill
+{
+public:
+    NightLuminescentPearlSkill() : ViewAsSkill("night_luminescent_pearl")
+    {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        return !Self->isJilei(to_select) && selected.length() < Self->getMaxHp() && to_select != Self->getTreasure();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.isEmpty())
+            return NULL;
+
+        ZhihengTreasureCard *zhiheng_card = new ZhihengTreasureCard;
+        zhiheng_card->addSubcards(cards);
+        return zhiheng_card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->canDiscard(player, "he") && !player->hasUsed("ZhihengTreasureCard") && !player->hasShownSkill("zhiheng");
+    }
+};
+
+TransformationEquipPackage::TransformationEquipPackage() : Package("transformation_equip", CardPack)
+{
+    NightLuminescentPearl *np = new NightLuminescentPearl();
+    np->setParent(this);
+
+    addMetaObject<ZhihengTreasureCard>();
+    skills << new NightLuminescentPearlSkill;
+}
+
+ADD_PACKAGE(TransformationEquip)

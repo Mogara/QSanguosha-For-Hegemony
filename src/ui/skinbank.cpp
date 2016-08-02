@@ -95,8 +95,6 @@ const char *QSanRoomSkin::S_SKIN_KEY_HEAD_ICON = "headIcon";
 const char *QSanRoomSkin::S_SKIN_KEY_DEPUTY_ICON = "deputyIcon";
 const char *QSanRoomSkin::S_SKIN_KEY_DISABLE_SHOW_LOCK = "%1DisableShowLock";
 
-const char *QSanRoomSkin::S_SKIN_KEY_CARD_TINY_ICON = "cardTiny-%1";
-
 //CardContainer
 const char *QSanRoomSkin::S_SKIN_KEY_CARD_CONTAINER_TOP = "cardContainerTop";
 const char *QSanRoomSkin::S_SKIN_KEY_CARD_CONTAINER_MIDDLE = "cardContainerMiddle";
@@ -398,6 +396,8 @@ QPixmap QSanRoomSkin::getCardSuitPixmap(Card::Suit suit) const
 QPixmap QSanRoomSkin::getCardNumberPixmap(int point, bool isBlack) const
 {
     QString pathKey = isBlack ? S_SKIN_KEY_HAND_CARD_NUMBER_BLACK : S_SKIN_KEY_HAND_CARD_NUMBER_RED;
+    if (point > 13)
+        return getPixmap(pathKey, "max");
     return getPixmap(pathKey, QString::number(point));
 }
 
@@ -436,19 +436,6 @@ QPixmap QSanRoomSkin::getGeneralPixmap(const QString &generalName, GeneralIconSi
     key = QString(S_SKIN_KEY_PLAYER_GENERAL_ICON) //try the default match
         .arg(size);
     return getPixmap(key, name, id, true);
-}
-
-QPixmap QSanRoomSkin::getCardTinyPixmap(const QString &card_object_name) const
-{
-    static QPixmap empty;
-    QString key = QString(S_SKIN_KEY_CARD_TINY_ICON).arg(card_object_name);
-    if (isImageKeyDefined(key))
-        return getPixmap(key);
-    key = QString(S_SKIN_KEY_CARD_TINY_ICON);
-    if (isImageKeyDefined(key.arg(S_SKIN_KEY_DEFAULT)))
-        return getPixmap(key, card_object_name);
-
-    return empty;
 }
 
 QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index, const Player *player) const
@@ -886,6 +873,50 @@ QPixmap IQSanComponentSkin::getPixmapFromFileName(const QString &fileName) const
 bool QSanRoomSkin::_loadAnimationConfig(const QVariant &)
 {
     return true;
+}
+
+QList<QAbstractAnimation *> QSanRoomSkin::createHuaShenAnimation(QList<QPixmap> &huashenAvatar, QRect rect, QGraphicsItem *parent,
+    QGraphicsItem *&huashenAvatarCreated) const
+{
+    QLabel *avatar1 = new QLabel;
+    avatar1->setStyleSheet("QLabel { background-color: transparent; }");
+    avatar1->setPixmap(huashenAvatar.first());
+    QGraphicsProxyWidget *widget1 = new QGraphicsProxyWidget(parent);
+    widget1->setWidget(avatar1);
+    widget1->setPos(rect.topLeft());
+
+    QLabel *avatar2 = new QLabel;
+    avatar2->setStyleSheet("QLabel { background-color: transparent; }");
+    avatar2->setPixmap(huashenAvatar.last());
+    QGraphicsProxyWidget *widget2 = new QGraphicsProxyWidget(parent);
+    widget2->setWidget(avatar2);
+    widget2->setPos(rect.topRight());
+
+    QPropertyAnimation *animation1 = new QPropertyAnimation(widget1, "opacity");
+    QPropertyAnimation *animation2 = new QPropertyAnimation(widget2, "opacity");
+    animation1->setLoopCount(2000);
+    animation2->setLoopCount(2000);
+    JsonArray huashenConfig = _m_animationConfig["huashen"].value<JsonArray>();
+    int duration;
+    if (tryParse(huashenConfig[0], duration) && huashenConfig[1].canConvert<JsonArray>()) {
+        animation1->setDuration(duration);
+        animation2->setDuration(duration);
+        JsonArray keyValues = huashenConfig[1].value<JsonArray>();
+        for (int i = 0; i < keyValues.size(); i++) {
+            QVariant keyValue = keyValues[i];
+            if (!keyValue.canConvert<JsonArray>() || keyValue.value<JsonArray>().length() != 2) continue;
+            double step;
+            double val;
+            JsonArray keyArr = keyValue.value<JsonArray>();
+            if (!tryParse(keyArr[0], step) || !tryParse(keyArr[1], val)) continue;
+            animation1->setKeyValueAt(step, val);
+            animation2->setKeyValueAt(step, val);
+        }
+    }
+    huashenAvatarCreated = widget1;
+    QList<QAbstractAnimation *> animations;
+    animations << animation1 << animation2;
+    return animations;
 }
 
 const QSanRoomSkin::RoomLayout &QSanRoomSkin::getRoomLayout() const

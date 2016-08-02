@@ -112,6 +112,8 @@ public:
     virtual void killPlayer();
     virtual void revivePlayer();
     virtual QGraphicsItem *getMouseClickReceiver() = 0;
+    virtual void startHuaShen(QStringList generalName, QString skillName);
+    virtual void stopHuaShen();
     inline virtual QGraphicsItem *getMouseClickReceiver2()
     {
         return NULL;
@@ -161,6 +163,8 @@ public slots:
     void updateReformState();
     void showDistance();
     void hideDistance();
+    void showLiegong();
+    void hideLiegong();
     void onRemovedChanged();
     virtual void showSeat();
     virtual void showPile();
@@ -303,6 +307,16 @@ protected:
 
     // The following stuffs for showing seat
     QGraphicsPixmapItem *_m_seatItem;
+
+    // The following stuffs for showing liegong
+    QGraphicsPixmapItem *_m_liegongItem;
+
+    // animations
+    QAbstractAnimation *_m_huashenAnimation1;
+    QAbstractAnimation *_m_huashenAnimation2;
+    QGraphicsItem *_m_huashenItem;
+    QStringList _m_huashenGeneralNames;
+    QString _m_huashenSkillName;
 
 protected slots:
     virtual void _onEquipSelectChanged();

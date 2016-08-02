@@ -95,12 +95,47 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class LianziCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE LianziCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
+};
+
 class TransformationPackage : public Package
 {
     Q_OBJECT
 
 public:
     TransformationPackage();
+};
+
+class NightLuminescentPearl : public Treasure
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE NightLuminescentPearl(Card::Suit suit = Diamond, int number = 13);
+};
+
+class ZhihengTreasureCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ZhihengTreasureCard();
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class TransformationEquipPackage : public Package
+{
+    Q_OBJECT
+
+public:
+    TransformationEquipPackage();
 };
 
 #endif

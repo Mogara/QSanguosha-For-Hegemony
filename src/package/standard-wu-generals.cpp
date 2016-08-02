@@ -47,6 +47,8 @@ public:
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
+        if (Self->getTreasure() && Self->getTreasure()->isKindOf("NightLuminescentPearl") && selected.length() >= Self->getMaxHp())
+            return !Self->isJilei(to_select) && to_select != Self->getTreasure();
         return !Self->isJilei(to_select) && selected.length() < Self->getMaxHp();
     }
 
@@ -64,7 +66,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->canDiscard(player, "he") && !player->hasUsed("ZhihengCard");
+        return player->canDiscard(player, "he") && !player->hasUsed("ZhihengCard") && !player->hasUsed("ZhihengTreasureCard");
     }
 };
 
