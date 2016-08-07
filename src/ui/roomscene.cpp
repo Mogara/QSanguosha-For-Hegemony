@@ -1335,11 +1335,6 @@ void RoomScene::enableTargets(const Card *card)
     ok_button->setEnabled(card->targetsFeasible(selected_targets, Self));
 }
 
-void RoomScene::cleanLiegong()
-{
-	//
-}
-
 void RoomScene::updateTargetsEnablity(const Card *card)
 {
     QMapIterator<PlayerCardContainer *, const ClientPlayer *> itor(item2player);
