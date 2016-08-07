@@ -198,6 +198,7 @@ public slots:
     void arrangeSeats(const QList<const ClientPlayer *> &seats);
     void toggleDiscards();
     void enableTargets(const Card *card);
+    void cleanLiegong();
     void useSelectedCard();
     void updateStatus(Client::Status oldStatus, Client::Status newStatus);
     void cardMovedinCardchooseBox(const bool enable);
@@ -231,7 +232,7 @@ public slots:
 
     void doGongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
 
-    void showPile(const QList<int> &card_ids, const QString &nam);
+    void showPile(const QList<int> &card_ids, const QString &nam, const ClientPlayer *target);
     QString getCurrentShownPileName();
     void hidePile();
 

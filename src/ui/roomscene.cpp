@@ -48,6 +48,7 @@
 #include "choosesuitbox.h"
 #include "guhuobox.h"
 #include "cardchoosebox.h"
+#include "transformation.h"
 
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
@@ -457,6 +458,17 @@ void RoomScene::handleGameEvent(const QVariant &args)
             if (photo) photo->setFrame(Photo::S_FRAME_NO_FRAME);
             break;
         }
+        case S_GAME_EVENT_HUASHEN: {
+            ClientPlayer *player = ClientInstance->getPlayer(arg[1].toString());
+            QStringList huashenGenerals = arg[2].toString().split("+");
+            Q_ASSERT(player != NULL);
+            Q_ASSERT(!huashenGenerals.isEmpty());
+            PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
+            container->startHuaShen(huashenGenerals);
+            player->tag["Huashens"] = huashenGenerals;
+            player->changePile("huashencard", false, QList<int>());
+            break;
+        }
         case S_GAME_EVENT_PLAY_EFFECT: {
             QString skillName = arg[1].toString();
             QString category;
@@ -489,6 +501,14 @@ void RoomScene::handleGameEvent(const QVariant &args)
             player->detachSkill(skill_name);
             if (player == Self) detachSkill(skill_name);
 
+            // stop huashen animation
+            PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
+            if (!player->hasSkill("huashen")) {
+                container->stopHuaShen();
+                player->tag.remove("Huashens");
+                player->changePile("huashencard", false, QList<int>());
+            }
+            container->updateAvatarTooltip();
             break;
         }
         case S_GAME_EVENT_ACQUIRE_SKILL: {
@@ -605,13 +625,18 @@ void RoomScene::handleGameEvent(const QVariant &args)
                     log_box->appendLog(type, player->objectName(), QStringList(), QString(), newHeroName, arg2);
                 }
             }
-            if (player != Self) break;
             const General* newHero = Sanguosha->getGeneral(newHeroName);
             if (oldHero) {
                 foreach (const Skill *skill, oldHero->getVisibleSkills(true, !isSecondaryHero))
                     detachSkill(skill->objectName());
+                if (oldHero->hasSkill("huashen")) {
+                    PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
+                    container->stopHuaShen();
+                    player->tag.remove("Huashens");
+                    player->changePile("huashencard", false, QList<int>());
+                }
             }
-
+            if (player != Self) break;
             if (newHero && !player->isDuanchang(!isSecondaryHero)) {
                 foreach (const Skill *skill, newHero->getVisibleSkills(true, !isSecondaryHero))
                     attachSkill(skill->objectName(), !isSecondaryHero);
@@ -1242,7 +1267,6 @@ void RoomScene::enableTargets(const Card *card)
         ok_button->setEnabled(false);
         return;
     }
-
     selected_targets.clear();
 
     // unset avatar and all photo
@@ -1421,7 +1445,6 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event)
             setChatBoxVisible(!chat_box_widget->isVisible());
             break;
         }
-
         case Qt::Key_S: dashboard->selectCard("slash");  break;
         case Qt::Key_J: dashboard->selectCard("jink"); break;
         case Qt::Key_P: dashboard->selectCard("peach"); break;
@@ -3559,6 +3582,13 @@ void RoomScene::killPlayer(const QString &who)
 {
     const General *general = NULL;
     m_roomMutex.lock();
+
+    ClientPlayer *player = ClientInstance->getPlayer(who);
+    if (player) {
+        PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
+        container->stopHuaShen();
+    }
+
     if (who == Self->objectName()) {
         dashboard->killPlayer();
         dashboard->update();
@@ -3789,12 +3819,24 @@ void RoomScene::doGongxin(const QList<int> &card_ids, bool enable_heart, QList<i
         m_cardContainer->addConfirmButton();
 }
 
-void RoomScene::showPile(const QList<int> &card_ids, const QString &name)
+void RoomScene::showPile(const QList<int> &card_ids, const QString &name, const ClientPlayer *target)
 {
     pileContainer->clear();
     bringToFront(pileContainer);
     pileContainer->setObjectName(name);
-    pileContainer->fillCards(card_ids);
+    if (name == "huashencard" && target->hasSkill("huashen")) {
+        QStringList huashens = target->tag["Huashens"].toStringList();
+        QList<CardItem *> generals;
+        foreach (QString arg, huashens) {
+            CardItem *item = new CardItem(arg);
+            addItem(item);
+            item->setParentItem(pileContainer);
+            generals.append(item);
+        }
+        pileContainer->fillGeneralCards(generals);
+    } else {
+        pileContainer->fillCards(card_ids);
+    }
     pileContainer->setPos(m_tableCenterPos - QPointF(pileContainer->boundingRect().width() / 2, pileContainer->boundingRect().height() / 2));
     pileContainer->show();
 }
@@ -3891,8 +3933,10 @@ void RoomScene::freeze()
     stopHeroSkinChangingAnimations();
 
     dashboard->setEnabled(false);
+    dashboard->stopHuaShen();
     foreach (Photo *photo, photos) {
         photo->hideProgressBar();
+        photo->stopHuaShen();
         photo->setEnabled(false);
     }
     item2player.clear();
@@ -4157,23 +4201,30 @@ void RoomScene::doHuashen(const QString &, const QStringList &args)
     QString name = hargs.first();
     QStringList general_names = hargs.last().split(":");
     ClientPlayer *player = ClientInstance->getPlayer(name);
-
     QList<CardItem *> generals;
-
+    if (general_names.first().startsWith("-")) {
+        PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
+        container->stopHuaShen();
+        player->tag.remove("Huashens");
+        return;
+    }
+    QStringList huashen_list = player->tag["Huashens"].toStringList();
     foreach (QString arg, general_names) {
+        huashen_list << arg;
         CardItem *item = new CardItem(arg);
         item->setPos(this->m_tableCenterPos);
         addItem(item);
         generals.append(item);
     }
+    player->tag["Huashens"] = huashen_list;
     CardsMoveStruct move;
     move.to = player;
     move.from_place = Player::DrawPile;
     move.to_place = Player::PlaceSpecial;
-    move.to_pile_name = "huashen";
 
     GenericCardContainer *container = _getGenericCardContainer(Player::PlaceHand, player);
     container->addCardItems(generals, move);
+    player->changePile("huashencard", false, QList<int>());
 }
 
 void RoomScene::showIndicator(const QString &from, const QString &to)
@@ -4228,6 +4279,7 @@ void RoomScene::doAnimation(int name, const QStringList &args)
         anim_name[S_ANIMATE_LIGHTNING] = "lightning";
 
         anim_name[S_ANIMATE_LIGHTBOX] = "lightbox";
+        anim_name[S_ANIMATE_HUASHEN] = "huashen";
         anim_name[S_ANIMATE_INDICATE] = "indicate";
     }
 
