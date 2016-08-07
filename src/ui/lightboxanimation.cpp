@@ -29,6 +29,7 @@ Mogara
 
 #include <QPen>
 #include <QBrush>
+#include <QFile>
 
 #include "SkinBank.h"
 #include "engine.h"
@@ -85,7 +86,7 @@ LightboxAnimation::LightboxAnimation(const QString &general_name, const QString 
 
 	generalPixmap = new QSanSelectableItem;
 	generalPixmap->setParentItem(this);
-	generalPixmap->load("image/animate/"+ general_name +".png", QSize(1000, 550), false);
+	generalPixmap->load(QFile::exists("image/animate/"+ general_name +".png") ? "image/animate/" + general_name + ".png" : "image/animate/blank.png", QSize(1000, 550), false);
 	generalPixmap->setTransformOriginPoint(generalPixmap->boundingRect().width() / 2, generalPixmap->boundingRect().height() / 2);
 	generalPixmap->setScale(0.3);
 	generalPixmap->setPos(-generalPixmap->boundingRect().width(), rect.height() / 2.5 - generalPixmap->boundingRect().height() / 2);
