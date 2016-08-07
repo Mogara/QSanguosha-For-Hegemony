@@ -406,11 +406,11 @@ public:
     {
     }
 
-    virtual int getExtra(const ServerPlayer *target, MaxCardsType::MaxCardsCount) const
+    virtual int getFixed(const ServerPlayer *target, MaxCardsType::MaxCardsCount) const
     {
-        if (target->hasFlag("jianyue_keep"))
-            return target->getLostHp();
-        return 0;
+		if (target->hasFlag("jianyue_keep"))
+			return target->getMaxHp();
+        return -1;
     }
 };
 

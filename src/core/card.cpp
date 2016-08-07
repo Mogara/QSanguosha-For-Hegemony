@@ -106,6 +106,7 @@ int Card::getNumber() const
             int num = 0;
             foreach (int id, subcards)
                 num += Sanguosha->getCard(id)->getNumber();
+			num = qMin(num, 13);
             return num;
         }
     } else
