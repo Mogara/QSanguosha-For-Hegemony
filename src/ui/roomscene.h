@@ -195,7 +195,6 @@ public slots:
     void arrangeSeats(const QList<const ClientPlayer *> &seats);
     void toggleDiscards();
     void enableTargets(const Card *card);
-    void cleanLiegong();
     void useSelectedCard();
     void updateStatus(Client::Status oldStatus, Client::Status newStatus);
     void cardMovedinCardchooseBox(const bool enable);

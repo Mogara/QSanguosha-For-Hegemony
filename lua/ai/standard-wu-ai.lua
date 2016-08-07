@@ -21,7 +21,7 @@ local zhiheng_skill = {}
 zhiheng_skill.name = "zhiheng"
 table.insert(sgs.ai_skills, zhiheng_skill)
 zhiheng_skill.getTurnUseCard = function(self)
-	if ( self:willShowForAttack() or self:willShowForDefence() ) and not self.player:hasUsed("ZhihengCard") then
+	if ( self:willShowForAttack() or self:willShowForDefence() ) and not self.player:hasUsed("ZhihengCard") and not self.player:hasUsed("LuminouspearlCard") then
 		return sgs.Card_Parse("@ZhihengCard=.&zhiheng")
 	end
 end
@@ -29,6 +29,8 @@ end
 sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 	local unpreferedCards = {}
 	local cards = sgs.QList2Table(self.player:getHandcards())
+	local unlimited
+	if self.player:hasTreasure("Luminouspearl") then unlimited = true end
 
 	if self:getCardsNum("Crossbow", 'he') > 0 and #self.enemies > 0 and self.player:getCardCount(true) >= 4 then
 		local zcards = sgs.QList2Table(self.player:getCards("he"))
@@ -36,8 +38,11 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 		for _, zcard in ipairs(zcards) do
 			if not isCard("Peach", zcard, self.player) and (self.player:getOffensiveHorse() or card:isKindOf("OffensiveHorse")) and not self.player:isJilei(zcard) then
 				table.insert(unpreferedCards, zcard:getEffectiveId())
-				if #unpreferedCards >= self.player:getMaxHp() then break end
+				if #unpreferedCards >= self.player:getMaxHp() and not unlimited then break end
 			end
+		end
+		if #unpreferedCards > self.player:getMaxHp() then
+			table.removeOne(unpreferedCards, self.player:getTreasure():getEffectiveId())
 		end
 		if #unpreferedCards > 0 then
 			use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(unpreferedCards, "+") .. "&zhiheng")
@@ -157,7 +162,7 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 	end
 	
 	local has_equip = {}
-	if self.player:hasSkill("xiaoji") then
+	if self.player:hasSkills(sgs.lose_equip_skill) then
 		for index = #unpreferedCards, 1, -1 do
 			if self.player:hasEquip(sgs.Sanguosha:getCard(unpreferedCards[index])) then
 				table.insert(has_equip, unpreferedCards[index])
@@ -171,12 +176,17 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 	local use_cards = {}
 	for index = #unpreferedCards, 1, -1 do
 		if not self.player:isJilei(sgs.Sanguosha:getCard(unpreferedCards[index])) then
-			if #use_cards < self.player:getMaxHp() then
+			if #use_cards < self.player:getMaxHp() and not unlimited then
+				table.insert(use_cards, unpreferedCards[index])
+			end
+			if unlimited then
 				table.insert(use_cards, unpreferedCards[index])
 			end
 		end
 	end
-
+	if #use_cards > self.player:getMaxHp() then
+		table.removeOne(use_cards, self.player:getTreasure():getEffectiveId())
+	end
 	if #use_cards > 0 then
 		use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(use_cards, "+") .. "&zhiheng")
 	end
