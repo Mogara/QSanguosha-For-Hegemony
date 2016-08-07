@@ -680,10 +680,6 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
             if (player->getAcquiredSkills().contains(skill_name)) continue;
             player->acquireSkill(skill_name, head);
 
-            if (skill->inherits("TriggerSkill")) {
-                const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
-                thread->addTriggerSkill(trigger_skill);
-            }
             if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
                 setPlayerMark(player, skill->getLimitMark(), 1);
 
@@ -2408,6 +2404,17 @@ ServerPlayer *Room::findPlayer(const QString &general_name, bool include_dead) c
     return NULL;
 }
 
+ServerPlayer *Room::findPlayerbyobjectName(const QString &name, bool include_dead) const
+{
+    const QList<ServerPlayer *> &list = include_dead ? m_players : m_alivePlayers;
+
+    foreach (ServerPlayer *player, list)
+        if (player->objectName() == name)
+            return player;
+
+    return NULL;
+}
+
 QList<ServerPlayer *>Room::findPlayersBySkillName(const QString &skill_name) const
 {
     QList<ServerPlayer *> list;
@@ -2424,17 +2431,6 @@ ServerPlayer *Room::findPlayerBySkillName(const QString &skill_name) const
         if (player->hasSkill(skill_name))
             return player;
     }
-    return NULL;
-}
-
-ServerPlayer *Room::findPlayerbyobjectName(const QString &name, bool include_dead) const
-{
-    const QList<ServerPlayer *> &list = include_dead ? m_players : m_alivePlayers;
-
-    foreach (ServerPlayer *player, list)
-        if (player->objectName() == name)
-            return player;
-
     return NULL;
 }
 
@@ -2647,6 +2643,76 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         player->showGeneral(true, false, false);
     if (show_flags.contains("d"))
         player->showGeneral(false, false, false);
+}
+
+void Room::transformDeputyGeneral(ServerPlayer *player)
+{
+    if (!player->canTransform()) return;
+
+    QStringList names;
+    names << player->getActualGeneral1Name() << player->getActualGeneral2Name();
+    QStringList available;
+    foreach (QString name, Sanguosha->getLimitedGeneralNames())
+        if (!name.startsWith("lord_") && !used_general.contains(name) && Sanguosha->getGeneral(name)->getKingdom() == player->getKingdom())
+            available << name;
+    if (available.isEmpty()) return;
+
+    qShuffle(available);
+    QString general_name = available.first();
+
+    used_general.removeOne(player->getActualGeneral2Name());
+    used_general << general_name;
+
+    player->removeGeneral(false);
+    QVariant void_data;
+    QList<const TriggerSkill *> game_start;
+
+    foreach (const Skill *skill, Sanguosha->getGeneral(general_name)->getSkillList(true, false)) {
+        if (skill->inherits("TriggerSkill")) {
+            const TriggerSkill *tr = qobject_cast<const TriggerSkill *>(skill);
+            if (tr != NULL) {
+                if (tr->getTriggerEvents().contains(GameStart) && !tr->triggerable(GameStart, this, player, void_data).isEmpty())
+                    game_start << tr;
+            }
+        }
+        player->addSkill(skill->objectName(), false);
+        JsonArray args;
+        args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
+        args << player->objectName();
+        args << skill->objectName();
+        args << false;
+        doNotify(player, QSanProtocol::S_COMMAND_LOG_EVENT, args);
+    }
+
+    changePlayerGeneral2(player, "anjiang");
+    player->setActualGeneral2Name(general_name);
+    notifyProperty(player, player, "actual_general2");
+    notifyProperty(player, player, "general2", general_name);
+
+    names[1] = general_name;
+    setPlayerProperty(player, "general2_showed", false);
+
+    setTag(player->objectName(), names);
+
+    foreach (const Skill *skill, Sanguosha->getGeneral(general_name)->getSkillList(true, false)) {
+        if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()) {
+            player->setMark(skill->getLimitMark(), 1);
+            JsonArray arg;
+            arg << player->objectName();
+            arg << skill->getLimitMark();
+            arg << 1;
+            doNotify(player, S_COMMAND_SET_MARK, arg);
+        }
+    }
+
+    foreach (const TriggerSkill *skill, game_start) {
+        if (skill->cost(GameStart, this, player, void_data, player))
+            skill->effect(GameStart, this, player, void_data, player);
+    }
+
+    if (Sanguosha->getGeneral(names[0])->isCompanionWith(general_name))
+        setPlayerMark(player, "CompanionEffect", 1);
+    player->showGeneral(false, true, true);
 }
 
 lua_State *Room::getLuaState() const
@@ -3590,11 +3656,14 @@ bool Room::useCard(const CardUseStruct &use, bool add_history)
         key = card->getClassName();
 
     int slash_count = card_use.from->getSlashCount();
-    bool slash_not_record = key.contains("Slash")
-        && slash_count > 0
-        && (card_use.from->hasWeapon("Crossbow")
-        || Sanguosha->correctCardTarget(TargetModSkill::Residue, card_use.from, card) > 500);
-
+    bool showTMskill = false;
+    foreach (const Skill *skill, card_use.from->getSkillList(false, true)) {
+        if (skill->inherits("TargetModSkill")) {
+            const TargetModSkill *tm = qobject_cast<const TargetModSkill *>(skill);
+            if (tm->getResidueNum(card_use.from, card) > 500 && card_use.from->hasShownSkill(skill)) showTMskill = true;
+        }
+    }
+    bool slash_not_record = key.contains("Slash") && slash_count > 0 && (card_use.from->hasWeapon("Crossbow") || showTMskill);
     card = card_use.card->validate(card_use);
     if (card == NULL)
         return false;
@@ -4068,6 +4137,7 @@ void Room::startGame()
         QStringList generals = getTag(player->objectName()).toStringList();
         const General *general1 = Sanguosha->getGeneral(generals.first());
         const General *general2 = Sanguosha->getGeneral(generals.last());
+        used_general << generals.first() << generals.last();
         Q_ASSERT(general1 && general2);
         if (general1->isCompanionWith(generals.last()))
             addPlayerMark(player, "CompanionEffect");
@@ -5144,10 +5214,6 @@ void Room::acquireSkill(ServerPlayer *player, const Skill *skill, bool open, boo
         return;
     player->acquireSkill(skill_name, head);
 
-    if (skill->inherits("TriggerSkill")) {
-        const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
-        thread->addTriggerSkill(trigger_skill);
-    }
     if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
         setPlayerMark(player, skill->getLimitMark(), 1);
 
@@ -6384,8 +6450,17 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, c
 
         if (!single_result) {
             QStringList heros = generals;
-            heros.removeOne(default_choice);
-            default_choice += "+" + heros.at(qrand() % heros.length());
+            bool good = false;
+            foreach (QString name1, heros) {
+                foreach (QString name2, heros) {
+                    if (name1 != name2 && Sanguosha->getGeneral(name1)->getKingdom() == Sanguosha->getGeneral(name2)->getKingdom()) {
+                        default_choice = name1 + "+" + name2;
+                        good = true;
+                        break;
+                    }
+                }
+                if (good) break;
+            }
         }
     }
 

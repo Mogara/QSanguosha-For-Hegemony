@@ -42,6 +42,7 @@ void Slash::setNature(DamageStruct::Nature nature)
 bool Slash::IsAvailable(const Player *player, const Card *slash, bool considerSpecificAssignee)
 {
     Slash *newslash = new Slash(Card::NoSuit, 0);
+    newslash->setFlags("Global_SlashAvailabilityChecker");
     newslash->deleteLater();
 #define THIS_SLASH (slash == NULL ? newslash : slash)
     if (player->isCardLimited(THIS_SLASH, Card::MethodUse))
@@ -213,37 +214,59 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
             room->setPlayerFlag(player, "-Global_MoreSlashInOneTurn");
         room->broadcastSkillInvoke("tianyi", 1, player);
     }
-    // for Paoxiao and Crossbow
+    // for Paoxiao, Jili and Crossbow
     if (player->getPhase() == Player::Play && player->hasFlag("Global_MoreSlashInOneTurn")) {
         bool isPaoxiao = false;
-        bool isCrossbow = false;
-        if (player->hasShownSkill("paoxiao"))
-            isPaoxiao = true;
-        else {
-            bool canSelectCrossbow = player->hasWeapon("Crossbow");
-            bool canSelectPaoxiao = player->hasSkill("paoxiao");
-            if (canSelectCrossbow && canSelectPaoxiao) {
-                QStringList q;
-                q << "Crossbow" << "paoxiao";
-                SPlayerDataMap m;
-                m.insert(player, q);
-                QString r = room->askForTriggerOrder(player, "paoxiaoVsCrossbow", m, false);
-                if (r.endsWith("Crossbow"))
-                    isCrossbow = true;
-                else if (r.endsWith("paoxiao"))
-                    isPaoxiao = true;
-                else {
-                    // shenmegui??
-                }
-            } else if (!canSelectCrossbow && canSelectPaoxiao)
-                isPaoxiao = true;
-            else if (!canSelectPaoxiao && canSelectCrossbow)
-                isCrossbow = true;
-            else {
-                // shenmegui??
+        bool canJili = false;
+        bool canSelectCrossbow = player->hasWeapon("Crossbow");
+        if (player->hasSkill("jili") && !canSelectCrossbow) {
+            const Skill *jili = Sanguosha->getSkill("#jili-slash");
+            if (jili->inherits("TargetModSkill")) {
+                const TargetModSkill *jili_tm = qobject_cast<const TargetModSkill *>(jili);
+                if (player->getSlashCount() - 1 < jili_tm->getResidueNum(player, this)) canJili = true;
+
+                LogMessage log;
+                log.type = "#LuoyiBuff";
+                log.from = player;
+                log.arg = QString::number(player->getSlashCount());
+                log.arg2 = QString::number(jili_tm->getResidueNum(player, this));
+                room->sendLog(log);
             }
         }
 
+        bool isJili = false;
+        bool isCrossbow = false;
+        if (player->hasShownSkill("paoxiao") || (player->hasShownSkill("jili") && canJili)) {
+            if (player->hasShownSkill("paoxiao"))
+                isPaoxiao = true;
+            else {
+                if (canSelectCrossbow)
+                    isCrossbow = true;
+                else
+                    isJili = true;
+            }
+        } else {
+            bool canSelectPaoxiao = player->hasSkill("paoxiao");
+
+            QStringList q;
+            if (canJili) q << "jili";
+            if (canSelectPaoxiao) q << "paoxiao";
+            if (canSelectCrossbow) q << "Crossbow";
+            SPlayerDataMap m;
+            m.insert(player, q);
+            QString r;
+            if (q.length() > 1) {
+                r = room->askForTriggerOrder(player, "paoxiaoVsCrossbow", m, false);
+            } else if (!q.isEmpty()) {
+                r = q.first();
+            }
+            if (r.endsWith("Crossbow"))
+                isCrossbow = true;
+            if (r.endsWith("paoxiao"))
+                isPaoxiao = true;
+            if (r.endsWith("jili"))
+                isJili = true;
+        }
 
         if (isPaoxiao) {
             if (!player->hasShownSkill("paoxiao"))
@@ -254,6 +277,11 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
         } else if (isCrossbow) {
             room->setEmotion(player, "weapon/crossbow");
             player->setFlags("-Global_MoreSlashInOneTurn");
+        } else if (isJili) {
+            if (!player->hasShownSkill("jili"))
+                player->showGeneral(player->inHeadSkills("jili"));
+            room->broadcastSkillInvoke("jili", player);
+            room->notifySkillInvoked(player, "jili");
         } else {
             //shenmegui?
         }

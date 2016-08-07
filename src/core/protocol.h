@@ -184,7 +184,8 @@ namespace QSanProtocol
         S_GAME_EVENT_PLAYER_REFORM,
         S_GAME_EVENT_SKILL_INVOKED,
         S_GAME_EVENT_PAUSE,
-        S_GAME_EVENT_REVEAL_PINDIAN
+        S_GAME_EVENT_REVEAL_PINDIAN,
+        S_GAME_EVENT_HUASHEN
     };
 
     enum AnimateType

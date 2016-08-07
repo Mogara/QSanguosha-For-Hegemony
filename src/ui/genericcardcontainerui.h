@@ -112,7 +112,7 @@ public:
     virtual void killPlayer();
     virtual void revivePlayer();
     virtual QGraphicsItem *getMouseClickReceiver() = 0;
-    virtual void startHuaShen(QStringList generalName, QString skillName);
+    virtual void startHuaShen(QStringList generalName);
     virtual void stopHuaShen();
     inline virtual QGraphicsItem *getMouseClickReceiver2()
     {
@@ -312,11 +312,9 @@ protected:
     QGraphicsPixmapItem *_m_liegongItem;
 
     // animations
-    QAbstractAnimation *_m_huashenAnimation1;
-    QAbstractAnimation *_m_huashenAnimation2;
+    QAbstractAnimation *_m_huashenAnimation;
     QGraphicsItem *_m_huashenItem;
     QStringList _m_huashenGeneralNames;
-    QString _m_huashenSkillName;
 
 protected slots:
     virtual void _onEquipSelectChanged();

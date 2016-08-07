@@ -87,7 +87,6 @@ void RoomThread::addPlayerSkills(ServerPlayer *player, bool invoke_game_start)
     bool invoke_verify = false;
 
     foreach (const TriggerSkill *skill, player->getTriggerSkills()) {
-        addTriggerSkill(skill);
 
         if (invoke_game_start && skill->getTriggerEvents().contains(GameStart))
             invoke_verify = true;
@@ -100,6 +99,10 @@ void RoomThread::addPlayerSkills(ServerPlayer *player, bool invoke_game_start)
 
 void RoomThread::constructTriggerTable()
 {
+    foreach (QString skill_name, Sanguosha->getSkillNames()) {
+        const TriggerSkill *skill = Sanguosha->getTriggerSkill(skill_name);
+        if (skill) addTriggerSkill(skill);
+    }
     foreach(ServerPlayer *player, room->getPlayers())
         addPlayerSkills(player, true);
 }
@@ -257,6 +260,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                         if (trskill) { // "yiji"
                                             will_trigger.append(trskill);
                                             trigger_who[p].append(skill_name);
+
                                         } else {
                                             trskill = Sanguosha->getTriggerSkill(skill_name.split("'").last());
                                             if (trskill) { // "sgs1'songwei"
@@ -281,7 +285,6 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                 }
                 triggerable_tested << skill;
             }
-
             if (!will_trigger.isEmpty()) {
                 will_trigger.clear();
                 //foreach (ServerPlayer *p, room->getPlayers()) {

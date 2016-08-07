@@ -250,6 +250,7 @@ public:
     bool canDiscard(const Player *to, int card_id) const;
     bool canGetCard(const Player *to, const char *flags) const;
     bool canGetCard(const Player *to, int card_id) const;
+    bool canTransform() const;
 
     void addMark(const char *mark, int add_num = 1);
     void removeMark(const char *mark, int remove_num = 1);
@@ -1492,9 +1493,11 @@ public:
     ServerPlayer *findPlayer(const char *general_name, bool include_dead = false) const;
     QList<ServerPlayer *> findPlayersBySkillName(const char *skill_name) const;
     ServerPlayer *findPlayerBySkillName(const char *skill_name) const;
+    ServerPlayer *findPlayerbyobjectName(const QString &general_name, bool include_dead = false) const;
     void installEquip(ServerPlayer *player, const char *equip_name);
     void resetAI(ServerPlayer *player);
     void doDragonPhoenix(ServerPlayer *target, const char *general1_name, const char *general2_name, bool full_state = true,const char *kingdom = QString(), bool sendLog = true, const char *show_flags = QString(), bool resetHp = false);// When using this function,be careful.
+    void transformDeputyGeneral(ServerPlayer *player);
     void swapSeat(ServerPlayer *a, ServerPlayer *b);
     void setFixedDistance(Player *from, const Player *to, int distance);
     ServerPlayer *getFront(ServerPlayer *a, ServerPlayer *b) const;

@@ -384,7 +384,16 @@ void PlayerCardContainer::updatePile(const QString &pile_name)
     QString treasure_name;
     if (player->getTreasure()) treasure_name = player->getTreasure()->objectName();
 
-    const QList<int> &pile = player->getPile(pile_name);
+    QList<int> pile;
+    if (pile_name == "huashencard") {
+        int n = player->tag["Huashens"].toStringList().length();
+        if (n == 0) return;
+        for (int i = 0; i < n; i ++) {
+            pile.append(i + 1);
+        }
+    } else {
+        pile = player->getPile(pile_name);
+    }
 
     QString shownpilename = RoomSceneInstance->getCurrentShownPileName();
     if (!shownpilename.isEmpty() && shownpilename == pile_name)
@@ -451,8 +460,9 @@ void PlayerCardContainer::showPile()
         const ClientPlayer *player = getPlayer();
         if (!player) return;
         QList<int> card_ids = player->getPile(button->objectName());
+        if (button->objectName() == "huashencard") RoomSceneInstance->showPile(card_ids, button->objectName(), player);
         if (card_ids.isEmpty() || card_ids.contains(-1)) return;
-        RoomSceneInstance->showPile(card_ids, button->objectName());
+        RoomSceneInstance->showPile(card_ids, button->objectName(), player);
     }
 }
 
@@ -564,8 +574,8 @@ void PlayerCardContainer::repaintAll()
     _updateEquips();
     updateDelayedTricks();
 
-    //if (_m_huashenAnimation1 != NULL)
-    //    startHuaShen(_m_huashenGeneralNames, _m_huashenSkillName);
+    if (_m_huashenAnimation != NULL)
+        _m_huashenAnimation->start();
 
     //we have two avatar areas now...
     _paintPixmap(_m_faceTurnedIcon, _m_layout->m_avatarArea, QSanRoomSkin::S_SKIN_KEY_FACETURNEDMASK,
@@ -801,40 +811,37 @@ QList<CardItem *> PlayerCardContainer::removeEquips(const QList<int> &cardIds)
     return result;
 }
 
-void PlayerCardContainer::startHuaShen(QStringList generalName, QString skillName)
+void PlayerCardContainer::startHuaShen(QStringList generalName)
 {
     if (m_player == NULL)
         return;
 
     _m_huashenGeneralNames = generalName;
-    _m_huashenSkillName = skillName;
     Q_ASSERT(m_player->hasSkill("huashen"));
 
-    bool second_zuoci = m_player && m_player->getGeneralName() != "zuoci" && m_player->getGeneral2Name() == "zuoci";
-    int avatarSize = second_zuoci ? _m_layout->m_smallAvatarSize :
-        (m_player->getGeneral2() ? _m_layout->m_primaryAvatarSize :
-        _m_layout->m_avatarSize);
+    bool second_zuoci = m_player->getGeneralName() != "zuoci" && m_player->getGeneral2Name() == "zuoci";
+    int avatarSize = _m_layout->m_smallAvatarSize;
     QPixmap pixmap1 = G_ROOM_SKIN.getGeneralPixmap(generalName.first(), (QSanRoomSkin::GeneralIconSize)avatarSize);
     QPixmap pixmap2 = G_ROOM_SKIN.getGeneralPixmap(generalName.last(), (QSanRoomSkin::GeneralIconSize)avatarSize);
 
-    QRect animRect = _m_layout->m_avatarArea;
+    QRect animRect = _m_layout->m_secondaryAvatarArea;
+    int width = animRect.width();
+    int height = animRect.height();
     if (pixmap1.size() != animRect.size())
         pixmap1 = pixmap1.scaled(animRect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    if (second_zuoci)
-        pixmap1 = paintByMask(pixmap1);
+    QPixmap pixmap3 = pixmap1.copy(width/4, 0, width/2, height);
     if (pixmap2.size() != animRect.size())
         pixmap2 = pixmap2.scaled(animRect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    if (second_zuoci)
-        pixmap2 = paintByMask(pixmap2);
-    QList<QPixmap> pixmaps;
-    pixmaps << pixmap1 << pixmap2;
+    QPixmap pixmap4 = pixmap2.copy(width/4, 0, width/2, height);
+    QPainter paint(&pixmap1);
+    paint.drawPixmap(0, 0, pixmap3.width(), pixmap3.height(), pixmap3);
+    paint.drawPixmap(pixmap3.width(), 0, pixmap3.width(), pixmap3.height(), pixmap4);
 
     stopHuaShen();
-    QList<QAbstractAnimation *> animations = G_ROOM_SKIN.createHuaShenAnimation(pixmaps, animRect, _getAvatarParent(), _m_huashenItem);
-    _m_huashenAnimation1 = animations.first();
-    _m_huashenAnimation1->start();
-    _m_huashenAnimation2 = animations.last();
-    _m_huashenAnimation2->start();
+    _m_huashenAnimation = G_ROOM_SKIN.createHuaShenAnimation(pixmap1,
+            second_zuoci ? animRect.topLeft() : _m_layout->m_avatarArea.topLeft(), _getAvatarParent(), _m_huashenItem);
+    _m_huashenAnimation->start();
+    /*
     _paintPixmap(_m_extraSkillBg, _m_layout->m_extraSkillArea, QSanRoomSkin::S_SKIN_KEY_EXTRA_SKILL_BG, _getAvatarParent());
     if (!skillName.isEmpty())
         _m_extraSkillBg->show();
@@ -844,19 +851,18 @@ void PlayerCardContainer::startHuaShen(QStringList generalName, QString skillNam
         _m_extraSkillText->show();
         _m_extraSkillBg->setToolTip(Sanguosha->getSkill(skillName)->getDescription());
     }
+    */
     _adjustComponentZValues();
+
 }
 
 void PlayerCardContainer::stopHuaShen()
 {
-    if (_m_huashenAnimation1 != NULL) {
-        _m_huashenAnimation1->stop();
-        _m_huashenAnimation1->deleteLater();
-        _m_huashenAnimation2->stop();
-        _m_huashenAnimation2->deleteLater();
+    if (_m_huashenAnimation != NULL) {
+        _m_huashenAnimation->stop();
+        _m_huashenAnimation->deleteLater();
         delete _m_huashenItem;
-        _m_huashenAnimation1 = NULL;
-        _m_huashenAnimation2 = NULL;
+        _m_huashenAnimation = NULL;
         _m_huashenItem = NULL;
         _clearPixmap(_m_extraSkillBg);
         _clearPixmap(_m_extraSkillText);
@@ -906,6 +912,8 @@ PlayerCardContainer::PlayerCardContainer()
         _m_equipAnim[i] = NULL;
         _m_equipLabel[i] = NULL;
     }
+    _m_huashenItem = NULL;
+    _m_huashenAnimation = NULL;
     _m_extraSkillBg = NULL;
     _m_extraSkillText = NULL;
 
@@ -1002,6 +1010,7 @@ void PlayerCardContainer::_adjustComponentZValues()
     _layUnder(_m_faceTurnedIcon);
     _layUnder(_m_duanchangMask2);
     _layUnder(_m_duanchangMask);
+    _layUnder(_m_huashenItem);
     _layUnder(_m_secondaryAvatarArea);
     _layUnder(_m_avatarArea);
     _layUnder(_m_circleItem);

@@ -25,6 +25,7 @@
 #include "wrappedcard.h"
 #include "skill.h"
 #include "standard.h"
+#include "generaloverview.h"
 
 class XuanlueequipCard : public SkillCard
 {
@@ -113,20 +114,20 @@ public:
     TransformationPackage();
 };
 
-class NightLuminescentPearl : public Treasure
+class Luminouspearl : public Treasure
 {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE NightLuminescentPearl(Card::Suit suit = Diamond, int number = 13);
+    Q_INVOKABLE Luminouspearl(Card::Suit suit = Diamond, int number = 13);
 };
 
-class ZhihengTreasureCard : public SkillCard
+class LuminouspearlCard : public SkillCard
 {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ZhihengTreasureCard();
+    Q_INVOKABLE LuminouspearlCard();
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 

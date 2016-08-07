@@ -381,7 +381,7 @@ public:
     bool generalHasSkin(const QString &general, const int skinId = 1, const bool isCard = false) const;
 
     // Animations
-    QList<QAbstractAnimation *> createHuaShenAnimation(QList<QPixmap> &huashenAvatar, QRect rect, QGraphicsItem *parent,
+    QAbstractAnimation *createHuaShenAnimation(QPixmap &huashenAvatar, QPoint topLeft, QGraphicsItem *parent,
         QGraphicsItem *&huashenItemCreated) const;
 
     // static consts

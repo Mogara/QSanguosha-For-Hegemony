@@ -62,6 +62,7 @@ public:
 
 public slots:
     void fillCards(const QList<int> &card_ids = QList<int>(), const QList<int> &disabled_ids = QList<int>());
+    void fillGeneralCards(const QList<CardItem *> &card_items = QList<CardItem *>(), const QList<CardItem *> &disabled_item = QList<CardItem *>());
     void clear();
     void freezeCards(bool is_disable);
 
