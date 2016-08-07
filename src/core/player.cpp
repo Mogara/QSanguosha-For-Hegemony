@@ -483,6 +483,7 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const
     if (InvalidSkill.contains(skill_name))
         return false;
 
+    if (skill_name == "zhiheng" && hasTreasure("Luminouspearl")) return true;
     return head_skills.value(skill_name, false)
         || deputy_skills.value(skill_name, false)
         || head_acquired_skills.contains(skill_name)

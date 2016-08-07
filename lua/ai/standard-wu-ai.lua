@@ -30,7 +30,8 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 	local unpreferedCards = {}
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	local unlimited
-	if self.player:hasTreasure("Luminouspearl") then unlimited = true end
+	if self.player:hasTreasure("Luminouspearl") and self.player:ownSkill("zhiheng") then unlimited = true end
+	local show = self.player:hasShownSkill("zhiheng") and "&zhiheng" or ""
 
 	if self:getCardsNum("Crossbow", 'he') > 0 and #self.enemies > 0 and self.player:getCardCount(true) >= 4 then
 		local zcards = sgs.QList2Table(self.player:getCards("he"))
@@ -45,7 +46,11 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 			table.removeOne(unpreferedCards, self.player:getTreasure():getEffectiveId())
 		end
 		if #unpreferedCards > 0 then
-			use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(unpreferedCards, "+") .. "&zhiheng")
+			if #unpreferedCards > self.player:getMaxHp() then
+				use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(unpreferedCards, "+") .. "&zhiheng")
+			else
+				use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(unpreferedCards, "+") .. show)
+			end
 			return
 		end
 	end
@@ -188,7 +193,11 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 		table.removeOne(use_cards, self.player:getTreasure():getEffectiveId())
 	end
 	if #use_cards > 0 then
-		use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(use_cards, "+") .. "&zhiheng")
+		if #unpreferedCards > self.player:getMaxHp() then
+			use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(use_cards, "+") .. "&zhiheng")
+		else
+			use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(use_cards, "+") .. show)
+		end
 	end
 end
 

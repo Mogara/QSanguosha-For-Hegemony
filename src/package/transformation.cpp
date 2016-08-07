@@ -1457,7 +1457,7 @@ void LianziCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) 
         if (Sanguosha->getCard(id)->getTypeId() == type)
             room->setCardFlag(id, "lianzi");
 
-    AskForMoveCardsStruct result = room->askForMoveCards(source, card_ids, QList<int>(), true, "lianzi", "sametype", "lianzi", 0, num, true, true, QList<int>() << -1);
+    AskForMoveCardsStruct result = room->askForMoveCards(source, card_ids, QList<int>(), false, "lianzi", "sametype", "lianzi", 0, num, true, true, QList<int>() << -1);
 
     foreach (int id, result.bottom) {
         card_ids.removeOne(id);
@@ -1642,18 +1642,6 @@ Luminouspearl::Luminouspearl(Suit suit, int number) : Treasure(suit, number)
     setObjectName("Luminouspearl");
 }
 
-LuminouspearlCard::LuminouspearlCard()
-{
-    target_fixed = true;
-    m_skillName = "Luminouspearl";
-}
-
-void LuminouspearlCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
-{
-    if (source->isAlive())
-        room->drawCards(source, subcards.length());
-}
-
 class LuminouspearlSkill : public ViewAsSkill
 {
 public:
@@ -1678,7 +1666,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->canDiscard(player, "he") && !player->hasUsed("LuminouspearlCard") && !player->hasShownSkill("zhiheng");
+        return player->canDiscard(player, "he") && !player->hasShownSkill("zhiheng") && !player->hasUsed("ZhihengCard");
     }
 };
 
@@ -1687,7 +1675,6 @@ TransformationEquipPackage::TransformationEquipPackage() : Package("transformati
     Luminouspearl *np = new Luminouspearl();
     np->setParent(this);
 
-    addMetaObject<LuminouspearlCard>();
     skills << new LuminouspearlSkill;
 }
 

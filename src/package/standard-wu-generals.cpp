@@ -30,10 +30,12 @@
 ZhihengCard::ZhihengCard()
 {
     target_fixed = true;
+    mute = true;
 }
 
 void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
+    if (source->hasShownSkill("zhiheng")) room->broadcastSkillInvoke("zhiheng", source);
     if (source->isAlive())
         room->drawCards(source, subcards.length());
 }
@@ -47,8 +49,10 @@ public:
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
-        if (Self->getTreasure() && Self->getTreasure()->isKindOf("Luminouspearl") && selected.length() >= Self->getMaxHp())
-            return !Self->isJilei(to_select) && to_select != Self->getTreasure();
+        if (selected.length() >= Self->getMaxHp())
+            return !Self->isJilei(to_select) && Self->getTreasure() && Self->getTreasure()->isKindOf("Luminouspearl")
+                    && to_select != Self->getTreasure() && !selected.contains(Self->getTreasure());
+
         return !Self->isJilei(to_select) && selected.length() < Self->getMaxHp();
     }
 
@@ -66,7 +70,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->canDiscard(player, "he") && !player->hasUsed("ZhihengCard") && !player->hasUsed("LuminouspearlCard");
+        return player->canDiscard(player, "he") && !player->hasUsed("ZhihengCard");
     }
 };
 

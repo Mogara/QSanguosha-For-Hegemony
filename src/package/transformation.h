@@ -122,15 +122,6 @@ public:
     Q_INVOKABLE Luminouspearl(Card::Suit suit = Diamond, int number = 13);
 };
 
-class LuminouspearlCard : public SkillCard
-{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE LuminouspearlCard();
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
 class TransformationEquipPackage : public Package
 {
     Q_OBJECT
