@@ -224,13 +224,6 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
             if (jili->inherits("TargetModSkill")) {
                 const TargetModSkill *jili_tm = qobject_cast<const TargetModSkill *>(jili);
                 if (player->getSlashCount() - 1 < jili_tm->getResidueNum(player, this)) canJili = true;
-
-                LogMessage log;
-                log.type = "#LuoyiBuff";
-                log.from = player;
-                log.arg = QString::number(player->getSlashCount());
-                log.arg2 = QString::number(jili_tm->getResidueNum(player, this));
-                room->sendLog(log);
             }
         }
 

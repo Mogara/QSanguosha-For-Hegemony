@@ -185,6 +185,8 @@ const Card *QiceCard::validate(CardUseStruct &card_use) const
             targets = smalls;
         else if ((smalls.length() > 0 && smalls.length() > bigs.length() && bigs.length() > 0) || (smalls.length() == 0 && bigs.length() > 0))
             targets = bigs;
+        else if (smalls.length() == bigs.length())
+            targets = smalls;
     } else if (use_card->getSubtype() == "aoe" && !use_card->isKindOf("BurningCamps")) {
         foreach (ServerPlayer *p, room->getOtherPlayers(source))
             if (!source->isProhibited(p, use_card))
@@ -406,10 +408,10 @@ public:
     {
     }
 
-    virtual int getFixed(const ServerPlayer *target, MaxCardsType::MaxCardsCount) const
+    virtual int getExtra(const ServerPlayer *target, MaxCardsType::MaxCardsCount) const
     {
-		if (target->hasFlag("jianyue_keep"))
-			return target->getMaxHp();
+        if (target->hasFlag("jianyue_keep"))
+            return target->getMaxHp();
         return -1;
     }
 };
@@ -1123,7 +1125,7 @@ void XuanlueCard::onUse(Room *room, const CardUseStruct &card_use) const
 {
     room->setPlayerMark(card_use.from, "@lue", 0);
     room->broadcastSkillInvoke("xuanlue", card_use.from);
-    room->doSuperLightbox("lengtong", "xuanlue");
+    room->doSuperLightbox("lingtong", "xuanlue");
     SkillCard::onUse(room, card_use);
 }
 

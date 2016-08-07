@@ -121,7 +121,8 @@ SOURCES += \
     swig/sanguosha_wrap.cxx \
     src/ui/guhuobox.cpp \
 	src/ui/cardchoosebox.cpp \   
-    src/package/transformation.cpp
+    src/package/transformation.cpp \
+    src/ui/lightboxanimation.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -234,7 +235,8 @@ HEADERS += \
     src/util/socket.h \
     src/ui/guhuobox.h \
 	src/ui/cardchoosebox.h \
-    src/package/transformation.h
+    src/package/transformation.h \
+    src/ui/lightboxanimation.h
 
 FORMS += \
     src/dialog/cardoverview.ui \
