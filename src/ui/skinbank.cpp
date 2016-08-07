@@ -344,6 +344,11 @@ QPixmap QSanRoomSkin::getProgressBarPixmap(int percentile) const
     return QPixmap();
 }
 
+QPixmap QSanRoomSkin::getCardTinyPixmap(const QString &card_name) const
+{
+	return getPixmap("cardTiny", card_name);
+}
+
 bool QSanRoomSkin::generalHasSkin(const QString &general, const int skinId, const bool isCard) const
 {
     const QString id = QString::number(skinId);

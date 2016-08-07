@@ -377,6 +377,7 @@ public:
     QString getPlayerAudioEffectPath(const QString &eventName, bool isMale, int index = -1) const;
     QString getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index = -1, const Player *player = NULL) const;
     QPixmap getProgressBarPixmap(int percentile) const;
+	QPixmap getCardTinyPixmap(const QString &card_name) const;
 
     bool generalHasSkin(const QString &general, const int skinId = 1, const bool isCard = false) const;
 
