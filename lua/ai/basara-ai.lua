@@ -45,6 +45,27 @@ sgs.ai_skill_choice.heg_nullification = function(self, choice, data)
 		elseif self:isEnemy(effect.to) then return "all"
 		end
 	end
+	local targets = sgs.SPlayerList()
+	local players = self.room:getTag("targets" .. effect.card:toString()):toList()
+	for _, q in sgs.qlist(players) do
+		targets:append(q:toPlayer())
+	end
+	if effect.card:isKindOf("FightTogether") then
+		local ed, no = 0
+		for _, p in sgs.qlist(targets) do
+			if p:objectName() ~= targets:at(0):objectName() and p:isChained() then
+				ed = ed + 1
+			end
+			if p:objectName() ~= targets:at(0):objectName() and not p:isChained() then
+				no = no + 1
+			end
+		end
+		if targets:at(0):isChained() then
+			if no > ed then return "single" end
+		else
+			if ed > no then return "single" end
+		end
+	end
 	return "all"
 end
 
@@ -142,6 +163,16 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 		end
 	end
 
+	if self.player:hasSkill("xichou") and self.player:getMark("xichou") == 0 then
+		if self:isWeak() or (shown > 0 and eAtt > 0 and e - f < 3) then
+			if self.player:inHeadSkills("xichou") and canShowHead then
+				return "GameRule_AskForGeneralShowHead"
+			elseif canShowDeputy then
+				return "GameRule_AskForGeneralShowDeputy"
+			end
+		end
+	end
+
 	for _,p in ipairs(self.friends) do
 		if p:hasShownSkill("jieyin") then
 			if canShowHead and self.player:getGeneral():isMale() then
@@ -223,10 +254,11 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 			local from = data:toDamage().from
 			if from and from:isNude() then return "wangxi" end
 		end
-		if string.find(choices, "fankui") and string.find(choices, "ganglie") then return "fankui" end
-		if string.find(choices, "wangxi") and string.find(choices, "ganglie") then return "ganglie" end
+		if table.contains(skillnames, "fankui") and table.contains(skillnames, "ganglie") then return "fankui" end
+		if string.find(choices, "wangxi") and table.contains(skillnames, "ganglie") then return "ganglie" end
 		if string.find(choices, "luoshen") and string.find(choices, "guanxing") then return "guanxing" end
 		if string.find(choices, "wangxi") and string.find(choices, "fangzhu") then return "fangzhu" end
+		if string.find(choices, "qianxi") and sgs.ai_skill_invoke.qianxi(sgs.ais[self.player:objectName()]) then return "qianxi" end
 
 		if table.contains(skillnames, "tiandu") then
 			local judge = data:toJudge()
@@ -234,6 +266,7 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 				return "tiandu"
 			end
 		end
+		if table.contains(skillnames, "yiji") then return "yiji" end
 
 		local except = {}
 		for _, skillname in ipairs(skillnames) do
@@ -276,6 +309,13 @@ sgs.ai_skill_choice["GameRule:TurnStart"] = function(self, choices, data)
 		if not self.player:hasShownOneGeneral() then
 			local gameProcess = sgs.gameProcess():split(">>")
 			if self.player:getKingdom() == gameProcess[1] and (self.player:getLord() or sgs.shown_kingdom[self.player:getKingdom()] < self.player:aliveCount() / 2) then
+				if self.player:hasSkill("xichou") and self.player:getMark("xichou") == 0 then
+					if self.player:inHeadSkills("xichou") and canShowHead then
+						return "GameRule_AskForGeneralShowHead"
+					elseif canShowDeputy then
+						return "GameRule_AskForGeneralShowDeputy"
+					end
+				end
 				if canShowHead and showRate > 0.6 then return "GameRule_AskForGeneralShowHead"
 				elseif canShowDeputy and showRate > 0.6 then return "GameRule_AskForGeneralShowDeputy" end
 			end

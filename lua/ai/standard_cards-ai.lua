@@ -421,6 +421,9 @@ end
 function SmartAI:isPriorFriendOfSlash(friend, card, source)
 	source = source or self.player
 	local huatuo = sgs.findPlayerByShownSkillName("jijiu")
+	if source:hasSkill("zhiman") and (source:canGetCard(p, "j") or ((friend:hasShownSkills(sgs.lose_equip_skill) or self:needToThrowArmor(friend)) and self.player:canGetCard(p, "e"))) then
+		return true
+	end
 	if not self:hasHeavySlashDamage(source, card, friend)
 		and ((self:findLeijiTarget(friend, 50, source) and not source:hasShownSkill("wushuang"))
 		or (friend:hasShownSkill("jieming") and source:hasShownSkill("rende") and huatuo and self:isFriend(huatuo, source))) then
@@ -429,6 +432,7 @@ function SmartAI:isPriorFriendOfSlash(friend, card, source)
 	if card:isKindOf("NatureSlash") and friend:isChained() and self:isGoodChainTarget(friend, source, nil, nil, card) then return true end
 	return
 end
+
 
 function SmartAI:useCardSlash(card, use)
 	if not use.isDummy and not self:slashIsAvailable(self.player, card) then return end
@@ -764,6 +768,7 @@ sgs.ai_skill_cardask["slash-jink"] = function(self, data, pattern, target)
 		end
 		return not isdummy and "."
 	end
+	if self:isFriend(self.player, target) and target:hasSkill("zhiman") and not self.player:hasSkill("leiji") then return "." end
 	local slash
 	if type(data) == "QVariant" or type(data) == "userdata" then
 		local effect = data:toSlashEffect()
@@ -1644,12 +1649,17 @@ end
 
 sgs.ai_skill_cardask.aoe = function(self, data, pattern, target, name)
 	if sgs.ai_skill_cardask.nullfilter(self, data, pattern, target) then return "." end
-
 	local aoe
 	if type(data) == "QVariant" or type(data) == "userdata" then aoe = data:toCardEffect().card else aoe = sgs.cloneCard(name) end
 	assert(aoe ~= nil)
 	local menghuo = sgs.findPlayerByShownSkillName("huoshou")
 	local attacker = target
+	if aoe:isKindOf("ArcheryAttack") then
+		if not self.player:hasSkill("leiji") and self:isFriend(self.player, target) and target:hasSkill("zhiman") then return "." end
+	elseif aoe:isKindOf("SavageAssault") then
+		if not menghuo and self:isFriend(self.player, target) and target:hasSkill("zhiman") then return "." end
+		if menghuo and menghuo:hasShownSkill("zhiman") and self:isFriend(self.player, menghuo) then return "." end
+	end
 	if menghuo and aoe:isKindOf("SavageAssault") then attacker = menghuo end
 
 	if not self:damageIsEffective(nil, nil, attacker) then return "." end
@@ -1659,7 +1669,6 @@ sgs.ai_skill_cardask.aoe = function(self, data, pattern, target, name)
 		and not self:willSkipPlayPhase() then
 		if not self:needKongcheng(self.player, true) and self:getAoeValue(aoe) > 0 then return "." end
 	end
-
 end
 
 sgs.ai_skill_cardask["savage-assault-slash"] = function(self, data, pattern, target)
@@ -1794,7 +1803,11 @@ function SmartAI:useCardDuel(duel, use)
 	end
 
 	for _, friend in ipairs(friends) do
-		if friend:hasSkill("jieming") and canUseDuelTo(friend) and self.player:hasSkill("rende") and (huatuo and self:isFriend(huatuo)) then
+		if not canUseDuelTo(friend) then continue end
+		if friend:hasSkill("jieming") and self.player:hasSkill("rende") and (huatuo and self:isFriend(huatuo)) then
+			table.insert(targets, friend)
+		end
+		if self.player:hasSkill("zhiman") and (self.player:canGetCard(p, "j") or ((friend:hasShownSkills(sgs.lose_equip_skill) or self:needToThrowArmor(friend)) and self.player:canGetCard(p, "e"))) then
 			table.insert(targets, friend)
 		end
 	end
@@ -1900,6 +1913,7 @@ sgs.ai_keep_value.Duel = 3.42
 sgs.dynamic_value.damage_card.Duel = true
 
 sgs.ai_skill_cardask["duel-slash"] = function(self, data, pattern, target)
+	if self:isFriend(self.player, target) and target:hasSkill("zhiman") then return "." end
 	if self.player:getPhase()==sgs.Player_Play then return self:getCardId("Slash") end
 
 	if sgs.ai_skill_cardask.nullfilter(self, data, pattern, target) then return "." end
