@@ -81,7 +81,7 @@ public:
 
     QString getPackage() const;
     QString getCompanions() const;
-    QString getSkillDescription(bool include_name = false, bool inToolTip = true) const;
+    QString getSkillDescription(bool include_name = false, bool inToolTip = true, bool include_related = false) const;
 
     inline QSet<QString> getExtraSkillSet() const
     {

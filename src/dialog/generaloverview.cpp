@@ -651,7 +651,7 @@ void GeneralOverview::on_tableView_clicked(const QModelIndex &index)
         ui->companionsLineEdit->setText(tr("None"));
     else
         ui->companionsLineEdit->setText(companions_text);
-    ui->skillTextEdit->append(general->getSkillDescription(false, false));
+    ui->skillTextEdit->append(general->getSkillDescription(false, false, true));
 #endif
 }
 

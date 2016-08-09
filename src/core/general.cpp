@@ -206,7 +206,7 @@ QString General::getCompanions() const
     return name.join(" ");
 }
 
-QString General::getSkillDescription(bool include_name, bool inToolTip) const
+QString General::getSkillDescription(bool include_name, bool inToolTip, bool include_related) const
 {
     QString description;
 
@@ -215,6 +215,18 @@ QString General::getSkillDescription(bool include_name, bool inToolTip) const
         QString desc = skill->getDescription(inToolTip);
         desc.replace("\n", "<br/>");
         description.append(QString("<font color=%1><b>%2</b>:</font> %3 <br/> <br/>").arg(inToolTip ? Config.SkillDescriptionInToolTipColor.name() : Config.SkillDescriptionInOverviewColor.name()).arg(skill_name).arg(desc));
+    }
+
+    if (include_related) {
+        foreach (const QString &name, getRelatedSkillNames()) {
+            const Skill *skill = Sanguosha->getSkill(name);
+            if (skill && skill->isVisible()) {
+                QString skill_name = Sanguosha->translate(skill->objectName());
+                QString desc = skill->getDescription(inToolTip);
+                desc.replace("\n", "<br/>");
+                description.append(QString("<font color=%1><b>%2</b>:</font> %3 <br/> <br/>").arg(inToolTip ? Config.SkillDescriptionInToolTipColor.name() : Config.SkillDescriptionInOverviewColor.name()).arg(skill_name).arg(desc));
+            }
+        }
     }
 
     if (include_name) {
