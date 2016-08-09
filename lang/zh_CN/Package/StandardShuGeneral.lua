@@ -38,7 +38,7 @@ return {
 	[":paoxiao"] = "你使用【杀】无次数限制。",
 	["#paoxiao-null"] = "咆哮（无视防具）",
 	["paoxiao:armor_nullify"] = "场上有君刘备，你现在可以亮将令【杀】无视 %src 的防具效果。" ,
-    ["paoxiaoVsCrossbow"] = "选择发动“咆哮”或“诸葛连弩”" ,
+    ["paoxiaoVsCrossbow"] = "选择需要发动的技能" ,
 
 	["#zhugeliang"] = "迟暮的丞相",
 	["zhugeliang"] = "诸葛亮",

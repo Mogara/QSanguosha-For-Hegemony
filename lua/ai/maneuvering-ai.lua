@@ -140,7 +140,7 @@ function SmartAI:shouldUseAnaleptic(target, card_use)
 		if basicnum < 3 then return false end
 	end
 
-	if target:hasArmorEffect("PeaceSpell") and card_use.card:isKindOf("NatureSlash") then return false end
+	if target:hasArmorEffect("PeaceSpell") and card_use.card and card_use.card:isKindOf("NatureSlash") then return false end
 
 	local hcard = target:getHandcardNum()
 	if self.player:hasSkill("liegong") and self.player:getPhase() == sgs.Player_Play and (hcard >= self.player:getHp() or hcard <= self.player:getAttackRange()) then return true end

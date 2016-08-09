@@ -42,7 +42,7 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 				if #unpreferedCards >= self.player:getMaxHp() and not unlimited then break end
 			end
 		end
-		if #unpreferedCards > self.player:getMaxHp() then
+		if #unpreferedCards > self.player:getMaxHp() or not self.player:ownSkill("zhiheng") then
 			table.removeOne(unpreferedCards, self.player:getTreasure():getEffectiveId())
 		end
 		if #unpreferedCards > 0 then
@@ -189,7 +189,7 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 			end
 		end
 	end
-	if #use_cards > self.player:getMaxHp() then
+	if #use_cards > self.player:getMaxHp() or not self.player:ownSkill("zhiheng") then
 		table.removeOne(use_cards, self.player:getTreasure():getEffectiveId())
 	end
 	if #use_cards > 0 then
@@ -424,28 +424,24 @@ sgs.ai_use_priority.KurouCard = 6.8
 
 
 sgs.ai_skill_invoke.yingzi_zhouyu = function(self, data)
-
 	if not self:willShowForAttack() and not self:willShowForDefence() then
 		return false
 	end
-
-	if self.player:hasSkill("haoshi") then
-		local num = self.player:getHandcardNum()
-		local skills = self.player:getVisibleSkillList()
-		local count = self:ImitateResult_DrawNCards(self.player, skills)
-		if num + count > 5 then
-			local others = self.room:getOtherPlayers(self.player)
-			local least = 999
-			local target = nil
-			for _,p in sgs.qlist(others) do
-				local handcardnum = p:getHandcardNum()
-				if handcardnum < least then
-					least = handcardnum
-					target = p
-				end
-			end
-			if target and not self:isFriend(target) and num + count == 6 then return false end
+	if self.player:hasFlag("haoshi") then
+		local invoke = self.player:getTag("haoshi_yingzi_zhouyu"):toBool()
+		if not invoke then return false end
+		local extra = self.player:getMark("haoshi_num")
+		if self.player:hasShownOneGeneral() and not self.player:hasShownSkill("yingzi_zhouyu") and self.player:getMark("HalfMaxHpLeft") > 0 then
+			extra = extra + 1
 		end
+		if self.player:hasShownOneGeneral() and not self.player:isWounded()	and not self.player:hasShownSkill("yingzi_zhouyu") and player:getMark("CompanionEffect") > 0 then
+			extra = extra + 2
+		end
+		if self.player:getHandcardNum() + extra <= 1 or self.haoshi_target then
+			self.player:setMark("haoshi_num", extra)
+			return true
+		end
+		return false
 	end
 	return true
 end
@@ -531,7 +527,7 @@ duoshi_skill.getTurnUseCard = function(self, inclusive)
 	if self.player:hasSkills("fenming|zhiheng|fenxun|keji") then
 		DuoTime = 1
 	end
-	if self.player:hasSkills("hongyan|yingzi_zhouyu|yingzi_sunce") then
+	if self.player:hasSkills("hongyan|yingzi_zhouyu|yingzi_sunce|yingzi") then
 		DuoTime = 3
 	end
 	if self.player:hasSkills("xiaoji|haoshi") then
@@ -551,18 +547,19 @@ duoshi_skill.getTurnUseCard = function(self, inclusive)
 	local cards = self.player:getCards("h")
 	cards = sgs.QList2Table(cards)
 	self:sortByUseValue(cards)
-	local not_use = {}
 	for _, card in ipairs(cards) do
-		if self:getUseValue(card) >= 4.8 and card:isAvailable(self.player) then
+		if self:getUseValue(card) >= 4.5 and card:isAvailable(self.player) then
 			local dummy_use = {isDummy = true}
 			if not card:targetFixed() then dummy_use.to = sgs.SPlayerList() end
-			self:useCardByClassName(card, dummy_use)
-			if dummy_use.card then table.insert(not_use, card) end
+			if card:isKindOf("EquipCard") then
+				self:useEquipCard(card, dummy_use)
+			else
+				self:useCardByClassName(card, dummy_use)
+			end
+			if dummy_use.card and self:getUsePriority(card) >= 2.8 then
+				return
+			end
 		end
-	end
-
-	for _, c in ipairs(not_use) do
-		table.removeOne(cards, c)
 	end
 
 	if (self:hasCrossbowEffect() or self:getCardsNum("Crossbow") > 0) and self:getCardsNum("Slash") > 0 then
@@ -1523,47 +1520,73 @@ function sgs.ai_skill_invoke.buqu(self, data)
 end
 
 sgs.ai_skill_invoke.haoshi = function(self, data)
+	if not self:willShowForDefence() and not self:willShowForAttack() then return false end
 	self.haoshi_target = nil
 	local extra = 0
-	local draw_skills = { ["yingzi_zhouyu"] = 1, ["yingzi_sunce"] = 1, ["luoyi"] = -1 }
+	local draw_skills = { ["yingzi"] = 1, ["yingzi_zhouyu"] = 1, ["yingzi_sunce"] = 1, ["luoyi"] = -1 }
 	for skill_name, n in ipairs(draw_skills) do
 		if self.player:hasSkill(skill_name) then
+			if skill_name == "yingzi" then skill_name = "yingziextra" end
 			local skill = sgs.Sanguosha:getSkill(skill_name)
 			if skill and skill:getFrequency() == sgs.Skill_Compulsory then
 				extra = extra + n
-			elseif self:askForSkillInvoke(skill_name, data) then
-				extra = extra + n
+			else
+				self.player:removeTag("haoshi_" .. skill_name)
 			end
 		end
+	end
+
+	if self.player:hasShownOneGeneral() and self.player:ownSkill("haoshi") and not self.player:hasShownSkill("haoshi") and self.player:getMark("HalfMaxHpLeft") > 0 then
+		extra = extra + 1
+	end
+	if self.player:hasShownOneGeneral() and not self.player:isWounded()	and self.player:ownSkill("haoshi") and not self.player:hasShownSkill("haoshi") and player:getMark("CompanionEffect") > 0 then
+		extra = extra + 2
 	end
 	if self.player:hasTreasure("JadeSeal") then
 		extra = extra + 1
 	end
-	if self.player:getHandcardNum() + extra <= 1 then return true end
-	if not self:willShowForDefence() and not self:willShowForAttack() then return false end
 
-	local otherPlayers = sgs.QList2Table(self.room:getOtherPlayers(self.player))
-	self:sort(otherPlayers, "handcard")
-	local leastNum = otherPlayers[1]:getHandcardNum()
+	local function invoke(extra)
+		if self.player:getHandcardNum() + extra <= 1 then return true end
+		local otherPlayers = sgs.QList2Table(self.room:getOtherPlayers(self.player))
+		self:sort(otherPlayers, "handcard")
+		local leastNum = otherPlayers[1]:getHandcardNum()
 
-	self:sort(self.friends_noself)
-	for _, friend in ipairs(self.friends_noself) do
-		if friend:getHandcardNum() == leastNum and friend:isAlive() and self:isFriendWith(friend) then
-			self.haoshi_target = friend
-		end
-	end
-	if not self.haoshi_target then
+		self:sort(self.friends_noself)
 		for _, friend in ipairs(self.friends_noself) do
-			if friend:getHandcardNum() == leastNum and friend:isAlive() then
+			if friend:getHandcardNum() == leastNum and friend:isAlive() and self:isFriendWith(friend) then
 				self.haoshi_target = friend
 			end
 		end
+		if not self.haoshi_target then
+			for _, friend in ipairs(self.friends_noself) do
+				if friend:getHandcardNum() == leastNum and friend:isAlive() then
+					self.haoshi_target = friend
+				end
+			end
+		end
+		if self.haoshi_target then return true end
 	end
-	if self.haoshi_target then return true end
-	return false
+
+	if not invoke(extra) then return false end
+
+	for skill_name, n in ipairs(draw_skills) do
+		if self.player:hasSkill(skill_name) then
+			if skill_name == "yingzi" then skill_name = "yingziextra" end
+			local skill = sgs.Sanguosha:getSkill(skill_name)
+			if skill and not skill:getFrequency() == sgs.Skill_Compulsory then
+				if invoke(extra + n) then
+					extra = extra + n
+					self.player:setTag("haoshi_" .. skill_name, sgs.QVariant(true))
+				end
+			end
+		end
+	end
+	self.player:setMark("haoshi_num", extra)
+	return true
 end
 
-sgs.ai_skill_use["@@haoshi!"] = function(self, prompt)
+sgs.ai_skill_use["@@haoshivs!"] = function(self, prompt)
 	local target = self.haoshi_target
 	if not self.haoshi_target or self.haoshi_target:isDead() then
 		local otherPlayers = sgs.QList2Table(self.room:getOtherPlayers(self.player))
@@ -1844,9 +1867,9 @@ sgs.ai_skill_exchange.guzheng = function(self, pattern, max_num, min_num, expand
 	end
 	if self:isLihunTarget(self.player, #card_ids - 1, flag) then return {} end
 	local invoke = (self:isFriend(who) and not (who:hasSkill("kongcheng") and who:isKongcheng()))
-		or #card_ids >= 3
-		or (#card_ids == 2 and not self:hasSkills(sgs.cardneed_skill, who))
-		or (self:isEnemy(who) and who:hasSkill("kongcheng") and who:isKongcheng())
+					or (#card_ids >= 3 and not self.player:hasSkill("manjuan"))
+					or (#card_ids == 2 and not self:hasSkills(sgs.cardneed_skill, who) and not self.player:hasSkill("manjuan"))
+					or (self:isEnemy(who) and who:hasSkill("kongcheng") and who:isKongcheng())
 	if not invoke then return {} end
 
 	local cards, except_Equip, except_Key , all = {}, {}, {}, {}
@@ -1978,6 +2001,7 @@ function getBestHp(player)
 			return math.max( (player:isLord() and 3 or 2) ,player:getMaxHp() - dec)
 		end
 	end
+	if player:hasSkills("quanji+zhonghuizili") and player:getMark("zhonghuizili") == 0 then return (player:getMaxHp() - 1) end
 	return player:getMaxHp()
 end
 

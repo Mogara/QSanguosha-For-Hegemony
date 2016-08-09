@@ -555,6 +555,7 @@ function SmartAI:useCardSlash(card, use)
 				end
 			end
 
+			use.card = use.card or usecard
 			if not use.isDummy then
 				local analeptic = self:searchForAnaleptic(use, target, use.card or usecard)
 				if analeptic and self:shouldUseAnaleptic(target, use) and analeptic:getEffectiveId() ~= card:getEffectiveId() then
@@ -564,7 +565,6 @@ function SmartAI:useCardSlash(card, use)
 				end
 			end
 
-			use.card = use.card or usecard
 			if use.to and canAppendTarget(target) then
 				use.to:append(target)
 			end

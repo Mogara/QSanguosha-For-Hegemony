@@ -228,7 +228,29 @@ end
 
 sgs.ai_skill_invoke.hunshang = true
 
-sgs.ai_skill_invoke.yingzi_sunce = sgs.ai_skill_invoke.yingzi_zhouyu
+sgs.ai_skill_invoke.yingzi_sunce = function(self, data)
+	if not self:willShowForAttack() and not self:willShowForDefence() then
+		return false
+	end
+	if self.player:hasFlag("haoshi") then
+		local invoke = self.player:getTag("haoshi_yingzi_sunce"):toBool()
+		if not invoke then return false end
+		local extra = self.player:getMark("haoshi_num")
+		if self.player:hasShownOneGeneral() and not self.player:hasShownSkill("yingzi_sunce") and self.player:getMark("HalfMaxHpLeft") > 0 then
+			extra = extra + 1
+		end
+		if self.player:hasShownOneGeneral() and not self.player:isWounded()	and not self.player:hasShownSkill("yingzi_sunce") and player:getMark("CompanionEffect") > 0 then
+			extra = extra + 2
+		end
+		if self.player:getHandcardNum() + extra <= 1 or self.haoshi_target then
+			self.player:setMark("haoshi_num", extra)
+			return true
+		end
+		return false
+	end
+	return true
+end
+
 sgs.ai_skill_choice.yinghun_sunce = sgs.ai_skill_choice.yinghun_sunjian
 sgs.ai_skill_playerchosen.yinghun_sunce = sgs.ai_skill_playerchosen.yinghun_sunjian
 sgs.ai_playerchosen_intention.yinghun_sunce = sgs.ai_playerchosen_intention.yinghun_sunjian

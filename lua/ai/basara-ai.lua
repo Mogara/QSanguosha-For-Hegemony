@@ -267,6 +267,7 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 			end
 		end
 		if table.contains(skillnames, "yiji") then return "yiji" end
+		if table.contains(skillnames, "haoshi-draw") then return "haoshi-draw" end
 
 		local except = {}
 		for _, skillname in ipairs(skillnames) do

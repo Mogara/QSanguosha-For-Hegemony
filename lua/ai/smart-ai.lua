@@ -1,15 +1,20 @@
 --[[********************************************************************
 	Copyright (c) 2013-2015 Mogara
+
   This file is part of QSanguosha-Hegemony.
+
   This game is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
   published by the Free Software Foundation; either version 3.0
   of the License, or (at your option) any later version.
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   General Public License for more details.
+
   See the LICENSE file for more details.
+
   Mogara
 *********************************************************************]]
 
@@ -53,7 +58,7 @@ sgs.ai_skill_pindian =      {}
 sgs.ai_skill_playerchosen = {}
 sgs.ai_skill_discard =      {}
 sgs.ai_skill_movecards =    {}
-sgs.ai_skill_exchange =     {}
+sgs.ai_skill_exchange = 	{}
 sgs.ai_cardshow =           {}
 sgs.ai_nullification =      {}
 sgs.ai_skill_cardchosen =   {}
@@ -143,7 +148,7 @@ for i = sgs.NonTrigger, sgs.NumOfEvents, 1 do
 end
 
 function setInitialTables()
-	sgs.ai_type_name =          {"Skill", "Basic", "Trick", "Equip"}
+	sgs.ai_type_name = {"Skill", "Basic", "Trick", "Equip"}
 	sgs.lose_equip_skill = "xiaoji|liefeng"
 	sgs.lose_one_equip_skill = ""
 	sgs.need_kongcheng = "kongcheng"
@@ -224,7 +229,6 @@ function SmartAI:initialize(player)
 			end
 		end
 		local method_name = string.sub(full_method_name, method_name_start)
-		--self.room:writeToConsole("callback:" .. method_name)
 		local method = self[method_name]
 		if method then
 			local success, result1, result2
@@ -308,7 +312,6 @@ function SmartAI:getTurnUse()
 	local slashes = {}
 
 	for _, card in ipairs(cards) do
-
 		local dummy_use = { isDummy = true }
 
 		local type = card:getTypeId()
@@ -1247,6 +1250,7 @@ function SmartAI:adjustUsePriority(card, v)
 	if self.player:getHandPile():contains(card:getEffectiveId()) then
 		v = v + 0.1
 	end
+
 	local suits_value = {}
 	for index, suit in ipairs(suits) do
 		suits_value[suit] = -index
@@ -2177,21 +2181,6 @@ function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_e
 	return to_discard
 end
 
-sgs.ai_skill_discard.gamerule = function(self, discard_num)
-
-	local cards = sgs.QList2Table(self.player:getHandcards())
-	self:sortByKeepValue(cards)
-	local to_discard = {}
-	for _, card in ipairs(cards) do
-		if not self.player:isCardLimited(card, sgs.Card_MethodDiscard, true) then
-			table.insert(to_discard, card:getId())
-		end
-		if #to_discard >= discard_num or self.player:isKongcheng() then break end
-	end
-
-	return to_discard
-end
-
 function SmartAI:askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num)
 	local callback = sgs.ai_skill_movecards[reason]
 	if type(callback) == "function" then
@@ -2216,6 +2205,22 @@ function SmartAI:askForMoveCards(upcards, downcards, reason, pattern, min_num, m
 	return {}, {}
 end
 
+sgs.ai_skill_discard.gamerule = function(self, discard_num)
+
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	local to_discard = {}
+	for _, card in ipairs(cards) do
+		if not self.player:isCardLimited(card, sgs.Card_MethodDiscard, true) then
+			table.insert(to_discard, card:getId())
+		end
+		if #to_discard >= discard_num or self.player:isKongcheng() then break end
+	end
+
+	return to_discard
+end
+
+
 function SmartAI:askForNullification(trick, from, to, positive)
 	if self.player:isDead() then return nil end
 	if from and self:isFriend(to, from) and from:hasSkill("zhiman") then return nil end
@@ -2234,6 +2239,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 	for _, p in sgs.qlist(delete) do
 		if delete:indexOf(p) < delete:indexOf(to) then targets:removeOne(p) end
 	end
+
 	if null_num > 1 then
 		for _, card in sgs.qlist(nullcards) do
 			if not card:isKindOf("HegNullification") then
@@ -2242,7 +2248,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 			end
 		end
 	end
-	local keep				--要为被乐的友方保留无懈
+	local keep
 	if null_num == 1 then
 		local only = true
 		for _, p in ipairs(self.friends_noself) do
@@ -2303,7 +2309,6 @@ function SmartAI:askForNullification(trick, from, to, positive)
 	end
 
 	if positive then
-
 		if from and (trick:isKindOf("FireAttack") or trick:isKindOf("Duel") or trick:isKindOf("ArcheryAttack") or trick:isKindOf("SavageAssault")) and self:cantbeHurt(to, from) then
 			if self:isFriend(from) then return null_card end
 			return
@@ -2423,7 +2428,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 					for _, p in ipairs(self.enemies) do
 						if targets:contains(p) and not p:objectName() == to:objectName() and p:isFriendWith(to) then
 							invoke = true
-							break					
+							break
 						end
 					end
 					local getvalue = 0
@@ -2537,7 +2542,6 @@ function SmartAI:getCardRandomly(who, flags, disable_list)
 end
 
 function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
-	local isDiscard = (method == sgs.Card_MethodDiscard)
 	local disable_list = disable_list or {}
 	local cardchosen = sgs.ai_skill_cardchosen[string.gsub(reason, "%-", "_")]
 	local card
@@ -2571,11 +2575,11 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 			local lightning, indulgence, supply_shortage
 			for _, trick in sgs.qlist(tricks) do
 				if table.contains(disable_list, trick:getEffectiveId()) then continue end
-				if trick:isKindOf("Lightning") and (not isDiscard or self.player:canDiscard(who, trick:getId())) then
+				if trick:isKindOf("Lightning") then
 					lightning = trick:getId()
-				elseif trick:isKindOf("Indulgence") and (not isDiscard or self.player:canDiscard(who, trick:getId()))  then
+				elseif trick:isKindOf("Indulgence") then
 					indulgence = trick:getId()
-				elseif not trick:isKindOf("Disaster") and (not isDiscard or self.player:canDiscard(who, trick:getId())) then
+				elseif not trick:isKindOf("Disaster") then
 					supply_shortage = trick:getId()
 				end
 			end
@@ -2598,15 +2602,13 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 		end
 
 		if flags:match("e") then
-			if who:getArmor() and self:evaluateArmor(who:getArmor(), who) < -5 and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId()))
-				and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
-				return who:getArmor():getEffectiveId()
-			end
+			if self:needToThrowArmor(who) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then return who:getArmor():getEffectiveId() end
+			if who:getArmor() and self:evaluateArmor(who:getArmor(), who) < -5 	and not table.contains(disable_list, who:getArmor():getEffectiveId()) then return who:getArmor():getEffectiveId() end
 			if who:hasShownSkills(sgs.lose_equip_skill) and self:isWeak(who) then
-				if who:getWeapon() and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId())) and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
+				if who:getWeapon() and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
 					return who:getWeapon():getEffectiveId()
 				end
-				if who:getOffensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId())) and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
+				if who:getOffensiveHorse() and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
 					return who:getOffensiveHorse():getEffectiveId()
 				end
 			end
@@ -2633,39 +2635,34 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 		end
 
 		local dangerous = self:getDangerousCard(who)
-		if flags:match("e") and dangerous and (not isDiscard or self.player:canDiscard(who, dangerous)) and not table.contains(disable_list, dangerous) then return dangerous end
-		if flags:match("e") and who:getTreasure() and (who:getPile("wooden_ox"):length() > 1 or who:hasTreasure("JadeSeal")) and (not isDiscard or self.player:canDiscard(who, who:getTreasure():getId()))
-			and not table.contains(disable_list, who:getTreasure():getId()) then
+		if flags:match("e") and dangerous and not table.contains(disable_list, dangerous) then return dangerous end
+		if flags:match("e") and who:getTreasure() and (who:getPile("wooden_ox"):length() > 1 or who:hasTreasure("JadeSeal")) and not table.contains(disable_list, who:getTreasure():getId()) then
 			return who:getTreasure():getId()
 		end
-		if flags:match("e") and who:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(who) and (not isDiscard or self.player:canDiscard(who, who:getArmor():getId()))
-			and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
+		if flags:match("e") and who:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(who) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 			return who:getArmor():getId()
 			end
-		if flags:match("e") and who:hasShownSkills("jijiu|beige|weimu|qingcheng") and not self:doNotDiscard(who, "e", false, 1, reason) then
-			if who:getDefensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getDefensiveHorse():getEffectiveId())) and not table.contains(disable_list, who:getDefensiveHorse():getEffectiveId()) then
+		if flags:match("e") and who:hasShownSkills("jijiu|beige|weimu|qingcheng|LuaJijiu") and not self:doNotDiscard(who, "e", false, 1, reason) then
+			if who:getDefensiveHorse() and not table.contains(disable_list, who:getDefensiveHorse():getEffectiveId()) then
 				return who:getDefensiveHorse():getEffectiveId()
 			end
-			if who:getArmor() and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId())) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
+			if who:getArmor() and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 				return who:getArmor():getEffectiveId()
 			end
-			if who:getOffensiveHorse() and (not who:hasShownSkills("jijiu") or who:getOffensiveHorse():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId()))
-				and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
+			if who:getOffensiveHorse() and (not who:hasShownSkills("jijiu|LuaJijiu") or who:getOffensiveHorse():isRed()) and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
 				return who:getOffensiveHorse():getEffectiveId()
 			end
-			if who:getWeapon() and (not who:hasShownSkills("jijiu") or who:getWeapon():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId()))
+			if who:getWeapon() and (not who:hasShownSkills("jijiu|LuaJijiu") or who:getWeapon():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId()))
 				and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
 				return who:getWeapon():getEffectiveId()
 			end
 		end
 		if flags:match("e") then
 			local valuable = self:getValuableCard(who)
-			if valuable and (not isDiscard or self.player:canDiscard(who, valuable)) and not table.contains(disable_list, valuable) then
-				return valuable
-			end
+			if valuable and not table.contains(disable_list, valuable) then	return valuable	end
 		end
-		if flags:match("h") and (not isDiscard or self.player:canDiscard(who, "h")) then
-			if who:hasShownSkills("jijiu|qingnang|qiaobian|jieyin|beige")
+		if flags:match("h") then
+			if who:hasShownSkills("jijiu|qingnang|qiaobian|jieyin|beige|LuaJijiu")
 				and not who:isKongcheng() and who:getHandcardNum() <= 2 and not self:doNotDiscard(who, "h", false, 1, reason) then
 				return self:getCardRandomly(who, "h", disable_list)
 			end
@@ -2690,7 +2687,7 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 				if table.contains(disable_list, trick:getEffectiveId()) then
 					continue
 				else
-					if trick:isKindOf("Lightning") and (not isDiscard or self.player:canDiscard(who, trick:getId())) then
+					if trick:isKindOf("Lightning") then
 						lightning = trick:getId()
 					end
 				end
@@ -2707,19 +2704,19 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 		end
 
 		if flags:match("e") and not self:doNotDiscard(who, "e") then
-			if who:getDefensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getDefensiveHorse():getEffectiveId())) and not table.contains(disable_list, who:getDefensiveHorse():getEffectiveId()) then
+			if who:getDefensiveHorse() and not table.contains(disable_list, who:getDefensiveHorse():getEffectiveId()) then
 				return who:getDefensiveHorse():getEffectiveId()
 			end
-			if who:getArmor() and not self:needToThrowArmor(who) and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId())) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
+			if who:getArmor() and not self:needToThrowArmor(who) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 				return who:getArmor():getEffectiveId()
 			end
-			if who:getOffensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId())) and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
+			if who:getOffensiveHorse() and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
 				return who:getOffensiveHorse():getEffectiveId()
 			end
-			if who:getWeapon() and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId())) and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
+			if who:getWeapon() and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
 				return who:getWeapon():getEffectiveId()
 			end
-			if who:getTreasure() and (not isDiscard or self.player:canDiscard(who, who:getTreasure():getEffectiveId())) and not table.contains(disable_list, who:getTreasure():getEffectiveId()) then
+			if who:getTreasure() and not table.contains(disable_list, who:getTreasure():getEffectiveId()) then
 				return who:getTreasure():getEffectiveId()
 			end
 		end
@@ -3122,9 +3119,19 @@ function SmartAI:getCardNeedPlayer(cards, friends_table, skillname)
 	end
 
 	for _, friend in ipairs(friends) do
-		if friend:hasShownSkills("paoxiao")  then
+		if friend:hasShownSkills("paoxiao") or (friend:hasShownSkills("jili") and friend:getWeapon()) then
 			for _, hcard in ipairs(cards) do
 				if hcard:isKindOf("Slash") then
+					return hcard, friend
+				end
+			end
+		end
+	end
+
+	for _, friend in ipairs(friends) do
+		if friend:hasShownSkills("jili")  then
+			for _, hcard in ipairs(cards) do
+				if hcard:isKindOf("Weapon") then
 					return hcard, friend
 				end
 			end
@@ -3597,7 +3604,6 @@ function SmartAI:needRetrial(judge)
 	elseif reason == "beige" then
 		return true
 	end
-
 	if self:isFriend(who) then
 		return not judge:isGood()
 	elseif self:isEnemy(who) then
@@ -3626,8 +3632,8 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 			card_x = sgs.Card_Parse(str)
 			assert(card_x)
 		end
-		
-		if reason == "beige" and not isCard("Peach", card_x, self.player) then
+
+		if reason == "beige" and not is_peach then
 			local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
 			if damage.from then
 				if self:isFriend(damage.from) then
@@ -3654,10 +3660,10 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 				end
 			end
 		elseif self:isFriend(who) and judge:isGood(card_x)
-				and not (self_card and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and isCard("Peach", card_x, self.player)) then
+			and not (self_card) and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and is_peach then
 			table.insert(can_use, card)
 		elseif self:isEnemy(who) and not judge:isGood(card_x)
-				and not (self_card and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and isCard("Peach", card_x, self.player)) then
+			and not (self_card) and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and is_peach then
 			table.insert(can_use, card)
 		end
 	end
@@ -3730,6 +3736,8 @@ end
 function SmartAI:getDamagedEffects(to, from, isSlash)
 	from = from or self.room:getCurrent()
 	to = to or self.player
+
+	if from:hasShownSkill("jueqing") then return false end
 
 	if isSlash then
 		if from:hasWeapon("IceSword") and to:getCards("he"):length() > 1 and not self:isFriend(from, to) then
@@ -3918,9 +3926,9 @@ end
 function getKnownNum(player, observer)
 	if not player then global_room:writeToConsole(debug.traceback()) return end
 	local cards = player:getHandcards()
-		for _, id in sgs.qlist(player:getHandPile()) do
-			cards:append(sgs.Sanguosha:getCard(id))
-		end
+	for _, id in sgs.qlist(player:getHandPile()) do
+		cards:append(sgs.Sanguosha:getCard(id))
+	end
 	local known = 0
 	for _, card in sgs.qlist(cards) do
 		if sgs.cardIsVisible(card, player, observer) then
@@ -4482,7 +4490,6 @@ function SmartAI:exclude(players, card, from)
 	return excluded
 end
 
-
 function SmartAI:getJiemingChaofeng(player)
 	local max_x, chaofeng = 0, 0
 	for _, friend in ipairs(self:getFriends(player)) do
@@ -4922,6 +4929,7 @@ function SmartAI:useEquipCard(card, use)
 		use.card = card
 		return
 	end
+
 	if self.player:hasSkills(sgs.lose_equip_skill) and self:evaluateArmor(card) > -5 and #self.enemies > 1 then
 		local armor = self.player:getArmor()
 		if armor and armor:objectName() == "PeaceSpell" and card:isKindOf("Armor") then
@@ -5173,33 +5181,50 @@ function SmartAI:doNotDiscard(to, flags, conservative, n, cant_choose)
 	return false
 end
 
-function SmartAI:findPlayerToDiscard(flags, include_self, isDiscard, players, return_table)
+function SmartAI:findPlayerToDiscard(flags, include_self, method, players, return_table)
 	local player_table = {}
-	if isDiscard == nil then isDiscard = true end
+	local isDiscard, isGet
+	if not method or method == sgs.Card_MethodDiscard then isDiscard = true end
+	if method and method == sgs.Card_MethodGet then isGet = true end
 	local friends, enemies = {}, {}
+	flags = flags or "he"
 	if not players then
-		friends = include_self and self.friends or self.friends_noself
-		enemies = self.enemies
+		for _, p in ipairs(self.friends) do
+			if isDiscard and not self.player:canDiscard(p, flags) then continue end
+			if isGet and not self.player:canGetCard(p, flags) then continue end
+			table.insert(friends, p)
+		end
+		if include_self then table.insert(friends, self.player) end
+		for _, p in ipairs(self.enemies) do
+			if isDiscard and not self.player:canDiscard(p, flags) then continue end
+			if isGet and not self.player:canGetCard(p, flags) then continue end
+			table.insert(enemies, p)
+		end
 	else
 		for _, player in sgs.qlist(players) do
-			if self:isFriend(player) and (include_self or player:objectName() ~= self.player:objectName()) then table.insert(friends, player)
-			elseif self:isEnemy(player) then table.insert(enemies, player) end
+			if isDiscard and not self.player:canDiscard(player, flags) then continue end
+			if isGet and not self.player:canGetCard(player, flags) then continue end
+			if self:isFriend(player) and (include_self or player:objectName() ~= self.player:objectName()) then
+				table.insert(friends, player)
+			elseif self:isEnemy(player) then
+				table.insert(enemies, player)
+			end
 		end
 	end
-	flags = flags or "he"
 
 	self:sort(enemies, "defense")
 	if flags:match("e") then
 		for _, enemy in ipairs(enemies) do
-			if self.player:canDiscard(enemy, "e") then
+			if (isDiscard and self.player:canDiscard(enemy, "e")) or (isGet and self.player:canGetCard(enemy, "e")) then
 				local dangerous = self:getDangerousCard(enemy)
-				if dangerous and (not isDiscard or self.player:canDiscard(enemy, dangerous)) then
+				if dangerous then
 					table.insert(player_table, enemy)
 				end
 			end
 		end
 		for _, enemy in ipairs(enemies) do
-			if enemy:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(enemy) and self.player:canDiscard(enemy, enemy:getArmor():getEffectiveId()) then
+			if enemy:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(enemy)
+				and ((isDiscard and self.player:canDiscard(enemy, enemy:getArmor():getEffectiveId())) or (isGet and self.player:canGetCard(enemy, enemy:getArmor():getEffectiveId()))) then
 				table.insert(player_table, enemy)
 			end
 		end
@@ -5207,28 +5232,33 @@ function SmartAI:findPlayerToDiscard(flags, include_self, isDiscard, players, re
 
 	if flags:match("j") then
 		for _, friend in ipairs(friends) do
-			if ((friend:containsTrick("indulgence") and not friend:hasShownSkill("keji")) or friend:containsTrick("supply_shortage"))
-				and not (friend:hasShownSkill("qiaobian") and not friend:isKongcheng())
-				and (not isDiscard or self.player:canDiscard(friend, "j")) then
-				table.insert(player_table, friend)
+			if (isDiscard and self.player:canDiscard(friend, "j")) or (isGet and self.player:canGetCard(friend, "j")) then
+				if ((friend:containsTrick("indulgence") and not friend:hasShownSkills("keji")) or friend:containsTrick("supply_shortage"))
+					and not (friend:hasShownSkill("qiaobian") and not friend:isKongcheng()) then
+					table.insert(player_table, friend)
+				end
 			end
 		end
 		for _, friend in ipairs(friends) do
-			if friend:containsTrick("lightning") and self:hasWizard(enemies, true) and (not isDiscard or self.player:canDiscard(friend, "j")) then table.insert(player_table, friend) end
+			if friend:containsTrick("lightning") and self:hasWizard(enemies, true) and (isDiscard and self.player:canDiscard(friend, "j")) or (isGet and self.player:canGetCard(friend, "j")) then
+				table.insert(player_table, friend)
+			end
 		end
 		for _, enemy in ipairs(enemies) do
-			if enemy:containsTrick("lightning") and self:hasWizard(enemies, true) and (not isDiscard or self.player:canDiscard(enemy, "j")) then table.insert(player_table, enemy) end
+			if enemy:containsTrick("lightning") and self:hasWizard(enemies, true) and (isDiscard and self.player:canDiscard(enemy, "j")) or (isGet and self.player:canGetCard(enemy, "j")) then
+				table.insert(player_table, enemy)
+			end
 		end
 	end
 
 	if flags:match("e") then
 		for _, friend in ipairs(friends) do
-			if self:needToThrowArmor(friend) and (not isDiscard or self.player:canDiscard(friend, friend:getArmor():getEffectiveId())) then
+			if self:needToThrowArmor(friend) and ((isDiscard and self.player:canDiscard(friend, friend:getArmor():getEffectiveId())) or (isGet and self.player:canGetCard(friend, friend:getArmor():getEffectiveId()))) then
 				table.insert(player_table, friend)
 			end
 		end
 		for _, enemy in ipairs(enemies) do
-			if self.player:canDiscard(enemy, "e") then
+			if (isDiscard and self.player:canDiscard(enemy, "e")) or (isGet and self.player:canGetCard(enemy, "e")) then
 				local valuable = self:getValuableCard(enemy)
 				if valuable and (not isDiscard or self.player:canDiscard(enemy, valuable)) then
 					table.insert(player_table, enemy)
@@ -5237,12 +5267,20 @@ function SmartAI:findPlayerToDiscard(flags, include_self, isDiscard, players, re
 		end
 		for _, enemy in ipairs(enemies) do
 			if enemy:hasShownSkills("jijiu|beige|weimu|qingcheng") and not self:doNotDiscard(enemy, "e") then
-				if enemy:getDefensiveHorse() and (not isDiscard or self.player:canDiscard(enemy, enemy:getDefensiveHorse():getEffectiveId())) then table.insert(player_table, enemy) end
-				if enemy:getArmor() and not self:needToThrowArmor(enemy) and (not isDiscard or self.player:canDiscard(enemy, enemy:getArmor():getEffectiveId())) then table.insert(player_table, enemy) end
-				if enemy:getOffensiveHorse() and (not enemy:hasShownSkill("jijiu") or enemy:getOffensiveHorse():isRed()) and (not isDiscard or self.player:canDiscard(enemy, enemy:getOffensiveHorse():getEffectiveId())) then
+				if enemy:getDefensiveHorse()
+					and ((isDiscard and self.player:canDiscard(enemy, enemy:getDefensiveHorse():getEffectiveId())) or (isGet and self.player:canGetCard(enemy, enemy:getDefensiveHorse():getEffectiveId()))) then
 					table.insert(player_table, enemy)
 				end
-				if enemy:getWeapon() and (not enemy:hasShownSkill("jijiu") or enemy:getWeapon():isRed()) and (not isDiscard or self.player:canDiscard(enemy, enemy:getWeapon():getEffectiveId())) then
+				if enemy:getArmor() and not self:needToThrowArmor(enemy)
+					and ((isDiscard and self.player:canDiscard(enemy, enemy:getArmor():getEffectiveId())) or (isGet and self.player:canGetCard(enemy, enemy:getArmor():getEffectiveId()))) then
+					table.insert(player_table, enemy)
+				end
+				if enemy:getOffensiveHorse() and (not enemy:hasShownSkill("jijiu") or enemy:getOffensiveHorse():isRed())
+					 and ((isDiscard and self.player:canDiscard(enemy, enemy:getOffensiveHorse():getEffectiveId())) or (isGet and self.player:canGetCard(enemy, enemy:getOffensiveHorse():getEffectiveId()))) then
+					table.insert(player_table, enemy)
+				end
+				if enemy:getWeapon() and (not enemy:hasShownSkill("jijiu") or enemy:getWeapon():isRed())
+					and ((isDiscard and self.player:canDiscard(enemy, enemy:getWeapon():getEffectiveId())) or (isGet and self.player:canGetCard(enemy, enemy:getWeapon():getEffectiveId()))) then
 					table.insert(player_table, enemy)
 				end
 			end
@@ -5254,7 +5292,8 @@ function SmartAI:findPlayerToDiscard(flags, include_self, isDiscard, players, re
 			local cards = sgs.QList2Table(enemy:getHandcards())
 			if #cards <= 2 and not enemy:isKongcheng() and not (enemy:hasShownSkill("tuntian") and enemy:getPhase() == sgs.Player_NotActive) then
 				for _, cc in ipairs(cards) do
-					if sgs.cardIsVisible(cc, enemy, self.player) and (cc:isKindOf("Peach") or cc:isKindOf("Analeptic")) and (not isDiscard or self.player:canDiscard(enemy, cc:getId())) then
+					if sgs.cardIsVisible(cc, enemy, self.player) and (cc:isKindOf("Peach") or cc:isKindOf("Analeptic"))
+						and ((isDiscard and self.player:canDiscard(enemy, cc:getId())) or (isGet and self.player:canGetCard(enemy, cc:getId()))) then
 						table.insert(player_table, enemy)
 					end
 				end
@@ -5264,7 +5303,8 @@ function SmartAI:findPlayerToDiscard(flags, include_self, isDiscard, players, re
 
 	if flags:match("e") then
 		for _, enemy in ipairs(enemies) do
-			if enemy:hasEquip() and not self:doNotDiscard(enemy, "e") and (not isDiscard or self.player:canDiscard(enemy, "e")) then
+			if enemy:hasEquip() and not self:doNotDiscard(enemy, "e")
+				and ((isDiscard and self.player:canDiscard(enemy, "e")) or (isGet and self.player:canGetCard(enemy, "e"))) then
 				table.insert(player_table, enemy)
 			end
 		end
@@ -5273,7 +5313,7 @@ function SmartAI:findPlayerToDiscard(flags, include_self, isDiscard, players, re
 	if flags:match("h") then
 		self:sort(enemies, "handcard")
 		for _, enemy in ipairs(enemies) do
-			if (not isDiscard or self.player:canDiscard(enemy, "h")) and not self:doNotDiscard(enemy, "h") then
+			if ((isDiscard and self.player:canDiscard(enemy, "h")) or (isGet and self.player:canGetCard(enemy, "h"))) and not self:doNotDiscard(enemy, "h") then
 				table.insert(player_table, enemy)
 			end
 		end
@@ -5282,7 +5322,7 @@ function SmartAI:findPlayerToDiscard(flags, include_self, isDiscard, players, re
 	if flags:match("h") then
 		local zhugeliang = sgs.findPlayerByShownSkillName("kongcheng")
 		if zhugeliang and self:isFriend(zhugeliang) and zhugeliang:getHandcardNum() == 1 and self:getEnemyNumBySeat(self.player, zhugeliang) > 0
-			and zhugeliang:getHp() <= 2 and (not isDiscard or self.player:canDiscard(zhugeliang, "h")) then
+			and zhugeliang:getHp() <= 2 and ((isDiscard and self.player:canDiscard(zhugeliang, "h")) or (isGet and self.player:canGetCard(zhugeliang, "h"))) then
 			table.insert(player_table, zhugeliang)
 		end
 	end
@@ -5454,6 +5494,7 @@ function SmartAI:ImitateResult_DrawNCards(player, skills)
 			elseif skillname == "luoyi" then count = count - 1
 			elseif skillname == "yingzi_sunce" then count = count + 1
 			elseif skillname == "yingzi_zhouyu" then count = count + 1
+			elseif skillname == "yingzi" then count = count + 1
 			elseif skillname == "haoshi" then count = count + 2 end
 		end
 	end
@@ -5472,8 +5513,9 @@ function SmartAI:willSkipPlayPhase(player, NotContains_Null)
 	if cp and self.player:objectName() == cp:objectName() and self.player:objectName() ~= player:objectName() and self:isFriend(player) then
 		for _, hcard in sgs.qlist(self.player:getCards("he")) do
 			if (isCard("Snatch", hcard, self.player) and self.player:distanceTo(player) == 1) or isCard("Dismantlement", hcard, self.player) then
-				local trick = sgs.cloneCard(hcard:objectName(), hcard:getSuit(), hcard:getNumber())
-				if self:hasTrickEffective(trick, player) then friend_snatch_dismantlement = friend_snatch_dismantlement + 1 end
+				--local trick = sgs.cloneCard(hcard:objectName(), hcard:getSuit(), hcard:getNumber())
+				--if self:hasTrickEffective(trick, player) then friend_snatch_dismantlement = friend_snatch_dismantlement + 1 end
+				if self:hasTrickEffective(hcard, player) then friend_snatch_dismantlement = friend_snatch_dismantlement + 1 end
 			end
 		end
 	end
@@ -5840,7 +5882,7 @@ end
 
 function sgs.isRoleExpose()
 	--local mode = string.lower(global_room:getMode())
-    --if mode:find("0") then return false end
+	--if mode:find("0") then return false end
 	--if global_room:getMode() == "jiange_defense" then return true end
 	if global_room:getScenario() and global_room:getScenario():exposeRoles() then return true end
 	return false
