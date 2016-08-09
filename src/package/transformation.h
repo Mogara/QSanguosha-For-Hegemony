@@ -106,6 +106,25 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
 };
 
+class GongxinCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE GongxinCard();
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
+};
+
+class FlameMapCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE FlameMapCard();
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
 class TransformationPackage : public Package
 {
     Q_OBJECT

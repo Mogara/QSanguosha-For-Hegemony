@@ -2484,6 +2484,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
     QStringList duanchang = player->property("Duanchang").toString().split(",");
     int max_hp = 0;
     if (!general1_name.isEmpty()) {
+        used_general << general1_name;
         if (duanchang.contains("head"))
             duanchang.removeAll("head");
 
@@ -2499,7 +2500,6 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
             if (skill->inherits("TriggerSkill")) {
                 const TriggerSkill *tr = qobject_cast<const TriggerSkill *>(skill);
                 if (tr != NULL) {
-                    thread->addTriggerSkill(tr);
                     if (tr->getTriggerEvents().contains(GameStart) && !tr->triggerable(GameStart, this, player, void_data).isEmpty())
                         game_start << tr;
                 }
@@ -2523,6 +2523,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         setPlayerProperty(player, "general1_showed", false);
     }
     if (!general2_name.isEmpty()) {
+        used_general << general2_name;
         if (duanchang.contains("deputy"))
             duanchang.removeAll("deputy");
 
@@ -2534,12 +2535,10 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         arg << false;
         doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 
-
         foreach (const Skill *skill, Sanguosha->getGeneral(general2_name)->getSkillList(true, false)) {
             if (skill->inherits("TriggerSkill")) {
                 const TriggerSkill *tr = qobject_cast<const TriggerSkill *>(skill);
                 if (tr != NULL) {
-                    thread->addTriggerSkill(tr);
                     if (tr->getTriggerEvents().contains(GameStart) && !tr->triggerable(GameStart, this, player, void_data).isEmpty())
                         game_start << tr;
                 }
@@ -2566,6 +2565,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
     setPlayerProperty(player, "Duanchang", duanchang.join(","));
 
     revivePlayer(player);
+
     player->setHp(1);
     if (resetHp) {
         if (general1_name.isEmpty() || general2_name.isEmpty())
@@ -2575,9 +2575,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         broadcastProperty(player, "maxhp");
         player->setHp(player->getMaxHp());
     }
-
     broadcastProperty(player, "hp");
-
     setPlayerFlag(player, "Global_DFDebut");
 
     setTag(player->objectName(), names);

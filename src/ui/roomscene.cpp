@@ -4014,7 +4014,7 @@ void RoomScene::setEmotion(const QString &who, const QString &emotion, bool perm
 void RoomScene::showSkillInvocation(const QString &who, const QString &skill_name)
 {
     const ClientPlayer *player = ClientInstance->findChild<const ClientPlayer *>(who);
-    if (!player->ownSkill(skill_name) && !player->hasEquipSkill(skill_name)) return;
+    if (!player->hasSkill(skill_name) && !player->hasEquipSkill(skill_name)) return;
     const Skill *skill = Sanguosha->getSkill(skill_name);
     if (skill && (skill->inherits("SPConvertSkill") || !skill->isVisible())) return;
     QString type = "#InvokeSkill";
@@ -4025,27 +4025,25 @@ void RoomScene::showSkillInvocation(const QString &who, const QString &skill_nam
 
 void RoomScene::removeLightBox()
 {
-	LightboxAnimation *lightbox = qobject_cast<LightboxAnimation *>(sender());
-	if (lightbox) {
-		removeItem(lightbox);
-		lightbox->deleteLater();
-	} else {
-		PixmapAnimation *pma = qobject_cast<PixmapAnimation *>(sender());
-		if (pma) {
-			removeItem(pma->parentItem());
-		}
-		else {
-			QPropertyAnimation *animation = qobject_cast<QPropertyAnimation *>(sender());
-			QGraphicsTextItem *line = qobject_cast<QGraphicsTextItem *>(animation->targetObject());
-			if (line) {
-				removeItem(line->parentItem());
-			}
-			else {
-				QSanSelectableItem *line = qobject_cast<QSanSelectableItem *>(animation->targetObject());
-				removeItem(line->parentItem());
-			}
-		}
-	}
+    LightboxAnimation *lightbox = qobject_cast<LightboxAnimation *>(sender());
+    if (lightbox) {
+        removeItem(lightbox);
+        lightbox->deleteLater();
+    } else {
+        PixmapAnimation *pma = qobject_cast<PixmapAnimation *>(sender());
+        if (pma) {
+            removeItem(pma->parentItem());
+        } else {
+            QPropertyAnimation *animation = qobject_cast<QPropertyAnimation *>(sender());
+            QGraphicsTextItem *line = qobject_cast<QGraphicsTextItem *>(animation->targetObject());
+            if (line) {
+                removeItem(line->parentItem());
+            } else {
+                QSanSelectableItem *line = qobject_cast<QSanSelectableItem *>(animation->targetObject());
+                removeItem(line->parentItem());
+            }
+        }
+    }
 }
 
 QGraphicsObject *RoomScene::getAnimationObject(const QString &name) const
@@ -4158,11 +4156,11 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args)
         }
     }
     else if (word.startsWith("skill=")) {
-		QStringList l = word.mid(6).split(":");
-		LightboxAnimation *animation = new LightboxAnimation(l.first(), l.last(), rect);
-		animation->setZValue(20001.0);
-		addItem(animation);
-		connect(animation, &LightboxAnimation::finished, this, &RoomScene::removeLightBox);
+        QStringList l = word.mid(6).split(":");
+        LightboxAnimation *animation = new LightboxAnimation(l.first(), l.last(), rect);
+        animation->setZValue(20001.0);
+        addItem(animation);
+        connect(animation, &LightboxAnimation::finished, this, &RoomScene::removeLightBox);
     }
     else {
         QFont font = Config.BigFont;

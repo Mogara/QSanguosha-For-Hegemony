@@ -196,6 +196,20 @@ QStringList Player::disableShow(bool head) const
     return r;
 }
 
+bool Player::canShowGeneral(const QString &flags) const
+{
+    bool head = true, deputy = true;
+    foreach (const QString &dis_str, disable_show) {
+        QStringList dis_list = dis_str.split(',');
+        if (dis_list.contains("h")) head = false;
+        if (dis_list.contains("d")) deputy = false;
+    }
+    if (flags.isEmpty()) return head || deputy || hasShownOneGeneral();
+    if (flags == "h") return head || hasShownGeneral1();
+    if (flags == "d") return deputy || hasShownGeneral2();
+    if (flags == "hd") return (deputy || hasShownGeneral2()) && (head || hasShownGeneral1());
+    return false;
+}
 
 bool Player::isAdjacentTo(const Player *another) const
 {
@@ -484,6 +498,27 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const
         return false;
 
     if (skill_name == "zhiheng" && hasTreasure("Luminouspearl")) return true;
+
+    if (skill_name == "yingzi" || skill_name == "yingziextra") {
+        const Player *sunquan = this->getLord();
+        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this) && sunquan->getPile("flame_map").length() >= 1) return true;
+    }
+
+    if (skill_name == "haoshi") {
+        const Player *sunquan = this->getLord();
+        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this) && sunquan->getPile("flame_map").length() >= 2) return true;
+    }
+
+    if (skill_name == "gongxin") {
+        const Player *sunquan = this->getLord();
+        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this) && sunquan->getPile("flame_map").length() >= 3) return true;
+    }
+
+    if (skill_name == "qianxun") {
+        const Player *sunquan = this->getLord();
+        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this) && sunquan->getPile("flame_map").length() >= 4) return true;
+    }
+
     return head_skills.value(skill_name, false)
         || deputy_skills.value(skill_name, false)
         || head_acquired_skills.contains(skill_name)
@@ -1541,6 +1576,10 @@ bool Player::hasShownSkill(const Skill *skill) const
 {
     if (skill == NULL)
         return false;
+    if (skill->objectName() == "qianxun") {
+        const Player *sunquan = this->getLord();
+        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this) && sunquan->getPile("flame_map").length() >= 4) return true;
+    }
     QStringList InvalidSkill = property("invalid_skill_shown").toString().split("+");
     if (InvalidSkill.contains(skill->objectName())) return false;
 

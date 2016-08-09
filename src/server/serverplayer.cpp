@@ -1373,7 +1373,7 @@ bool ServerPlayer::CompareByActionOrder(ServerPlayer *a, ServerPlayer *b)
     return room->getFront(a, b) == a;
 }
 
-void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendLog)
+void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendLog, bool ignore_rule)
 {
     QStringList names = room->getTag(objectName()).toStringList();
     if (names.isEmpty()) return;
@@ -1382,6 +1382,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
     room->tryPause();
 
     if (head_general) {
+        if (!ignore_rule && !canShowGeneral("h")) return;
         if (getGeneralName() != "anjiang") return;
 
         setSkillsPreshowed("h");
@@ -1452,8 +1453,8 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
             }
         }
     } else {
+        if (!ignore_rule && !canShowGeneral("d")) return;
         if (getGeneral2Name() != "anjiang") return;
-
         setSkillsPreshowed("d");
         notifyPreshow();
         room->setPlayerProperty(this, "general2_showed", true);

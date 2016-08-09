@@ -147,6 +147,7 @@ public:
     void setDisableShow(const char *flags, const char *reason);
     void removeDisableShow(const char *reason);
     QStringList disableShow(bool head) const;
+    bool canShowGeneral(const QString &flags = QString()) const;
 
     QString getKingdom() const;
     void setKingdom(const char *kingdom);
@@ -487,7 +488,7 @@ public:
     // static function
     static bool CompareByActionOrder(ServerPlayer *a, ServerPlayer *b);
 
-    void showGeneral(bool head_general = true, bool trigger_event = true, bool sendLog = true);
+    void showGeneral(bool head_general = true, bool trigger_event = true, bool sendLog = true, bool ignore_rule = true);
     void hideGeneral(bool head_general = true);
     void removeGeneral(bool head_general = true);
     void sendSkillsToOthers(bool head_skill = true);

@@ -450,27 +450,50 @@ public:
         if (!use.card || use.card->getTypeId() != Card::TypeTrick || (!use.card->isKindOf("Snatch") && !use.card->isKindOf("Indulgence")))
             return QStringList();
         if (!use.to.contains(player)) return QStringList();
-        return QStringList(objectName());
+        return QStringList("qianxun-cancel");
+    }
+};
+
+class QianxunCancel : public TriggerSkill
+{
+public:
+    QianxunCancel() : TriggerSkill("qianxun-cancel")
+    {
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        bool invoke = player->hasShownSkill(this) ? true : player->askForSkillInvoke(this);
+        bool invoke = player->hasShownSkill("qianxun") ? true : player->askForSkillInvoke("qianxun");
         if (invoke) {
-            room->broadcastSkillInvoke(objectName(), player);
+            if (player->ownSkill("qianxun")) {
+                player->showGeneral(player->inHeadSkills("qianxun"));
+                room->broadcastSkillInvoke("qianxun", player);
+            } else {
+                if (!player->hasShownOneGeneral()) {
+                    QStringList q;
+                    if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
+                    if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
+                    SPlayerDataMap map;
+                    map.insert(player, q);
+                    QString name;
+                    if (q.length() > 1) {
+                        name = room->askForTriggerOrder(player, "GameRule:ShowGeneral", map, false);
+                        name.remove(player->objectName() + ":");
+                    } else
+                        name = q.first();
+                    player->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
+                }
+            }
             return true;
         }
-
         return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        room->sendCompulsoryTriggerLog(player, objectName());
+        room->sendCompulsoryTriggerLog(player, "qianxun");
         CardUseStruct use = data.value<CardUseStruct>();
-
         room->cancelTarget(use, player); // Room::cancelTarget(use, player);
-
         data = QVariant::fromValue(use);
         return false;
     }
@@ -1193,9 +1216,8 @@ void HaoshiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
 class HaoshiViewAsSkill : public ViewAsSkill
 {
 public:
-    HaoshiViewAsSkill() : ViewAsSkill("haoshi")
+    HaoshiViewAsSkill() : ViewAsSkill("haoshivs")
     {
-        response_pattern = "@@haoshi!";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
@@ -1205,6 +1227,11 @@ public:
 
         int length = Self->getHandcardNum() / 2;
         return selected.length() < length;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        return pattern.startsWith("@@haoshivs");
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
@@ -1218,12 +1245,12 @@ public:
     }
 };
 
-class Haoshi : public DrawCardsSkill
+class Haoshi : public TriggerSkill
 {
 public:
-    Haoshi() : DrawCardsSkill("haoshi")
+    Haoshi() : TriggerSkill("haoshi")
     {
-        view_as_skill = new HaoshiViewAsSkill;
+        events << DrawNCards;
     }
 
     virtual bool canPreshow() const
@@ -1231,10 +1258,42 @@ public:
         return true;
     }
 
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *lusu, QVariant &, ServerPlayer * &) const
+    {
+        if (TriggerSkill::triggerable(lusu)) return QStringList("haoshi-draw");
+        return QStringList();
+    }
+};
+
+class HaoshiDraw : public DrawCardsSkill
+{
+public:
+    HaoshiDraw() : DrawCardsSkill("haoshi-draw")
+    {
+    }
+
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke(this)) {
-            room->broadcastSkillInvoke(objectName(), player);
+        if (player->askForSkillInvoke("haoshi")) {
+            if (player->ownSkill("haoshi")) {
+                player->showGeneral(player->inHeadSkills("haoshi"));
+                room->broadcastSkillInvoke("haoshi", player);
+            } else {
+                if (!player->hasShownOneGeneral()) {
+                    QStringList q;
+                    if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
+                    if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
+                    SPlayerDataMap map;
+                    map.insert(player, q);
+                    QString name;
+                    if (q.length() > 1) {
+                        name = room->askForTriggerOrder(player, "GameRule:ShowGeneral", map, false);
+                        name.remove(player->objectName() + ":");
+                    } else
+                        name = q.first();
+                    player->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
+                }
+            }
             return true;
         }
         return false;
@@ -1250,7 +1309,7 @@ public:
 class HaoshiGive : public TriggerSkill
 {
 public:
-    HaoshiGive() : TriggerSkill("#haoshi-give")
+    HaoshiGive() : TriggerSkill("haoshi-give")
     {
         events << AfterDrawNCards;
         frequency = Compulsory;
@@ -1258,28 +1317,27 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *lusu, QVariant &, ServerPlayer * &) const
     {
-        if (!lusu || !lusu->isAlive() || !lusu->hasShownSkill("haoshi")) return QStringList();
+        if (!lusu || !lusu->isAlive() || !lusu->hasSkill("haoshi")) return QStringList();
         if (lusu->hasFlag("haoshi")) {
-            lusu->setFlags("-haoshi");      //may cause bug here
-
-            if (lusu->getHandcardNum() <= 5)
+            if (lusu->getHandcardNum() <= 5) {
+                lusu->setFlags("-haoshi");
                 return QStringList();
-
+            }
             return QStringList(objectName());
         }
-
         return QStringList();
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *lusu, QVariant &, ServerPlayer *) const
     {
+        lusu->setFlags("-haoshi");
         QList<ServerPlayer *> other_players = room->getOtherPlayers(lusu);
         int least = 1000;
         foreach(ServerPlayer *player, other_players)
             least = qMin(player->getHandcardNum(), least);
         room->setPlayerMark(lusu, "haoshi", least);
 
-        if (!room->askForUseCard(lusu, "@@haoshi!", "@haoshi", -1, Card::MethodNone)) {
+        if (!room->askForUseCard(lusu, "@@haoshivs!", "@haoshi", -1, Card::MethodNone)) {
             // force lusu to give his half cards
             ServerPlayer *beggar = NULL;
             foreach (ServerPlayer *player, other_players) {
@@ -1812,9 +1870,7 @@ void StandardPackage::addWuGenerals()
 
     General *lusu = new General(this, "lusu", "wu", 3); // WU 014
     lusu->addSkill(new Haoshi);
-    lusu->addSkill(new HaoshiGive);
     lusu->addSkill(new Dimeng);
-    insertRelatedSkills("haoshi", "#haoshi-give");
 
     General *erzhang = new General(this, "erzhang", "wu", 3); // WU 015
     erzhang->addSkill(new Zhijian);
@@ -1825,6 +1881,9 @@ void StandardPackage::addWuGenerals()
     General *dingfeng = new General(this, "dingfeng", "wu"); // WU 016
     dingfeng->addSkill(new Duanbing);
     dingfeng->addSkill(new Fenxun);
+
+    skills << new Xiaojidraw;
+    skills << new QianxunCancel << new HaoshiDraw << new HaoshiGive << new HaoshiViewAsSkill;
 
     addMetaObject<ZhihengCard>();
     addMetaObject<KurouCard>();

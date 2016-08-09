@@ -123,6 +123,7 @@ public:
     void setDisableShow(const QString &flags, const QString &reason);
     void removeDisableShow(const QString &reason);
     QStringList disableShow(bool head) const;
+    bool canShowGeneral(const QString &flags = QString()) const;
 
     QString getKingdom() const;
     void setKingdom(const QString &kingdom);
