@@ -1578,7 +1578,9 @@ bool Player::hasShownSkill(const Skill *skill) const
         return false;
     if (skill->objectName() == "qianxun") {
         const Player *sunquan = this->getLord();
-        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this) && sunquan->getPile("flame_map").length() >= 4) return true;
+        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this)
+                && sunquan->getPile("flame_map").length() >= 4 && hasShownOneGeneral())
+            return true;
     }
     QStringList InvalidSkill = property("invalid_skill_shown").toString().split("+");
     if (InvalidSkill.contains(skill->objectName())) return false;
