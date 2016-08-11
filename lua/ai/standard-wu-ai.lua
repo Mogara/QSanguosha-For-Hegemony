@@ -1524,7 +1524,7 @@ sgs.ai_skill_invoke.haoshi = function(self, data)
 	self.haoshi_target = nil
 	local extra = 0
 	local draw_skills = { ["yingzi"] = 1, ["yingzi_zhouyu"] = 1, ["yingzi_sunce"] = 1, ["luoyi"] = -1 }
-	for skill_name, n in ipairs(draw_skills) do
+	for skill_name, n in pairs(draw_skills) do
 		if self.player:hasSkill(skill_name) then
 			if skill_name == "yingzi" then skill_name = "yingziextra" end
 			local skill = sgs.Sanguosha:getSkill(skill_name)

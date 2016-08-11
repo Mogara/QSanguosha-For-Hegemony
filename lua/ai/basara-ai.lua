@@ -164,7 +164,7 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 	end
 
 	if self.player:hasSkill("xichou") and self.player:getMark("xichou") == 0 then
-		if self:isWeak() or (shown > 0 and eAtt > 0 and e - f < 3) then
+		if self:isWeak() or (shown > 0 and eAtt > 0 and e - f < 3) or (self.player:hasSkill("huashen") and not self.player:hasShownSkill("huashen")) then
 			if self.player:inHeadSkills("xichou") and canShowHead then
 				return "GameRule_AskForGeneralShowHead"
 			elseif canShowDeputy then
@@ -290,10 +290,10 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 end
 
 sgs.ai_skill_choice["GameRule:TurnStart"] = function(self, choices, data)
+	local canShowHead = string.find(choices, "GameRule_AskForGeneralShowHead")
+	local canShowDeputy = string.find(choices, "GameRule_AskForGeneralShowDeputy")
 	local choice = sgs.ai_skill_choice["GameRule:TriggerOrder"](self, choices, data)
 	if choice == "cancel" then
-		local canShowHead = string.find(choices, "GameRule_AskForGeneralShowHead")
-		local canShowDeputy = string.find(choices, "GameRule_AskForGeneralShowDeputy")
 		local showRate = math.random()
 
 		if canShowHead and showRate > 0.8 then

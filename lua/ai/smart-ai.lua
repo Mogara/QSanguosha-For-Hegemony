@@ -184,6 +184,25 @@ function setInitialTables()
 	sgs.Friend_MaleWounded = 5
 	sgs.Friend_FemaleWounded = 6
 
+	sgs.general_value = {
+						["cacao"] = 3, ["simayi"] = 4, ["xiahoudun"] = 2, ["zhangliao"] = 2.5, ["xuchu"] = 2, ["guojia"] = 5, ["zhenji"] = 4, ["xiahouyuan"] = 2.5, ["zhanghe"] = 3, ["xuhuang"] = 3, ["caoren"] = 2.5, ["dianwei"] = 3.5,
+						["xunyu"] = 3.5, ["caopi"] = 4.5, ["yuejin"] = 2.5, ["dengai"] = 4, ["caohong"] = 2, ["lidian"] = 4, ["zangba"] = 2, ["xunyou"] = 3.5, ["bianhuanghou"] = 3,
+						["yuji"] = 4.5, ["hetaihou"] = 2.5, ["zhangren"] = 3, ["zhangjiao"] = 3, ["dongzhuo"] = 3, ["liguo"] = 3.5, ["zuoci"] = 4, ["yuanshao"] = 4, ["yanliangwenchou"] = 3.5, ["jiaxu"] = 4, ["lvbu"] = 3.5, ["huatuo"] = 3.5,
+						["diaochan"] = 3.5, ["kongrong"] = 3, ["caiwenji"] = 3, ["mateng"] = 4.5, ["jiling"] = 1.5, ["pangde"] = 2, ["panfeng"] = 1.5, ["zoushi"] = 1.5, ["tianfeng"] = 2.5, ["lord_zhangjiao"] = 5.5,
+						["jiangwei"] = 3, ["jiangwanfeiyi"] = 2.5, ["madai"] = 2.5, ["mifuren"] = 2, ["masu"] = 4.5, ["shamoke"] = 3.5, ["zhangfei"] = 3.5, ["guanyu"] = 3.5, ["liubei"] = 2, ["zhaoyun"] = 2.5, ["machao"] = 2.5,
+						["zhugeliang"] = 3.5, ["huangzhong"] = 2.5, ["pangtong"] = 3.8, ["wolong"] = 3, ["huangyueying"] = 4, ["weiyan"] = 2, ["liushan"] = 3, ["ganfuren"] = 1.5, ["menghuo"] = 2.5, ["zhurong"] = 3, ["lord_liubei"] = 5.5,
+						["xusheng"] = 2.5, ["jiangqin"] = 2.5, ["chenwudongxi"] = 1, ["sunce"] = 2.5, ["lingtong"] = 3.5, ["lvfan"] = 4.5, ["sunquan"] = 4, ["luxun"] = 3, ["sunshangxiang"] = 4.5, ["sunjian"] = 3, ["xiaoqiao"] = 3,
+						["taishici"] = 2.5, ["ganning"] = 2.5, ["daqiao"] = 3.5, ["huanggai"] = 3, ["lvmeng"] = 3, ["zhouyu"] = 3, ["lusu"] = 4, ["dingfeng"] = 2.5, ["zhoutai"] = 3, ["erzhang"] = 3, ["lord_sunquan"] = 5.5,
+	}
+	sgs.general_pair_value = {
+						["caocao+lidian"] = 9, ["yuejin+caoren"] = 6, ["zhengji+guojia"] = 12, ["zhengji+simayi"] = 10, ["guojia+dengai"] = 10, ["guojia+xiahoudun"] = 9, ["zhengji+zhanghe"] = 8, ["lidian+zhangliao"] = 5.5,
+						["zhanghe+lidian"] = 6, ["zhanghe+xuchu"] = 4, ["lidian+xuchu"] = 5.5,	--wei
+						["liguo+zuoci"] = 9, ["yuanshao+yanliangwenchou"] = 8, ["jiaxu+huatuo"] = 8.5, ["huotuo+kongrong"] = 7, ["caiwenji+kongrong"] = 7, ["yuanshao+mateng"] = 9, ["yuanshao+tianfeng"] = 8.5,	--qun
+						["zhangfei+huangyueying"] = 8.5, ["huangyueying+zhugeliang"] = 8.5, ["huangyueying+wolong"] = 8, ["liushan+huangyueying"] = 5.5,	--shu
+						["sunshangxiang+xusheng"] = 8, ["sunshangxiang+luxun"] = 10, ["sunshangxiang+sunquan"] = 8.5, ["sunshangxiang+lvfan"] = 10, ["lingtong+lvfan"] = 8.5, ["sunshangxiang+lingtong"] = 9,
+						["sunshangxiang+daqiao"] = 9, ["daqiao+erzhang"] = 8, ["sunjian+zhoutai"] = 7, ["taishici+sunce"] = 7, ["sunshangxiang+chenwudongxi"] = 6.5,	 --wu
+	}
+
 	for _, p in sgs.qlist(global_room:getAlivePlayers()) do
 		if p:getState() == "robot" then table.insert(sgs.robot, p) end
 		local kingdom = p:getKingdom()

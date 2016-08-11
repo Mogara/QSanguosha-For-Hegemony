@@ -229,12 +229,105 @@ end
 
 --左慈
 sgs.ai_skill_invoke.huashen = function(self, data)
-	return true
+	local huashens = self.player:getTag("Huashens"):toList()
+	local head = self.player:inHeadSkills("huashen")
+	if huashens:length() < 2 then return true end
+	local names = {}
+	for _, q in sgs.qlist(huashens) do
+		table.insert(names, q:toString())
+	end
+	local current_value = 0
+	for name, value in pairs(sgs.general_pair_value) do
+		if names[1] .. "+" .. names[2] == name or names[2] .. "+" .. names[1] == name then
+			current_value = value
+			break
+		end
+	end
+	if current_value == 0 then
+		local oringin_g1 = 3
+		local oringin_g2 = 3
+		for name, value in pairs(sgs.general_value) do
+			if names[1] == name then oringin_g1 = value end
+			if names[2] == name then oringin_g2 = value end
+		end
+		current_value = oringin_g1 + oringin_g2
+	end
+
+	for _, skill in sgs.qlist(sgs.Sanguosha:getGeneral(names[1]):getVisibleSkillList(true, head)) do
+		if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and self.player:getMark(skill:getLimitMark()) == 0 then
+            current_value = current_value - 1
+		end
+	end
+	for _, skill in sgs.qlist(sgs.Sanguosha:getGeneral(names[2]):getVisibleSkillList(true, head)) do
+		if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and self.player:getMark(skill:getLimitMark()) == 0 then
+            current_value = current_value - 1
+		end
+	end
+	return current_value <= 6
 end
 
 sgs.ai_skill_invoke["xinsheng"] = function(self, data)
 	if self.player:ownSkill("xichou") and not self.player:hasShownSkill("huashen") and self.player:getMark("xichou") == 0 then return false end
 	return true
+end
+
+sgs.ai_skill_choice.huashen = function(self, choice, data)
+	local head = self.player:inHeadSkills("huashen") or self.player:inHeadSkills("xinsheng")
+	local names = choice:split("+")
+	local max_point = 0
+	local pair = ""
+
+	for _, name1 in ipairs(names) do
+		local g1 = sgs.Sanguosha:getGeneral(name1)
+		if not g1 then continue end
+		local ajust = 0
+		if name1 == "guanyu" or name1 == "lvbu" then ajust = ajust - 1 end
+		if not g1 then continue end
+		local g1_v = 3
+		for _, skill in sgs.qlist(g1:getVisibleSkillList(true, head)) do
+			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and self.player:getMark(skill:getLimitMark()) == 0 and self.player:hasSkill(skill:objectName()) then
+				ajust = ajust - 1
+			end
+		end
+
+		for name, value in pairs(sgs.general_value) do
+			if name1 == name then g1_v = value break end
+		end
+
+		for _, name2 in ipairs(names) do
+			local g2 = sgs.Sanguosha:getGeneral(name2)
+			if not g2 then continue end
+			if name1 ~= name2 and g1:getKingdom() == g2:getKingdom() then
+				local g2_v = 3
+				for name, value in pairs(sgs.general_value) do
+					if name2 == name then g2_v = value break end
+				end
+				if name2 == "guanyu" or name2 == "lvbu" then ajust = ajust - 1 end
+				for _, skill in sgs.qlist(g2:getVisibleSkillList(true, head)) do
+					if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and self.player:getMark(skill:getLimitMark()) == 0 and self.player:hasSkill(skill:objectName()) then
+						ajust = ajust - 1
+					end
+				end
+
+				local points = g1_v + g2_v
+				for pair_name, value in pairs(sgs.general_pair_value) do
+					if name1 .. "+" .. name2 == pair_name or name2 .. "+" .. name1 == pair_name then
+						points = value
+						break
+					end
+				end
+				max_point = math.max(max_point, points - ajust)
+				self.player:speak(name1 .. "和" .. name2 .. " 的得分是：" .. points - ajust)
+				if max_point == points then pair = name1 .. "+" .. name2 end
+			end
+		end
+	end
+	self.player:speak("结果是：" .. pair)
+	return pair
+end
+
+sgs.ai_skill_choice.xinsheng = function(self, choice, data)
+	return sgs.ai_skill_choice["huashen"](self, choice, data)
 end
 
 --沙摩柯
@@ -247,9 +340,10 @@ end
 sgs.ai_skill_invoke.zhiman = function(self, data)
 	local damage = self.player:getTag("zhiman_data"):toDamage()
 	local target = damage.to
-	if self:isFriend(damage.to) then return true end
-	if target:hasShownSkills(sgs.masochism_skill) and not target:getEquips():isEmpty() and self.player:canGetCard(target, "e") then return true end
-	if self:getDangerousCard(target) and self.player:canGetCard(target, "e") then return true end
+	local promo = self:findPlayerToDiscard("ej", false, sgs.Card_MethodGet, nil, true)
+	if self:isFriend(damage.to) and table.contains(promo, target) or not self:needToLoseHp(target, self.player) then return true end
+	if table.contains(promo, target) then return true end
+	if target:hasShownSkills(sgs.masochism_skill) and self.player:canGetCard(target, "e") then return true end
 	return false
 end
 
@@ -264,48 +358,42 @@ sanyao_skill.getTurnUseCard = function(self,room,player,data)
 end
 
 sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
-	local targets = {}
+	local targets = sgs.SPlayerList()
 	local maxhp = 0
     for _, p in sgs.qlist(self.room:getAlivePlayers()) do
 		if maxhp < p:getHp() then p:getHp() end
 	end
     for _, p in sgs.qlist(self.room:getAlivePlayers()) do
 		self.player:speak("目标是" .. p:objectName())
-		if p:getHp() == maxhp then table.insert(targets, p) end
+		if p:getHp() == maxhp then targets:append(p) end
 	end
-	if self:isWeak() or not self.player:hasSkills(sgs.masochism_skill) then
-		table.removeOne(targets, self.player)
+	if self:isWeak() or not not self:needToLoseHp() then
+		targets:removeOne(self.player)
 	end
-	local target
-	for _, p in ipairs(targets) do
-		if self:isFriend(p) and (self.player:canGetCard(p, "j") or (p:hasShownSkills(sgs.lose_equip_skill) and self.player:canGetCard(p, "e"))) then
-			target = p
-			break
-		end
-	end
+	local target = self:findPlayerToDiscard("ej", false, sgs.Card_MethodGet, targets)
 	if not target then
-		for _, p in ipairs(targets) do
+		for _, p in sgs.qlist(targets) do
 			if self:isEnemy(p) and self:isWeak(p) then target = p break end
 		end
 	end
 	if not target then
-		for _, p in ipairs(targets) do
+		for _, p in sgs.qlist(targets) do
 			if self:getDangerousCard(p) and self.player:canGetCard(p, "e") then target = p break end
 		end
 	end
 	if not target then
-		for _, p in ipairs(targets) do
+		for _, p in sgs.qlist(targets) do
 			if self:isEnemy(p) and not p:hasShownSkills(sgs.masochism_skill) and self:getOverflow() > 0 then target = p break end
 		end
 	end
 
 	if self:needToThrowArmor() then
 		use.card = sgs.Card_Parse("@SanyaoCard=" .. self.player:getArmor():getId() .. "&sanyao")
-		if #targets == 0 then use.card = nil return end
+		if targets:length() == 0 then use.card = nil return end
 		if use.to then
 			if target then
 				use.to:append(target)
-			else use.to:append(targets[1])
+			else use.to:append(targets:first())
 			end
 			return
 		end
@@ -1088,3 +1176,60 @@ end
 
 sgs.ai_use_priority.Luminouspearl = 7
 sgs.ai_keep_value.Luminouspearl = 4
+
+--变更武将相关
+
+function SmartAI:getGeneralValue(player, position)
+	local general
+	if position then
+		general = player:getGeneral()
+	else
+		general = player:getGeneral2()
+	end
+	if general:objectName() == "anjiang" then
+		if self.player:objectName() ~= player:objectName() then return 3 end
+	else
+		if position then
+			general = player:getActualGeneral1()
+		else
+			general = player:getActualGeneral2()
+		end
+	end
+	local ajust = 0
+	for _, skill in sgs.qlist(general:getVisibleSkillList(true, position)) do
+		if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
+            ajust = ajust - 1
+		end
+	end
+	for name, value in pairs(sgs.general_value) do
+		if general:objectName() == name then
+			return value + ajust
+		end
+	end
+	return 3
+end
+
+function SmartAI:needToTransform()
+	local g1 = player:getActualGeneral1()
+	local g2 = player:getActualGeneral2()
+	local current_value = 0
+	for name, value in pairs(sgs.general_pair_value) do
+		if g1:objectName() .. "+" .. g2:objectName() == name or g2:objectName() .. "+" .. g1:objectName() == name then
+			current_value = value
+			break
+		end
+	end
+	local oringin_g1 = 3
+	local oringin_g2 = 3
+	for name, value in pairs(sgs.general_value) do
+		if g1:objectName() == name then oringin_g1 = value end
+		if g2:objectName() == name then oringin_g2 = value end
+	end
+	if current_value == 0 then current_value = oringin_g1 + oringin_g2 end
+	local g2_v = current_value - (oringin_g2 - self:getGeneralValue(self.player, false)) - oringin_g1
+	return g2_v <= 3
+end
+
+sgs.ai_skill_invoke.transform = function(self, data)
+	return self:needToTransform()
+end

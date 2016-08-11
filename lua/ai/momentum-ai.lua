@@ -525,10 +525,10 @@ local getHongfaCard = function(pile)
 	return nil
 end
 
-local hongfa_slash_skill = {}
-hongfa_slash_skill.name = "hongfa_slash"
-table.insert(sgs.ai_skills, hongfa_slash_skill)
-hongfa_slash_skill.getTurnUseCard = function(self, inclusive)
+local hongfaslash_skill = {}
+hongfaslash_skill.name = "hongfaslash"
+table.insert(sgs.ai_skills, hongfaslash_skill)
+hongfaslash_skill.getTurnUseCard = function(self, inclusive)
 	local zj = self.room:getLord("qun")
 	if (not zj or zj:getPile("heavenly_army"):isEmpty() or not zj:isFriendWith(self.player)) then return end
 	local ints = sgs.QList2Table(zj:getPile("heavenly_army"))
@@ -546,7 +546,7 @@ hongfa_slash_skill.getTurnUseCard = function(self, inclusive)
 	end
 end
 
-sgs.ai_cardsview.hongfa_slash = function(self, class_name, player)
+sgs.ai_cardsview.hongfaslash = function(self, class_name, player)
 	if class_name ~= "Slash" then return end
 	local zj = player:getLord()
 	if (not zj or zj:getPile("heavenly_army"):isEmpty() or not zj:isFriendWith(player)) then return end
