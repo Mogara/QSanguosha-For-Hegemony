@@ -1503,6 +1503,7 @@ void LianziCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) 
     }
 
     QList<int> card_ids = room->getNCards(num);
+    if (num == 0) return;
 
     LogMessage log;
     log.type = "$ViewDrawPile";
@@ -1775,6 +1776,7 @@ public:
     {
         events << TargetConfirming << DrawNCards;
         view_as_skill = new FlameMapVS;
+        attached_lord_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
@@ -1845,6 +1847,11 @@ public:
         return pattern.startsWith("@@jiahe");
     }
 
+    virtual bool isEnabledAtPlay(const Player *) const
+    {
+        return false;
+    }
+
     virtual const Card *viewAs(const Card *originalCard) const
     {
         FlameMapCard *slash = new FlameMapCard;
@@ -1911,6 +1918,12 @@ public:
                     room->detachSkillFromPlayer(p, "flamemap");
                     room->detachSkillFromPlayer(p, "gongxin");
                 }
+            }
+        } else if (triggerEvent == DFDebut) {
+            ServerPlayer *lord = room->getLord(player->getKingdom());
+            if (lord && lord->isAlive() && lord->hasLordSkill(objectName()) && !player->getAcquiredSkills().contains("flamemap")) {
+                room->attachSkillToPlayer(player, "flamemap");
+                if (lord->getPile("flame_map").length() >= 3) room->attachSkillToPlayer(player, "gongxin");
             }
         }
         return QStringList();
@@ -1987,6 +2000,7 @@ TransformationPackage::TransformationPackage()
     sunquan->addSkill(new Jiahe);
     sunquan->addSkill(new JiaheClear);
     sunquan->addRelateSkill("flamemap");
+    sunquan->addRelateSkill("gongxin");
     insertRelatedSkills("jubao", "#jubao-treasure");
 
     addMetaObject<XuanlueCard>();

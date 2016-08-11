@@ -6463,10 +6463,19 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, c
     }
 
     AI *ai = player->getAI();
-    if (ai != NULL && single_result && !skill_name.isEmpty()) {
-        QString general = ai->askForChoice(skill_name, generals.join("+"), data);
+    if (ai != NULL && !skill_name.isEmpty()) {
+        QStringList general = ai->askForChoice(skill_name, generals.join("+"), data).split("+");
         thread->delay();
-        return general;
+        bool check = true;
+        if (!single_result && general.length() != 2) check = false;
+        if (single_result && general.length() !=1) check = false;
+        foreach (QString name, general) {
+            if (!generals.contains(name)) {
+                check = false;
+                break;
+            }
+        }
+        if (check) return general;
     } else if (player->isOnline()) {
         JsonArray options;
         options << JsonUtils::toJsonArray(generals);

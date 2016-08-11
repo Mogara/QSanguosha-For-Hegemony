@@ -1313,7 +1313,7 @@ public:
 class HongfaSlash : public OneCardViewAsSkill
 {
 public:
-    HongfaSlash() : OneCardViewAsSkill("hongfa_slash")
+    HongfaSlash() : OneCardViewAsSkill("hongfaslash")
     {
         attached_lord_skill = true;
         expand_pile = "heavenly_army,%heavenly_army";
@@ -1359,7 +1359,7 @@ public:
     {
         events << ConfirmPlayerNum // only this skill is triggered at this event, so we could ignore the Compulsory
             << EventPhaseStart // get Tianbing
-            << PreHpLost << GeneralShown << GeneralHidden << GeneralRemoved << Death; // HongfaSlash
+            << PreHpLost << GeneralShown << Death << DFDebut; // HongfaSlash
         frequency = Compulsory;
     }
 
@@ -1388,29 +1388,26 @@ public:
             if (player->getPile("heavenly_army").isEmpty())
                 return QStringList();
             return QStringList(objectName());
-        } else {
-            if (player == NULL)
-                return QStringList();
-            if (triggerEvent == GeneralShown && player->hasShownGeneral1()) {
-                if (player && player->isAlive() && player->hasLordSkill(objectName())) {
-                    foreach(ServerPlayer *p, room->getAlivePlayers())
-                        if (p->willBeFriendWith(player))
-                            room->attachSkillToPlayer(p, "hongfa_slash");
-                } else {
-                    ServerPlayer *lord = room->getLord(player->getKingdom());
-                    if (lord && lord->isAlive() && lord->hasLordSkill(objectName()))
-                        room->attachSkillToPlayer(player, "hongfa_slash");
-                }
-            } else if (player && player->isAlive() && player->hasLordSkill(objectName())) {
-                if (triggerEvent == Death) {
-                    DeathStruct death = data.value<DeathStruct>();
-                    if (death.who != player)
-                        return QStringList();
-                }
+        } else if (triggerEvent == GeneralShown && player->hasShownGeneral1()) {
+            if (player && player->isAlive() && player->hasLordSkill(objectName())) {
                 foreach(ServerPlayer *p, room->getAlivePlayers())
-                    room->detachSkillFromPlayer(p, "hongfa_slash");
+                    if (p->willBeFriendWith(player))
+                        room->attachSkillToPlayer(p, "hongfaslash");
+            } else {
+                ServerPlayer *lord = room->getLord(player->getKingdom());
+                if (lord && lord->isAlive() && lord->hasLordSkill(objectName()))
+                    room->attachSkillToPlayer(player, "hongfaslash");
             }
-            return QStringList();
+        } else if (triggerEvent == DFDebut) {
+            ServerPlayer *lord = room->getLord(player->getKingdom());
+            if (lord && lord->isAlive() && lord->hasLordSkill(objectName()) && !player->getAcquiredSkills().contains("hongfaslash"))
+                room->attachSkillToPlayer(player, "hongfaslash");
+        } else if (triggerEvent == Death && player && player->hasLordSkill(objectName())) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return QStringList();
+            foreach(ServerPlayer *p, room->getAlivePlayers())
+                room->detachSkillFromPlayer(p, "hongfaslash");
         }
         return QStringList();
     }
@@ -1481,6 +1478,20 @@ public:
         if (card->isKindOf("Slash"))
             return 1;
         return 2;
+    }
+};
+
+class HongfaClear : public DetachEffectSkill
+{
+public:
+    HongfaClear() : DetachEffectSkill("hongfa")
+    {
+    }
+    void onSkillDetached(Room *room, ServerPlayer *) const
+    {
+        foreach(ServerPlayer *p, room->getAlivePlayers()) {
+            room->detachSkillFromPlayer(p, "hongfaslash");
+        }
     }
 };
 
@@ -1596,6 +1607,8 @@ MomentumPackage::MomentumPackage()
     lord_zhangjiao->addSkill(new Wuxin);
     lord_zhangjiao->addSkill(new Hongfa);
     lord_zhangjiao->addSkill(new Wendao);
+    lord_zhangjiao->addSkill(new HongfaClear);
+    lord_zhangjiao->addRelateSkill("hongfaslash");
 
     skills << new Yongjue << new YongjueClear << new Benghuai << new HongfaSlash << new Yinghun("sunce") << new Yingzi("sunce", false);
     insertRelatedSkills("yongjue", "#yongjue-clear");

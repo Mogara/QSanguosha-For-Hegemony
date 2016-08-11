@@ -51,7 +51,7 @@ public:
     explicit Skill(const QString &name, Frequency frequent = NotFrequent);
     bool isLordSkill() const;
     bool isAttachedLordSkill() const;
-    QString getDescription(bool inToolTip = true) const;
+    QString getDescription(bool inToolTip = true, bool in_game = false) const;
     QString getNotice(int index) const;
     bool isVisible() const;
 

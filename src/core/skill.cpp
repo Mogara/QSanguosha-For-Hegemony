@@ -56,7 +56,7 @@ bool Skill::isAttachedLordSkill() const
     return attached_lord_skill;
 }
 
-QString Skill::getDescription(bool inToolTip) const
+QString Skill::getDescription(bool inToolTip, bool in_game) const
 {
     QString desc;
     if (!canPreshow())
@@ -69,6 +69,9 @@ QString Skill::getDescription(bool inToolTip) const
     }
 
     QString des_src = Sanguosha->translate(":" + skill_name);
+    if (in_game && Sanguosha->getSkill(skill_name) && Sanguosha->getSkill(skill_name)->isAttachedLordSkill()
+            && (!Self->isLord() || !Self->getGeneral()->getRelatedSkillNames().contains(skill_name)))
+        des_src = Sanguosha->translate("&" + skill_name) != "&" + skill_name ? Sanguosha->translate("&" + skill_name) : des_src;
     if (des_src == ":" + skill_name)
         return desc;
 
