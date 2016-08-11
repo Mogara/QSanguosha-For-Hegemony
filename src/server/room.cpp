@@ -6475,7 +6475,7 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, c
                 break;
             }
         }
-        if (check) return general;
+        if (check) return general.join("+");
     } else if (player->isOnline()) {
         JsonArray options;
         options << JsonUtils::toJsonArray(generals);
