@@ -429,6 +429,7 @@ sgs.ai_skill_invoke.yingzi_zhouyu = function(self, data)
 	end
 	if self.player:hasFlag("haoshi") then
 		local invoke = self.player:getTag("haoshi_yingzi_zhouyu"):toBool()
+		self.player:removeTag("haoshi_yingzi_zhouyu")
 		if not invoke then return false end
 		local extra = self.player:getMark("haoshi_num")
 		if self.player:hasShownOneGeneral() and not self.player:hasShownSkill("yingzi_zhouyu") and self.player:getMark("HalfMaxHpLeft") > 0 then
@@ -1523,10 +1524,9 @@ sgs.ai_skill_invoke.haoshi = function(self, data)
 	if not self:willShowForDefence() and not self:willShowForAttack() then return false end
 	self.haoshi_target = nil
 	local extra = 0
-	local draw_skills = { ["yingzi"] = 1, ["yingzi_zhouyu"] = 1, ["yingzi_sunce"] = 1, ["luoyi"] = -1 }
+	local draw_skills = { ["yingziextra"] = 1, ["yingzi_zhouyu"] = 1, ["yingzi_sunce"] = 1, ["luoyi"] = -1 }
 	for skill_name, n in pairs(draw_skills) do
 		if self.player:hasSkill(skill_name) then
-			if skill_name == "yingzi" then skill_name = "yingziextra" end
 			local skill = sgs.Sanguosha:getSkill(skill_name)
 			if skill and skill:getFrequency() == sgs.Skill_Compulsory then
 				extra = extra + n
@@ -1539,7 +1539,7 @@ sgs.ai_skill_invoke.haoshi = function(self, data)
 	if self.player:hasShownOneGeneral() and self.player:ownSkill("haoshi") and not self.player:hasShownSkill("haoshi") and self.player:getMark("HalfMaxHpLeft") > 0 then
 		extra = extra + 1
 	end
-	if self.player:hasShownOneGeneral() and not self.player:isWounded()	and self.player:ownSkill("haoshi") and not self.player:hasShownSkill("haoshi") and player:getMark("CompanionEffect") > 0 then
+	if self.player:hasShownOneGeneral() and not self.player:isWounded()	and self.player:ownSkill("haoshi") and not self.player:hasShownSkill("haoshi") and self.player:getMark("CompanionEffect") > 0 then
 		extra = extra + 2
 	end
 	if self.player:hasTreasure("JadeSeal") then
@@ -1570,14 +1570,15 @@ sgs.ai_skill_invoke.haoshi = function(self, data)
 
 	if not invoke(extra) then return false end
 
-	for skill_name, n in ipairs(draw_skills) do
+	for skill_name, n in pairs(draw_skills) do
 		if self.player:hasSkill(skill_name) then
-			if skill_name == "yingzi" then skill_name = "yingziextra" end
 			local skill = sgs.Sanguosha:getSkill(skill_name)
-			if skill and not skill:getFrequency() == sgs.Skill_Compulsory then
+			if skill and skill:getFrequency() ~= sgs.Skill_Compulsory then
 				if invoke(extra + n) then
 					extra = extra + n
 					self.player:setTag("haoshi_" .. skill_name, sgs.QVariant(true))
+				else
+					self.player:removeTag("haoshi_" .. skill_name)
 				end
 			end
 		end

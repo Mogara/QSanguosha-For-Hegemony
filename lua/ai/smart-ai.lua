@@ -193,6 +193,7 @@ function setInitialTables()
 						["zhugeliang"] = 3.5, ["huangzhong"] = 2.5, ["pangtong"] = 3.8, ["wolong"] = 3, ["huangyueying"] = 4, ["weiyan"] = 2, ["liushan"] = 3, ["ganfuren"] = 1.5, ["menghuo"] = 2.5, ["zhurong"] = 3, ["lord_liubei"] = 5.5,
 						["xusheng"] = 2.5, ["jiangqin"] = 2.5, ["chenwudongxi"] = 1, ["sunce"] = 2.5, ["lingtong"] = 3.5, ["lvfan"] = 4.5, ["sunquan"] = 4, ["luxun"] = 3, ["sunshangxiang"] = 4.5, ["sunjian"] = 3, ["xiaoqiao"] = 3,
 						["taishici"] = 2.5, ["ganning"] = 2.5, ["daqiao"] = 3.5, ["huanggai"] = 3, ["lvmeng"] = 3, ["zhouyu"] = 3, ["lusu"] = 4, ["dingfeng"] = 2.5, ["zhoutai"] = 3, ["erzhang"] = 3, ["lord_sunquan"] = 5.5,
+						["sujiang"] = 0, ["sujiangf"] = 0,
 	}
 	sgs.general_pair_value = {
 						["caocao+lidian"] = 9, ["yuejin+caoren"] = 6, ["zhengji+guojia"] = 12, ["zhengji+simayi"] = 10, ["guojia+dengai"] = 10, ["guojia+xiahoudun"] = 9, ["zhengji+zhanghe"] = 8, ["lidian+zhangliao"] = 5.5,
@@ -1700,19 +1701,10 @@ function sgs.updateAlivePlayerRoles()
 end
 
 function findPlayerByObjectName(name, include_death, except)
-	local players = nil
-	if include_death then
-		players = global_room:getPlayers()
-	else
-		players = global_room:getAllPlayers()
-	end
-	if except then
-		players:removeOne(except)
-	end
-	for _,p in sgs.qlist(players) do
-		if p:objectName() == name then
-			return p
-		end
+	local player = global_room:findPlayerByObjectName(name, include_death)
+
+	if player and not except or except:objectName() ~= player:objectName() then
+		return player
 	end
 end
 

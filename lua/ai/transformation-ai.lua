@@ -341,16 +341,19 @@ sgs.ai_skill_invoke.zhiman = function(self, data)
 	local damage = self.player:getTag("zhiman_data"):toDamage()
 	local target = damage.to
 	local promo = self:findPlayerToDiscard("ej", false, sgs.Card_MethodGet, nil, true)
-	if self:isFriend(damage.to) and table.contains(promo, target) or not self:needToLoseHp(target, self.player) then return true end
-	if table.contains(promo, target) then return true end
-	if target:hasShownSkills(sgs.masochism_skill) and self.player:canGetCard(target, "e") then return true end
+	for _, p in ipairs(promo) do
+		self.player:speak("推荐名单有:" .. p:screenName())
+	end
+	if self:isFriend(damage.to) and (table.contains(promo, target) or not self:needToLoseHp(target, self.player)) then self.player:speak("因为是朋友") return true end
+	if table.contains(promo, target) then self.player:speak("因为在名单里") return true end
+	if target:hasShownSkills(sgs.masochism_skill) and self.player:canGetCard(target, "e") then self.player:speak("因为防止卖血") return true end
 	return false
 end
 
 local sanyao_skill = {}
 sanyao_skill.name = "sanyao"
 table.insert(sgs.ai_skills, sanyao_skill)
-sanyao_skill.getTurnUseCard = function(self,room,player,data)
+sanyao_skill.getTurnUseCard = function(self, room, player, data)
 	if not self:willShowForAttack() then return end
 	if self.player:hasUsed("SanyaoCard") then return end
 	if self.player:isNude() then return end
@@ -361,11 +364,12 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 	local targets = sgs.SPlayerList()
 	local maxhp = 0
     for _, p in sgs.qlist(self.room:getAlivePlayers()) do
-		if maxhp < p:getHp() then p:getHp() end
+		if maxhp < p:getHp() then maxhp = p:getHp() end
 	end
     for _, p in sgs.qlist(self.room:getAlivePlayers()) do
-		self.player:speak("目标是" .. p:objectName())
-		if p:getHp() == maxhp then targets:append(p) end
+		if p:getHp() == maxhp then
+			targets:append(p)
+		end
 	end
 	if self:isWeak() or not not self:needToLoseHp() then
 		targets:removeOne(self.player)
@@ -386,6 +390,7 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 			if self:isEnemy(p) and not p:hasShownSkills(sgs.masochism_skill) and self:getOverflow() > 0 then target = p break end
 		end
 	end
+	
 
 	if self:needToThrowArmor() then
 		use.card = sgs.Card_Parse("@SanyaoCard=" .. self.player:getArmor():getId() .. "&sanyao")
@@ -399,9 +404,10 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 		end
 	else
 		if not target then use.card = nil return end
-		local cards = {}
-		for _, c in sgs.qlist(self.player:getCards("he")) do
-			if c:getEffectiveId() ~= slashCard:getEffectiveId() then table.insert(cards, c) end
+		self.player:speak("目标是：" .. target:objectName() .. target:screenName())
+		local cards = sgs.QList2Table(self.player:getCards("e"))
+		for _, c in sgs.qlist(self.player:getHandcards()) do
+			table.insert(cards, c)
 		end
 		self:sortByKeepValue(cards)
 
@@ -878,6 +884,7 @@ sgs.ai_skill_invoke.yingziextra = function(self, data)
 	end
 	if self.player:hasFlag("haoshi") then
 		local invoke = self.player:getTag("haoshi_yingziextra"):toBool()
+		self.player:removeTag("haoshi_yingziextra")
 		return invoke
 	end
 	return true
@@ -1210,8 +1217,8 @@ function SmartAI:getGeneralValue(player, position)
 end
 
 function SmartAI:needToTransform()
-	local g1 = player:getActualGeneral1()
-	local g2 = player:getActualGeneral2()
+	local g1 = self.player:getActualGeneral1()
+	local g2 = self.player:getActualGeneral2()
 	local current_value = 0
 	for name, value in pairs(sgs.general_pair_value) do
 		if g1:objectName() .. "+" .. g2:objectName() == name or g2:objectName() .. "+" .. g1:objectName() == name then
@@ -1232,4 +1239,69 @@ end
 
 sgs.ai_skill_invoke.transform = function(self, data)
 	return self:needToTransform()
+end
+
+function SmartAI:getDynamicPlayerStrength(player, ishuashen)
+	player = player or self.player
+	local g1, g2
+	if not ishuashen then
+		if player:objectName() == self.player:objectName() then
+			g1 = player:getGeneral()
+			g2 = player:getGeneral2()
+		else
+			g1 = player:getActualGeneral1()
+			g2 = player:getActualGeneral2()
+		end
+	else
+		local huashens = player:getTag("Huashens"):toList()
+		local head = player:inHeadSkills("huashen")
+		local names = {}
+		for _, q in sgs.qlist(huashens) do
+			table.insert(names, q:toString())
+		end
+		g1 = sgs.Sanguosha:getGeneral(names[1])
+		g2 = sgs.Sanguosha:getGeneral(names[2])
+	end
+
+	local current_value = 0
+	for name, value in pairs(sgs.general_pair_value) do
+		if g1:objectName() .. "+" .. g2:objectName() == name or g2:objectName() .. "+" .. g1:objectName() == name then
+			current_value = value
+			break
+		end
+	end
+	local oringin_g1 = 3
+	local oringin_g2 = 3
+	for name, value in pairs(sgs.general_value) do
+		if g1:objectName() == name then oringin_g1 = value end
+		if g2:objectName() == name then oringin_g2 = value end
+	end
+
+	if current_value == 0 then
+		local oringin_g1 = 3
+		local oringin_g2 = 3
+		for name, value in pairs(sgs.general_value) do
+			if names[1] == name then oringin_g1 = value end
+			if names[2] == name then oringin_g2 = value end
+		end
+		current_value = oringin_g1 + oringin_g2
+	end
+
+	for _, skill in sgs.qlist(g1:getVisibleSkillList(true, head)) do
+		if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
+            current_value = current_value - 1
+		end
+	end
+	for _, skill in sgs.qlist(g2:getVisibleSkillList(true, head)) do
+		if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
+            current_value = current_value - 1
+		end
+	end
+	if g1:isCompanionWith(g2:objectName()) and player:getMark("CompanionEffect") == 0 then
+		current_value = current_value - 0.5
+	end
+	if player:hasShownSkills(sgs.cardneed_skill) and player:getHandcardNum() < 3 then
+		current_value = current_value - 0.5
+	end
+	return current_value
 end

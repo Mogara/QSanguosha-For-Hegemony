@@ -234,6 +234,7 @@ sgs.ai_skill_invoke.yingzi_sunce = function(self, data)
 	end
 	if self.player:hasFlag("haoshi") then
 		local invoke = self.player:getTag("haoshi_yingzi_sunce"):toBool()
+		self.player:removeTag("haoshi_yingzi_sunce")
 		if not invoke then return false end
 		local extra = self.player:getMark("haoshi_num")
 		if self.player:hasShownOneGeneral() and not self.player:hasShownSkill("yingzi_sunce") and self.player:getMark("HalfMaxHpLeft") > 0 then
