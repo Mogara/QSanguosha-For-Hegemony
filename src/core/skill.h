@@ -453,5 +453,15 @@ public:
     virtual bool isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const = 0;
 };
 
+class ViewHasSkill : public Skill
+{
+    Q_OBJECT
+
+public:
+    ViewHasSkill(const QString &name);
+
+    virtual bool ViewHas(const Player *player, const QString &skill_name) const = 0;
+};
+
 #endif
 

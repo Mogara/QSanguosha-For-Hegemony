@@ -1487,7 +1487,7 @@ public:
     HongfaClear() : DetachEffectSkill("hongfa")
     {
     }
-    void onSkillDetached(Room *room, ServerPlayer *) const
+    virtual void onSkillDetached(Room *room, ServerPlayer *) const
     {
         foreach(ServerPlayer *p, room->getAlivePlayers()) {
             room->detachSkillFromPlayer(p, "hongfaslash");

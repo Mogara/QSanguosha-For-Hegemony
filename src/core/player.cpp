@@ -497,27 +497,7 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const
     if (InvalidSkill.contains(skill_name))
         return false;
 
-    if (skill_name == "zhiheng" && hasTreasure("Luminouspearl")) return true;
-
-    if (skill_name == "yingzi" || skill_name == "yingziextra") {
-        const Player *sunquan = this->getLord();
-        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this) && sunquan->getPile("flame_map").length() >= 1) return true;
-    }
-
-    if (skill_name == "haoshi") {
-        const Player *sunquan = this->getLord();
-        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this) && sunquan->getPile("flame_map").length() >= 2) return true;
-    }
-
-    if (skill_name == "gongxin") {
-        const Player *sunquan = this->getLord();
-        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this) && sunquan->getPile("flame_map").length() >= 3) return true;
-    }
-
-    if (skill_name == "qianxun") {
-        const Player *sunquan = this->getLord();
-        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this) && sunquan->getPile("flame_map").length() >= 4) return true;
-    }
+    if (Sanguosha->ViewHas(this, skill_name)) return true;
 
     return head_skills.value(skill_name, false)
         || deputy_skills.value(skill_name, false)
@@ -1576,14 +1556,11 @@ bool Player::hasShownSkill(const Skill *skill) const
 {
     if (skill == NULL)
         return false;
-    if (skill->objectName() == "qianxun") {
-        const Player *sunquan = this->getLord();
-        if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(this)
-                && sunquan->getPile("flame_map").length() >= 4 && hasShownOneGeneral())
-            return true;
-    }
+
     QStringList InvalidSkill = property("invalid_skill_shown").toString().split("+");
     if (InvalidSkill.contains(skill->objectName())) return false;
+
+    if (Sanguosha->ViewHas(this, skill->objectName()) && hasShownOneGeneral()) return true;
 
     if (head_acquired_skills.contains(skill->objectName()) || deputy_acquired_skills.contains(skill->objectName()))
         return true;

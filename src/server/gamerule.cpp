@@ -130,10 +130,16 @@ public:
             foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->getActualGeneral1() != NULL) {
                     QString lord = "lord_" + p->getActualGeneral1()->objectName();
-                    const General *lord_general = Sanguosha->getGeneral(lord);
-                    if (lord_general && !Sanguosha->getBanPackages().contains(lord_general->getPackage())) {
-                        trigger_map.insert(p, QStringList(objectName()));
+                    bool check = true;
+                    foreach (ServerPlayer *p2, room->getOtherPlayers(p)) {                                 //no duplicate lord
+                        if (p != p2 && lord == "lord_" + p2->getActualGeneral1()->objectName()) {
+                            check = false;
+                            break;
+                        }
                     }
+                    const General *lord_general = Sanguosha->getGeneral(lord);
+                    if (check && lord_general && !Sanguosha->getBanPackages().contains(lord_general->getPackage()))
+                        trigger_map.insert(p, QStringList(objectName()));
                 }
             }
         }

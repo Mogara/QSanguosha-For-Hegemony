@@ -806,3 +806,8 @@ FixCardSkill::FixCardSkill(const QString &name)
     : Skill(name, Skill::Compulsory)
 {
 }
+
+ViewHasSkill::ViewHasSkill(const QString &name)
+    : Skill(name, Skill::Compulsory)
+{
+}

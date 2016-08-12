@@ -731,7 +731,7 @@ public:
     HuashenClear() : DetachEffectSkill("huashen")
     {
     }
-    void onSkillDetached(Room *room, ServerPlayer *player) const
+    virtual void onSkillDetached(Room *room, ServerPlayer *player) const
     {
         QStringList huashen_skill = player->tag["HuashenSkill"].toStringList();
         foreach (QString skill_name, huashen_skill) {
@@ -1012,7 +1012,7 @@ public:
     {
         to->tag.remove("zhiman_from");
         room->setPlayerMark(to, "zhiman", 0);
-        if ((!to->getEquips().isEmpty() || !to->getJudgingArea().isEmpty()) && player->canGetCard(to, "ej")) {
+        if (player->canGetCard(to, "ej")) {
             int card_id = room->askForCardChosen(player, to, "ej", "zhiman", false, Card::MethodGet);
             CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, player->objectName());
             room->obtainCard(player, Sanguosha->getCard(card_id), reason);
@@ -1936,12 +1936,45 @@ public:
     JiaheClear() : DetachEffectSkill("jiahe")
     {
     }
-    void onSkillDetached(Room *room, ServerPlayer *) const
+    virtual void onSkillDetached(Room *room, ServerPlayer *) const
     {
         foreach(ServerPlayer *p, room->getAlivePlayers()) {
             room->detachSkillFromPlayer(p, "flamemap");
             room->detachSkillFromPlayer(p, "gongxin");
         }
+    }
+};
+
+class FlameMapVH : public ViewHasSkill
+{
+public:
+    FlameMapVH() : ViewHasSkill("flamemap-viewhas")
+    {
+    }
+    virtual bool ViewHas(const Player *player, const QString &skill_name) const
+    {
+        if (skill_name == "zhiheng" && player->hasTreasure("Luminouspearl")) return true;
+
+        if (skill_name == "yingzi" || skill_name == "yingziextra") {
+            const Player *sunquan = player->getLord();
+            if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(player) && sunquan->getPile("flame_map").length() >= 1) return true;
+        }
+
+        if (skill_name == "haoshi") {
+            const Player *sunquan = player->getLord();
+            if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(player) && sunquan->getPile("flame_map").length() >= 2) return true;
+        }
+
+        if (skill_name == "gongxin") {
+            const Player *sunquan = player->getLord();
+            if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(player) && sunquan->getPile("flame_map").length() >= 3) return true;
+        }
+
+        if (skill_name == "qianxun") {
+            const Player *sunquan = player->getLord();
+            if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(player) && sunquan->getPile("flame_map").length() >= 4) return true;
+        }
+        return false;
     }
 };
 
@@ -2017,7 +2050,7 @@ TransformationPackage::TransformationPackage()
     skills << new Diaoduequip;
     skills << new ZhimanSecond;
     skills << new Gongxin;
-    skills << new FlameMap;
+    skills << new FlameMap << new FlameMapVH;
     skills << new YingziEtra;
 }
 
@@ -2052,7 +2085,8 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->canDiscard(player, "he") && !player->hasShownSkill("zhiheng") && !player->hasUsed("ZhihengCard");
+        return player->canDiscard(player, "he") && !player->hasUsed("ZhihengCard")
+                && (!player->ownSkill("zhiheng") || !player->hasShownSkill("zhiheng")) ;
     }
 };
 
