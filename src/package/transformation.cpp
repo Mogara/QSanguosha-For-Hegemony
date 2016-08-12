@@ -1570,11 +1570,6 @@ public:
         frequency = Compulsory;
     }
 
-    virtual bool canPreshow() const
-    {
-        return true;
-    }
-
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const
     {
         if (player->getPhase() == Player::Finish && TriggerSkill::triggerable(player))

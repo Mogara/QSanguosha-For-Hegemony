@@ -177,6 +177,7 @@ protected:
 
 private:
     int m_cardId;
+    const Card *Vcard = NULL;
     QString _m_frameType, _m_avatarName;
     QPointF home_pos;
     bool outerGlowEffectEnabled;

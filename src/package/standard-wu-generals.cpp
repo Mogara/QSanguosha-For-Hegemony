@@ -35,7 +35,7 @@ ZhihengCard::ZhihengCard()
 
 void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    if (source->hasShownSkill("zhiheng")) room->broadcastSkillInvoke("zhiheng", source);
+    if (source->hasShownSkill("zhiheng") && source->ownSkill("zhiheng")) room->broadcastSkillInvoke("zhiheng", source);
     if (source->isAlive())
         room->drawCards(source, subcards.length());
 }
