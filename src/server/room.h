@@ -129,7 +129,7 @@ public:
         const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse = true, bool moverestricted = false,const QList<int> &notify_visible_list = QList<int>());
     int doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids = QList<int>(), const QString &skill_name = "shangyi");
     int drawCard();
-    void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>(), QList<ServerPlayer *> &watchers = QList<ServerPlayer *>());
+    void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>(), QList<ServerPlayer *> watchers = QList<ServerPlayer *>());
     void takeAG(ServerPlayer *player, int card_id, bool move_cards = true);
     void clearAG(ServerPlayer *player = NULL);
     void provide(const Card *card);

@@ -1882,7 +1882,6 @@ void StandardPackage::addWuGenerals()
     dingfeng->addSkill(new Duanbing);
     dingfeng->addSkill(new Fenxun);
 
-    skills << new Xiaojidraw;
     skills << new QianxunCancel << new HaoshiDraw << new HaoshiGive << new HaoshiViewAsSkill;
 
     addMetaObject<ZhihengCard>();

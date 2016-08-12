@@ -6608,7 +6608,7 @@ void Room::makeReviving(const QString &name)
     setPlayerProperty(player, "hp", player->getMaxHp());
 }
 
-void Room::fillAG(const QList<int> &card_ids, ServerPlayer *who, const QList<int> &disabled_ids, QList<ServerPlayer *> &watchers)
+void Room::fillAG(const QList<int> &card_ids, ServerPlayer *who, const QList<int> &disabled_ids, QList<ServerPlayer *> watchers)
 {
     JsonArray arg;
     arg << JsonUtils::toJsonArray(card_ids);

@@ -4156,8 +4156,9 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args)
         }
     }
     else if (word.startsWith("skill=")) {
-        QStringList l = word.mid(6).split(":");
-        LightboxAnimation *animation = new LightboxAnimation(l.first(), l.last(), rect);
+        const QString hero = word.mid(6);
+        const QString skill = args.value(1, QString());
+        LightboxAnimation *animation = new LightboxAnimation(hero, skill, rect);
         animation->setZValue(20001.0);
         addItem(animation);
         connect(animation, &LightboxAnimation::finished, this, &RoomScene::removeLightBox);
