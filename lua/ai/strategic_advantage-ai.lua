@@ -782,7 +782,7 @@ function SmartAI:useCardAllianceFeast(card, use)
 		if kingdom:startsWith("sgs") then
 			value = value + 1
 			if self.player:hasShownSkills(sgs.cardneed_skill) then value = value + 0.5 end
-			local target = findPlayerByObjectName(kingdom:objectName())
+			local target = findPlayerByObjectName(kingdom)
 			if self:isFriend(target) then
 				value = value + 1
 				if target:isWounded() then

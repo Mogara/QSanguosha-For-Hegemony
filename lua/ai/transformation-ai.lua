@@ -341,9 +341,6 @@ sgs.ai_skill_invoke.zhiman = function(self, data)
 	local damage = self.player:getTag("zhiman_data"):toDamage()
 	local target = damage.to
 	local promo = self:findPlayerToDiscard("ej", false, sgs.Card_MethodGet, nil, true)
-	for _, p in ipairs(promo) do
-		self.player:speak("推荐名单有:" .. p:screenName())
-	end
 	if self:isFriend(damage.to) and (table.contains(promo, target) or not self:needToLoseHp(target, self.player)) then self.player:speak("因为是朋友") return true end
 	if table.contains(promo, target) then self.player:speak("因为在名单里") return true end
 	if target:hasShownSkills(sgs.masochism_skill) and self.player:canGetCard(target, "e") then self.player:speak("因为防止卖血") return true end
@@ -382,7 +379,10 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 	end
 	if not target then
 		for _, p in sgs.qlist(targets) do
-			if self:getDangerousCard(p) and self.player:canGetCard(p, "e") then target = p break end
+			if self:getDangerousCard(p) and self.player:canGetCard(p, self:getDangerousCard(p)) then
+				target = p
+				break
+			end
 		end
 	end
 	if not target then
@@ -390,7 +390,6 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 			if self:isEnemy(p) and not p:hasShownSkills(sgs.masochism_skill) and self:getOverflow() > 0 then target = p break end
 		end
 	end
-	
 
 	if self:needToThrowArmor() then
 		use.card = sgs.Card_Parse("@SanyaoCard=" .. self.player:getArmor():getId() .. "&sanyao")
@@ -398,7 +397,8 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 		if use.to then
 			if target then
 				use.to:append(target)
-			else use.to:append(targets:first())
+			else
+				use.to:append(targets:first())
 			end
 			return
 		end
@@ -409,7 +409,7 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 		for _, c in sgs.qlist(self.player:getHandcards()) do
 			table.insert(cards, c)
 		end
-		self:sortByKeepValue(cards)
+		self:sortByUseValue(cards, true)
 
 		local card_id
 		for _, c in ipairs(cards) do
@@ -428,11 +428,10 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 				end
 			end
 		end
-
 		if not card_id then
 			for _, c in ipairs(cards) do
 				if (not isCard("Peach", c, self.player) or self:getCardsNum("Peach") > 1)
-					and (not isCard("Jink", c, self.player) or self:getCardsNum("Jink") > 1 or isWeak)
+					and (not isCard("Jink", c, self.player) or self:getCardsNum("Jink") > 1 or self:isWeak())
 					and not (self.player:getWeapon() and self.player:getWeapon():getEffectiveId() == c:getEffectiveId())
 					and not (self.player:getOffensiveHorse() and self.player:getOffensiveHorse():getEffectiveId() == c:getEffectiveId()) then
 					card_id = c:getEffectiveId()
@@ -446,7 +445,6 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 			end
 		end
 	end
-	use.card = nil
 end
 
 --凌统
@@ -825,7 +823,7 @@ lianzi_skill.getTurnUseCard = function(self)
 	end
 	if num >= 3 then
 		local handcards = sgs.QList2Table(self.player:getHandcards())
-		self:sortByUseValue(handcards)
+		self:sortByUseValue(handcards, true)
 		return sgs.Card_Parse("@LianziCard=" .. handcards[1]:getEffectiveId() .. "&lianzi")
 	end
 end
@@ -1234,7 +1232,7 @@ function SmartAI:needToTransform()
 	end
 	if current_value == 0 then current_value = oringin_g1 + oringin_g2 end
 	local g2_v = current_value - (oringin_g2 - self:getGeneralValue(self.player, false)) - oringin_g1
-	return g2_v <= 3
+	return g2_v < 3
 end
 
 sgs.ai_skill_invoke.transform = function(self, data)

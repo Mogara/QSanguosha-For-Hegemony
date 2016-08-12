@@ -1807,7 +1807,7 @@ function SmartAI:useCardDuel(duel, use)
 		if friend:hasSkill("jieming") and self.player:hasSkill("rende") and (huatuo and self:isFriend(huatuo)) then
 			table.insert(targets, friend)
 		end
-		if self.player:hasSkill("zhiman") and (self.player:canGetCard(p, "j") or ((friend:hasShownSkills(sgs.lose_equip_skill) or self:needToThrowArmor(friend)) and self.player:canGetCard(p, "e"))) then
+		if self.player:hasSkill("zhiman") and (self.player:canGetCard(friend, "j") or ((friend:hasShownSkills(sgs.lose_equip_skill) or self:needToThrowArmor(friend)) and self.player:canGetCard(friend, "e"))) then
 			table.insert(targets, friend)
 		end
 	end

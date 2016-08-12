@@ -4693,7 +4693,7 @@ function SmartAI:getAoeValue(card)
 						end
 					else
 						if zhiman and self:isFriend(to) then
-						elseif zhimanprevent and self:isFriend(p, attacker) then
+						elseif zhimanprevent and self:isFriend(to, attacker) then
 						else
 							kills = kills + 1
 							if wansha and (sgs.card_lack[to:objectName()]["Peach"] == 1 or getCardsNum("Peach", to, self.player) == 0) then
@@ -4722,18 +4722,18 @@ function SmartAI:getAoeValue(card)
 		if self:isFriend(p) then
 			good = good + getAoeValueTo(p, attacker)
 			if zhiman then
-				if attacker:canGetCard(to, "j") then
+				if attacker:canGetCard(p, "j") then
 					good = good + 10
-				elseif attacker:canGetCard(to, "e") and to:hasShownSkill(sgs.lose_equip_skill) then
+				elseif attacker:canGetCard(p, "e") and p:hasShownSkills(sgs.lose_equip_skill) then
 					good = good + 10
 				end
 			end
 		else
 			bad = bad + getAoeValueTo(p, attacker)
 			if zhimanprevent and self:isFriend(p, attacker) then
-				if attacker:canGetCard(to, "j") then
+				if attacker:canGetCard(p, "j") then
 					bad = bad + 10
-				elseif attacker:canGetCard(to, "e") and to:hasShownSkill(sgs.lose_equip_skill) then
+				elseif attacker:canGetCard(p, "e") and p:hasShownSkills(sgs.lose_equip_skill) then
 					bad = bad + 10
 				end
 			end
@@ -5200,10 +5200,12 @@ function SmartAI:findPlayerToDiscard(flags, include_self, method, players, retur
 	local friends, enemies = {}, {}
 	flags = flags or "he"
 	if not players then
-		for _, p in ipairs(self.friends) do
+		for _, p in ipairs(self.friends_noself) do
 			if isDiscard and not self.player:canDiscard(p, flags) then continue end
 			if isGet and not self.player:canGetCard(p, flags) then continue end
-			table.insert(friends, p)
+			if self:isFriend(p) then
+				table.insert(friends, p)
+			end
 		end
 		if include_self then table.insert(friends, self.player) end
 		for _, p in ipairs(self.enemies) do
@@ -5226,15 +5228,13 @@ function SmartAI:findPlayerToDiscard(flags, include_self, method, players, retur
 	self:sort(enemies, "defense")
 	if flags:match("e") then
 		for _, enemy in ipairs(enemies) do
-			if (isDiscard and self.player:canDiscard(enemy, "e")) or (isGet and self.player:canGetCard(enemy, "e")) then
-				local dangerous = self:getDangerousCard(enemy)
-				if dangerous then
-					table.insert(player_table, enemy)
-				end
+			local dangerous = self:getDangerousCard(enemy)
+			if dangerous and ((isDiscard and self.player:canDiscard(enemy, dangerous)) or (isGet and self.player:canGetCard(enemy, dangerous))) then
+				table.insert(player_table, enemy)
 			end
 		end
 		for _, enemy in ipairs(enemies) do
-			if enemy:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(enemy)
+			if enemy:getArmor() and enemy:getArmor():isKindOf("EightDiagram") and not self:needToThrowArmor(enemy)
 				and ((isDiscard and self.player:canDiscard(enemy, enemy:getArmor():getEffectiveId())) or (isGet and self.player:canGetCard(enemy, enemy:getArmor():getEffectiveId()))) then
 				table.insert(player_table, enemy)
 			end
@@ -5251,12 +5251,12 @@ function SmartAI:findPlayerToDiscard(flags, include_self, method, players, retur
 			end
 		end
 		for _, friend in ipairs(friends) do
-			if friend:containsTrick("lightning") and self:hasWizard(enemies, true) and (isDiscard and self.player:canDiscard(friend, "j")) or (isGet and self.player:canGetCard(friend, "j")) then
+			if friend:containsTrick("lightning") and self:hasWizard(enemies, true) and ((isDiscard and self.player:canDiscard(friend, "j")) or (isGet and self.player:canGetCard(friend, "j"))) then
 				table.insert(player_table, friend)
 			end
 		end
 		for _, enemy in ipairs(enemies) do
-			if enemy:containsTrick("lightning") and self:hasWizard(enemies, true) and (isDiscard and self.player:canDiscard(enemy, "j")) or (isGet and self.player:canGetCard(enemy, "j")) then
+			if enemy:containsTrick("lightning") and self:hasWizard(enemies, true) and ((isDiscard and self.player:canDiscard(enemy, "j")) or (isGet and self.player:canGetCard(enemy, "j"))) then
 				table.insert(player_table, enemy)
 			end
 		end
@@ -5269,11 +5269,9 @@ function SmartAI:findPlayerToDiscard(flags, include_self, method, players, retur
 			end
 		end
 		for _, enemy in ipairs(enemies) do
-			if (isDiscard and self.player:canDiscard(enemy, "e")) or (isGet and self.player:canGetCard(enemy, "e")) then
-				local valuable = self:getValuableCard(enemy)
-				if valuable and (not isDiscard or self.player:canDiscard(enemy, valuable)) then
-					table.insert(player_table, enemy)
-				end
+			local valuable = self:getValuableCard(enemy)
+			if valuable and ((isDiscard and self.player:canDiscard(enemy, valuable)) or (isGet and self.player:canGetCard(enemy, valuable))) then
+				table.insert(player_table, enemy)
 			end
 		end
 		for _, enemy in ipairs(enemies) do
