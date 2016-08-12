@@ -31,7 +31,7 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	local unlimited
 	if self.player:hasTreasure("Luminouspearl") and self.player:ownSkill("zhiheng") then unlimited = true end
-	local show = self.player:hasShownSkill("zhiheng") and "&zhiheng" or ""
+	local show = self.player:hasShownSkill("zhiheng") and self.player:ownSkill("zhiheng") and "&zhiheng" or ""
 
 	if self:getCardsNum("Crossbow", 'he') > 0 and #self.enemies > 0 and self.player:getCardCount(true) >= 4 then
 		local zcards = sgs.QList2Table(self.player:getCards("he"))
