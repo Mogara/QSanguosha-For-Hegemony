@@ -421,8 +421,11 @@ end
 function SmartAI:isPriorFriendOfSlash(friend, card, source)
 	source = source or self.player
 	local huatuo = sgs.findPlayerByShownSkillName("jijiu")
-	if source:hasSkill("zhiman") and (source:canGetCard(p, "j") or ((friend:hasShownSkills(sgs.lose_equip_skill) or self:needToThrowArmor(friend)) and self.player:canGetCard(p, "e"))) then
-		return true
+	if source:hasSkill("zhiman") then
+		local promo = self:findPlayerToDiscard("ej", false, sgs.Card_MethodGet, nil, true)
+		if table.contains(promo, friend) then
+			return true
+		end
 	end
 	if not self:hasHeavySlashDamage(source, card, friend)
 		and ((self:findLeijiTarget(friend, 50, source) and not source:hasShownSkill("wushuang"))

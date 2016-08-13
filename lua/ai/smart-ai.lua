@@ -196,7 +196,7 @@ function setInitialTables()
 						["sujiang"] = 0, ["sujiangf"] = 0,
 	}
 	sgs.general_pair_value = {
-						["caocao+lidian"] = 9, ["yuejin+caoren"] = 6, ["zhengji+guojia"] = 12, ["zhengji+simayi"] = 10, ["guojia+dengai"] = 10, ["guojia+xiahoudun"] = 9, ["zhengji+zhanghe"] = 8, ["lidian+zhangliao"] = 5.5,
+						["caocao+lidian"] = 9, ["yuejin+caoren"] = 6, ["zhenji+guojia"] = 12, ["zhenji+simayi"] = 10, ["guojia+dengai"] = 10, ["guojia+xiahoudun"] = 9, ["zhenji+zhanghe"] = 8, ["lidian+zhangliao"] = 5.5,
 						["zhanghe+lidian"] = 6, ["zhanghe+xuchu"] = 4, ["lidian+xuchu"] = 5.5,	--wei
 						["liguo+zuoci"] = 9, ["yuanshao+yanliangwenchou"] = 8, ["jiaxu+huatuo"] = 8.5, ["huotuo+kongrong"] = 7, ["caiwenji+kongrong"] = 7, ["yuanshao+mateng"] = 9, ["yuanshao+tianfeng"] = 8.5,	--qun
 						["zhangfei+huangyueying"] = 8.5, ["huangyueying+zhugeliang"] = 8.5, ["huangyueying+wolong"] = 8, ["liushan+huangyueying"] = 5.5,	--shu
@@ -2234,7 +2234,13 @@ end
 
 function SmartAI:askForNullification(trick, from, to, positive)
 	if self.player:isDead() then return nil end
-	if from and self:isFriend(to, from) and from:hasSkill("zhiman") then return nil end
+
+	if trick:isKindOf("SavageAssault") and self:isFriend(to) and positive then
+		local menghuo = sgs.findPlayerByShownSkillName("huoshou")
+		if menghuo and self:isFriend(to, menghuo) and menghuo:hasShownSkill("zhiman") then return nil end
+	end
+	if from and self:isFriend(to, from) and self:isFriend(to) and positive and from:hasShownSkill("zhiman") then return nil end
+
 	local nullcards = self.player:getCards("Nullification")
 	local null_num = self:getCardsNum("Nullification")
 	local null_card = self:getCardId("Nullification")
@@ -4759,6 +4765,17 @@ function SmartAI:hasTrickEffective(card, to, from)
 	to = to or self.player
 	--if sgs.Sanguosha:isProhibited(from, to, card) then return false end
 	if to:isRemoved() then return false end
+
+	if from then
+		if from:hasShownSkill("zhiman") and self:isFriend(to, from) and (card:isKindOf("Duel") or card:isKindOf("ArcheryAttack") or card:isKindOf("SavageAssault")) then return false end
+		if from:hasShownSkill("zhiman") and self:isFriend(to, from) and (card:isKindOf("FireAttack") or card:isKindOf("BurningCamps")) and not to:isGoodChainTarget(to, from, sgs.DamageStruct_Fire) then
+			return false
+		end
+		if card:isKindOf("SavageAssault") then
+			local menghuo = sgs.findPlayerByShownSkillName("huoshou")
+			if menghuo and self:isFriend(to, menghuo) and menghuo:hasShownSkill("zhiman") then return false end
+		end
+	end
 
 	if not card:isKindOf("TrickCard") then self.room:writeToConsole(debug.traceback()) return end
 	if to:hasShownSkill("hongyan") and card:isKindOf("Lightning") then return false end

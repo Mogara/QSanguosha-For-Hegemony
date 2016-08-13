@@ -139,6 +139,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     connect(Self, &ClientPlayer::general2_changed, dashboard, &Dashboard::updateSmallAvatar);
     connect(dashboard, &Dashboard::card_selected, this, &RoomScene::enableTargets);
     connect(dashboard, &Dashboard::card_to_use, this, &RoomScene::doOkButton);
+    connect(dashboard, &Dashboard::card_unselect, this, &RoomScene::cleanLiegong);
 
     connect(Self, &ClientPlayer::pile_changed, dashboard, &Dashboard::updatePile);
 
@@ -1868,10 +1869,29 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
         m_cardContainer->m_currentPlayer = qobject_cast<ClientPlayer *>(movement.to);
         GenericCardContainer *to_container = _getGenericCardContainer(movement.to_place, movement.to);
         QList<CardItem *> cards = _m_cardsMoveStash[moveId][count];
+        CardMoveReason reason = movement.reason;
         count++;
         for (int j = 0; j < cards.size(); j++) {
             CardItem *card = cards[j];
             card->setFlag(QGraphicsItem::ItemIsMovable, false);
+            if (!reason.m_skillName.isEmpty() && movement.from && !movement.to) {
+                if (movement.from->getGeneral()->hasSkill(reason.m_skillName))
+                    card->showAvatar(movement.from->getGeneral(), reason.m_skillName);
+                else if (movement.from->getGeneral2()->hasSkill(reason.m_skillName))
+                    card->showAvatar(movement.from->getGeneral2(), reason.m_skillName);
+                else {
+                    if (movement.from->hasSkill(reason.m_skillName) && !movement.from->ownSkill(reason.m_skillName)) {
+                        card->showAvatar(movement.from->hasShownGeneral1() ? movement.from->getGeneral() : movement.from->getGeneral2(), reason.m_skillName);
+                    } else {
+                        foreach (const General *general, Sanguosha->getGeneralList()) {
+                           if (general->hasSkill(reason.m_skillName)) {
+                               card->showAvatar(general, reason.m_skillName);
+                               break;
+                           }
+                        }
+                    }
+                }
+            }
             int card_id = card->getId();
             if (!card_moves[i].card_ids.contains(card_id)) {
                 card->setVisible(false);
@@ -1932,7 +1952,7 @@ QString RoomScene::_translateMovement(const CardsMoveStruct &move)
 
     QString result(playerName + targetName);
     result.append(Sanguosha->translate(reason.m_eventName));
-    result.append(Sanguosha->translate(reason.m_skillName));
+    //result.append(Sanguosha->translate(reason.m_skillName));
     if ((reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE && reason.m_skillName.isEmpty()) {
         result.append(Sanguosha->translate("use"));
     } else if ((reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_RESPONSE) {

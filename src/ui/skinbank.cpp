@@ -401,8 +401,6 @@ QPixmap QSanRoomSkin::getCardSuitPixmap(Card::Suit suit) const
 QPixmap QSanRoomSkin::getCardNumberPixmap(int point, bool isBlack) const
 {
     QString pathKey = isBlack ? S_SKIN_KEY_HAND_CARD_NUMBER_BLACK : S_SKIN_KEY_HAND_CARD_NUMBER_RED;
-    if (point > 13)
-        return getPixmap(pathKey, "max");
     return getPixmap(pathKey, QString::number(point));
 }
 

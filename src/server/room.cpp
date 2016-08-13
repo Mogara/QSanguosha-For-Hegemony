@@ -5520,7 +5520,7 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
             if (card_num > 0) {
                 CardMoveReason movereason;
                 movereason.m_playerId = player->objectName();
-                movereason.m_skillName = dummy->getSkillName();
+                movereason.m_skillName = reason;
                 if (reason == "gamerule")
                     movereason.m_reason = CardMoveReason::S_REASON_RULEDISCARD;
                 else
@@ -5594,10 +5594,10 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
 
     DummyCard dummy_card(to_discard);
     if (reason == "gamerule") {
-        CardMoveReason move_reason(CardMoveReason::S_REASON_RULEDISCARD, player->objectName(), QString(), dummy_card.getSkillName(), QString());
+        CardMoveReason move_reason(CardMoveReason::S_REASON_RULEDISCARD, player->objectName(), QString(), reason, QString());
         throwCard(&dummy_card, move_reason, player);
     } else {
-        CardMoveReason move_reason(CardMoveReason::S_REASON_THROW, player->objectName(), QString(), dummy_card.getSkillName(), QString());
+        CardMoveReason move_reason(CardMoveReason::S_REASON_THROW, player->objectName(), QString(), reason, QString());
         if (notify_skill)
             notifySkillInvoked(player, reason);
         throwCard(&dummy_card, move_reason, player, NULL, notify_skill ? reason : QString());

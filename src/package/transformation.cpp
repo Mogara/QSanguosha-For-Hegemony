@@ -38,6 +38,11 @@ public:
     {
     }
 
+    virtual bool canPreshow() const
+    {
+        return true;
+    }
+
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *xunyu, QVariant &, ServerPlayer* &) const
     {
         if (MasochismSkill::triggerable(xunyu))
@@ -362,6 +367,11 @@ public:
         events << TargetConfirming;
     }
 
+    virtual bool canPreshow() const
+    {
+        return true;
+    }
+
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
         if (!TriggerSkill::triggerable(player)) return QStringList();
@@ -414,6 +424,12 @@ public:
     {
         events << CardUsed << EventPhaseStart;
     }
+
+    virtual bool canPreshow() const
+    {
+        return true;
+    }
+
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
         if (triggerEvent == CardUsed && !player->hasFlag(objectName()) && room->getCurrent() == player) {
@@ -575,10 +591,6 @@ public:
         frequency = Frequent;
     }
 
-    virtual bool canPreshow() const
-    {
-        return false;
-    }
     static void playAudioEffect(ServerPlayer *zuoci, const QString &skill_name)
     {
         zuoci->getRoom()->broadcastSkillInvoke(skill_name, zuoci->isMale(), -1);
@@ -777,6 +789,11 @@ public:
     virtual int getPriority() const
     {
         return -4;
+    }
+
+    virtual bool canPreshow() const
+    {
+        return true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *zuoci, QVariant &, ServerPlayer* &) const
@@ -1038,6 +1055,11 @@ public:
     {
         events << CardsMoveOneTime;
         frequency = Frequent;
+    }
+
+    virtual bool canPreshow() const
+    {
+        return true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *lengtong, QVariant &data, ServerPlayer* &) const
