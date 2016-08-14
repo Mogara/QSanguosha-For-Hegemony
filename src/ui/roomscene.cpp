@@ -1873,7 +1873,8 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
         for (int j = 0; j < cards.size(); j++) {
             CardItem *card = cards[j];
             card->setFlag(QGraphicsItem::ItemIsMovable, false);
-            if (!reason.m_skillName.isEmpty() && movement.from && movement.to_place != Player::PlaceHand && movement.to_place != Player::PlaceSpecial) {
+            if (!reason.m_skillName.isEmpty() && movement.from && movement.to_place != Player::PlaceHand && movement.to_place != Player::PlaceSpecial
+                    && movement.to_place != Player::PlaceEquip) {
                 if (movement.from->getGeneral()->hasSkill(reason.m_skillName))
                     card->showAvatar(movement.from->getGeneral(), reason.m_skillName);
                 else if (movement.from->getGeneral2()->hasSkill(reason.m_skillName))
