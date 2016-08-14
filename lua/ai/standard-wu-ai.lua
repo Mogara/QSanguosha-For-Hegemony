@@ -1866,9 +1866,9 @@ sgs.ai_skill_exchange.guzheng = function(self, pattern, max_num, min_num, expand
 	if not self.player:hasShownOneGeneral() then
 		flag = self.player:inHeadSkills("guzheng") and "h" or "d"
 	end
+
 	local invoke = (self:isFriend(who) and not (who:hasSkill("kongcheng") and who:isKongcheng()))
-					or (#card_ids >= 3 and not self.player:hasSkill("manjuan"))
-					or (#card_ids == 2 and not self:hasSkills(sgs.cardneed_skill, who) and not self.player:hasSkill("manjuan"))
+					or (#card_ids == 2 and not self:hasSkills(sgs.cardneed_skill, who))
 					or (self:isEnemy(who) and who:hasSkill("kongcheng") and who:isKongcheng())
 	if not invoke then return {} end
 
