@@ -404,7 +404,7 @@ sgs.ai_choicemade_filter.cardChosen.zhiman = function(self, player, promptlist)
 	local intention = 10
 	local id = promptlist[3]
 	local card = sgs.Sanguosha:getCard(id)
-	local target = self.room:findPlayerByObjectName(promptlist[5])
+	local target = findPlayerByObjectName(promptlist[5])
 	if self:needToThrowArmor(target) and self.room:getCardPlace(id) == sgs.Player_PlaceEquip and card:isKindOf("Armor") then
 		intention = -intention
 	elseif self:doNotDiscard(target) then intention = -intention

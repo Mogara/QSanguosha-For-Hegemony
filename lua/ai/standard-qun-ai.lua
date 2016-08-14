@@ -1044,16 +1044,6 @@ qingcheng_skill.getTurnUseCard = function(self, inclusive)
 		end
 	end
 
-	local liguo = room:findPlayerBySkillName("xichou")
-	if liguo and liguo:hasShownAllGenerals() and self:isFriend(liguo) then
-		use.card = card
-		if not use.isDummy and use.to then
-			sgs.qingcheng = "liguo"
-			use.to:append(liguo)
-		end
-		return
-	end
-
 	if equipcard then
 		local card_id = equipcard:getEffectiveId()
 		local card_str = ("@QingchengCard=" .. card_id .. "&qingcheng")
@@ -1074,6 +1064,16 @@ sgs.ai_skill_use_func.QingchengCard = function(card, use, self)
 		if not use.isDummy and use.to then
 			sgs.qingcheng = "zhoutai"
 			use.to:append(zhoutai)
+		end
+		return
+	end
+
+	local liguo = room:findPlayerBySkillName("xichou")
+	if liguo and liguo:hasShownAllGenerals() and self:isFriend(liguo) then
+		use.card = card
+		if not use.isDummy and use.to then
+			sgs.qingcheng = "liguo"
+			use.to:append(liguo)
 		end
 		return
 	end

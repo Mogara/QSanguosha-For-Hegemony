@@ -1974,7 +1974,7 @@ function SmartAI:getDangerousCard(who)
 		end
 	end
 	if (weapon and weapon:isKindOf("Spear") and who:hasShownSkill("paoxiao") and who:getHandcardNum() >=1 ) then return weapon:getEffectiveId() end
-	if weapon and weapon:isKindOf("Axe") and who:hasShownSkills("luoyi|jluoyi") then
+	if weapon and weapon:isKindOf("Axe") and who:hasShownSkill("luoyi") then
 		return weapon:getEffectiveId()
 	end
 	if armor and armor:isKindOf("EightDiagram") and who:hasShownSkill("leiji") then return armor:getEffectiveId() end
