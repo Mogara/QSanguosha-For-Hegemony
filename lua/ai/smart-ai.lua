@@ -3955,8 +3955,6 @@ function SmartAI:getDamagedEffects(to, from, isSlash)
 	from = from or self.room:getCurrent()
 	to = to or self.player
 
-	if from:hasShownSkill("jueqing") then return false end
-
 	if isSlash then
 		if from:hasWeapon("IceSword") and to:getCards("he"):length() > 1 and not self:isFriend(from, to) then
 			return false
