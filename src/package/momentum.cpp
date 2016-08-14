@@ -476,6 +476,7 @@ public:
 
 CunsiCard::CunsiCard()
 {
+    mute = true;
 }
 
 bool CunsiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const
@@ -486,6 +487,7 @@ bool CunsiCard::targetFilter(const QList<const Player *> &targets, const Player 
 void CunsiCard::onUse(Room *room, const CardUseStruct &card_use) const
 {
     room->doSuperLightbox("mifuren", "cunsi");
+    room->broadcastSkillInvoke("cunshi", card_use.from);
     SkillCard::onUse(room, card_use);
 }
 

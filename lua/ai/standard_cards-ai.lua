@@ -2106,7 +2106,7 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
 			and ((player:containsTrick("lightning") and self:getFinalRetrial(player) == 2) or #self.enemies == 0) then
 			tricks = player:getCards("j")
 			for _, trick in sgs.qlist(tricks) do
-				if trick:isKindOf("Lightning") and self.player:canOperate(player, trick:getId()) then
+				if trick:isKindOf("Lightning") and canOperate(player, trick:getId()) then
 					local invoke
 					for _, p in ipairs(self.friends) do
 						if self:hasTrickEffective(trick, p) then
