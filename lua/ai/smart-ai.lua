@@ -3851,7 +3851,7 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 			assert(card_x)
 		end
 
-		if reason == "beige" and not isCard("Peach", card_x, self.player) then
+		if reason == "beige" and not is_peach then
 			local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
 			if damage.from then
 				if self:isFriend(damage.from) then
@@ -3878,10 +3878,10 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 				end
 			end
 		elseif self:isFriend(who) and judge:isGood(card_x)
-				and not (self_card and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and isCard("Peach", card_x, self.player)) then
+				and not (self_card and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and is_peach) then
 			table.insert(can_use, card)
 		elseif self:isEnemy(who) and not judge:isGood(card_x)
-				and not (self_card and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and isCard("Peach", card_x, self.player)) then
+				and not (self_card and (self:getFinalRetrial() == 2 or self:dontRespondPeachInJudge(judge)) and is_peach) then
 			table.insert(can_use, card)
 		end
 	end
@@ -3912,6 +3912,7 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 		return -1
 	end
 end
+
 
 function SmartAI:damageIsEffective(to, nature, from)
 	local damageStruct = {}
