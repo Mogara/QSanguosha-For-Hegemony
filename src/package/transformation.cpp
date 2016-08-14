@@ -132,7 +132,11 @@ bool QiceCard::targetsFeasible(const QList<const Player *> &targets, const Playe
         mutable_card->setCanRecast(false);
         mutable_card->deleteLater();
     }
-    if (targets.length() > subcards.length()) return false;
+    if (mutable_card->isKindOf("Collateral")) {
+        if (targets.length()/2 > subcards.length()) return false;
+    } else {
+        if (targets.length() > subcards.length()) return false;
+    }
     return mutable_card && mutable_card->targetsFeasible(targets, Self);
 }
 

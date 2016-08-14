@@ -187,9 +187,9 @@ function setInitialTables()
 	sgs.general_value = {
 						["cacao"] = 3, ["simayi"] = 4, ["xiahoudun"] = 2, ["zhangliao"] = 2.5, ["xuchu"] = 2, ["guojia"] = 5, ["zhenji"] = 4, ["xiahouyuan"] = 2.5, ["zhanghe"] = 3, ["xuhuang"] = 3, ["caoren"] = 2.5, ["dianwei"] = 3.5,
 						["xunyu"] = 3.5, ["caopi"] = 4.5, ["yuejin"] = 2.5, ["dengai"] = 4, ["caohong"] = 2, ["lidian"] = 4, ["zangba"] = 2, ["xunyou"] = 3.5, ["bianhuanghou"] = 3,
-						["yuji"] = 4.5, ["hetaihou"] = 2.5, ["zhangren"] = 3, ["zhangjiao"] = 3, ["dongzhuo"] = 3, ["liguo"] = 3.5, ["zuoci"] = 4, ["yuanshao"] = 4, ["yanliangwenchou"] = 3.5, ["jiaxu"] = 4, ["lvbu"] = 3.5, ["huatuo"] = 3.5,
+						["yuji"] = 4.5, ["hetaihou"] = 2.5, ["zhangren"] = 3, ["zhangjiao"] = 3, ["dongzhuo"] = 3, ["liguo"] = 3.5, ["zuoci"] = 4, ["yuanshao"] = 4, ["yanliangwenchou"] = 3.5, ["jiaxu"] = 4, ["lvbu"] = 3, ["huatuo"] = 3.5,
 						["diaochan"] = 3.5, ["kongrong"] = 3, ["caiwenji"] = 3, ["mateng"] = 4.5, ["jiling"] = 1.5, ["pangde"] = 2, ["panfeng"] = 1.5, ["zoushi"] = 1.5, ["tianfeng"] = 2.5, ["lord_zhangjiao"] = 5.5,
-						["jiangwei"] = 3, ["jiangwanfeiyi"] = 2.5, ["madai"] = 2.5, ["mifuren"] = 2, ["masu"] = 4.5, ["shamoke"] = 3.5, ["zhangfei"] = 3.5, ["guanyu"] = 3.5, ["liubei"] = 2, ["zhaoyun"] = 2.5, ["machao"] = 2.5,
+						["jiangwei"] = 3, ["jiangwanfeiyi"] = 2.5, ["madai"] = 2.5, ["mifuren"] = 2, ["masu"] = 4.5, ["shamoke"] = 3.5, ["zhangfei"] = 3.5, ["guanyu"] = 3, ["liubei"] = 2, ["zhaoyun"] = 2.5, ["machao"] = 2.5,
 						["zhugeliang"] = 3.5, ["huangzhong"] = 2.5, ["pangtong"] = 3.8, ["wolong"] = 3, ["huangyueying"] = 4, ["weiyan"] = 2, ["liushan"] = 3, ["ganfuren"] = 1.5, ["menghuo"] = 2.5, ["zhurong"] = 3, ["lord_liubei"] = 5.5,
 						["xusheng"] = 2.5, ["jiangqin"] = 2.5, ["chenwudongxi"] = 1, ["sunce"] = 2.5, ["lingtong"] = 3.5, ["lvfan"] = 4.5, ["sunquan"] = 4, ["luxun"] = 3, ["sunshangxiang"] = 4.5, ["sunjian"] = 3, ["xiaoqiao"] = 3,
 						["taishici"] = 2.5, ["ganning"] = 2.5, ["daqiao"] = 3.5, ["huanggai"] = 3, ["lvmeng"] = 3, ["zhouyu"] = 3, ["lusu"] = 4, ["dingfeng"] = 2.5, ["zhoutai"] = 3, ["erzhang"] = 3, ["lord_sunquan"] = 5.5,
@@ -507,14 +507,62 @@ function sgs.gameProcess(update)
 		value[kingdom] = 0
 	end
 
-	local anjiang = 0
+	local anjiang = {}
 	local players = global_room:getAlivePlayers()
+	local all_num = global_room:getAllPlayers(true):length()
 	for _, ap in sgs.qlist(players) do
 		if table.contains(kingdoms, sgs.ai_explicit[ap:objectName()]) then
-			local v = 3 + sgs.getDefense(ap) / 2
+			local v = 0
+			if ap:hasShownOneGeneral() then
+				local huashen = ap:hasShownSkill("huashen") and ap:getTag("Huashens"):toList():length() > 0
+				v = sgs.getDynamicPlayerStrength(ap, huashen) + sgs.getDefense(ap) / 2
+			else
+				v = 6 + sgs.getDefense(ap) / 2
+			end
 			value[sgs.ai_explicit[ap:objectName()]] = value[sgs.ai_explicit[ap:objectName()]] + v
 		else
-			anjiang = anjiang + 1
+			table.insert(anjiang, ap)
+		end
+	end
+
+	local get_possible_kingdom = function(player)
+		local max_value, max_kingdom = 0, {}
+		for kingdom, v in pairs(sgs.ai_loyalty) do
+			if not table.contains(sgs.KingdomsTable, kingdom) then continue end
+			if sgs.ai_loyalty[kingdom][player:objectName()] > max_value then
+				max_value = sgs.ai_loyalty[kingdom][player:objectName()]
+			end
+		end
+		if max_value > 0 then
+			for kingdom, v in pairs(sgs.ai_loyalty) do
+				if not table.contains(sgs.KingdomsTable, kingdom) then continue end
+				if sgs.ai_loyalty[kingdom][player:objectName()] == max_value then
+					table.insert(max_kingdom, kingdom)
+				end
+			end
+		end
+		return #max_kingdom > 0 and table.concat(max_kingdom, "?") or "unknown"
+	end
+
+	local anjiang_copy = table.copyFrom(anjiang)
+	for _, p in ipairs(anjiang) do
+		local kingdom_evaluate = get_possible_kingdom(p)
+		local possible_kingdoms = kingdom_evaluate:split("?")
+		if #possible_kingdoms == 1 and kingdom_evaluate ~= "unknown" then
+			value[kingdom_evaluate] = value[kingdom_evaluate] + 6 + sgs.getDefense(p) / 2
+			table.removeOne(anjiang_copy, p)
+		elseif #possible_kingdoms > 1 then
+			local point = (6 + sgs.getDefense(p) / 2) / #possible_kingdoms
+			if string.find(kingdom_evaluate, "wei") then
+				value["wei"] = value["wei"] + point
+			elseif string.find(kingdom_evaluate, "qun") then
+				value["qun"] = value["qun"] + point
+			elseif string.find(kingdom_evaluate, "shu") then
+				value["shu"] = value["shu"] + point
+			elseif string.find(kingdom_evaluate, "wu") then
+				value["wu"] = value["wu"] + point
+			end
+			table.removeOne(anjiang_copy, p)
 		end
 	end
 
@@ -522,30 +570,183 @@ function sgs.gameProcess(update)
 		return value[a] > value[b]
 	end
 	table.sort(kingdoms, cmp)
+
+	if #anjiang_copy > 0 then
+		local anjiang_num = #anjiang_copy
+		local anjiang_value = 0
+		for _, p in ipairs(anjiang) do
+			anjiang_value = anjiang_value + 6 + sgs.getDefense(p) / 2
+		end
+		for i = 1, #kingdoms do
+			local playerNum = players:first():getPlayerNumWithSameKingdom("AI", kingdoms[i])
+			if global_room:getLord(kingdoms[i]) then
+				value[kingdoms[i]] = value[kingdoms[i]] + anjiang_value / anjiang_num / (#kingdoms - i + 1)
+				anjiang_value = anjiang_value - anjiang_value / anjiang_num / (#kingdoms - i + 1)
+				anjiang_num = anjiang_num - anjiang_num / (#kingdoms - i + 1)
+			else
+				value[kingdoms[i]] = value[kingdoms[i]] + math.min((math.floor(all_num / 2) - playerNum), anjiang_num / (#kingdoms + 1 - i)) * anjiang_value / anjiang_num
+				anjiang_value = anjiang_value - math.min((math.floor(all_num / 2) - playerNum), anjiang_num / (#kingdoms + 1 - i)) * anjiang_value / anjiang_num
+				anjiang_num = anjiang_num - math.min((math.floor(all_num / 2) - playerNum), anjiang_num / (#kingdoms + 1 - i))
+			end
+		end
+	end
+
+	table.sort(kingdoms, cmp)
 	local sum_value1, sum_value2, sum_value3 = 0, 0, 0
 	for i = 2, #kingdoms do
 		sum_value1 = sum_value1 + value[kingdoms[i]]
 		if i < #kingdoms then sum_value2 = sum_value2 + value[kingdoms[i]] end
 		if i < #kingdoms - 1 then sum_value3 = sum_value3 + value[kingdoms[i]] end
-
 	end
 
 	local process = "==="
 	if value[kingdoms[1]] >= sum_value1 and value[kingdoms[1]] > 0 then
-		local playerNum_1 = players:first():getPlayerNumWithSameKingdom("AI", kingdoms[1])
-		local playerNum_2 = players:first():getPlayerNumWithSameKingdom("AI", kingdoms[2])
-		if players:length() > 4 and (players:length() / 2 <= playerNum_1 or playerNum_2 + anjiang <= playerNum_1 or anjiang <= 1) then process = kingdoms[1] .. ">>>"
-		elseif anjiang <= players:length() / 2  - 1 then process = kingdoms[1] .. ">>"
-		elseif anjiang <= players:length() / 2 + 1 then process = kingdoms[1] .. ">" end
+		process = kingdoms[1] .. ">>>"
 	elseif value[kingdoms[1]] >= sum_value2 and value[kingdoms[1]] > 0 then
-		if anjiang == 0 then process = kingdoms[1] .. ">>"
-		elseif anjiang <= players:length() / 2 - 1 then process = kingdoms[1] .. ">" end
+		process = kingdoms[1] .. ">>"
 	elseif value[kingdoms[1]] >= sum_value3 and value[kingdoms[1]] > 0 then
 		process = kingdoms[1] .. ">"
 	end
-
 	sgs.ai_process = process
 	return process
+end
+
+function sgs.getDynamicPlayerStrength(player, ishuashen)
+	player = player or self.player
+	local g1, g2
+	if not ishuashen then
+		g1 = player:getGeneral()
+		g2 = player:getGeneral2()
+	else
+		local huashens = player:getTag("Huashens"):toList()
+		local names = {}
+		for _, q in sgs.qlist(huashens) do
+			table.insert(names, q:toString())
+		end
+		g1 = sgs.Sanguosha:getGeneral(names[1])
+		g2 = sgs.Sanguosha:getGeneral(names[2])
+	end
+
+	local current_value = 0
+	for name, value in pairs(sgs.general_pair_value) do
+		if g1:objectName() .. "+" .. g2:objectName() == name or g2:objectName() .. "+" .. g1:objectName() == name then
+			current_value = value
+			break
+		end
+	end
+	local oringin_g1 = 3
+	local oringin_g2 = 3
+	for name, value in pairs(sgs.general_value) do
+		if g1:objectName() == name then oringin_g1 = value end
+		if g2:objectName() == name then oringin_g2 = value end
+	end
+
+	if current_value == 0 then
+		local oringin_g1 = 3
+		local oringin_g2 = 3
+		for name, value in pairs(sgs.general_value) do
+			if g1:objectName() == name then oringin_g1 = value end
+			if g2:objectName() == name then oringin_g2 = value end
+		end
+		current_value = oringin_g1 + oringin_g2
+	end
+
+	local hp_ajust = player:getMaxHp() - math.min(g1:getMaxHpHead(), g2:getMaxHpDeputy())
+	if hp_ajust > 0 and not player:hasShownSkills("xichou|benghuai") then
+		for i = 1, hp_ajust, 1 do
+			current_value = current_value - 1
+		end
+	end
+
+	if ishuashen then
+		for _, skill in sgs.qlist(g1:getVisibleSkillList(true, player:inHeadSkills("huashen"))) do
+			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
+				current_value = current_value - 1
+			end
+		end
+		for _, skill in sgs.qlist(g2:getVisibleSkillList(true, player:inHeadSkills("huashen"))) do
+			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
+				current_value = current_value - 1
+			end
+		end
+	else
+		for _, skill in sgs.qlist(g1:getVisibleSkillList(true, true)) do
+			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
+				current_value = current_value - 1
+			end
+		end
+		for _, skill in sgs.qlist(g2:getVisibleSkillList(true, false)) do
+			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
+				current_value = current_value - 1
+			end
+		end
+	end
+
+	if g1:isCompanionWith(g2:objectName()) and player:getMark("CompanionEffect") == 0 then
+		current_value = current_value - 0.5
+	end
+	if player:hasShownSkills(sgs.cardneed_skill) then
+		if player:getHandcardNum() < 3 then
+			current_value = current_value - 0.4
+		elseif player:getHandcardNum() < 5 then
+			current_value = current_value + 0.5
+		end
+	end
+	if player:hasShownSkills(sgs.masochism_skill) then
+		if player:getHp() < 2 then
+			current_value = current_value - 0.3
+		end
+		for i = 1, player:getHp() - 3, 1 do
+			current_value = current_value + 1
+		end
+		--[[
+		for i = 1, getKnownCard(player, self.player, "Peach", true, "he"), 1 do
+			current_value = current_value + 0.15
+		end
+		for i = 1, getKnownCard(player, self.player, "Analeptic", true, "he"), 1 do
+			current_value = current_value + 0.1
+		end
+		--]]
+	end
+	if player:hasShownSkills(sgs.lose_equip_skill) then
+		--if not player:hasEquip() and getKnownCard(player, self.player, "EquipCard", true, "h") < 2 then
+		--	current_value = current_value - 0.3
+		--end
+		--for i = 1, getKnownCard(player, self.player, "EquipCard", true, "he") - 2, 1 do
+		--	current_value = current_value + 0.15
+		--end
+		for i = 1, player:getEquips():length(), 1 do
+			current_value = current_value + 0.15
+		end
+		for _, p in sgs.qlist(global_room:getOtherPlayers(player)) do
+			if p:isFriendWith(player) then
+				if p:hasShownSkill("duoshi") then
+					current_value = current_value + 0.4
+				end
+				if p:hasShownSkill("zhijian") then
+					current_value = current_value + 0.3
+				end
+			end
+		end
+	end
+	if player:hasShownSkills("qianhuan") then
+		for _, p in sgs.qlist(global_room:getAllPlayers()) do
+			if p:isFriendWith(player) and p:hasShownSkills("jijiu|qingnang") then
+				current_value = current_value + 1.5
+			end
+		end
+	end
+	if player:getLord() and player:getLord():isAlive() and not player:getLord():getPile("flame_map"):isEmpty() then
+		current_value = current_value + 0.5 * player:getLord():getPile("flame_map"):length()
+	end
+	--[[
+	if player:hasShownSkill("jizhi") then
+		for i = 1, getKnownCard(player, self.player, "TrickCard", false, "he"), 1 do
+			current_value = current_value + 0.1
+		end
+	end
+	--]]
+	return current_value
 end
 
 function SmartAI:evaluateKingdom(player, other)

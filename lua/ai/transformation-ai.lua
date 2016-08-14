@@ -229,44 +229,15 @@ end
 
 --左慈
 sgs.ai_skill_invoke.huashen = function(self, data)
-
 	local huashens = self.player:getTag("Huashens"):toList()
-	local head = self.player:inHeadSkills("huashen")
 	if huashens:length() < 2 then return true end
---[[
 	local names = {}
 	for _, q in sgs.qlist(huashens) do
 		table.insert(names, q:toString())
 	end
-	local current_value = 0
-	for name, value in pairs(sgs.general_pair_value) do
-		if names[1] .. "+" .. names[2] == name or names[2] .. "+" .. names[1] == name then
-			current_value = value
-			break
-		end
-	end
-	if current_value == 0 then
-		local oringin_g1 = 3
-		local oringin_g2 = 3
-		for name, value in pairs(sgs.general_value) do
-			if names[1] == name then oringin_g1 = value end
-			if names[2] == name then oringin_g2 = value end
-		end
-		current_value = oringin_g1 + oringin_g2
-	end
-
-	for _, skill in sgs.qlist(sgs.Sanguosha:getGeneral(names[1]):getVisibleSkillList(true, head)) do
-		if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and self.player:getMark(skill:getLimitMark()) == 0 then
-            current_value = current_value - 1
-		end
-	end
-	for _, skill in sgs.qlist(sgs.Sanguosha:getGeneral(names[2]):getVisibleSkillList(true, head)) do
-		if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and self.player:getMark(skill:getLimitMark()) == 0 then
-            current_value = current_value - 1
-		end
-	end
-]]
-	return self:getDynamicPlayerStrength(nil, true) <= 6
+	g1 = sgs.Sanguosha:getGeneral(names[1])
+	g2 = sgs.Sanguosha:getGeneral(names[2])
+	return self:getHuashenPairValue(g1, g2) < 6
 end
 
 sgs.ai_skill_invoke["xinsheng"] = function(self, data)
@@ -283,48 +254,116 @@ sgs.ai_skill_choice.huashen = function(self, choice, data)
 	for _, name1 in ipairs(names) do
 		local g1 = sgs.Sanguosha:getGeneral(name1)
 		if not g1 then continue end
-		local ajust = 0
-		if not g1 then continue end
-		local g1_v = 3
 		for _, skill in sgs.qlist(g1:getVisibleSkillList(true, head)) do
 			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and self.player:getMark(skill:getLimitMark()) == 0 and self.player:hasSkill(skill:objectName()) then
 				ajust = ajust - 1
 			end
 		end
 
-		for name, value in pairs(sgs.general_value) do
-			if name1 == name then g1_v = value break end
-		end
-
 		for _, name2 in ipairs(names) do
 			local g2 = sgs.Sanguosha:getGeneral(name2)
-			if not g2 then continue end
-			if name1 ~= name2 and g1:getKingdom() == g2:getKingdom() then
-				local g2_v = 3
-				for name, value in pairs(sgs.general_value) do
-					if name2 == name then g2_v = value break end
-				end
-				for _, skill in sgs.qlist(g2:getVisibleSkillList(true, head)) do
-					if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and self.player:getMark(skill:getLimitMark()) == 0 and self.player:hasSkill(skill:objectName()) then
-						ajust = ajust - 1
-					end
-				end
-
-				local points = g1_v + g2_v
-				for pair_name, value in pairs(sgs.general_pair_value) do
-					if name1 .. "+" .. name2 == pair_name or name2 .. "+" .. name1 == pair_name then
-						points = value
-						break
-					end
-				end
-				max_point = math.max(max_point, points - ajust)
-				self.player:speak(name1 .. "和" .. name2 .. " 的得分是：" .. points - ajust)
-				if max_point == points then pair = name1 .. "+" .. name2 end
-			end
+			if not g2 or g1:getKingdom() ~= g2:getKingdom() or name1 == name2 then continue end
+			local points = self:getHuashenPairValue(g1, g2)
+			max_point = math.max(max_point, points)
+			if max_point == points then pair = name1 .. "+" .. name2 end
 		end
 	end
 	self.player:speak("结果是：" .. pair)
 	return pair
+end
+
+function SmartAI:getHuashenPairValue(g1, g2)
+	local player= self.player
+	local current_value = 0
+	for name, value in pairs(sgs.general_pair_value) do
+		if g1:objectName() .. "+" .. g2:objectName() == name or g2:objectName() .. "+" .. g1:objectName() == name then
+			current_value = value
+			break
+		end
+	end
+	local oringin_g1 = 3
+	local oringin_g2 = 3
+	for name, value in pairs(sgs.general_value) do
+		if g1:objectName() == name then oringin_g1 = value end
+		if g2:objectName() == name then oringin_g2 = value end
+	end
+
+	if current_value == 0 then
+		local oringin_g1 = 3
+		local oringin_g2 = 3
+		for name, value in pairs(sgs.general_value) do
+			if g1:objectName() == name then oringin_g1 = value end
+			if g2:objectName() == name then oringin_g2 = value end
+		end
+		current_value = oringin_g1 + oringin_g2
+	end
+
+	local skills = {}
+	for _, skill in sgs.qlist(g1:getVisibleSkillList(true, player:inHeadSkills("huashen"))) do
+		table.insert(skills, skill:objectName())
+		if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
+			current_value = current_value - 1
+		end
+	end
+	for _, skill in sgs.qlist(g2:getVisibleSkillList(true, player:inHeadSkills("huashen"))) do
+		table.insert(skills, skill:objectName())
+		if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
+			current_value = current_value - 1
+		end
+	end
+
+	if g1:isCompanionWith(g2:objectName()) and player:getMark("CompanionEffect") == 0 then
+		current_value = current_value - 0.5
+	end
+
+	for _, skill in ipairs(skills) do
+		if sgs.cardneed_skill:match(skill) then
+			if player:getHandcardNum() < 3 then
+				current_value = current_value - 0.4
+			elseif player:getHandcardNum() < 5 then
+				current_value = current_value + 0.5
+			end
+		end
+		if sgs.masochism_skill:match(skill) then
+			if player:getHp() < 2 then
+				current_value = current_value - 0.3
+			end
+			for i = 1, player:getHp() - 3, 1 do
+				current_value = current_value + 0.6
+			end
+			for i = 1, self:getCardsNum("Peach"), 1 do
+				current_value = current_value + 0.15
+			end
+			for i = 1, self:getCardsNum("Analeptic"), 1 do
+				current_value = current_value + 0.1
+			end
+		end
+		if sgs.lose_equip_skill:match(skill) then
+			if self:getCardsNum("EquipCard") < 2 then
+				current_value = current_value - 0.3
+			end
+			for i = 1, self:getCardsNum("EquipCard"), 1 do
+				current_value = current_value + 0.1
+			end
+			for _, p in sgs.qlist(self.room:getOtherPlayers(player)) do
+				if self:isFriend(p) then
+					if p:hasShownSkill("duoshi") then
+						current_value = current_value + 0.4
+					end
+					if p:hasShownSkill("zhijian") then
+						current_value = current_value + 0.3
+					end
+				end
+			end
+		end
+		if skill == "jizhi" then
+			for i = 1, self:getCardsNum("TrickCard"), 1 do
+				current_value = current_value + 0.1
+			end
+		end
+	end
+	player:speak(g1:objectName() .. "+" .. g2:objectName() .. "的组合得分是：" .. current_value)
+	return current_value
 end
 
 sgs.ai_skill_choice.xinsheng = function(self, choice, data)
@@ -346,6 +385,36 @@ sgs.ai_skill_invoke.zhiman = function(self, data)
 	if table.contains(promo, target) then self.player:speak("因为在名单里") return true end
 	if target:hasShownSkills(sgs.masochism_skill) and self.player:canGetCard(target, "e") then self.player:speak("因为防止卖血") return true end
 	return false
+end
+
+sgs.ai_choicemade_filter.skillInvoke.zhiman = function(self, player, promptlist)
+	local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
+	if damage.from and damage.to then
+		if promptlist[#promptlist] == "yes" then
+			if not damage.to:hasEquip() and damage.to:getJudgingArea():isEmpty() then
+				sgs.updateIntention(damage.from, damage.to, -40)
+			end
+		elseif self:canAttack(damage.to) then
+			sgs.updateIntention(damage.from, damage.to, 30)
+		end
+	end
+end
+
+sgs.ai_choicemade_filter.cardChosen.zhiman = function(self, player, promptlist)
+	local intention = 10
+	local id = promptlist[3]
+	local card = sgs.Sanguosha:getCard(id)
+	local target = self.room:findPlayerByObjectName(promptlist[5])
+	if self:needToThrowArmor(target) and self.room:getCardPlace(id) == sgs.Player_PlaceEquip and card:isKindOf("Armor") then
+		intention = -intention
+	elseif self:doNotDiscard(target) then intention = -intention
+	elseif target:hasShownSkills(sgs.lose_equip_skill) and not target:getEquips():isEmpty() and
+		self.room:getCardPlace(id) == sgs.Player_PlaceEquip and card:isKindOf("EquipCard") then
+			intention = -intention
+	elseif self.room:getCardPlace(id) == sgs.Player_PlaceJudge then
+		intention = -intention
+	end
+	sgs.updateIntention(player, target, intention)
 end
 
 local sanyao_skill = {}
@@ -452,6 +521,22 @@ end
 sgs.ai_skill_playerchosen.liefeng = function(self, targets)
 	if not self:willShowForAttack() then return nil end
 	return self:findPlayerToDiscard()
+end
+
+sgs.ai_choicemade_filter.cardChosen.liefeng = function(self, player, promptlist)
+	local intention = 10
+	local id = promptlist[3]
+	local card = sgs.Sanguosha:getCard(id)
+	local target = findPlayerByObjectName(promptlist[5])
+	if self:needToThrowArmor(target) and self.room:getCardPlace(id) == sgs.Player_PlaceEquip and card:isKindOf("Armor") then
+		intention = -intention
+	elseif self:doNotDiscard(target) then intention = -intention
+	elseif target:hasShownSkills(sgs.lose_equip_skill) and not target:getEquips():isEmpty() and
+		self.room:getCardPlace(id) == sgs.Player_PlaceEquip and card:isKindOf("EquipCard") then
+			intention = -intention
+	elseif self:getOverflow(target) > 2 then intention = 0
+	end
+	sgs.updateIntention(player, target, intention)
 end
 
 xuanlue_skill = {}
@@ -1238,129 +1323,4 @@ end
 
 sgs.ai_skill_invoke.transform = function(self, data)
 	return self:needToTransform()
-end
-
-function SmartAI:getDynamicPlayerStrength(player, ishuashen)
-	player = player or self.player
-	local g1, g2
-	if not ishuashen then
-		if player:objectName() == self.player:objectName() then
-			g1 = player:getGeneral()
-			g2 = player:getGeneral2()
-		else
-			g1 = player:getActualGeneral1()
-			g2 = player:getActualGeneral2()
-		end
-	else
-		local huashens = player:getTag("Huashens"):toList()
-		local names = {}
-		for _, q in sgs.qlist(huashens) do
-			table.insert(names, q:toString())
-		end
-		g1 = sgs.Sanguosha:getGeneral(names[1])
-		g2 = sgs.Sanguosha:getGeneral(names[2])
-	end
-
-	local current_value = 0
-	for name, value in pairs(sgs.general_pair_value) do
-		if g1:objectName() .. "+" .. g2:objectName() == name or g2:objectName() .. "+" .. g1:objectName() == name then
-			current_value = value
-			break
-		end
-	end
-	local oringin_g1 = 3
-	local oringin_g2 = 3
-	for name, value in pairs(sgs.general_value) do
-		if g1:objectName() == name then oringin_g1 = value end
-		if g2:objectName() == name then oringin_g2 = value end
-	end
-
-	if current_value == 0 then
-		local oringin_g1 = 3
-		local oringin_g2 = 3
-		for name, value in pairs(sgs.general_value) do
-			if g1:objectName() == name then oringin_g1 = value end
-			if g2:objectName() == name then oringin_g2 = value end
-		end
-		current_value = oringin_g1 + oringin_g2
-	end
-
-	if (g1:objectName() == "guanyu" or g2:objectName() == "lvbu") and player:getMaxHp() < 4 then current_value = current_value - 1 end
-
-
-	if ishuashen then
-		for _, skill in sgs.qlist(g1:getVisibleSkillList(true, player:inHeadSkills("huashen"))) do
-			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
-				current_value = current_value - 1
-			end
-		end
-		for _, skill in sgs.qlist(g2:getVisibleSkillList(true, player:inHeadSkills("huashen"))) do
-			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
-				current_value = current_value - 1
-			end
-		end
-	else
-		for _, skill in sgs.qlist(g1:getVisibleSkillList(true, true)) do
-			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
-				current_value = current_value - 1
-			end
-		end
-		for _, skill in sgs.qlist(g2:getVisibleSkillList(true, false)) do
-			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and player:getMark(skill:getLimitMark()) == 0 then
-				current_value = current_value - 1
-			end
-		end
-	end
-
-	if g1:isCompanionWith(g2:objectName()) and player:getMark("CompanionEffect") == 0 then
-		current_value = current_value - 0.5
-	end
-	if player:hasShownSkills(sgs.cardneed_skill) then
-		if player:getHandcardNum() < 3 then
-			current_value = current_value - 0.4
-		elseif player:getHandcardNum() < 5 then
-			current_value = current_value + 0.5
-		end
-	end
-	if player:hasShownSkills(sgs.masochism_skill) then
-		if player:getHp() < 2 then
-			current_value = current_value - 0.3
-		end
-		for i = 1, player:getHp() - 3, 1 do
-			current_value = current_value + 1
-		end
-		for i = 1, getKnownCard(player, self.player, "Peach", true, "he"), 1 do
-			current_value = current_value + 0.15
-		end
-		for i = 1, getKnownCard(player, self.player, "Analeptic", true, "he"), 1 do
-			current_value = current_value + 0.1
-		end
-	end
-	if player:hasShownSkills(sgs.lose_equip_skill) then
-		if not player:hasEquip() and getKnownCard(player, self.player, "EquipCard", true, "h") < 2 then
-			current_value = current_value - 0.3
-		end
-		for i = 1, getKnownCard(player, self.player, "EquipCard", true, "he") - 2, 1 do
-			current_value = current_value + 0.15
-		end
-	end
-	if player:hasShownSkill("xiaoji") then
-		for _, p in sgs.qlist(self.room:getOtherPlayers(player)) do
-			if self:isFriend(player, p) then
-				if p:hasShownSkill("duoshi") then
-					current_value = current_value + 0.4
-				end
-				if p:hasShownSkill("zhijian") then
-					current_value = current_value + 0.3
-				end
-			end
-		end
-	end
-	if player:hasShownSkill("jizhi") then
-		for i = 1, getKnownCard(player, self.player, "TrickCard", false, "he"), 1 do
-			current_value = current_value + 0.1
-		end
-	end
-	self.player:speak(player:objectName() .. player:screenName() .. "的组合：" .. g1:objectName() .. "+" .. g2:objectName() .. "得分是：" .. current_value)
-	return current_value
 end

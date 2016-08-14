@@ -460,7 +460,9 @@ void CardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
             font.m_shadowColor = Qt::darkGray;
             QString card_name = Sanguosha->translate(names.last());
             QRect rect = G_COMMON_LAYOUT.m_cardAvatarArea;
+            rect.setX(rect.left() - 10);
             rect.setY(rect.bottom() - 10);
+            rect.setWidth(60);
             rect.setHeight(15);
             font.paintText(painter, rect, Qt::AlignHCenter, card_name);
         }
