@@ -2860,17 +2860,17 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 		if flags:match("e") and who:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(who) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 			return who:getArmor():getId()
 			end
-		if flags:match("e") and who:hasShownSkills("jijiu|beige|weimu|qingcheng|LuaJijiu") and not self:doNotDiscard(who, "e", false, 1, reason) then
+		if flags:match("e") and who:hasShownSkills("jijiu|beige|weimu|qingcheng") and not self:doNotDiscard(who, "e", false, 1, reason) then
 			if who:getDefensiveHorse() and not table.contains(disable_list, who:getDefensiveHorse():getEffectiveId()) then
 				return who:getDefensiveHorse():getEffectiveId()
 			end
 			if who:getArmor() and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 				return who:getArmor():getEffectiveId()
 			end
-			if who:getOffensiveHorse() and (not who:hasShownSkills("jijiu|LuaJijiu") or who:getOffensiveHorse():isRed()) and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
+			if who:getOffensiveHorse() and (not who:hasShownSkill("jijiu") or who:getOffensiveHorse():isRed()) and not table.contains(disable_list, who:getOffensiveHorse():getEffectiveId()) then
 				return who:getOffensiveHorse():getEffectiveId()
 			end
-			if who:getWeapon() and (not who:hasShownSkills("jijiu|LuaJijiu") or who:getWeapon():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId()))
+			if who:getWeapon() and (not who:hasShownSkill("jijiu") or who:getWeapon():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId()))
 				and not table.contains(disable_list, who:getWeapon():getEffectiveId()) then
 				return who:getWeapon():getEffectiveId()
 			end
@@ -2880,7 +2880,7 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 			if valuable and not table.contains(disable_list, valuable) then	return valuable	end
 		end
 		if flags:match("h") then
-			if who:hasShownSkills("jijiu|qingnang|qiaobian|jieyin|beige|LuaJijiu")
+			if who:hasShownSkills("jijiu|qingnang|qiaobian|jieyin|beige")
 				and not who:isKongcheng() and who:getHandcardNum() <= 2 and not self:doNotDiscard(who, "h", false, 1, reason) then
 				return self:getCardRandomly(who, "h", disable_list)
 			end
