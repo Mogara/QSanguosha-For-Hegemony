@@ -602,6 +602,7 @@ sgs.ai_skill_exchange["hongfa2"] = function(self,pattern,max_num,min_num,expand_
 end
 
 sgs.ai_slash_prohibit.PeaceSpell = function(self, from, enemy, card)
+	if from:hasShownSkill("zhiman") then return false end
 	if enemy:hasArmorEffect("PeaceSpell") and card:isKindOf("NatureSlash") and not IgnoreArmor(from, enemy) and not from:hasWeapon("IceSword") then return true end
 	return
 end

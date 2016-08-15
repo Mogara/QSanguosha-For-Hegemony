@@ -381,8 +381,9 @@ sgs.ai_skill_invoke.zhiman = function(self, data)
 	local damage = self.player:getTag("zhiman_data"):toDamage()
 	local target = damage.to
 	local promo = self:findPlayerToDiscard("ej", false, sgs.Card_MethodGet, nil, true)
-	if self:isFriend(damage.to) and (table.contains(promo, target) or not self:needToLoseHp(target, self.player)) then self.player:speak("因为是朋友") return true end
-	if table.contains(promo, target) then self.player:speak("因为在名单里") return true end
+	if self:isFriend(damage.to) and (table.contains(promo, target) or not self:needToLoseHp(target, self.player)) then return true end
+	if not self:isFriend(damage.to) and damage.damage > 1 and not target:hasArmorEffect("SilverLion") then return false end
+	if table.contains(promo, target) then return true end
 	if target:hasShownSkills(sgs.masochism_skill) and self.player:canGetCard(target, "e") then self.player:speak("因为防止卖血") return true end
 	return false
 end
@@ -474,12 +475,11 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 		end
 	else
 		if not target then use.card = nil return end
-		self.player:speak("目标是：" .. target:objectName() .. target:screenName())
 		local cards = sgs.QList2Table(self.player:getCards("e"))
 		for _, c in sgs.qlist(self.player:getHandcards()) do
 			table.insert(cards, c)
 		end
-		self:sortByUseValue(cards, true)
+		self:sortByUseValue(cards)
 
 		local card_id
 		for _, c in ipairs(cards) do
@@ -909,7 +909,7 @@ lianzi_skill.getTurnUseCard = function(self)
 	end
 	if num >= 3 then
 		local handcards = sgs.QList2Table(self.player:getHandcards())
-		self:sortByUseValue(handcards, true)
+		self:sortByUseValue(handcards)
 		return sgs.Card_Parse("@LianziCard=" .. handcards[1]:getEffectiveId() .. "&lianzi")
 	end
 end

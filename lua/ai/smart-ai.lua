@@ -732,7 +732,10 @@ function sgs.getDynamicPlayerStrength(player, ishuashen)
 	if player:hasShownSkills("qianhuan") then
 		for _, p in sgs.qlist(global_room:getAllPlayers()) do
 			if p:isFriendWith(player) and p:hasShownSkills("jijiu|qingnang") then
-				current_value = current_value + 1.5
+				current_value = current_value + 5
+			end
+			if p:isFriendWith(player) and not p:objectName() == player:objectName() then
+				current_value = current_value + 3
 			end
 		end
 	end
@@ -2432,16 +2435,13 @@ sgs.ai_skill_discard.gamerule = function(self, discard_num)
 	return to_discard
 end
 
-
 function SmartAI:askForNullification(trick, from, to, positive)
 	if self.player:isDead() then return nil end
-
 	if trick:isKindOf("SavageAssault") and self:isFriend(to) and positive then
 		local menghuo = sgs.findPlayerByShownSkillName("huoshou")
 		if menghuo and self:isFriend(to, menghuo) and menghuo:hasShownSkill("zhiman") then return nil end
 	end
 	if from and self:isFriend(to, from) and self:isFriend(to) and positive and from:hasShownSkill("zhiman") then return nil end
-
 	local nullcards = self.player:getCards("Nullification")
 	local null_num = self:getCardsNum("Nullification")
 	local null_card = self:getCardId("Nullification")
@@ -2501,12 +2501,12 @@ function SmartAI:askForNullification(trick, from, to, positive)
 	if ("snatch|dismantlement"):match(trick:objectName()) and to:isAllNude() then return nil end
 
 	if from then
-		if (trick:isKindOf("Duel") or trick:isKindOf("FireAttack") or trick:isKindOf("AOE")) and self:getDamagedEffects(to, from) and self:isFriend(to) then
-			return nil
-		end
 		if (trick:isKindOf("Duel") or trick:isKindOf("AOE")) and not self:damageIsEffective(to, sgs.DamageStruct_Normal) then return nil end
 		if trick:isKindOf("FireAttack")
 			and (not self:damageIsEffective(to, sgs.DamageStruct_Fire) or from:getHandcardNum() < 3 or (from:hasShownSkill("hongyan") and to:getHandcardNum() > 3)) then return nil end
+		if (trick:isKindOf("Duel") or trick:isKindOf("FireAttack") or trick:isKindOf("AOE")) and self:getDamagedEffects(to, from) and self:isFriend(to) then
+			return nil
+		end
 	end
 	if (trick:isKindOf("Duel") or trick:isKindOf("FireAttack") or trick:isKindOf("AOE")) and self:needToLoseHp(to, from) and self:isFriend(to) then
 		return nil
@@ -2527,9 +2527,8 @@ function SmartAI:askForNullification(trick, from, to, positive)
 	end
 
 	if positive then
-		if from and (trick:isKindOf("FireAttack") or trick:isKindOf("Duel") or trick:isKindOf("ArcheryAttack") or trick:isKindOf("SavageAssault")) and self:cantbeHurt(to, from) then
-			if self:isFriend(from) then return null_card end
-			return
+		if from and (trick:isKindOf("FireAttack") or trick:isKindOf("Duel")) and self:cantbeHurt(to, from) and to:isWeak() and self:isFriend(to) then
+			return null_card
 		end
 
 		local isEnemyFrom = from and self:isEnemy(from)
@@ -2708,10 +2707,10 @@ function SmartAI:askForNullification(trick, from, to, positive)
 
 		if from and from:objectName() == self.player:objectName() then return end
 
-		if (trick:isKindOf("FireAttack") or trick:isKindOf("Duel") or trick:isKindOf("AOE")) and self:cantbeHurt(to, from) then
+		if (trick:isKindOf("FireAttack") or trick:isKindOf("Duel")) and self:cantbeHurt(to, from) then
 			if isEnemyFrom then return null_card end
 		end
-		--[[
+		--[[看不懂原版这一段
 		if from and from:objectName() == to:objectName() then
 			if self:isFriend(from) then return null_card else return end
 		end
@@ -2833,22 +2832,23 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 		end
 	else
 		if reason == "hengzheng" and self.player:getHp() <= 2 then
-			local hasweapon = self.player:getWeapon()
-			local hasarmor = self.player:getArmor()
-			local hasoffhorse = self.player:getOffensiveHorse()
-			local hasdefhorse = self.player:getDefensiveHorse()
-			for _, id in sgs.qlist(self.player:getHandPile()) do
-				if sgs.Sanguosha:getCard(id):isKindOf("Weapon") then hasweapon = true end
-				if sgs.Sanguosha:getCard(id):isKindOf("Armor") then hasarmor = true end
-				if sgs.Sanguosha:getCard(id):isKindOf("OffensiveHorse") then hasoffhorse = true end
-				if sgs.Sanguosha:getCard(id):isKindOf("DefensiveHorse") then hasdefhorse = true end
+			local disable_copy = table.copyFrom(disable_list)
+			local hasweapon
+			local hasarmor
+			local hasoffhorse
+			local hasdefhorse
+			for _, c in sgs.qlist(self.player:getCards("he")) do
+				if c:isKindOf("Weapon") then hasweapon = true end
+				if c:isKindOf("Armor") then hasarmor = true end
+				if c:isKindOf("OffensiveHorse") then hasoffhorse = true end
+				if c:isKindOf("DefensiveHorse") then hasdefhorse = true end
 			end
 			if hasweapon and who:getWeapon() then table.insert(disable_list, who:getWeapon():getEffectiveId()) end
 			if hasarmor and who:getArmor() then table.insert(disable_list, who:getArmor():getEffectiveId()) end
 			if hasoffhorse and who:getOffensiveHorse() then table.insert(disable_list, who:getOffensiveHorse():getEffectiveId()) end
 			if hasdefhorse and who:getDefensiveHorse() then table.insert(disable_list, who:getDefensiveHorse():getEffectiveId()) end
 			if #disable_list >= who:getEquips():length() + who:getHandcardNum() then
-				disable_list = {}
+				disable_list = table.copyFrom(disable_copy)
 			end
 		end
 
@@ -3937,7 +3937,7 @@ function SmartAI:damageIsEffective_(damageStruct)
 		if damage < 1 then return false end
 	end
 
-	if to:hasArmorEffect("PeaceSpell") and nature ~= sgs.DamageStruct_Normal then return false end
+	if to:hasArmorEffect("PeaceSpell") and not from:hasWeapon("IceSword") and not from:hasShownSkill("zhiman") and nature ~= sgs.DamageStruct_Normal then return false end
 	if to:hasShownSkills("jgyuhuo_pangtong|jgyuhuo_zhuque") and nature == sgs.DamageStruct_Fire then return false end
 	if to:getMark("@fog") > 0 and nature ~= sgs.DamageStruct_Thunder then return false end
 	if to:hasArmorEffect("Breastplate") and (damage > to:getHp() or (to:getHp() > 1 and damage == to:getHp())) then return false end
