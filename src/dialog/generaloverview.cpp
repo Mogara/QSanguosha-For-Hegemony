@@ -473,12 +473,27 @@ void GeneralOverview::addLines(const General *general, const Skill *skill)
         button->setEnabled(false);
         button_layout->addWidget(button);
     } else {
-        QRegExp rx(".+/(\\w+\\d?).ogg");
-        for (int i = 0; i < sources.length(); i++) {
-            QString source = sources[i];
-            if (!rx.exactMatch(source))
-                continue;
+        QString pattern = ".+/(" + skill->objectName() + "_" + general->objectName() + ")(\\d?).ogg";
+        QStringList sources_copy;
+        foreach (QString source, sources) {
+            QRegExp rx(pattern);
+            if (rx.exactMatch(source))
+                sources_copy << source;
+        }
+        if (sources_copy.isEmpty()) {
+            pattern = ".+/(" + skill->objectName() + ")(\\d?).ogg";
+            QRegExp rx(pattern);
+            foreach (QString source, sources) {
+                if (rx.exactMatch(source))
+                    sources_copy << source;
+            }
+        }
+        sources = sources_copy;
 
+        for (int i = 0; i < sources.length(); i++) {
+            QRegExp rx(pattern);
+            QString source = sources[i];
+            if (!rx.exactMatch(source)) continue;
             QString button_text = skill_name;
             if (sources.length() != 1)
                 button_text.append(QString(" (%1)").arg(i + 1));
@@ -488,7 +503,7 @@ void GeneralOverview::addLines(const General *general, const Skill *skill)
             button_layout->addWidget(button);
 
             const int skinId = all_generals->value(general);
-            QString filename = rx.capturedTexts().at(1);
+            QString filename = rx.capturedTexts().at(1) + rx.capturedTexts().at(2);
             QString skill_line;
             if (skinId == 0 || usingDefault)
                 skill_line = Sanguosha->translate("$" + filename);

@@ -1263,6 +1263,7 @@ void RoomScene::enableTargets(const Card *card)
         ok_button->setEnabled(false);
         return;
     }
+
     selected_targets.clear();
 
     // unset avatar and all photo
@@ -1875,13 +1876,15 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
             card->setFlag(QGraphicsItem::ItemIsMovable, false);
             if (!reason.m_skillName.isEmpty() && movement.from && movement.to_place != Player::PlaceHand && movement.to_place != Player::PlaceSpecial
                     && movement.to_place != Player::PlaceEquip) {
-                if (movement.from->getGeneral()->hasSkill(reason.m_skillName))
-                    card->showAvatar(movement.from->getGeneral(), reason.m_skillName);
-                else if (movement.from->getGeneral2()->hasSkill(reason.m_skillName))
-                    card->showAvatar(movement.from->getGeneral2(), reason.m_skillName);
+                ClientPlayer *target = ClientInstance->getPlayer(movement.from->objectName());
+                if (!reason.m_playerId.isEmpty() && reason.m_playerId != movement.from->objectName()) target = ClientInstance->getPlayer(reason.m_playerId);
+                if (target->getGeneral()->hasSkill(reason.m_skillName))
+                    card->showAvatar(target->getGeneral(), reason.m_skillName);
+                else if (target->getGeneral2()->hasSkill(reason.m_skillName))
+                    card->showAvatar(target->getGeneral2(), reason.m_skillName);
                 else {
-                    if (movement.from->hasSkill(reason.m_skillName) && !movement.from->ownSkill(reason.m_skillName)) {
-                        card->showAvatar(movement.from->hasShownGeneral1() ? movement.from->getGeneral() : movement.from->getGeneral2(), reason.m_skillName);
+                    if (target->hasSkill(reason.m_skillName) && !target->ownSkill(reason.m_skillName)) {
+                        card->showAvatar(target->hasShownGeneral1() ? target->getGeneral() : target->getGeneral2(), reason.m_skillName);
                     } else {
                         foreach (const General *general, Sanguosha->getGeneralList()) {
                            if (general->hasSkill(reason.m_skillName)) {

@@ -477,6 +477,21 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
         }
         if (skill) fileNames = skill->getSources(general, skinId);
         if (!fileNames.isEmpty()) {
+            QStringList sources_copy;
+            QRegExp rx(".+/" + eventName + "_" + general + "(\\d?).ogg");
+            foreach (QString source, fileNames) {
+                if (rx.exactMatch(source))
+                    sources_copy << source;
+            }
+            if (sources_copy.isEmpty()) {
+                QRegExp rx(".+/" + eventName + "(\\d?).ogg");
+                foreach (QString source, fileNames) {
+                    if (rx.exactMatch(source))
+                        sources_copy << source;
+                }
+            }
+            fileNames = sources_copy;
+
             if (index < 0) {
                 fileName = fileNames.at(qrand() % fileNames.length());
             } else {

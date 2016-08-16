@@ -577,7 +577,6 @@ public:
     {
         relate_to_place = "deputy";
         frequency = Compulsory;
-        events << GameStart << EventPhaseStart;
     }
 
     virtual bool canPreshow() const
@@ -585,23 +584,23 @@ public:
         return false;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &) const
     {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        if (triggerEvent == GameStart) {
-            const Skill *guanxing = Sanguosha->getSkill("guanxing");
-            if (guanxing != NULL && guanxing->inherits("TriggerSkill")) {
-                const TriggerSkill *guanxing_trigger = qobject_cast<const TriggerSkill *>(guanxing);
-                room->getThread()->addTriggerSkill(guanxing_trigger);
-            }
-        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Start)
-            if (!player->hasSkill("guanxing"))
-                return QStringList("guanxing");
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const
+};
+
+class YizhiVH : public ViewHasSkill
+{
+public:
+    YizhiVH() : ViewHasSkill("#yizhi-viewhas")
     {
+    }
+    virtual bool ViewHas(const Player *player, const QString &skill_name) const
+    {
+        if (skill_name == "guanxing" && player->inDeputySkills("yizhi") && !player->inHeadSkills(skill_name))
+            return true;
         return false;
     }
 };
@@ -1454,6 +1453,8 @@ FormationPackage::FormationPackage()
     General *jiangwei = new General(this, "jiangwei", "shu"); // SHU 012 G
     jiangwei->addSkill(new Tiaoxin);
     jiangwei->addSkill(new YiZhi);
+    jiangwei->addSkill(new YizhiVH);
+    insertRelatedSkills("yizhi", "#yizhi-viewhas");
     jiangwei->setDeputyMaxHpAdjustedValue(-1);
     jiangwei->addSkill(new Tianfu);
     jiangwei->addRelateSkill("kanpo");

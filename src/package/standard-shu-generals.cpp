@@ -303,7 +303,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (!player->hasSkill("guanxing")) {
+        if (player->inDeputySkills("yizhi") && !player->inHeadSkills(this)) {
             if (player->askForSkillInvoke(this)) {
                 LogMessage log;
                 log.type = "#InvokeSkill";
@@ -384,7 +384,7 @@ public:
 
     virtual int getGuanxingNum(ServerPlayer *zhuge) const
     {
-        if (zhuge->hasShownSkill(this) && zhuge->hasShownSkill("yizhi")) return 5;
+        if (zhuge->inHeadSkills(this) && zhuge->hasShownGeneral1() && zhuge->hasShownSkill("yizhi")) return 5;
         return qMin(5, zhuge->aliveCount());
     }
 };
@@ -1011,14 +1011,6 @@ public:
                 return true;
         }
         return false;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const
-    {
-        if (!player->hasInnateSkill(objectName()) && player->hasSkill("tianfu"))
-            return (qrand() % 2 + 3);
-        else
-            return (qrand() % 2 + 1);
     }
 };
 

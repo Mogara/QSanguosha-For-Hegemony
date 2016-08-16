@@ -1589,7 +1589,7 @@ sgs.ai_skill_invoke.haoshi = function(self, data)
 	return true
 end
 
-sgs.ai_skill_use["@@haoshivs!"] = function(self, prompt)
+sgs.ai_skill_use["@@haoshi!"] = function(self, prompt)
 	local target = self.haoshi_target
 	if not self.haoshi_target or self.haoshi_target:isDead() then
 		local otherPlayers = sgs.QList2Table(self.room:getOtherPlayers(self.player))

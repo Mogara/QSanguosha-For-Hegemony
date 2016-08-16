@@ -29,6 +29,7 @@
 #include "serverplayer.h"
 
 #include <QFile>
+#include <QDir>
 
 Skill::Skill(const QString &name, Frequency frequency)
     : frequency(frequency), limit_mark(QString()), relate_to_place(QString()), attached_lord_skill(false)
@@ -125,9 +126,20 @@ int Skill::getEffectIndex(const ServerPlayer *, const Card *) const
 void Skill::initMediaSource()
 {
     sources.clear();
+    QDir dir;
+    dir.setPath("./audio/skill");
+    dir.setFilter(QDir::Files | QDir::Hidden);
+    dir.setSorting(QDir::Name);
+    QStringList names = dir.entryList();
+    QStringList newnames = names.filter(objectName() + "_");
+    foreach (QString name, newnames) {
+        if (QFile::exists("audio/skill/" +  name))
+            sources << "audio/skill/" +  name;
+    }
+
     for (int i = 1;; ++i) {
         QString effect_file = QString("audio/skill/%1%2.ogg").arg(objectName()).arg(QString::number(i));
-        if (QFile::exists(effect_file))
+        if (QFile::exists(effect_file) && !sources.contains(effect_file))
             sources << effect_file;
         else
             break;
@@ -135,7 +147,7 @@ void Skill::initMediaSource()
 
     if (sources.isEmpty()) {
         QString effect_file = QString("audio/skill/%1.ogg").arg(objectName());
-        if (QFile::exists(effect_file))
+        if (QFile::exists(effect_file) && !sources.contains(effect_file))
             sources << effect_file;
     }
 }

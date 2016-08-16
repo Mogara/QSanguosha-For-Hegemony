@@ -1695,12 +1695,12 @@ void GongxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         result = operation.first();
     source->tag.remove("gongxin");
     if (result == "discard") {
-        CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, source->objectName(), NULL, "gongxin", NULL);
+        CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, source->objectName(), target->objectName(), "gongxin", NULL);
         room->throwCard(Sanguosha->getCard(card_id), reason, target, source);
     }
     else {
         source->setFlags("Global_GongxinOperator");
-        CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_PUT, source->objectName(), NULL, "gongxin", NULL);
+        CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_PUT, source->objectName(), target->objectName(), "gongxin", NULL);
         room->moveCardTo(Sanguosha->getCard(card_id), target, NULL, Player::DrawPile, reason, true);
         source->setFlags("-Global_GongxinOperator");
     }
@@ -1795,25 +1795,29 @@ class FlameMap : public TriggerSkill
 public:
     FlameMap() : TriggerSkill("flamemap")
     {
-        events << TargetConfirming << DrawNCards;
+        events << Damaged;
         view_as_skill = new FlameMapVS;
         attached_lord_skill = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const
     {
         ServerPlayer *sunquan = room->getLord(player->getKingdom());
         if (!sunquan || sunquan->isDead() || !TriggerSkill::triggerable(player)) return QStringList();
-         if (triggerEvent == TargetConfirming && !Sanguosha->getSkill("qianxun") && sunquan->getPile("flame_map").length() >= 4) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card && use.card->getTypeId() == Card::TypeTrick && (use.card->isKindOf("Snatch") || use.card->isKindOf("Indulgence"))
-                    && (use.to.contains(player)))
-                return QStringList("qianxun-cancel");
-        } else if (triggerEvent == DrawNCards) {
-            QStringList invoke;
-            if (!Sanguosha->getSkill("yingzi") && !player->hasSkill("yingzi_zhouyu") && !player->hasSkill("yingzi_sunce") && sunquan->getPile("flame_map").length() >= 1 && player->canShowGeneral()) invoke << "yingziextra";
-            if (!Sanguosha->getSkill("haoshi") && sunquan->getPile("flame_map").length() >= 2) invoke << "haoshi-draw";
-            return invoke;
+        QList<int> ids = player->getPile("flame_map");
+        if (!ids.isEmpty()) {
+            if (!room->askForUseCard(player, "@@jiahe!", "@jiahe", -1, Card::MethodUse)) {
+                room->setCardFlag(ids.first(), "-flame_map");
+                CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, player->objectName());
+                CardsMoveStruct move(ids.first(), player, NULL, Player::PlaceSpecial, Player::PlaceTable, reason);
+                move.from_pile_name = "flame_map";
+                room->moveCardsAtomic(move, true);
+                QList<int> new_list = room->getCardIdsOnTable(ids);
+                if (!new_list.isEmpty()) {
+                    CardsMoveStruct move2(new_list, player, NULL, Player::PlaceTable, Player::DiscardPile, reason);
+                    room->moveCardsAtomic(move2, true);
+                }
+            }
         }
         return QStringList();
     }
@@ -1824,6 +1828,14 @@ class YingziEtra : public TriggerSkill
 public:
     YingziEtra() : TriggerSkill("yingziextra")
     {
+        events << DrawNCards;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const
+    {
+        if (TriggerSkill::triggerable(player) && !player->hasSkill("yingzi_zhouyu") && !player->hasSkill("yingzi_sunce"))
+            return QStringList("yingziextra");
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
@@ -1886,7 +1898,7 @@ class Jiahe : public TriggerSkill
 public:
     Jiahe() : TriggerSkill("jiahe$")
     {
-        events << GeneralShown << Death << CardsMoveOneTime << Damaged;
+        events << GeneralShown << Death << CardsMoveOneTime;
         frequency = Compulsory;
         view_as_skill = new JiaheVS;
     }
@@ -1895,23 +1907,7 @@ public:
     {
         if (player == NULL)
             return QStringList();
-        if (triggerEvent == Damaged) {
-            QList<int> ids = player->getPile("flame_map");
-            if (!ids.isEmpty()) {
-                if (!room->askForUseCard(player, "@@jiahe!", "@jiahe", -1, Card::MethodUse)) {
-                    room->setCardFlag(ids.first(), "-flame_map");
-                    CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, player->objectName());
-                    CardsMoveStruct move(ids.first(), player, NULL, Player::PlaceSpecial, Player::PlaceTable, reason);
-                    move.from_pile_name = "flame_map";
-                    room->moveCardsAtomic(move, true);
-                    QList<int> new_list = room->getCardIdsOnTable(ids);
-                    if (!new_list.isEmpty()) {
-                        CardsMoveStruct move2(new_list, player, NULL, Player::PlaceTable, Player::DiscardPile, reason);
-                        room->moveCardsAtomic(move2, true);
-                    }
-                }
-            }
-        } else if (triggerEvent == CardsMoveOneTime) {
+        if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
              if (player->isLord() && player->hasLordSkill(objectName())) {
                  if (move.from_pile_names.contains("flame_map") && player->getPile("flame_map").length() < 3) {
@@ -1976,24 +1972,33 @@ public:
     {
         if (skill_name == "zhiheng" && player->hasTreasure("Luminouspearl")) return true;
 
+        const Player *sunquan = NULL;
+        if (player->getActualGeneral1() && player->getActualGeneral1()->isLord()) sunquan = player;
+        if (!sunquan) {
+            QList<const Player *> sib = player->getAliveSiblings();
+            foreach (const Player *p, sib) {
+                if (p->getGeneral() && p->getGeneral()->isLord() && p->getKingdom() == player->getKingdom()) {
+                    sunquan = p;
+                    break;
+                }
+            }
+        }
+        if (!sunquan) return false;
+
         if (skill_name == "yingzi" || skill_name == "yingziextra") {
-            const Player *sunquan = player->getLord();
-            if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(player) && sunquan->getPile("flame_map").length() >= 1) return true;
+            if (sunquan && sunquan->hasLordSkill("jiahe") && player->willBeFriendWith(sunquan) && sunquan->getPile("flame_map").length() >= 1) return true;
         }
 
         if (skill_name == "haoshi") {
-            const Player *sunquan = player->getLord();
-            if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(player) && sunquan->getPile("flame_map").length() >= 2) return true;
+            if (sunquan && sunquan->hasLordSkill("jiahe") && player->willBeFriendWith(sunquan) && sunquan->getPile("flame_map").length() >= 2) return true;
         }
 
         if (skill_name == "gongxin") {
-            const Player *sunquan = player->getLord();
-            if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(player) && sunquan->getPile("flame_map").length() >= 3) return true;
+            if (sunquan && sunquan->hasLordSkill("jiahe") && player->willBeFriendWith(sunquan) && sunquan->getPile("flame_map").length() >= 3) return true;
         }
 
         if (skill_name == "qianxun") {
-            const Player *sunquan = player->getLord();
-            if (sunquan && sunquan->hasLordSkill("jiahe") && sunquan->isFriendWith(player) && sunquan->getPile("flame_map").length() >= 4) return true;
+            if (sunquan && sunquan->hasLordSkill("jiahe") && player->willBeFriendWith(sunquan) && sunquan->getPile("flame_map").length() >= 4) return true;
         }
         return false;
     }

@@ -450,24 +450,15 @@ public:
         if (!use.card || use.card->getTypeId() != Card::TypeTrick || (!use.card->isKindOf("Snatch") && !use.card->isKindOf("Indulgence")))
             return QStringList();
         if (!use.to.contains(player)) return QStringList();
-        return QStringList("qianxun-cancel");
-    }
-};
-
-class QianxunCancel : public TriggerSkill
-{
-public:
-    QianxunCancel() : TriggerSkill("qianxun-cancel")
-    {
+        return QStringList(objectName());
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        bool invoke = player->hasShownSkill("qianxun") ? true : player->askForSkillInvoke("qianxun");
+        bool invoke = player->hasShownSkill(this) ? true : player->askForSkillInvoke(this);
         if (invoke) {
-            if (player->ownSkill("qianxun")) {
-                player->showGeneral(player->inHeadSkills("qianxun"));
-                room->broadcastSkillInvoke("qianxun", player);
+            if (player->getTriggerSkills().contains(this)) {
+                room->broadcastSkillInvoke(objectName(), player);
             } else {
                 if (!player->hasShownOneGeneral()) {
                     QStringList q;
@@ -491,7 +482,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        room->sendCompulsoryTriggerLog(player, "qianxun");
+        room->sendCompulsoryTriggerLog(player, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
         room->cancelTarget(use, player); // Room::cancelTarget(use, player);
         data = QVariant::fromValue(use);
@@ -1216,7 +1207,7 @@ void HaoshiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
 class HaoshiViewAsSkill : public ViewAsSkill
 {
 public:
-    HaoshiViewAsSkill() : ViewAsSkill("haoshivs")
+    HaoshiViewAsSkill() : ViewAsSkill("haoshi")
     {
     }
 
@@ -1231,7 +1222,7 @@ public:
 
     virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
     {
-        return pattern.startsWith("@@haoshivs");
+        return pattern.startsWith("@@haoshi");
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
@@ -1245,12 +1236,12 @@ public:
     }
 };
 
-class Haoshi : public TriggerSkill
+class Haoshi : public DrawCardsSkill
 {
 public:
-    Haoshi() : TriggerSkill("haoshi")
+    Haoshi() : DrawCardsSkill("haoshi")
     {
-        events << DrawNCards;
+        view_as_skill = new HaoshiViewAsSkill;
     }
 
     virtual bool canPreshow() const
@@ -1258,26 +1249,11 @@ public:
         return true;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *lusu, QVariant &, ServerPlayer * &) const
-    {
-        if (TriggerSkill::triggerable(lusu)) return QStringList("haoshi-draw");
-        return QStringList();
-    }
-};
-
-class HaoshiDraw : public DrawCardsSkill
-{
-public:
-    HaoshiDraw() : DrawCardsSkill("haoshi-draw")
-    {
-    }
-
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke("haoshi")) {
-            if (player->ownSkill("haoshi")) {
-                player->showGeneral(player->inHeadSkills("haoshi"));
-                room->broadcastSkillInvoke("haoshi", player);
+        if (player->askForSkillInvoke(this)) {
+            if (player->getTriggerSkills().contains(this)) {
+                room->broadcastSkillInvoke(objectName(), player);
             } else {
                 if (!player->hasShownOneGeneral()) {
                     QStringList q;
@@ -1301,7 +1277,7 @@ public:
 
     virtual int getDrawNum(ServerPlayer *lusu, int n) const
     {
-        lusu->setFlags("haoshi");
+        lusu->setFlags(objectName());
         return n + 2;
     }
 };
@@ -1309,7 +1285,7 @@ public:
 class HaoshiGive : public TriggerSkill
 {
 public:
-    HaoshiGive() : TriggerSkill("haoshi-give")
+    HaoshiGive() : TriggerSkill("#haoshi-give")
     {
         events << AfterDrawNCards;
         frequency = Compulsory;
@@ -1337,7 +1313,7 @@ public:
             least = qMin(player->getHandcardNum(), least);
         room->setPlayerMark(lusu, "haoshi", least);
 
-        if (!room->askForUseCard(lusu, "@@haoshivs!", "@haoshi", -1, Card::MethodNone)) {
+        if (!room->askForUseCard(lusu, "@@haoshi!", "@haoshi", -1, Card::MethodNone)) {
             // force lusu to give his half cards
             ServerPlayer *beggar = NULL;
             foreach (ServerPlayer *player, other_players) {
@@ -1870,7 +1846,9 @@ void StandardPackage::addWuGenerals()
 
     General *lusu = new General(this, "lusu", "wu", 3); // WU 014
     lusu->addSkill(new Haoshi);
+    lusu->addSkill(new HaoshiGive);
     lusu->addSkill(new Dimeng);
+    insertRelatedSkills("haoshi", "#haoshi-give");
 
     General *erzhang = new General(this, "erzhang", "wu", 3); // WU 015
     erzhang->addSkill(new Zhijian);
@@ -1881,8 +1859,6 @@ void StandardPackage::addWuGenerals()
     General *dingfeng = new General(this, "dingfeng", "wu"); // WU 016
     dingfeng->addSkill(new Duanbing);
     dingfeng->addSkill(new Fenxun);
-
-    skills << new QianxunCancel << new HaoshiDraw << new HaoshiGive << new HaoshiViewAsSkill;
 
     addMetaObject<ZhihengCard>();
     addMetaObject<KurouCard>();
