@@ -2366,6 +2366,7 @@ void RoomScene::highlightSkillButton(const QString &skillName, const CardUseStru
                     && vsSkill->isAvailable(Self, reason, pattern)) {
                     button->setEnabled(true);
                     button->setState(QSanButton::S_STATE_DOWN);
+                    button->skill_activated();
                     break;
                 }
             } else {
