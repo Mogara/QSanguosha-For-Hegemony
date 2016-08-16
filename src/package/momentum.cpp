@@ -980,9 +980,16 @@ public:
         bool invoke = false;
         if (player->canDiscard(player, "he")) {
             const Card *card = room->askForExchange(player, objectName(), 1, 0, "@fengming", "", ".");
-            CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, player->objectName(), player->objectName(), objectName(), NULL);
-            room->throwCard(card, reason, player);
-            invoke = true;
+            if (card) {
+                LogMessage log;
+                log.type = "#InvokeSkill";
+                log.from = player;
+                log.arg = objectName();
+                room->sendLog(log);
+                CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, player->objectName(), player->objectName(), objectName(), NULL);
+                room->throwCard(card, reason, player);
+                invoke = true;
+            }
         } else
             invoke = player->askForSkillInvoke(this);
         if (invoke) {
