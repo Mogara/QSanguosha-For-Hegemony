@@ -318,8 +318,11 @@ sgs.ai_skill_invoke.fenming = function(self)
 			end
 		end
 	end
-	--self.room:writeToConsole(value / count)
 	return value / count >= 0.2
+end
+
+sgs.ai_skill_exchange.fenming = function(self)
+	return self:askForSkillInvoke("fenming") and self:askForDiscard("dummy_reason", 1, 1, false, true)
 end
 
 sgs.ai_skill_invoke.jiang = function(self, data)

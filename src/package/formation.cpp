@@ -817,7 +817,8 @@ void ShangyiCard::onEffect(const CardEffectStruct &effect) const
         if (to_discard == -1) return;
 
         effect.from->tag.remove("shangyi");
-        room->throwCard(to_discard, effect.to, effect.from);
+        CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, effect.from->objectName(), effect.to->objectName(), "shangyi", NULL);
+        room->throwCard(Sanguosha->getCard(to_discard), reason,effect.to, effect.from);
     } else {
         room->broadcastSkillInvoke("shangyi", 2, effect.from);
         QStringList list;

@@ -977,13 +977,19 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke(this)) {
-
+        bool invoke = false;
+        if (player->canDiscard(player, "he")) {
+            const Card *card = room->askForExchange(player, objectName(), 1, 0, "@fengming", "", ".");
+            CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, player->objectName(), player->objectName(), objectName(), NULL);
+            room->throwCard(card, reason, player);
+            invoke = true;
+        } else
+            invoke = player->askForSkillInvoke(this);
+        if (invoke) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->isChained())
                     room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
             }
-
             room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
@@ -994,13 +1000,11 @@ public:
     virtual bool onPhaseChange(ServerPlayer *player) const
     {
         Room *room = player->getRoom();
-        foreach (ServerPlayer *p, room->getAllPlayers()) {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (p->isChained() && player->canDiscard(p, "he") && player->isAlive()) {
-                if (player != p) {
-                    int card_id = room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodDiscard);
-                    room->throwCard(card_id, p, player);
-                } else
-                    room->askForDiscard(player, objectName(), 1, 1, false, true);
+                CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, player->objectName(), p->objectName(), objectName(), NULL);
+                int card_id = room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodDiscard);
+                room->throwCard(Sanguosha->getCard(card_id), reason, p, player);
             }
         }
         return false;
