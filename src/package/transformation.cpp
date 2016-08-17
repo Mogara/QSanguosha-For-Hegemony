@@ -580,13 +580,14 @@ public:
         if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play) {
             room->setPlayerFlag(player, "xichou");
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getTypeId() != Card::TypeSkill)
+            if (use.card->getTypeId() != Card::TypeSkill) {
                 if (use.card->isBlack())
                     room->setPlayerMark(player, "xichou_color", 1);
                 else if (use.card->isRed())
                     room->setPlayerMark(player, "xichou_color", 2);
                 else
                     room->setPlayerMark(player, "xichou_color", 0);
+            }
         }
     }
 };
@@ -1776,7 +1777,13 @@ public:
     FlameMapVS() : OneCardViewAsSkill("flamemap")
     {
         attached_lord_skill = true;
-        filter_pattern = "EquipCard!";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
+    {
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
+            return to_select->isKindOf("EquipCard");
+        return Self->getPile("flame_map").contains(to_select->getEffectiveId());
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -1787,12 +1794,25 @@ public:
         return !player->hasUsed("FlameMapCard") && player->canShowGeneral();
     }
 
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        return pattern.startsWith("@@flamemap");
+    }
+
     virtual const Card *viewAs(const Card *originalCard) const
     {
         FlameMapCard *slash = new FlameMapCard;
         slash->addSubcard(originalCard);
         return slash;
     }
+
+    virtual QString getExpandPile() const
+    {
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
+            return QString();
+        return "flame_map";
+    }
+
 };
 
 class FlameMap : public TriggerSkill
@@ -1811,7 +1831,7 @@ public:
         if (!sunquan || sunquan->isDead() || !TriggerSkill::triggerable(player)) return QStringList();
         QList<int> ids = player->getPile("flame_map");
         if (!ids.isEmpty()) {
-            if (!room->askForUseCard(player, "@@jiahe!", "@jiahe", -1, Card::MethodUse)) {
+            if (!room->askForUseCard(player, "@@flamemap!", "@flamemap", -1, Card::MethodNone, false)) {
                 room->setCardFlag(ids.first(), "-flame_map");
                 CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, player->objectName());
                 CardsMoveStruct move(ids.first(), player, NULL, Player::PlaceSpecial, Player::PlaceTable, reason);
@@ -1872,32 +1892,6 @@ public:
     }
 };
 
-class JiaheVS : public OneCardViewAsSkill
-{
-public:
-    JiaheVS() : OneCardViewAsSkill("jiahe")
-    {
-        filter_pattern = ".|.|.|flame_map";
-        expand_pile = "flame_map";
-    }
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
-    {
-        return pattern.startsWith("@@jiahe");
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const
-    {
-        return false;
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const
-    {
-        FlameMapCard *slash = new FlameMapCard;
-        slash->addSubcard(originalCard);
-        return slash;
-    }
-};
-
 class Jiahe : public TriggerSkill
 {
 public:
@@ -1905,7 +1899,6 @@ public:
     {
         events << GeneralShown << Death << CardsMoveOneTime;
         frequency = Compulsory;
-        view_as_skill = new JiaheVS;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const

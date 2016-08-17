@@ -168,6 +168,7 @@ public:
     void updateCard(const QVariant &val);
     void mirrorGuanxingStep(const QVariant &args);
     void mirrorMoveCardsStep(const QVariant &args);
+    void setActualGeneral(const QVariant &args);
 
     void fillAG(const QVariant &cards_str);
     void takeAG(const QVariant &take_var);

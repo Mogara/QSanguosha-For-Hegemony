@@ -2087,6 +2087,26 @@ void ServerPlayer::slashSettlementFinished(const Card *slash)
     }
 }
 
+void ServerPlayer::setActualGeneral1Name(const QString &name)
+{
+    Player::setActualGeneral1Name(name);
+    JsonArray args;
+    args << objectName();
+    args << name;
+    args << true;
+    room->doBroadcastNotify(QSanProtocol::S_COMMAND_SET_ACTULGENERAL, args);
+}
+
+void ServerPlayer::setActualGeneral2Name(const QString &name)
+{
+    Player::setActualGeneral2Name(name);
+    JsonArray args;
+    args << objectName();
+    args << name;
+    args << false;
+    room->doBroadcastNotify(QSanProtocol::S_COMMAND_SET_ACTULGENERAL, args);
+}
+
 #ifndef QT_NO_DEBUG
 bool ServerPlayer::event(QEvent *event) {
 #define SET_MY_PROPERTY {\

@@ -1878,22 +1878,12 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
                     && movement.to_place != Player::PlaceEquip) {
                 ClientPlayer *target = ClientInstance->getPlayer(movement.from->objectName());
                 if (!reason.m_playerId.isEmpty() && reason.m_playerId != movement.from->objectName()) target = ClientInstance->getPlayer(reason.m_playerId);
-                if (target->getGeneral()->hasSkill(reason.m_skillName))
-                    card->showAvatar(target->getGeneral(), reason.m_skillName);
-                else if (target->getGeneral2()->hasSkill(reason.m_skillName))
-                    card->showAvatar(target->getGeneral2(), reason.m_skillName);
-                else {
-                    if (target->hasSkill(reason.m_skillName) && !target->ownSkill(reason.m_skillName)) {
+                if (target->getActualGeneral1()->hasSkill(reason.m_skillName))
+                    card->showAvatar(target->getActualGeneral1(), reason.m_skillName);
+                else if (target->getActualGeneral2()->hasSkill(reason.m_skillName))
+                    card->showAvatar(target->getActualGeneral2(), reason.m_skillName);
+                else if (target->hasSkill(reason.m_skillName) && !target->ownSkill(reason.m_skillName))
                         card->showAvatar(target->hasShownGeneral1() ? target->getGeneral() : target->getGeneral2(), reason.m_skillName);
-                    } else {
-                        foreach (const General *general, Sanguosha->getGeneralList()) {
-                           if (general->hasSkill(reason.m_skillName)) {
-                               card->showAvatar(general, reason.m_skillName);
-                               break;
-                           }
-                        }
-                    }
-                }
             }
             int card_id = card->getId();
             if (!card_moves[i].card_ids.contains(card_id)) {
@@ -2872,7 +2862,11 @@ void RoomScene::onSkillActivated()
             current_guhuo_box->clear();
         dashboard->startPending(skill);
         //ok_button->setEnabled(false);
-        cancel_button->setEnabled(true);
+        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        if (pattern.endsWith("!"))
+            cancel_button->setEnabled(false);
+        else
+            cancel_button->setEnabled(true);
 
         const Card *card = dashboard->getPendingCard();
         if (card && card->targetFixed() && card->isAvailable(Self)) {

@@ -321,6 +321,11 @@ const ViewAsSkill *ViewAsSkill::parseViewAsSkill(const Skill *skill)
     return NULL;
 }
 
+QString ViewAsSkill::getExpandPile() const
+{
+    return expand_pile;
+}
+
 ZeroCardViewAsSkill::ZeroCardViewAsSkill(const QString &name)
     : ViewAsSkill(name)
 {
@@ -337,6 +342,11 @@ const Card *ZeroCardViewAsSkill::viewAs(const QList<const Card *> &cards) const
 bool ZeroCardViewAsSkill::viewFilter(const QList<const Card *> &, const Card *) const
 {
     return false;
+}
+
+QString ZeroCardViewAsSkill::getExpandPile() const
+{
+    return expand_pile;
 }
 
 OneCardViewAsSkill::OneCardViewAsSkill(const QString &name)
@@ -377,6 +387,11 @@ const Card *OneCardViewAsSkill::viewAs(const QList<const Card *> &cards) const
         return NULL;
     else
         return viewAs(cards.first());
+}
+
+QString OneCardViewAsSkill::getExpandPile() const
+{
+    return expand_pile;
 }
 
 FilterSkill::FilterSkill(const QString &name)

@@ -467,14 +467,15 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
         QString general;
         int skinId = 0;
         if (player != NULL) {
-            if (player->inHeadSkills(skill)) {
-                general = player->getGeneralName();
+            if (player->getActualGeneral1()->hasSkill(eventName)) {
+                general = player->getActualGeneral1Name();
                 skinId = player->getHeadSkinId();
-            } else if (player->inDeputySkills(skill)) {
-                general = player->getGeneral2Name();
+            } else if (player->getActualGeneral2()->hasSkill(eventName)) {
+                general = player->getActualGeneral2Name();
                 skinId = player->getDeputySkinId();
             }
         }
+
         if (skill) fileNames = skill->getSources(general, skinId);
         if (!fileNames.isEmpty()) {
             QStringList sources_copy;
@@ -491,16 +492,17 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
                 }
             }
             fileNames = sources_copy;
-
-            if (index < 0) {
-                fileName = fileNames.at(qrand() % fileNames.length());
-            } else {
-                if (fileNames.length() >= index) {
-                    return fileNames[index - 1];
+            if (!fileNames.isEmpty()) {
+                if (index < 0) {
+                    fileName = fileNames.at(qrand() % fileNames.length());
                 } else {
-                    while (index > fileNames.length())
-                        index -= fileNames.length();
-                    return fileNames[index - 1];
+                    if (fileNames.length() >= index) {
+                        return fileNames[index - 1];
+                    } else {
+                        while (index > fileNames.length())
+                            index -= fileNames.length();
+                        return fileNames[index - 1];
+                    }
                 }
             }
         }

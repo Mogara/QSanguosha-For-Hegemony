@@ -92,6 +92,14 @@ public:
     virtual bool isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const = 0;
 };
 
+class ViewHasSkill : public Skill {
+
+public:
+    ViewHasSkill(const QString &name);
+
+    virtual bool ViewHas(const Player *player, const QString &skill_name) const = 0;
+};
+
 class DistanceSkill: public Skill {
 public:
     DistanceSkill(const QString &name);
@@ -144,6 +152,14 @@ public:
     LuaFunction is_cardfixed;
 };
 
+class LuaViewHasSkill : public ViewHasSkill {
+public:
+    LuaViewHasSkill(const char *name);
+
+    virtual bool ViewHas(const Player *player, const QString &skill_name) const;
+    LuaFunction is_viewhas;
+};
+
 class ViewAsSkill: public Skill {
 public:
     ViewAsSkill(const QString &name);
@@ -173,6 +189,7 @@ public:
     LuaFunction enabled_at_play;
     LuaFunction enabled_at_response;
     LuaFunction enabled_at_nullification;
+    LuaFunction in_pile;
 };
 
 class OneCardViewAsSkill: public ViewAsSkill {
@@ -996,6 +1013,30 @@ bool LuaFixCardSkill::isCardFixed(const Player *from, const Player *to, const QS
     return result;
 }
 
+bool LuaViewHasSkill::ViewHas(const Player *player, const QString &skill_name) const
+{
+    if (is_viewhas == 0)
+        return false;
+
+    lua_State *L = Sanguosha->getLuaState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, is_viewhas);
+
+    SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaViewHasSkill, 0);
+    SWIG_NewPointerObj(L, player, SWIGTYPE_p_Player, 0);
+    lua_pushstring(L, skill_name.toLatin1());
+
+    int error = lua_pcall(L, 3, 1, 0);
+    if (error) {
+        Error(L);
+        return false;
+    }
+
+    bool result = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return result;
+}
+
 int LuaDistanceSkill::getCorrect(const Player *from, const Player *to) const
 {
     if (correct_func == 0)
@@ -1401,6 +1442,30 @@ bool LuaViewAsSkill::isEnabledAtNullification(const ServerPlayer *player) const
         return result;
     }
 }
+
+QString LuaViewAsSkill::getExpandPile() const
+{
+    if (in_pile == 0)
+        return ViewAsSkill::getExpandPile();
+
+    lua_State *L = Sanguosha->getLuaState();
+
+    // the callback
+    lua_rawgeti(L, LUA_REGISTRYINDEX, in_pile);
+
+    pushSelf(L);
+
+    int error = lua_pcall(L, 1, 1, 0);
+    if (error) {
+        Error(L);
+        return false;
+    } else {
+        const char *result = lua_tostring(L, -1);
+        lua_pop(L, 1);
+        return QString(QLatin1String(result));
+    }
+}
+
 // ---------------------
 
 void LuaSkillCard::pushSelf(lua_State *L) const

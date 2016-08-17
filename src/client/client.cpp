@@ -101,6 +101,7 @@ Client::Client(QObject *parent, const QString &filename)
     callbacks[S_COMMAND_UPDATE_HANDCARD_NUM] = &Client::setHandcardNum;
     callbacks[S_COMMAND_MIRROR_GUANXING_STEP] = &Client::mirrorGuanxingStep;
     callbacks[S_COMMAND_MIRROR_MOVECARDS_STEP] = &Client::mirrorMoveCardsStep;
+    callbacks[S_COMMAND_SET_ACTULGENERAL] = &Client::setActualGeneral;
 
     // interactive methods
     interactions[S_COMMAND_CHOOSE_GENERAL] = &Client::askForGeneral;
@@ -295,6 +296,22 @@ void Client::mirrorMoveCardsStep(const QVariant &args)
         }
     } else if (step == S_GUANXING_FINISH) {
         emit mirror_cardchoose_finish();
+    }
+}
+
+void Client::setActualGeneral(const QVariant &args)
+{
+    JsonArray arg = args.value<JsonArray>();
+    if (arg.isEmpty()) return;
+    QString player_name = arg[0].toString();
+    QString general_name = arg[1].toString();
+    bool head = arg[2].toBool();
+    ClientPlayer *player = getPlayer(player_name);
+    if (!player) return;
+    if (head) {
+        player->setActualGeneral1Name(general_name);
+    } else {
+        player->setActualGeneral2Name(general_name);
     }
 }
 

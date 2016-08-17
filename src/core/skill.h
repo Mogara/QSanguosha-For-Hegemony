@@ -109,10 +109,7 @@ public:
     {
         return response_or_use;
     }
-    inline QString getExpandPile() const
-    {
-        return expand_pile;
-    }
+    virtual QString getExpandPile() const;
 
 protected:
     QString response_pattern;
@@ -131,6 +128,7 @@ public:
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const;
     virtual const Card *viewAs(const QList<const Card *> &cards) const;
     virtual const Card *viewAs() const = 0;
+    virtual QString getExpandPile() const;
 };
 
 class OneCardViewAsSkill : public ViewAsSkill
@@ -145,6 +143,7 @@ public:
 
     virtual bool viewFilter(const Card *to_select) const;
     virtual const Card *viewAs(const Card *originalCard) const = 0;
+    virtual QString getExpandPile() const;
 
 protected:
     QString filter_pattern;

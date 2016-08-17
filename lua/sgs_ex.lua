@@ -115,6 +115,16 @@ function sgs.CreateFixCardSkill(spec)
 	return skill
 end
 
+function sgs.CreateViewHasSkill(spec)
+	assert(type(spec.name) == "string")
+	assert(type(spec.is_viewhas) == "function")
+
+	local skill = sgs.LuaViewHasSkill(spec.name)
+	skill.is_viewhas = spec.is_viewhas
+
+	return skill
+end
+
 function sgs.CreateFilterSkill(spec)
 	assert(type(spec.name) == "string")
 	assert(type(spec.view_filter) == "function")
@@ -579,6 +589,7 @@ function sgs.CreateViewAsSkill(spec)
 	skill.enabled_at_play = spec.enabled_at_play
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
+	skill.in_pile = spec.in_pile
 
 	return skill
 end
@@ -622,6 +633,7 @@ function sgs.CreateOneCardViewAsSkill(spec)
 	skill.enabled_at_play = spec.enabled_at_play
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
+	skill.in_pile = spec.in_pile
 
 	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
 		skill:setGuhuoType(spec.guhuo_type)
@@ -655,6 +667,7 @@ function sgs.CreateZeroCardViewAsSkill(spec)
 	skill.enabled_at_play = spec.enabled_at_play
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
+	skill.in_pile = spec.in_pile
 
 	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
 		skill:setGuhuoType(spec.guhuo_type)

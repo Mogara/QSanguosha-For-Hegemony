@@ -232,6 +232,9 @@ public:
 
     void changeToLord();
 
+    void setActualGeneral1Name(const QString &name);
+    void setActualGeneral2Name(const QString &name);
+
 protected:
     //Synchronization helpers
     QSemaphore **semas;

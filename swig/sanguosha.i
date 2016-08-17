@@ -147,7 +147,7 @@ public:
     void setDisableShow(const char *flags, const char *reason);
     void removeDisableShow(const char *reason);
     QStringList disableShow(bool head) const;
-    bool canShowGeneral(const QString &flags = QString()) const;
+    bool canShowGeneral(const char *flags = QString()) const;
 
     QString getKingdom() const;
     void setKingdom(const char *kingdom);
@@ -1234,7 +1234,8 @@ public:
     void playSkillAudioEffect(const char *skill_name, int index) const;
 
     const ProhibitSkill *isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
-    const FixCardSkill *isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const;
+    const FixCardSkill *isCardFixed(const Player *from, const Player *to, const char *flags, Card::HandlingMethod method) const;
+    const ViewHasSkill *ViewHas(const Player *player, const char *skill_name) const;
     int correctDistance(const Player *from, const Player *to) const;
     int correctMaxCards(const ServerPlayer *target, bool fixed = false, MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     int correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Card *card) const;
@@ -1494,7 +1495,7 @@ public:
     ServerPlayer *findPlayer(const char *general_name, bool include_dead = false) const;
     QList<ServerPlayer *> findPlayersBySkillName(const char *skill_name) const;
     ServerPlayer *findPlayerBySkillName(const char *skill_name) const;
-    ServerPlayer *findPlayerbyobjectName(const QString &general_name, bool include_dead = false) const;
+    ServerPlayer *findPlayerbyobjectName(const char *general_name, bool include_dead = false) const;
     void installEquip(ServerPlayer *player, const char *equip_name);
     void resetAI(ServerPlayer *player);
     void doDragonPhoenix(ServerPlayer *target, const char *general1_name, const char *general2_name, bool full_state = true,const char *kingdom = QString(), bool sendLog = true, const char *show_flags = QString(), bool resetHp = false);// When using this function,be careful.
