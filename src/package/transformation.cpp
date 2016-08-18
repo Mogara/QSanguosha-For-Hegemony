@@ -1968,8 +1968,6 @@ public:
     }
     virtual bool ViewHas(const Player *player, const QString &skill_name) const
     {
-        if (skill_name == "zhiheng" && player->hasTreasure("Luminouspearl")) return true;
-
         const Player *sunquan = NULL;
         if (player->getActualGeneral1() && player->getActualGeneral1()->isLord()) sunquan = player;
         if (!sunquan) {
@@ -2110,7 +2108,22 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const
     {
         return player->canDiscard(player, "he") && !player->hasUsed("ZhihengCard")
-                && (!player->ownSkill("zhiheng") || !player->hasShownSkill("zhiheng")) ;
+                && ((!player->ownSkill("zhiheng") && !player->getAcquiredSkills().contains("zhiheng"))
+                    || !((player->inHeadSkills("zhiheng") && player->hasShownGeneral1()) || (player->inDeputySkills("zhiheng") && player->hasShownGeneral2()))) ;
+    }
+};
+
+class ZhihengVH : public ViewHasSkill
+{
+public:
+    ZhihengVH() : ViewHasSkill("zhiheng-viewhas")
+    {
+        global = true;
+    }
+    virtual bool ViewHas(const Player *player, const QString &skill_name) const
+    {
+        if (skill_name == "zhiheng" && player->hasTreasure("Luminouspearl")) return true;
+        return false;
     }
 };
 
@@ -2119,7 +2132,7 @@ TransformationEquipPackage::TransformationEquipPackage() : Package("transformati
     Luminouspearl *np = new Luminouspearl();
     np->setParent(this);
 
-    skills << new LuminouspearlSkill;
+    skills << new LuminouspearlSkill << new ZhihengVH;
 }
 
 ADD_PACKAGE(TransformationEquip)

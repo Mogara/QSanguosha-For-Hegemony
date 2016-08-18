@@ -826,6 +826,7 @@ bool Player::isAllNude() const
 
 bool Player::canDiscard(const Player *to, const QString &flags) const
 {
+    Q_ASSERT(to);
     static QChar handcard_flag('h');
     static QChar equip_flag('e');
     static QChar judging_flag('j');
@@ -875,6 +876,7 @@ bool Player::canDiscard(const Player *to, const QString &flags) const
 
 bool Player::canDiscard(const Player *to, int card_id) const
 {
+    Q_ASSERT(to);
     if (this == to) {
         if (isJilei(Sanguosha->getCard(card_id)))
             return false;
@@ -905,6 +907,7 @@ bool Player::canDiscard(const Player *to, int card_id) const
 
 bool Player::canGetCard(const Player *to, const QString &flags) const
 {
+    Q_ASSERT(to);
     static QChar handcard_flag('h');
     static QChar equip_flag('e');
     static QChar judging_flag('j');
@@ -954,6 +957,7 @@ bool Player::canGetCard(const Player *to, const QString &flags) const
 
 bool Player::canGetCard(const Player *to, int card_id) const
 {
+    Q_ASSERT(to);
     bool eq = false;
     if (to->hasEquip())
         foreach (const Card *card, to->getEquips()) {
@@ -1560,8 +1564,6 @@ bool Player::hasShownSkill(const Skill *skill) const
     QStringList InvalidSkill = property("invalid_skill_shown").toString().split("+");
     if (InvalidSkill.contains(skill->objectName())) return false;
 
-    if (Sanguosha->ViewHas(this, skill->objectName()) && hasShownOneGeneral()) return true;
-
     if (head_acquired_skills.contains(skill->objectName()) || deputy_acquired_skills.contains(skill->objectName()))
         return true;
 
@@ -1586,6 +1588,14 @@ bool Player::hasShownSkill(const Skill *skill) const
         return true;
     else if (general2_showed && deputy_skills.contains(skill->objectName()))
         return true;
+
+    const ViewHasSkill *vhskill = Sanguosha->ViewHas(this, skill->objectName());
+    if (vhskill) {
+        if (vhskill->isGlobal())
+            return true;
+        else
+            return getAcquiredSkills("all").contains(vhskill->objectName()) || hasShownOneGeneral();
+    }
     return false;
 }
 

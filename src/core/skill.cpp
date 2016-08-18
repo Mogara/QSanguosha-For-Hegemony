@@ -835,6 +835,6 @@ FixCardSkill::FixCardSkill(const QString &name)
 }
 
 ViewHasSkill::ViewHasSkill(const QString &name)
-    : Skill(name, Skill::Compulsory)
+    : Skill(name, Skill::Compulsory), global(false)
 {
 }

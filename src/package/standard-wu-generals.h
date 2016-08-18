@@ -56,6 +56,7 @@ class ZhihengCard : public SkillCard
 
 public:
     Q_INVOKABLE ZhihengCard();
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 

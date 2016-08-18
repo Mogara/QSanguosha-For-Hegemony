@@ -92,14 +92,6 @@ public:
     virtual bool isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const = 0;
 };
 
-class ViewHasSkill : public Skill {
-
-public:
-    ViewHasSkill(const QString &name);
-
-    virtual bool ViewHas(const Player *player, const QString &skill_name) const = 0;
-};
-
 class DistanceSkill: public Skill {
 public:
     DistanceSkill(const QString &name);
@@ -152,11 +144,20 @@ public:
     LuaFunction is_cardfixed;
 };
 
+class ViewHasSkill : public Skill {
+
+public:
+    ViewHasSkill(const QString &name);
+
+    virtual bool ViewHas(const Player *player, const QString &skill_name) const = 0;
+};
+
 class LuaViewHasSkill : public ViewHasSkill {
 public:
     LuaViewHasSkill(const char *name);
-
     virtual bool ViewHas(const Player *player, const QString &skill_name) const;
+    void setGlobal(bool global);
+
     LuaFunction is_viewhas;
 };
 
@@ -1021,20 +1022,22 @@ bool LuaViewHasSkill::ViewHas(const Player *player, const QString &skill_name) c
     lua_State *L = Sanguosha->getLuaState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, is_viewhas);
-
-    SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaViewHasSkill, 0);
+    //SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaViewHasSkill, 0);
+    LuaViewHasSkill *self = const_cast<LuaViewHasSkill *>(this);
+    SWIG_NewPointerObj(L, self, SWIGTYPE_p_LuaViewHasSkill, 0);
     SWIG_NewPointerObj(L, player, SWIGTYPE_p_Player, 0);
     lua_pushstring(L, skill_name.toLatin1());
 
     int error = lua_pcall(L, 3, 1, 0);
     if (error) {
-        Error(L);
+        QMessageBox::warning(NULL, lua_tostring(L, -1), lua_tostring(L, -1));
+        lua_pop(L, 1);
         return false;
+    } else {
+        bool result = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+        return result;
     }
-
-    bool result = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-    return result;
 }
 
 int LuaDistanceSkill::getCorrect(const Player *from, const Player *to) const

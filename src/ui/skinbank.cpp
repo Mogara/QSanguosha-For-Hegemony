@@ -467,10 +467,10 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
         QString general;
         int skinId = 0;
         if (player != NULL) {
-            if (player->getActualGeneral1()->hasSkill(eventName)) {
+            if (player->inHeadSkills(eventName) || player->getActualGeneral1()->hasSkill(eventName)) {
                 general = player->getActualGeneral1Name();
                 skinId = player->getHeadSkinId();
-            } else if (player->getActualGeneral2()->hasSkill(eventName)) {
+            } else if (player->inDeputySkills(eventName) || player->getActualGeneral2()->hasSkill(eventName)) {
                 general = player->getActualGeneral2Name();
                 skinId = player->getDeputySkinId();
             }

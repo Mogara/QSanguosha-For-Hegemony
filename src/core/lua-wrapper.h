@@ -178,6 +178,10 @@ public:
 
     virtual bool ViewHas(const Player *player, const QString &skill_name) const;
     LuaFunction is_viewhas;
+    inline void setGlobal(bool global)
+    {
+        this->global = global;
+    }
 };
 
 class LuaFilterSkill : public FilterSkill

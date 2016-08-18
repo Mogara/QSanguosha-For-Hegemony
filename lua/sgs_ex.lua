@@ -121,6 +121,7 @@ function sgs.CreateViewHasSkill(spec)
 
 	local skill = sgs.LuaViewHasSkill(spec.name)
 	skill.is_viewhas = spec.is_viewhas
+	if type(spec.global) == "boolean" then skill:setGlobal(spec.global) end
 
 	return skill
 end

@@ -33,9 +33,18 @@ ZhihengCard::ZhihengCard()
     mute = true;
 }
 
+void ZhihengCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    ServerPlayer *source = card_use.from;
+    if (!show_skill.isEmpty() && !(source->inHeadSkills(show_skill) ? source->hasShownGeneral1() : source->hasShownGeneral2()))
+        source->showGeneral(source->inHeadSkills(this->show_skill));
+
+    if (!show_skill.isEmpty()) room->broadcastSkillInvoke("zhiheng", source);
+    SkillCard::onUse(room, card_use);
+}
+
 void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    if (source->hasShownSkill("zhiheng") && source->ownSkill("zhiheng")) room->broadcastSkillInvoke("zhiheng", source);
     if (source->isAlive())
         room->drawCards(source, subcards.length());
 }
