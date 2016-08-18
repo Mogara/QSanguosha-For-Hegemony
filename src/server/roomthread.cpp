@@ -421,6 +421,21 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                             if (p && p->ownSkill(result_skill) && !p->hasShownSkill(result_skill)) {
                                 p->showGeneral(p->inHeadSkills(result_skill));
                                 p->tag["JustShownSkill"] = result_skill->objectName();
+                            } else if (p && !p->ownSkill(result_skill) && !p->hasShownSkill(result_skill)
+                                       && Sanguosha->ViewHas(p, result_skill->objectName()) && !Sanguosha->ViewHas(p, result_skill->objectName())->isGlobal()) {
+                                QStringList q;
+                                if (p->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
+                                if (p->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
+                                SPlayerDataMap map;
+                                map.insert(p, q);
+                                QString name;
+                                if (q.length() > 1) {
+                                    name = room->askForTriggerOrder(p, "GameRule:ShowGeneral", map, false);
+                                    name.remove(p->objectName() + ":");
+                                } else
+                                    name = q.first();
+                                p->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
+                                p->tag["JustShownSkill"] = result_skill->objectName();
                             }
                         }
                         if (p && p->hasFlag("Global_askForSkillCost"))          // for next time

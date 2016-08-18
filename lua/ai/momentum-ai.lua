@@ -289,7 +289,7 @@ end
 sgs.ai_card_intention.DuanxieCard = 60
 sgs.ai_use_priority.DuanxieCard = 0
 
-sgs.ai_skill_invoke.fenming = function(self)
+sgs.ai_skill_invoke.fenming = function(self, data)
 	local value, count = 0, 0
 	for _, player in sgs.qlist(self.room:getAllPlayers()) do
 		if player:isChained() then
@@ -534,7 +534,7 @@ hongfaslash_skill.name = "hongfaslash"
 table.insert(sgs.ai_skills, hongfaslash_skill)
 hongfaslash_skill.getTurnUseCard = function(self, inclusive)
 	local zj = self.room:getLord("qun")
-	if (not zj or zj:getPile("heavenly_army"):isEmpty() or not zj:isFriendWith(self.player)) then return end
+	if not zj or zj:getPile("heavenly_army"):isEmpty() or not self.player:willBeFriendWith(zj) then return end
 	local ints = sgs.QList2Table(zj:getPile("heavenly_army"))
 
 	local int = getHongfaCard(ints)
@@ -543,7 +543,7 @@ hongfaslash_skill.getTurnUseCard = function(self, inclusive)
 		local suit = card:getSuitString()
 		local number = card:getNumberString()
 		local card_id = card:getEffectiveId()
-		local card_str = string.format("slash:hongfa[%s:%s]=%d&", suit, number, card_id)
+		local card_str = string.format("slash:hongfa[%s:%s]=%d&showforviewhas", suit, number, card_id)
 		local slash = sgs.Card_Parse(card_str)
 		assert(slash)
 		return slash
@@ -553,7 +553,7 @@ end
 sgs.ai_cardsview.hongfaslash = function(self, class_name, player)
 	if class_name ~= "Slash" then return end
 	local zj = player:getLord()
-	if (not zj or zj:getPile("heavenly_army"):isEmpty() or not zj:isFriendWith(player)) then return end
+	if not zj or zj:getPile("heavenly_army"):isEmpty() or not self.player:willBeFriendWith(zj) then return end
 	local ints = zj:getPile("heavenly_army")
 	local card_str = {}
 	local PeaceSpell, DragonPhoenix
@@ -563,11 +563,11 @@ sgs.ai_cardsview.hongfaslash = function(self, class_name, player)
 		local number = card:getNumberString()
 		local id = card:getEffectiveId()
 		if card:objectName() == "PeaceSpell" then
-			PeaceSpell = string.format("slash:hongfa[%s:%s]=%d&", suit, number, id)
+			PeaceSpell = string.format("slash:hongfa[%s:%s]=%d&showforviewhas", suit, number, id)
 		elseif card:objectName() == "DragonPhoenix" then
-			DragonPhoenix = string.format("slash:hongfa[%s:%s]=%d&", suit, number, id)
+			DragonPhoenix = string.format("slash:hongfa[%s:%s]=%d&showforviewhas", suit, number, id)
 		else
-			table.insert(card_str, string.format("slash:hongfa[%s:%s]=%d&", suit, number, id))
+			table.insert(card_str, string.format("slash:hongfa[%s:%s]=%d&showforviewhas", suit, number, id))
 		end
 	end
 	if PeaceSpell then table.insert(card_str, 1, PeaceSpell) end

@@ -941,7 +941,7 @@ gongxin_skill.name = "gongxin"
 table.insert(sgs.ai_skills,gongxin_skill)
 gongxin_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("GongxinCard") then return end
-	local gongxin_card = sgs.Card_Parse("@GongxinCard=.")
+	local gongxin_card = sgs.Card_Parse("@GongxinCard=.&showforviewhas")
 	assert(gongxin_card)
 	return gongxin_card
 end
@@ -1153,7 +1153,7 @@ flamemap_skill.getTurnUseCard = function(self)
 	end
 	if #cards == 0 then return end
 	if not self.player:hasUsed("FlameMapCard") then
-		return sgs.Card_Parse("@FlameMapCard=.")
+		return sgs.Card_Parse("@FlameMapCard=.&showforviewhas")
 	end
 end
 
@@ -1168,27 +1168,27 @@ sgs.ai_skill_use_func.FlameMapCard = function(card,use,self)
 		end
 		if self:needToThrowArmor() then
 			--self.player:speak("有返回：" .. self.player:getArmor():getLogName())
-			use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getArmor():getEffectiveId())
+			use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getArmor():getEffectiveId() .. "&showforviewhas")
 			return
 		end
 		if self.player:getOffensiveHorse() then
 			--self.player:speak("有返回：" .. self.player:getOffensiveHorse():getLogName())
-			use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getOffensiveHorse():getEffectiveId())
+			use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getOffensiveHorse():getEffectiveId() .. "&showforviewhas")
 			return
 		end
 		if self.player:getWeapon() then
 			--self.player:speak("有返回：" .. self.player:getWeapon():getLogName())
-			use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getWeapon():getEffectiveId())
+			use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getWeapon():getEffectiveId() .. "&showforviewhas")
 			return
 		end
 		if self.player:getArmor() and not(self.player:getArmor():isKindOf("PeaceSpell") and self:isWeak()) then
 			--self.player:speak("有返回：" .. self.player:getArmor():getLogName())
-			use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getArmor():getEffectiveId())
+			use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getArmor():getEffectiveId() .. "&showforviewhas")
 			return
 		end
 		if self.player:getDefensiveHorse() then
 			--self.player:speak("有返回：" .. self.player:getDefensiveHorse():getLogName())
-			use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getDefensiveHorse():getEffectiveId())
+			use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getDefensiveHorse():getEffectiveId() .. "&showforviewhas")
 			return
 		end
 	else
@@ -1196,13 +1196,13 @@ sgs.ai_skill_use_func.FlameMapCard = function(card,use,self)
 			if self:needToThrowArmor() then
 				sgs.ai_use_priority.FlameMapCard = 9
 				--self.player:speak("有返回：" .. self.player:getArmor():getLogName())
-				use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getArmor():getEffectiveId())
+				use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getArmor():getEffectiveId() .. "&showforviewhas")
 				return
 			end
 			if self.player:getArmor() and self:evaluateArmor(self.player:getArmor(), who) < -5 then
 				sgs.ai_use_priority.FlameMapCard = 9
 				--self.player:speak("有返回：" .. self.player:getArmor():getLogName())
-				use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getArmor():getEffectiveId())
+				use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getArmor():getEffectiveId() .. "&showforviewhas")
 				return
 			end
 		end
@@ -1214,14 +1214,14 @@ sgs.ai_skill_use_func.FlameMapCard = function(card,use,self)
 					if self.room:getCardPlace(card:getEffectiveId()) == sgs.Player_PlaceHand then
 						sgs.ai_use_priority.FlameMapCard = 9
 						--self.player:speak("有返回：" .. card:getLogName())
-						use.card = sgs.Card_Parse("@FlameMapCard=" .. card:getEffectiveId())
+						use.card = sgs.Card_Parse("@FlameMapCard=" .. card:getEffectiveId() .. "&showforviewhas")
 						return
 					end
 				else
 					if dummy_use.card:isKindOf("EquipCard") and self:getSameEquip(card) then
 						sgs.ai_use_priority.FlameMapCard = 9
 						--self.player:speak("有返回：" .. self:getSameEquip(card):getLogName())
-						use.card = sgs.Card_Parse("@FlameMapCard=" .. self:getSameEquip(card):getEffectiveId())
+						use.card = sgs.Card_Parse("@FlameMapCard=" .. self:getSameEquip(card):getEffectiveId() .. "&showforviewhas")
 						return
 					end
 				end
@@ -1230,23 +1230,23 @@ sgs.ai_skill_use_func.FlameMapCard = function(card,use,self)
 		if self.player:hasEquip() and not full then
 			if self.player:getOffensiveHorse() then
 				--self.player:speak("有返回：" .. self.player:getOffensiveHorse():getLogName())
-				use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getOffensiveHorse():getEffectiveId())
+				use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getOffensiveHorse():getEffectiveId() .. "&showforviewhas")
 				return
 			end
 			if self.player:getWeapon() then
 				--self.player:speak("有返回：" .. self.player:getWeapon():getLogName())
-				use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getWeapon():getEffectiveId())
+				use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getWeapon():getEffectiveId() .. "&showforviewhas")
 				return
 			end
 			if not self:isWeak() then
 				if self.player:getArmor() then
 					--self.player:speak("有返回：" .. self.player:getArmor():getLogName())
-					use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getArmor():getEffectiveId())
+					use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getArmor():getEffectiveId() .. "&showforviewhas")
 					return
 				end
 				if self.player:getDefensiveHorse() then
 					--self.player:speak("有返回：" .. self.player:getDefensiveHorse():getLogName())
-					use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getDefensiveHorse():getEffectiveId())
+					use.card = sgs.Card_Parse("@FlameMapCard=" .. self.player:getDefensiveHorse():getEffectiveId() .. "&showforviewhas")
 					return
 				end
 			end

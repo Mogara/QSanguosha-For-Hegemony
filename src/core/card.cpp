@@ -759,6 +759,20 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
         QString skill_name = card_use.card->showSkill();
         if (!skill_name.isNull() && card_use.from->ownSkill(skill_name) && !card_use.from->hasShownSkill(skill_name))
             card_use.from->showGeneral(card_use.from->inHeadSkills(skill_name));
+        else if (!skill_name.isNull() && skill_name == "showforviewhas" && !card_use.from->hasShownOneGeneral()) {
+            QStringList q;
+            if (card_use.from->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
+            if (card_use.from->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
+            SPlayerDataMap map;
+            map.insert(card_use.from, q);
+            QString name;
+            if (q.length() > 1) {
+                name = room->askForTriggerOrder(card_use.from, "GameRule:ShowGeneral", map, false);
+                name.remove(card_use.from->objectName() + ":");
+            } else
+                name = q.first();
+            card_use.from->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
+        }
     } else {
         const SkillCard *skill_card = qobject_cast<const SkillCard *>(card_use.card);
         if (skill_card)
@@ -768,6 +782,20 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
         QString skill_name = card_use.card->showSkill();
         if (!skill_name.isNull() && card_use.from->ownSkill(skill_name) && !card_use.from->hasShownSkill(skill_name))
             card_use.from->showGeneral(card_use.from->inHeadSkills(skill_name));
+        else if (!skill_name.isNull() && skill_name == "showforviewhas" && !card_use.from->hasShownOneGeneral()) {
+            QStringList q;
+            if (card_use.from->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
+            if (card_use.from->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
+            SPlayerDataMap map;
+            map.insert(card_use.from, q);
+            QString name;
+            if (q.length() > 1) {
+                name = room->askForTriggerOrder(card_use.from, "GameRule:ShowGeneral", map, false);
+                name.remove(card_use.from->objectName() + ":");
+            } else
+                name = q.first();
+            card_use.from->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
+        }
 
         if (card_use.card->willThrow()) {
             QList<int> table_cardids = room->getCardIdsOnTable(card_use.card);

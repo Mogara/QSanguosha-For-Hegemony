@@ -1667,6 +1667,7 @@ void GongxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
 {
     room->broadcastSkillInvoke("gongxin", 2);
     ServerPlayer *target = targets.first();
+    /*
     if (!source->hasShownOneGeneral()) {
         QStringList q;
         if (source->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
@@ -1681,6 +1682,7 @@ void GongxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
             name = q.first();
         source->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
     }
+    */
     QList<int> ids;
     foreach (const Card *card, target->getHandcards())
         if (card->getSuit() == Card::Heart)
@@ -1721,6 +1723,7 @@ public:
     virtual const Card *viewAs() const
     {
         GongxinCard *card = new GongxinCard;
+        card->setShowSkill("showforviewhas");
         return card;
     }
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -1789,7 +1792,7 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const
     {
         const Player *sunquan = player->getLord();
-        if (!sunquan && !sunquan->hasLordSkill("jiahe") && !player->willBeFriendWith(sunquan))
+        if (!sunquan || !sunquan->hasLordSkill("jiahe") || !player->willBeFriendWith(sunquan))
             return false;
         return !player->hasUsed("FlameMapCard") && player->canShowGeneral();
     }
@@ -1803,6 +1806,7 @@ public:
     {
         FlameMapCard *slash = new FlameMapCard;
         slash->addSubcard(originalCard);
+        slash->setShowSkill("showforviewhas");
         return slash;
     }
 
@@ -1863,23 +1867,9 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         if (player->askForSkillInvoke(this)) {
-            if (!player->hasShownOneGeneral()) {
-                QStringList q;
-                if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
-                if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
-                SPlayerDataMap map;
-                map.insert(player, q);
-                QString name;
-                if (q.length() > 1) {
-                    name = room->askForTriggerOrder(player, "GameRule:ShowGeneral", map, false);
-                    name.remove(player->objectName() + ":");
-                } else
-                    name = q.first();
-                player->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
-            }
             return true;
         }
         return false;

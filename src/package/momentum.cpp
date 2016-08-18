@@ -1335,24 +1335,20 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        if (!player->hasShownOneGeneral())
-            return false;
         const Player *zhangjiao = player->getLord();
         if (!zhangjiao || !zhangjiao->hasLordSkill("hongfa")
-            || zhangjiao->getPile("heavenly_army").isEmpty() || !zhangjiao->isFriendWith(player))
+            || zhangjiao->getPile("heavenly_army").isEmpty() || !player->willBeFriendWith(zhangjiao))
             return false;
-        return Slash::IsAvailable(player);
+        return Slash::IsAvailable(player) && player->canShowGeneral();
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
-        if (!player->hasShownOneGeneral())
-            return false;
         const Player *zhangjiao = player->getLord();
         if (!zhangjiao || !zhangjiao->hasLordSkill("hongfa")
-            || zhangjiao->getPile("heavenly_army").isEmpty() || !zhangjiao->isFriendWith(player))
+            || zhangjiao->getPile("heavenly_army").isEmpty() || !player->willBeFriendWith(zhangjiao))
             return false;
-        return pattern == "slash";
+        return pattern == "slash" && player->canShowGeneral();
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -1361,6 +1357,7 @@ public:
         slash->addSubcard(originalCard);
         //slash->setSkillName(objectName());
         slash->setSkillName("hongfa");
+        slash->setShowSkill("showforviewhas");
         return slash;
     }
 };

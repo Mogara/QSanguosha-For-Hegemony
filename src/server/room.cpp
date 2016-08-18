@@ -1711,6 +1711,20 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             if (!skill_name.isNull() && player->ownSkill(skill_name)
                 && !player->hasShownSkill(skill_name))
                 player->showGeneral(player->inHeadSkills(skill_name));
+            else if (!skill_name.isNull() && skill_name == "showforviewhas" && !player->hasShownOneGeneral()) {
+                QStringList q;
+                if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
+                if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
+                SPlayerDataMap map;
+                map.insert(player, q);
+                QString name;
+                if (q.length() > 1) {
+                    name = askForTriggerOrder(player, "GameRule:ShowGeneral", map, false);
+                    name.remove(player->objectName() + ":");
+                } else
+                    name = q.first();
+                player->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
+            }
         } else if (method == Card::MethodDiscard) {
             CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
             moveCardTo(card, player, NULL, Player::PlaceTable, reason, true);
@@ -1739,6 +1753,20 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             if (!skill_name.isNull() && player->ownSkill(skill_name)
                 && !player->hasShownSkill(skill_name))
                 player->showGeneral(player->inHeadSkills(skill_name));
+            else if (!skill_name.isNull() && skill_name == "showforviewhas" && !player->hasShownOneGeneral()) {
+                QStringList q;
+                if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
+                if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
+                SPlayerDataMap map;
+                map.insert(player, q);
+                QString name;
+                if (q.length() > 1) {
+                    name = askForTriggerOrder(player, "GameRule:ShowGeneral", map, false);
+                    name.remove(player->objectName() + ":");
+                } else
+                    name = q.first();
+                player->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
+            }
         }
 
         if ((method == Card::MethodUse || method == Card::MethodResponse) && !isRetrial) {

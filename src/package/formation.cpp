@@ -975,7 +975,7 @@ QianhuanCard::QianhuanCard()
 
 void QianhuanCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &) const
 {
-    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "qianhuan", QString());
     room->throwCard(Sanguosha->getCard(subcards.first()), reason, NULL);
 }
 

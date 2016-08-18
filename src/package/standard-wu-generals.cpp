@@ -33,6 +33,7 @@ ZhihengCard::ZhihengCard()
     mute = true;
 }
 
+
 void ZhihengCard::onUse(Room *room, const CardUseStruct &card_use) const
 {
     ServerPlayer *source = card_use.from;
@@ -468,21 +469,6 @@ public:
         if (invoke) {
             if (player->getTriggerSkills().contains(this)) {
                 room->broadcastSkillInvoke(objectName(), player);
-            } else {
-                if (!player->hasShownOneGeneral()) {
-                    QStringList q;
-                    if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
-                    if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
-                    SPlayerDataMap map;
-                    map.insert(player, q);
-                    QString name;
-                    if (q.length() > 1) {
-                        name = room->askForTriggerOrder(player, "GameRule:ShowGeneral", map, false);
-                        name.remove(player->objectName() + ":");
-                    } else
-                        name = q.first();
-                    player->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
-                }
             }
             return true;
         }
@@ -1263,21 +1249,6 @@ public:
         if (player->askForSkillInvoke(this)) {
             if (player->getTriggerSkills().contains(this)) {
                 room->broadcastSkillInvoke(objectName(), player);
-            } else {
-                if (!player->hasShownOneGeneral()) {
-                    QStringList q;
-                    if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
-                    if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
-                    SPlayerDataMap map;
-                    map.insert(player, q);
-                    QString name;
-                    if (q.length() > 1) {
-                        name = room->askForTriggerOrder(player, "GameRule:ShowGeneral", map, false);
-                        name.remove(player->objectName() + ":");
-                    } else
-                        name = q.first();
-                    player->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
-                }
             }
             return true;
         }
