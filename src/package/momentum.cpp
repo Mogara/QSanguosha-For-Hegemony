@@ -1619,6 +1619,7 @@ MomentumPackage::MomentumPackage()
     lord_zhangjiao->addSkill(new Wendao);
     lord_zhangjiao->addSkill(new HongfaClear);
     lord_zhangjiao->addRelateSkill("hongfaslash");
+    insertRelatedSkills("hongfa", "#hongfa-clear");
 
     skills << new Yongjue << new YongjueClear << new Benghuai << new HongfaSlash << new Yinghun("sunce") << new Yingzi("sunce", false);
     insertRelatedSkills("yongjue", "#yongjue-clear");

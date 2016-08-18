@@ -2015,6 +2015,7 @@ TransformationPackage::TransformationPackage()
     Zuoci->addSkill(new Huashen);
     Zuoci->addSkill(new HuashenDisable);
     Zuoci->addSkill(new HuashenClear);
+    insertRelatedSkills("huashen", "#huashen-clear");
     Zuoci->addSkill(new Xinsheng);
     insertRelatedSkills("huashen", 2, "#huashen-clear", "#huashen-disable");
     Zuoci->addCompanion("yuji");
@@ -2044,6 +2045,7 @@ TransformationPackage::TransformationPackage()
     sunquan->addSkill(new JubaoCardFixed);
     sunquan->addSkill(new Jiahe);
     sunquan->addSkill(new JiaheClear);
+    insertRelatedSkills("jiahe", "#jiahe-clear");
     sunquan->addRelateSkill("flamemap");
     sunquan->addRelateSkill("gongxin");
     insertRelatedSkills("jubao", "#jubao-treasure");
