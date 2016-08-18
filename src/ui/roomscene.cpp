@@ -1878,12 +1878,13 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
                     && movement.to_place != Player::PlaceEquip) {
                 ClientPlayer *target = ClientInstance->getPlayer(movement.from->objectName());
                 if (!reason.m_playerId.isEmpty() && reason.m_playerId != movement.from->objectName()) target = ClientInstance->getPlayer(reason.m_playerId);
-                if (target->getActualGeneral1()->hasSkill(reason.m_skillName))
+                if (!reason.m_playerId.isEmpty() && reason.m_playerId != movement.from->objectName()) target = ClientInstance->getPlayer(reason.m_playerId);
+                if (target->hasSkill(reason.m_skillName) && !target->getSkillList().contains(Sanguosha->getSkill(reason.m_skillName)))
+                     card->showAvatar(target->hasShownGeneral1() ? target->getGeneral() : target->getGeneral2(), reason.m_skillName);
+                else if (target->inHeadSkills(reason.m_skillName) || target->getActualGeneral1()->hasSkill(reason.m_skillName))
                     card->showAvatar(target->getActualGeneral1(), reason.m_skillName);
-                else if (target->getActualGeneral2()->hasSkill(reason.m_skillName))
+                else if (target->inDeputySkills(reason.m_skillName) || target->getActualGeneral2()->hasSkill(reason.m_skillName))
                     card->showAvatar(target->getActualGeneral2(), reason.m_skillName);
-                else if (target->hasSkill(reason.m_skillName) && !target->ownSkill(reason.m_skillName))
-                        card->showAvatar(target->hasShownGeneral1() ? target->getGeneral() : target->getGeneral2(), reason.m_skillName);
             }
             int card_id = card->getId();
             if (!card_moves[i].card_ids.contains(card_id)) {
