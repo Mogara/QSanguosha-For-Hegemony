@@ -989,7 +989,7 @@ sgs.ai_skill_cardchosen.kuangfu = function(self, who, flags)
 			elseif card:isKindOf("Treasure") and who:getTreasure() then return who:getTreasure():getEffectiveId()
 			end
 		end
-		if who:getArmor() and who:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(who) then return who:getArmor():getEffectiveId() end
+		if who:getArmor() and who:getArmor():isKindOf("EightDiagram") and not self:needToThrowArmor(who) then return who:getArmor():getEffectiveId() end
 		if who:hasShownSkills("jijiu|beige|weimu|qingcheng") and not self:doNotDiscard(who, "e", false, 1, reason) then
 			if who:getPile("wooden_ox"):length() > 1 or who:hasTreasure("JadeSeal") then return who:getTreasure():getEffectiveId() end
 			if who:getDefensiveHorse() then return who:getDefensiveHorse():getEffectiveId() end

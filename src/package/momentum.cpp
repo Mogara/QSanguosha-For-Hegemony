@@ -436,7 +436,7 @@ public:
         } else if (triggerEvent == GeneralShown) {
             if (TriggerSkill::triggerable(player))
                 return (data.toBool() == player->inHeadSkills(objectName())) ? QStringList(objectName()) : QStringList();
-        } else if (data.toString() == "mifuren" && player->getMark(objectName()) > 0)
+        } else if (data.toString() == "mifuren" && player->getMark(objectName()) > 0 && player->isWounded())
             return QStringList(objectName());
 
 
@@ -445,10 +445,13 @@ public:
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (triggerEvent == GeneralRemoved)
+        QString event = "draw";
+        if (triggerEvent == GeneralRemoved) {
             room->setPlayerMark(player, objectName(), 0);
+            event = "recover";
+        }
 
-        if (player->askForSkillInvoke(this)) {
+        if (player->askForSkillInvoke(this, QVariant::fromValue(event))) {
             room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
@@ -977,21 +980,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        bool invoke = false;
-        if (player->canDiscard(player, "he")) {
-            const Card *card = room->askForExchange(player, objectName(), 1, 0, "@fengming", "", ".");
-            if (card) {
-                LogMessage log;
-                log.type = "#InvokeSkill";
-                log.from = player;
-                log.arg = objectName();
-                room->sendLog(log);
-                CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, player->objectName(), player->objectName(), objectName(), NULL);
-                room->throwCard(card, reason, player);
-                invoke = true;
-            }
-        } else
-            invoke = player->askForSkillInvoke(this);
+        bool invoke = player->askForSkillInvoke(this);
         if (invoke) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->isChained())
@@ -1007,11 +996,17 @@ public:
     virtual bool onPhaseChange(ServerPlayer *player) const
     {
         Room *room = player->getRoom();
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+        QList<ServerPlayer *> targets = room->getAlivePlayers();
+        room->sortByActionOrder(targets);
+        foreach (ServerPlayer *p, targets) {
             if (p->isChained() && player->canDiscard(p, "he") && player->isAlive()) {
                 CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, player->objectName(), p->objectName(), objectName(), NULL);
-                int card_id = room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodDiscard);
-                room->throwCard(Sanguosha->getCard(card_id), reason, p, player);
+                const Card *card;
+                if (p == player)
+                    card = room->askForExchange(player, objectName(), 1, 1, "@fengming", "", ".");
+                else
+                    card = Sanguosha->getCard(room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodDiscard));
+                room->throwCard(card, reason, p, player);
             }
         }
         return false;
