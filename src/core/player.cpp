@@ -1595,13 +1595,13 @@ bool Player::hasShownSkill(const Skill *skill) const
         if (vhskill->isGlobal())
             return true;
         else {
-            if (ownSkill(vhskill->objectName())) {
+            if (ownSkill(vhskill)) {
                 if (general1_showed && head_skills.contains(vhskill->objectName()))
                     return true;
                 else if (general2_showed && deputy_skills.contains(vhskill->objectName()))
                     return true;
             } else
-                hasShownOneGeneral();
+                return hasShownOneGeneral();
         }
     }
     return false;

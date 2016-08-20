@@ -1675,8 +1675,9 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
+        if (triggerEvent == CardsMoveOneTime) return true;
         return ArmorSkill::cost(room, player, data);
     }
 
