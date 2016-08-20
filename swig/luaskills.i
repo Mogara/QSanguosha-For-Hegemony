@@ -1,4 +1,4 @@
-/********************************************************************
+﻿/********************************************************************
     Copyright (c) 2013-2015 - Mogara
 
   This file is part of QSanguosha-Hegemony.
@@ -149,13 +149,13 @@ class ViewHasSkill : public Skill {
 public:
     ViewHasSkill(const QString &name);
 
-    virtual bool ViewHas(const Player *player, const QString &skill_name) const = 0;
+    virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const = 0;
 };
 
 class LuaViewHasSkill : public ViewHasSkill {
 public:
     LuaViewHasSkill(const char *name);
-    virtual bool ViewHas(const Player *player, const QString &skill_name) const;
+    virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const;
     void setGlobal(bool global);
 
     LuaFunction is_viewhas;
@@ -1014,7 +1014,7 @@ bool LuaFixCardSkill::isCardFixed(const Player *from, const Player *to, const QS
     return result;
 }
 
-bool LuaViewHasSkill::ViewHas(const Player *player, const QString &skill_name) const
+bool LuaViewHasSkill::ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
 {
     if (is_viewhas == 0)
         return false;
@@ -1029,8 +1029,9 @@ bool LuaViewHasSkill::ViewHas(const Player *player, const QString &skill_name) c
     SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaViewHasSkill, 0);
     SWIG_NewPointerObj(L, player, SWIGTYPE_p_Player, 0);
     lua_pushstring(L, skill_name.toLatin1());
+    lua_pushstring(L, flag.toLatin1());
 
-    int error = lua_pcall(L, 3, 1, 0);
+    int error = lua_pcall(L, 4, 1, 0);
     if (error) {
         QMessageBox::warning(NULL, lua_tostring(L, -1), lua_tostring(L, -1));
         lua_pop(L, 1);

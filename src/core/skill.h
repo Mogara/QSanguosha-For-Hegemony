@@ -332,7 +332,7 @@ public:
 class TargetModSkill : public Skill
 {
     Q_OBJECT
-        Q_ENUMS(ModType)
+    Q_ENUMS(ModType)
 
 public:
     enum ModType
@@ -429,6 +429,8 @@ public:
 
     virtual int getPriority() const;
     virtual bool triggerable(const ServerPlayer *target) const;
+    virtual bool cost(Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual void playAudio(const ServerPlayer *target) const;
 };
 
 class TreasureSkill : public TriggerSkill
@@ -459,7 +461,7 @@ class ViewHasSkill : public Skill
 public:
     ViewHasSkill(const QString &name);
 
-    virtual bool ViewHas(const Player *player, const QString &skill_name) const = 0;
+    virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const = 0;
     inline bool isGlobal() const
     {
         return global;

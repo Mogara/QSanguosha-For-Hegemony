@@ -1956,8 +1956,9 @@ public:
     FlameMapVH() : ViewHasSkill("flamemap-viewhas")
     {
     }
-    virtual bool ViewHas(const Player *player, const QString &skill_name) const
+    virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
     {
+        if (flag != "skill") return false;
         const Player *sunquan = NULL;
         if (player->getActualGeneral1() && player->getActualGeneral1()->isLord()) sunquan = player;
         if (!sunquan) {
@@ -2112,9 +2113,9 @@ public:
     {
         global = true;
     }
-    virtual bool ViewHas(const Player *player, const QString &skill_name) const
+    virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
     {
-        if (skill_name == "zhiheng" && player->hasTreasure("Luminouspearl")) return true;
+        if (flag == "skill" && skill_name == "zhiheng" && player->hasTreasure("Luminouspearl")) return true;
         return false;
     }
 };

@@ -1675,6 +1675,11 @@ public:
         return QStringList();
     }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        return ArmorSkill::cost(room, player, data);
+    }
+
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         if (triggerEvent == DamageInflicted) {
@@ -1693,7 +1698,7 @@ public:
 
             room->sendLog(l);
             room->setEmotion(damage.to, "armor/peacespell");
-
+            ArmorSkill::playAudio(player);
             return true;
         } else {
             LogMessage l;

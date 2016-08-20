@@ -497,7 +497,7 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const
     if (InvalidSkill.contains(skill_name))
         return false;
 
-    if (Sanguosha->ViewHas(this, skill_name)) return true;
+    if (Sanguosha->ViewHas(this, skill_name, "skill")) return true;
 
     return head_skills.value(skill_name, false)
         || deputy_skills.value(skill_name, false)
@@ -736,8 +736,9 @@ bool Player::hasArmorEffect(const QString &armor_name) const
     if (!tag["Qinggang"].toStringList().isEmpty() || getMark("Armor_Nullified") > 0
         || getMark("Equips_Nullified_to_Yourself") > 0)
         return false;
-    if (armor_name == "bazhen")
-        return armor == NULL && alive && hasSkill("bazhen");
+
+    if (Sanguosha->ViewHas(this, armor_name, "armor")) return true;
+
     else {
         if (!armor) return false;
         if (armor->objectName() == armor_name || armor->isKindOf(armor_name.toStdString().c_str())) return true;
@@ -1589,12 +1590,19 @@ bool Player::hasShownSkill(const Skill *skill) const
     else if (general2_showed && deputy_skills.contains(skill->objectName()))
         return true;
 
-    const ViewHasSkill *vhskill = Sanguosha->ViewHas(this, skill->objectName());
+    const ViewHasSkill *vhskill = Sanguosha->ViewHas(this, skill->objectName(), "skill");
     if (vhskill) {
         if (vhskill->isGlobal())
             return true;
-        else
-            return getAcquiredSkills("all").contains(vhskill->objectName()) || hasShownOneGeneral();
+        else {
+            if (ownSkill(vhskill->objectName())) {
+                if (general1_showed && head_skills.contains(vhskill->objectName()))
+                    return true;
+                else if (general2_showed && deputy_skills.contains(vhskill->objectName()))
+                    return true;
+            } else
+                hasShownOneGeneral();
+        }
     }
     return false;
 }

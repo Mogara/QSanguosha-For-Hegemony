@@ -325,6 +325,17 @@ sgs.ai_skill_choice["GameRule:TurnStart"] = function(self, choices, data)
 	return choice
 end
 
+sgs.ai_skill_choice["armorskill"] = function(self, choice, data)
+	local choices = choice:split("+")
+	for _, name in ipairs(choices) do
+		skill_names = name:split(":")
+		if #skill_names == 2 then
+			if self:askForSkillInvoke(skill_names[2], data) then return name end
+		end
+	end
+	return "cancel"
+end
+
 sgs.ai_skill_invoke.GameRule_AskForArraySummon = function(self, data)
 	return self:willShowForDefence() or self:willShowForAttack()
 end

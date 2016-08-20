@@ -1013,7 +1013,7 @@ function sgs.getDefense(player)
 	if player:hasShownSkill("benghuai") and player:getHp() > 4 then hp = 4 end
 	local defense = math.min(hp * 2 + player:getHandcardNum(), hp * 3)
 	local hasEightDiagram = false
-	if player:hasArmorEffect("EightDiagram") or player:hasArmorEffect("bazhen") then
+	if player:hasArmorEffect("EightDiagram") then
 		hasEightDiagram = true
 	end
 
@@ -2857,7 +2857,7 @@ function SmartAI:askForCardChosen(who, flags, reason, method, disable_list)
 		if flags:match("e") and who:getTreasure() and (who:getPile("wooden_ox"):length() > 1 or who:hasTreasure("JadeSeal")) and not table.contains(disable_list, who:getTreasure():getId()) then
 			return who:getTreasure():getId()
 		end
-		if flags:match("e") and who:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(who) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
+		if flags:match("e") and who:getArmor() and who:getArmor():isKindOf("EightDiagram") and not self:needToThrowArmor(who) and not table.contains(disable_list, who:getArmor():getEffectiveId()) then
 			return who:getArmor():getId()
 			end
 		if flags:match("e") and who:hasShownSkills("jijiu|beige|weimu|qingcheng") and not self:doNotDiscard(who, "e", false, 1, reason) then
@@ -5023,7 +5023,7 @@ sgs.weapon_range = {}
 
 function SmartAI:hasEightDiagramEffect(player)
 	player = player or self.player
-	return player:hasArmorEffect("EightDiagram") or player:hasArmorEffect("bazhen")
+	return player:hasArmorEffect("EightDiagram")
 end
 
 function SmartAI:hasCrossbowEffect(player)

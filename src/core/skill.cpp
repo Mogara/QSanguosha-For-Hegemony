@@ -812,6 +812,61 @@ bool ArmorSkill::triggerable(const ServerPlayer *target) const
     return target->hasArmorEffect(objectName());
 }
 
+bool ArmorSkill::cost(Room *room, ServerPlayer *target, QVariant &data) const
+{
+    if (target->getArmor() && target->getArmor()->objectName() == objectName())
+        return getFrequency() == Skill::Compulsory || target->askForSkillInvoke(objectName(), data);
+
+    QStringList skill_names;
+    foreach (QString name, Sanguosha->getSkillNames()) {
+        if (Sanguosha->getSkill(name)->inherits("ViewHasSkill")) {
+            const ViewHasSkill *skill = qobject_cast<const ViewHasSkill *>(Sanguosha->getSkill(name));
+            if (skill->ViewHas(target, objectName(), "armor"))
+                skill_names << name;
+        }
+    }
+    if (skill_names.isEmpty()) return false;
+    QString name;
+    bool invoke = false;
+    if (skill_names.length() > 1){
+        SPlayerDataMap map;
+        map.insert(target, skill_names);
+        QString answer = room->askForTriggerOrder(target, "armorskill", map, true, data);
+        if (answer != "cancel") invoke = true;
+        name = answer.remove(target->objectName() + ":");
+    } else {
+        name = skill_names.first();
+        invoke = target->hasShownSkill(name)
+                && getFrequency() == Skill::Compulsory
+                || target->askForSkillInvoke(target->hasShownSkill(name) ? objectName() : name, data);
+    }
+    if (!invoke) return false;
+
+    QStringList names = room->getTag(objectName() + target->objectName()).toStringList();   //add for player audio
+    names.append(name);
+    room->setTag(objectName() + target->objectName(), names);
+
+    LogMessage log;
+    log.type = "#InvokeSkill";
+    log.from = target;
+    log.arg = objectName();
+    room->sendLog(log);
+
+    if (!qobject_cast<const ViewHasSkill *>(Sanguosha->getSkill(name))->isGlobal())
+        target->showGeneral(target->inHeadSkills(name));
+    return true;
+}
+
+void ArmorSkill::playAudio(const ServerPlayer *target) const
+{
+    Room *room = target->getRoom();
+    QStringList names = room->getTag(objectName() + target->objectName()).toStringList();
+    if (names.isEmpty()) return;
+    room->broadcastSkillInvoke(names.last(), target);
+    names.removeLast();
+    room->setTag(objectName() + target->objectName(), names);
+}
+
 TreasureSkill::TreasureSkill(const QString &name)
     : TriggerSkill(name)
 {

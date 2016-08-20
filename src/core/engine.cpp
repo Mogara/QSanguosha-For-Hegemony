@@ -1025,10 +1025,10 @@ const FixCardSkill *Engine::isCardFixed(const Player *from, const Player *to, co
 }
 
 
-const ViewHasSkill *Engine::ViewHas(const Player *player, const QString &skill_name) const
+const ViewHasSkill *Engine::ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
 {
     foreach (const ViewHasSkill *skill, viewhas_skills) {
-        if (skill->ViewHas(player, skill_name))
+        if (skill->ViewHas(player, skill_name, flag))
             return skill;
     }
 

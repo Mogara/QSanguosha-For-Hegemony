@@ -597,9 +597,9 @@ public:
     YizhiVH() : ViewHasSkill("#yizhi-viewhas")
     {
     }
-    virtual bool ViewHas(const Player *player, const QString &skill_name) const
+    virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
     {
-        if (skill_name == "guanxing" && player->inDeputySkills("yizhi") && !player->inHeadSkills(skill_name))
+        if (flag == "skill" && skill_name == "guanxing" && player->inDeputySkills("yizhi") && !player->inHeadSkills(skill_name))
             return true;
         return false;
     }

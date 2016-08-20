@@ -306,21 +306,9 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke(this)) {
-            if (player->hasArmorEffect("bazhen")) {
-                LogMessage log;
-                log.type = "#InvokeSkill";
-                log.from = player;
-                log.arg = objectName();
-                room->sendLog(log);
-
-                player->showGeneral(player->inHeadSkills("bazhen"));
-            }
-            return true;
-        }
-        return false;
+        return ArmorSkill::cost(room, player, data);
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
@@ -342,18 +330,13 @@ public:
             room->setCardFlag(armor_id, "-using");
 
         if (judge.isGood()) {
-
-            // effect for bazhen
-            if (player->hasArmorEffect("bazhen"))
-                room->broadcastSkillInvoke("bazhen", player);
-
+            ArmorSkill::playAudio(player);
             Jink *jink = new Jink(Card::NoSuit, 0);
             jink->setSkillName(objectName());
             room->provide(jink);
 
             return true;
         }
-
 
         return false;
     }
@@ -426,6 +409,11 @@ public:
         return QStringList();
     }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        return ArmorSkill::cost(room, player, data);
+    }
+
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
@@ -438,6 +426,7 @@ public:
 
         room->setEmotion(player, "armor/renwang_shield");
         effect.to->setFlags("Global_NonSkillNullify");
+        ArmorSkill::playAudio(player);
         return true;
     }
 };
@@ -606,6 +595,11 @@ public:
         return QStringList();
     }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        return ArmorSkill::cost(room, player, data);
+    }
+
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         if (triggerEvent == SlashEffected) {
@@ -645,7 +639,7 @@ public:
 
             data = QVariant::fromValue(damage);
         }
-
+        ArmorSkill::playAudio(player);
         return false;
     }
 };
@@ -690,6 +684,11 @@ public:
         return QStringList();
     }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        return ArmorSkill::cost(room, player, data);
+    }
+
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         if (triggerEvent == DamageInflicted) {
@@ -723,6 +722,7 @@ public:
             }
 
         }
+        ArmorSkill::playAudio(player);
         return false;
     }
 };

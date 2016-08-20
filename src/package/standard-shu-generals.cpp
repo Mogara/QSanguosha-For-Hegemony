@@ -946,6 +946,21 @@ public:
     }
 };
 
+class Bazhen : public ViewHasSkill
+{
+public:
+    Bazhen() : ViewHasSkill("bazhen")
+    {
+    }
+    virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
+    {
+        if (flag == "armor" && skill_name == "EightDiagram" && player->isAlive() && player->hasSkill(objectName()) && !player->getArmor())
+            return true;
+        return false;
+    }
+};
+
+/*
 class Bazhen : public TriggerSkill
 {
 public:
@@ -979,6 +994,7 @@ public:
         return false;
     }
 };
+*/
 
 class Kanpo : public OneCardViewAsSkill
 {

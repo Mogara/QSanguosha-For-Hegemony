@@ -176,7 +176,7 @@ class LuaViewHasSkill : public ViewHasSkill
 public:
     LuaViewHasSkill(const char *name);
 
-    virtual bool ViewHas(const Player *player, const QString &skill_name) const;
+    virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const;
     LuaFunction is_viewhas;
     inline void setGlobal(bool global)
     {

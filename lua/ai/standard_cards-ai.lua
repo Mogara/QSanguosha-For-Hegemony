@@ -145,8 +145,7 @@ function sgs.getDefenseSlash(player, self)
 
 	local hasEightDiagram = false
 
-	if (player:hasArmorEffect("EightDiagram") or (player:hasShownSkill("bazhen") and not player:getArmor()))
-	  and not IgnoreArmor(attacker, player) then
+	if player:hasArmorEffect("EightDiagram") and not IgnoreArmor(attacker, player) then
 		hasEightDiagram = true
 	end
 
@@ -1506,7 +1505,7 @@ sgs.ai_nullification.ArcheryAttack = function(self, card, from, to, positive, ke
 		if self:isFriend(to) then
 			if keep then
 				for _, p in sgs.qlist(targets) do
-					if self:isFriend(p) and self:aoeIsEffective(card, p, from) and not p:hasArmorEffect("bazhen")
+					if self:isFriend(p) and self:aoeIsEffective(card, p, from)
 						and not p:hasArmorEffect("EightDiagram") and self:getDamagedEffects(p, from) and self:isWeak(p)
 						and getKnownCard(p, self.player, "Jink", true, "he") == 0 then
 						keep = false
@@ -1529,7 +1528,7 @@ sgs.ai_nullification.ArcheryAttack = function(self, card, from, to, positive, ke
 				return
 			elseif to:objectName() == self.player:objectName() and self:canAvoidAOE(card) then
 				return
-			elseif (getKnownCard(to, self.player, "Jink", true, "he") >= 1 or to:hasArmorEffect("bazhen") or to:hasArmorEffect("EightDiagram")) and to:getHp() > 1 then
+			elseif (getKnownCard(to, self.player, "Jink", true, "he") >= 1 or to:hasArmorEffect("EightDiagram")) and to:getHp() > 1 then
 				return
 			elseif not self:isFriendWith(to) and self:playerGetRound(to) < self:playerGetRound(self.player) and self:isWeak() then
 				return
@@ -1541,7 +1540,7 @@ sgs.ai_nullification.ArcheryAttack = function(self, card, from, to, positive, ke
 		if not self:isFriend(from) or not(self:isEnemy(to) and from:isFriendWith(to)) then return false end
 		if keep then
 			for _, p in sgs.qlist(targets) do
-				if self:isEnemy(p) and self:aoeIsEffective(card, p, from) and not p:hasArmorEffect("bazhen")
+				if self:isEnemy(p) and self:aoeIsEffective(card, p, from)
 					and not p:hasArmorEffect("EightDiagram") and self:getDamagedEffects(p, from) and self:isWeak(p)
 					and getKnownCard(p, self.player, "Jink", true, "he") == 0 then
 					keep = false
@@ -2253,7 +2252,7 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
 	end
 
 	for _, enemy in ipairs(enemies) do
-		if enemy:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(enemy)
+		if enemy:getArmor() and enemy:getArmor():isKindOf("EightDiagram") and not self:needToThrowArmor(enemy)
 			and canOperate(enemy, enemy:getArmor():getEffectiveId()) then
 			addTarget(enemy, enemy:getArmor():getEffectiveId())
 		end
