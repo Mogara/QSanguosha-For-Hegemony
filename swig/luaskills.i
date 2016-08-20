@@ -1019,12 +1019,14 @@ bool LuaViewHasSkill::ViewHas(const Player *player, const QString &skill_name) c
     if (is_viewhas == 0)
         return false;
 
-    lua_State *L = Sanguosha->getLuaState();
+    lua_State *L;
+    if (Sanguosha->currentRoom())
+        L = Sanguosha->currentRoom()->getLuaState();
+    else
+        L = Sanguosha->getLuaState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, is_viewhas);
-    //SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaViewHasSkill, 0);
-    LuaViewHasSkill *self = const_cast<LuaViewHasSkill *>(this);
-    SWIG_NewPointerObj(L, self, SWIGTYPE_p_LuaViewHasSkill, 0);
+    SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaViewHasSkill, 0);
     SWIG_NewPointerObj(L, player, SWIGTYPE_p_Player, 0);
     lua_pushstring(L, skill_name.toLatin1());
 
