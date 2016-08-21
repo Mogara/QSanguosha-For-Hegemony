@@ -343,6 +343,7 @@ public:
         room->cancelTarget(use, player); // Room::cancelTarget(use, player);
 
         data = QVariant::fromValue(use);
+        ArmorSkill::playAudio(player);
         return false;
     }
 };
