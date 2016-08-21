@@ -142,8 +142,8 @@ void BanIpDialog::kickClicked()
     if (row != -1) {
         ServerPlayer *p = sp_list[row];
         QStringList split_data = left->currentItem()->text().split("::");
-        QString ip = split_data.takeLast();
-        QString screenName = split_data.join("::");
+        QString ip = "::" + split_data.takeLast();
+        QString screenName = split_data.first();
         if (p->screenName() == screenName && p->getIp() == ip)
             p->kick(); // procedure kick
     }
