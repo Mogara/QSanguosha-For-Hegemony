@@ -332,6 +332,34 @@ QStringList Engine::getBanPackages() const
         return ban_package.toList();
 }
 
+QStringList Engine::getConvertGenerals(const QString &name) const
+{
+    if (!getGeneral(name)) return QStringList();
+    QStringList generals;
+    foreach(const QString &name1, sp_convert_pairs.values(name)) {
+        if (!getGeneral(name1)) continue;
+        if (getBanPackages().contains(getGeneral(name1)->getPackage())) continue;
+        generals << name1;
+    }
+
+    QStringList banned_generals = Config.value("Banlist/Generals", "").toStringList();
+    foreach (const QString &banned, banned_generals)
+        generals.removeOne(banned);
+
+    return generals;
+}
+
+QString Engine::getMainGenerals(const QString &name) const
+{
+    if (!getGeneral(name)) return QString();
+    if (!sp_convert_pairs.contains(name)) return name;
+    foreach (const QString &key, sp_convert_pairs.keys()) {
+        foreach (const QString &name1, sp_convert_pairs.values(key))
+            if (name == name1 && getGeneral(key)) return key;
+    }
+    return name;
+}
+
 QString Engine::translate(const QString &toTranslate) const
 {
     QStringList list = toTranslate.split("\\");
@@ -400,7 +428,7 @@ const Skill *Engine::getMainSkill(const QString &skill_name) const
     const Skill *skill = getSkill(skill_name);
     if (!skill || skill->isVisible() || related_skills.contains(skill_name)) return skill;
     foreach (const QString &key, related_skills.keys()) {
-        foreach(const QString &name, related_skills.values(key))
+        foreach (const QString &name, related_skills.values(key))
             if (name == skill_name) return getSkill(key);
     }
     return skill;
@@ -863,7 +891,7 @@ GeneralList Engine::getGeneralList() const
     return generalList;
 }
 
-QStringList Engine::getLimitedGeneralNames() const
+QStringList Engine::getLimitedGeneralNames(bool include_convert) const
 {
     //for later use
     QStringList general_names = getGeneralNames();
@@ -877,6 +905,12 @@ QStringList Engine::getLimitedGeneralNames() const
     QStringList banned_generals = Config.value("Banlist/Generals", "").toStringList();
     foreach (const QString &banned, banned_generals)
         general_names.removeOne(banned);
+
+    if (!include_convert) {
+        foreach (const QString &key, sp_convert_pairs.keys())
+            foreach (const QString &name, sp_convert_pairs.values(key))
+                general_names.removeOne(name);
+    }
 
     return general_names;
 }

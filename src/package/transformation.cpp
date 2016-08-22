@@ -616,7 +616,7 @@ public:
             QStringList drops;
             foreach (QString name, huashens) {
                 drops << "-" + name;
-                room->getUsedGeneral().removeOne(name);
+                room->handleUsedGeneral("-" + name);
             }
 
             LogMessage log;
@@ -688,10 +688,10 @@ public:
 
         foreach (QString name, huashens) {
             if (!result.contains(name))
-                room->getUsedGeneral().removeOne(name);
+                room->handleUsedGeneral("-" + name);
         }
-        if (!room->getUsedGeneral().contains(result.first())) room->getUsedGeneral().append(result.first());
-        if (!room->getUsedGeneral().contains(result.last())) room->getUsedGeneral().append(result.last());
+        if (!room->getUsedGeneral().contains(result.first())) room->handleUsedGeneral(result.first());
+        if (!room->getUsedGeneral().contains(result.last())) room->handleUsedGeneral(result.last());
 
         QStringList skill_names;
         bool ishead = zuoci->inHeadSkills("huashen");

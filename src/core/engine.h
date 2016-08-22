@@ -115,6 +115,9 @@ public:
     void addScenario(Scenario *scenario);
     const Scenario *getScenario(const QString &name) const;
     void addPackage(const QString &name);
+    //void addConvertGenerals();
+    QStringList getConvertGenerals(const QString &name) const;
+    QString getMainGenerals(const QString &name) const;
 
     const General *getGeneral(const QString &name) const;
     int getGeneralCount(bool include_banned = false) const;
@@ -183,7 +186,7 @@ public:
     // Mogara
     // March 17 2014
     //************************************
-    QStringList getLimitedGeneralNames() const;
+    QStringList getLimitedGeneralNames(bool include_convert = false) const;
     QStringList getGeneralNames() const;
     GeneralList getGeneralList() const;
 
@@ -226,6 +229,7 @@ private:
     QHash<QThread *, QObject *> m_rooms;
     QMap<QString, QString> modes;
     QMultiMap<QString, QString> related_skills;
+    //QMultiMap<QString, QString> related_generals;
     mutable QMap<QString, const CardPattern *> patterns;
     mutable QList<ExpPattern *> enginePatterns;
 

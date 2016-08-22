@@ -47,8 +47,18 @@ GeneralSelector::GeneralSelector()
 
 QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringList &candidates)
 {
+    QStringList generals = candidates;
+    foreach (QString name, candidates) {
+        QStringList subs = Sanguosha->getConvertGenerals(name);
+        if (!subs.isEmpty()) {
+            generals.removeOne(name);
+            subs << name;
+            qShuffle(subs);
+            generals << subs.first();
+        }
+    }
     if (m_privatePairValueTable[player].isEmpty())
-        calculatePairValues(player, candidates);
+        calculatePairValues(player, generals);
 
     QHash<QString, int> my_hash = m_privatePairValueTable[player];
 

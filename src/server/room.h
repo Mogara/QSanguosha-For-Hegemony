@@ -292,10 +292,11 @@ public:
     {
         return *m_drawPile;
     }
-    inline QStringList &getUsedGeneral()
+    inline QStringList getUsedGeneral()
     {
         return used_general;
     }
+    void handleUsedGeneral(const QString &general);
     int getCardFromPile(const QString &card_name);
     ServerPlayer *findPlayer(const QString &general_name, bool include_dead = false) const;
     QList<ServerPlayer *> findPlayersBySkillName(const QString &skill_name) const;

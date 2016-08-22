@@ -27,6 +27,7 @@
 
 class Button;
 class QGraphicsDropShadowEffect;
+class CardContainer;
 
 class GeneralCardItem : public CardItem
 {
@@ -85,12 +86,15 @@ private:
     Button *confirm;
     QGraphicsProxyWidget *progress_bar_item;
     QSanCommandProgressBar *progress_bar;
+    CardContainer *convertContainer;
 
     void _initializeItems();
 
 private slots:
     void _adjust();
     void _onItemClicked();
+    void _onConvertButtonClicked();
+    void _onConvertClicked();
 };
 
 #endif // _CHOOSE_GENERAL_BOX_H

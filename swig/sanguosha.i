@@ -1167,6 +1167,7 @@ public:
 
     Package(const char *name, Type pack_type = GeneralPack);
     void insertRelatedSkills(const char *main_skill, const char *related_skill);
+    void insertConvertPairs(const char *from, const char *to);
 };
 
 class Engine: public QObject {
@@ -1226,7 +1227,7 @@ public:
     QStringList getRandomGenerals(int count) const;
     QList<int> getRandomCards() const;
     QString getRandomGeneralName() const;
-    QStringList getLimitedGeneralNames() const;
+    QStringList getLimitedGeneralNames(bool include_convert = false) const;
     QStringList getGeneralNames() const;
 
     void playSystemAudioEffect(const char *name) const;

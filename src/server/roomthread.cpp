@@ -423,9 +423,10 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                 p->tag["JustShownSkill"] = result_skill->objectName();
                             } else if (p && !p->ownSkill(result_skill) && !p->hasShownSkill(result_skill)) {
                                 const ViewHasSkill *vhskill = Sanguosha->ViewHas(p, result_skill->objectName(), "skill");
-                                if (vhskill && p->ownSkill(vhskill))
+                                if (vhskill && p->ownSkill(vhskill)) {
                                     p->showGeneral(p->inHeadSkills(vhskill->objectName()));
-                                else if (vhskill && !vhskill->isGlobal()) {
+                                    p->tag["JustShownSkill"] = result_skill->objectName();
+                                } else if (vhskill && !vhskill->isGlobal()) {
                                     QStringList q;
                                     if (p->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
                                     if (p->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";

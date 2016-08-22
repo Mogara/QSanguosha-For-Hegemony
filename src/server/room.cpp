@@ -2512,7 +2512,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
     QStringList duanchang = player->property("Duanchang").toString().split(",");
     int max_hp = 0;
     if (!general1_name.isEmpty()) {
-        used_general << general1_name;
+        handleUsedGeneral(general1_name);
         if (duanchang.contains("head"))
             duanchang.removeAll("head");
 
@@ -2551,7 +2551,7 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
         setPlayerProperty(player, "general1_showed", false);
     }
     if (!general2_name.isEmpty()) {
-        used_general << general2_name;
+        handleUsedGeneral(general2_name);
         if (duanchang.contains("deputy"))
             duanchang.removeAll("deputy");
 
@@ -2686,8 +2686,8 @@ void Room::transformDeputyGeneral(ServerPlayer *player)
     qShuffle(available);
     QString general_name = available.first();
 
-    used_general.removeOne(player->getActualGeneral2Name());
-    used_general << general_name;
+    handleUsedGeneral("-" + player->getActualGeneral2Name());
+    handleUsedGeneral(general_name);
 
     player->removeGeneral(false);
     QVariant void_data;
@@ -2739,6 +2739,24 @@ void Room::transformDeputyGeneral(ServerPlayer *player)
     if (Sanguosha->getGeneral(names[0])->isCompanionWith(general_name))
         setPlayerMark(player, "CompanionEffect", 1);
     player->showGeneral(false, true, true);
+}
+
+void Room::handleUsedGeneral(const QString &general)
+{
+    bool remove = general.startsWith("-") ? true : false;
+    QString general_name = general;
+    if (remove) general_name = general_name.remove("-");
+    QString main = Sanguosha->getMainGenerals(general_name);
+    if (remove)
+        used_general.removeAll(main);
+    else
+        used_general.append(main);
+    foreach (QString sub, Sanguosha->getConvertGenerals(main)) {
+        if (remove)
+            used_general.removeAll(sub);
+        else
+            used_general.append(sub);
+    }
 }
 
 lua_State *Room::getLuaState() const
@@ -4163,7 +4181,8 @@ void Room::startGame()
         QStringList generals = getTag(player->objectName()).toStringList();
         const General *general1 = Sanguosha->getGeneral(generals.first());
         const General *general2 = Sanguosha->getGeneral(generals.last());
-        used_general << generals.first() << generals.last();
+        handleUsedGeneral(generals.first());
+        handleUsedGeneral(generals.last());
         Q_ASSERT(general1 && general2);
         if (general1->isCompanionWith(generals.last()))
             addPlayerMark(player, "CompanionEffect");
