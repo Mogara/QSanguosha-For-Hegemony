@@ -48,6 +48,7 @@
 #include "choosesuitbox.h"
 #include "guhuobox.h"
 #include "cardchoosebox.h"
+#include "pindianbox.h"
 #include "transformation.h"
 #include "lightboxanimation.h"
 
@@ -228,6 +229,15 @@ RoomScene::RoomScene(QMainWindow *main_window)
     connect(ClientInstance, &Client::mirror_cardchoose_finish, m_cardchooseBox, &CardChooseBox::clear);
     connect(ClientInstance, &Client::card_moved_incardchoosebox, this, &RoomScene::cardMovedinCardchooseBox);
 
+    m_pindianBox = new PindianBox;
+    m_pindianBox->hide();
+    addItem(m_pindianBox);
+    m_pindianBox->setZValue(9);
+    m_pindianBox->moveBy(-120, 0);
+    connect(ClientInstance, &Client::startPindian, m_pindianBox, &PindianBox::doPindian);
+    connect(ClientInstance, &Client::onPindianReply, m_pindianBox, &PindianBox::onReply);
+    connect(ClientInstance, &Client::pindianSuccess, m_pindianBox, &PindianBox::playSuccess);
+
     m_chooseGeneralBox = new ChooseGeneralBox;
     m_chooseGeneralBox->hide();
     addItem(m_chooseGeneralBox);
@@ -406,17 +416,6 @@ RoomScene::RoomScene(QMainWindow *main_window)
 
     pausing_item->hide();
     pausing_text->hide();
-
-    pindian_box = new Window(tr("pindian"), QSize(255, 200), "image/system/pindian.png");
-    pindian_box->setOpacity(0);
-    pindian_box->setFlag(QGraphicsItem::ItemIsMovable);
-    pindian_box->shift();
-    pindian_box->setZValue(10);
-    pindian_box->keepWhenDisappear();
-    addItem(pindian_box);
-
-    pindian_from_card = NULL;
-    pindian_to_card = NULL;
 }
 
 void RoomScene::handleGameEvent(const QVariant &args)
@@ -678,16 +677,8 @@ void RoomScene::handleGameEvent(const QVariant &args)
             break;
         }
         case S_GAME_EVENT_REVEAL_PINDIAN: {
-            QString from_name = arg[1].toString(), to_name = arg[3].toString();
-            int from_id = arg[2].toInt(), to_id = arg[4].toInt();
-            bool success = arg[5].toBool();
-            pindian_success = success;
-            QString reason = arg[6].toString();
-
-            if (Config.value("EnablePindianBox", true).toBool())
-                showPindianBox(from_name, from_id, to_name, to_id, reason);
-            else
-                setEmotion(from_name, success ? "success" : "no-success");
+            QString who = arg[1].toString();
+            m_pindianBox->doPindianAnimation(who);
         }
         default:
             break;
@@ -1032,6 +1023,7 @@ void RoomScene::updateTable()
     pileContainer->setPos(m_tableCenterPos - QPointF(pileContainer->boundingRect().width() / 2, pileContainer->boundingRect().height() / 2));
     m_guanxingBox->setPos(m_tableCenterPos - QPointF(m_guanxingBox->boundingRect().width() / 2, m_guanxingBox->boundingRect().height() / 2));
     m_cardchooseBox->setPos(m_tableCenterPos - QPointF(m_cardchooseBox->boundingRect().width() / 2, m_cardchooseBox->boundingRect().height() / 2));
+    m_pindianBox->setPos(m_tableCenterPos - QPointF(m_pindianBox->boundingRect().width() / 2, m_pindianBox->boundingRect().height() / 2));
     m_chooseGeneralBox->setPos(m_tableCenterPos - QPointF(m_chooseGeneralBox->boundingRect().width() / 2, m_chooseGeneralBox->boundingRect().height() / 2));
     m_chooseOptionsBox->setPos(m_tableCenterPos - QPointF(m_chooseOptionsBox->boundingRect().width() / 2, m_chooseOptionsBox->boundingRect().height() / 2));
     m_chooseTriggerOrderBox->setPos(m_tableCenterPos - QPointF(m_chooseTriggerOrderBox->boundingRect().width() / 2, m_chooseTriggerOrderBox->boundingRect().height() / 2));
@@ -1878,14 +1870,14 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
                     && movement.to_place != Player::PlaceEquip) {
                 ClientPlayer *target = ClientInstance->getPlayer(movement.from->objectName());
                 if (!reason.m_playerId.isEmpty() && reason.m_playerId != movement.from->objectName()) target = ClientInstance->getPlayer(reason.m_playerId);
-                if (!reason.m_playerId.isEmpty() && reason.m_playerId != movement.from->objectName()) target = ClientInstance->getPlayer(reason.m_playerId);
                 if (target->hasSkill(reason.m_skillName) && !target->getSkillList().contains(Sanguosha->getSkill(reason.m_skillName)))
-                     card->showAvatar(target->hasShownGeneral1() ? target->getGeneral() : target->getGeneral2(), reason.m_skillName);
+                    card->showAvatar(target->hasShownGeneral1() ? target->getGeneral() : target->getGeneral2(), reason.m_skillName);
                 else if (target->inHeadSkills(reason.m_skillName) || (target->getActualGeneral1() ? target->getActualGeneral1()->hasSkill(reason.m_skillName) : NULL))
                     card->showAvatar(target->getActualGeneral1(), reason.m_skillName);
                 else if (target->inDeputySkills(reason.m_skillName) || (target->getActualGeneral2() ? target->getActualGeneral2()->hasSkill(reason.m_skillName) : NULL))
                     card->showAvatar(target->getActualGeneral2(), reason.m_skillName);
             }
+
             int card_id = card->getId();
             if (!card_moves[i].card_ids.contains(card_id)) {
                 card->setVisible(false);
@@ -4339,11 +4331,8 @@ void RoomScene::bringToFront(QGraphicsItem *front_item)
         _m_last_front_item->setZValue(_m_last_front_ZValue);
     _m_last_front_item = front_item;
     _m_last_front_ZValue = front_item->zValue();
-    if (pindian_box && front_item != pindian_box && pindian_box->isVisible()) {
-        m_zValueMutex.unlock();
-        bringToFront(pindian_box);
-        m_zValueMutex.lock();
-        front_item->setZValue(9999);
+    if (m_pindianBox && front_item != m_pindianBox && front_item != prompt_box && m_pindianBox->isVisible()) {
+        front_item->setZValue(8);
     } else {
         front_item->setZValue(10000);
     }
@@ -4501,57 +4490,6 @@ void RoomScene::finishArrange()
 
     ClientInstance->replyToServer(S_COMMAND_ARRANGE_GENERAL, JsonUtils::toJsonArray(names));
     ClientInstance->setStatus(Client::NotActive);
-}
-
-void RoomScene::showPindianBox(const QString &from_name, int from_id, const QString &to_name, int to_id, const QString &reason)
-{
-    pindian_box->setOpacity(0.0);
-    pindian_box->setPos(m_tableCenterPos);
-    if (!reason.isEmpty())
-        pindian_box->setTitle(Sanguosha->translate(reason));
-    else
-        pindian_box->setTitle(tr("pindian"));
-
-    if (pindian_from_card) {
-        delete pindian_from_card;
-        pindian_from_card = NULL;
-    }
-    if (pindian_to_card) {
-        delete pindian_to_card;
-        pindian_to_card = NULL;
-    }
-
-    pindian_from_card = new CardItem(Sanguosha->getCard(from_id));
-    pindian_from_card->setParentItem(pindian_box);
-    pindian_from_card->setPos(QPointF(28 + pindian_from_card->boundingRect().width() / 2,
-        44 + pindian_from_card->boundingRect().height() / 2));
-    pindian_from_card->setFlag(QGraphicsItem::ItemIsMovable, false);
-    pindian_from_card->setHomePos(pindian_from_card->pos());
-    pindian_from_card->setFootnote(ClientInstance->getPlayerName(from_name));
-
-    pindian_to_card = new CardItem(Sanguosha->getCard(to_id));
-    pindian_to_card->setParentItem(pindian_box);
-    pindian_to_card->setPos(QPointF(126 + pindian_to_card->boundingRect().width() / 2,
-        44 + pindian_to_card->boundingRect().height() / 2));
-    pindian_to_card->setFlag(QGraphicsItem::ItemIsMovable, false);
-    pindian_to_card->setHomePos(pindian_to_card->pos());
-    pindian_to_card->setFootnote(ClientInstance->getPlayerName(to_name));
-
-    bringToFront(pindian_box);
-    pindian_box->appear();
-    QTimer::singleShot(500, this, SLOT(doPindianAnimation()));
-}
-
-void RoomScene::doPindianAnimation()
-{
-    if (!pindian_box->isVisible() || !pindian_from_card || !pindian_to_card) return;
-
-    QString emotion = pindian_success ? "success" : "no-success";
-    PixmapAnimation *pma = PixmapAnimation::GetPixmapAnimation(pindian_from_card, emotion);
-    if (pma)
-        connect(pma, &PixmapAnimation::finished, pindian_box, &Window::disappear);
-    else
-        pindian_box->disappear();
 }
 
 void RoomScene::updateRolesBox()

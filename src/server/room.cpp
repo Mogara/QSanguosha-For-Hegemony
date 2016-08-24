@@ -119,6 +119,7 @@ void Room::initCallbacks()
     callbacks[S_COMMAND_NETWORK_DELAY_TEST] = &Room::networkDelayTestCommand;
     callbacks[S_COMMAND_MIRROR_GUANXING_STEP] = &Room::mirrorGuanxingStepCommand;
     callbacks[S_COMMAND_MIRROR_MOVECARDS_STEP] = &Room::mirrorMoveCardsStepCommand;
+    callbacks[S_COMMAND_PINDIAN] = &Room::onPindianReply;
     callbacks[S_COMMAND_CHANGE_SKIN] = &Room::changeSkinCommand;
 
     // Cheat commands
@@ -3101,6 +3102,11 @@ void Room::mirrorGuanxingStepCommand(ServerPlayer *player, const QVariant &arg)
 void Room::mirrorMoveCardsStepCommand(ServerPlayer *player, const QVariant &arg)
 {
     doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, arg, player);
+}
+
+void Room::onPindianReply(ServerPlayer *, const QVariant &arg)
+{
+    doBroadcastNotify(S_COMMAND_PINDIAN, arg);
 }
 
 void Room::changeSkinCommand(ServerPlayer *player, const QVariant &arg)
@@ -6238,86 +6244,90 @@ int Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> e
     return card_id; // Do remember to remove the tag later!
 }
 
-const Card *Room::askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const QString &reason)
+QList<const Card *> Room::askForPindianRace(ServerPlayer *from,const QList<ServerPlayer *> &to, const QString &reason, const Card *card)
 {
-    if (!from->isAlive() || !to->isAlive())
-        return NULL;
-    Q_ASSERT(!player->isKongcheng());
-    tryPause();
-    notifyMoveFocus(player, S_COMMAND_PINDIAN);
-
-    if (player->getHandcardNum() == 1)
-        return player->getHandcards().first();
-
-    AI *ai = player->getAI();
-    if (ai) {
-        thread->delay();
-        return ai->askForPindian(from, reason);
+    QList<const Card *> cards;
+    for (int i = 0; i < to.length(); i ++)
+        cards << NULL;
+    if (!from->isAlive())
+        return cards << NULL;
+    Q_ASSERT(!from->isKongcheng());
+    QStringList names;
+    foreach (ServerPlayer *p, to) {
+        Q_ASSERT(!p->isKongcheng());
+        names << p->objectName();
+        if (!p->isAlive())
+            return cards << NULL;
     }
 
-    bool success = doRequest(player, S_COMMAND_PINDIAN, JsonArray() << from->objectName() << to->objectName(), true);
-
-    JsonArray clientReply = player->getClientReply().value<JsonArray>();
-    if (!success || clientReply.isEmpty() || !JsonUtils::isString(clientReply[0])) {
-        int card_id = player->getRandomHandCardId();
-        return Sanguosha->getCard(card_id);
-    } else {
-        const Card *card = Card::Parse(clientReply[0].toString());
-        if (card->isVirtualCard()) {
-            const Card *real_card = Sanguosha->getCard(card->getEffectiveId());
-            delete card;
-            return real_card;
-        } else
-            return card;
-    }
-}
-
-QList<const Card *> Room::askForPindianRace(ServerPlayer *from, ServerPlayer *to, const QString &reason)
-{
-    if (!from->isAlive() || !to->isAlive())
-        return QList<const Card *>() << NULL << NULL;
-    Q_ASSERT(!from->isKongcheng() && !to->isKongcheng());
     tryPause();
     Countdown countdown;
     countdown.max = ServerInfo.getCommandTimeout(S_COMMAND_PINDIAN, S_CLIENT_INSTANCE);
     countdown.type = Countdown::S_COUNTDOWN_USE_SPECIFIED;
     notifyMoveFocus(QList<ServerPlayer *>() << from << to, countdown);
 
-    const Card *from_card = NULL, *to_card = NULL;
+    JsonArray stepArgs;
+    stepArgs << S_GUANXING_START;
+    stepArgs << from->objectName();
+    stepArgs << reason;
+    stepArgs << JsonUtils::toJsonArray(names);
+    doBroadcastNotify(S_COMMAND_PINDIAN, stepArgs);
+
+    const Card *from_card = card;
+    QList<ServerPlayer *> players;
 
     if (from->getHandcardNum() == 1)
         from_card = from->getHandcards().first();
-    if (to->getHandcardNum() == 1)
-        to_card = to->getHandcards().first();
 
     AI *ai;
     if (!from_card) {
         ai = from->getAI();
         if (ai)
             from_card = ai->askForPindian(from, reason);
-    }
-    if (!to_card) {
-        ai = to->getAI();
-        if (ai)
-            to_card = ai->askForPindian(from, reason);
-    }
-    if (from_card && to_card) {
-        thread->delay();
-        return QList<const Card *>() << from_card << to_card;
+        else
+            players << from;
+    } else {
+        stepArgs.clear();
+        stepArgs << S_GUANXING_MOVE;
+        stepArgs << from->objectName();
+        stepArgs << from_card->getEffectiveId();
+        doBroadcastNotify(S_COMMAND_PINDIAN, stepArgs);
     }
 
-    QList<ServerPlayer *> players;
-    if (!from_card) {
-        JsonArray arr;
-        arr << from->objectName() << to->objectName();
-        from->m_commandArgs = arr;
-        players << from;
+    QStringList to_names;
+    for (int i = 0; i < to.length(); i ++) {
+        to_names << to.at(i)->objectName();
+        if (to.at(i)->getHandcardNum() == 1)
+            cards[i] = to.at(i)->getHandcards().first();
+        else {
+            ai = to.at(i)->getAI();
+            if (ai)
+                cards[i] = ai->askForPindian(from, reason);
+            else
+                players << to.at(i);
+        }
+        if (cards.at(i)) {
+            stepArgs.clear();
+            stepArgs << S_GUANXING_MOVE;
+            stepArgs << to.at(i)->objectName();
+            stepArgs << cards.at(i)->getEffectiveId();
+            doBroadcastNotify(S_COMMAND_PINDIAN, stepArgs);
+        }
     }
-    if (!to_card) {
+
+    bool check = true;
+    foreach (const Card *card, cards)
+        if (!card) check = false;
+    if (from_card && check) {
+        thread->delay();
+        return QList<const Card *>() << from_card << cards;
+    }
+
+
+    foreach (ServerPlayer *p, players) {
         JsonArray arr;
-        arr << from->objectName() << to->objectName();
-        to->m_commandArgs = arr;
-        players << to;
+        arr << from->objectName() << to_names.join("+");
+        p->m_commandArgs = arr;
     }
 
     doBroadcastRequest(players, S_COMMAND_PINDIAN);
@@ -6337,12 +6347,23 @@ QList<const Card *> Room::askForPindianRace(ServerPlayer *from, ServerPlayer *to
             } else
                 c = card;
         }
+
+        stepArgs.clear();
+        stepArgs << S_GUANXING_MOVE;
+        stepArgs << player->objectName();
+        stepArgs << c->getEffectiveId();
+        doBroadcastNotify(S_COMMAND_PINDIAN, stepArgs);
+
         if (player == from)
             from_card = c;
-        else
-            to_card = c;
+        else {
+            for (int i = 0; i < to.length(); i ++) {
+                if (to.at(i) == player)
+                    cards[i] = c;
+            }
+        }
     }
-    return QList<const Card *>() << from_card << to_card;
+    return QList<const Card *>() << from_card << cards;
 }
 
 ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const QString &skillName,

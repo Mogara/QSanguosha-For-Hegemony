@@ -1033,8 +1033,7 @@ bool LuaViewHasSkill::ViewHas(const Player *player, const QString &skill_name, c
 
     int error = lua_pcall(L, 4, 1, 0);
     if (error) {
-        QMessageBox::warning(NULL, lua_tostring(L, -1), lua_tostring(L, -1));
-        lua_pop(L, 1);
+        Error(L);
         return false;
     } else {
         bool result = lua_toboolean(L, -1);

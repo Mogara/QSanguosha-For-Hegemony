@@ -92,7 +92,9 @@ public:
     DummyCard *wholeHandCards() const;
     bool hasNullification() const;
     PindianStruct *pindianSelect(ServerPlayer *target, const QString &reason, const Card *card1 = NULL);
-    bool pindian(PindianStruct *pd); //pd is deleted after this function
+    PindianStruct *pindianSelect(const QList<ServerPlayer *> &target, const QString &reason, const Card *card1 = NULL);
+    bool pindian(PindianStruct *pd, int index = 1); //pd is deleted after this function
+
     void turnOver();
     void play(QList<Player::Phase> set_phases = QList<Player::Phase>());
     bool changePhase(Player::Phase from, Player::Phase to);

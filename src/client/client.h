@@ -419,6 +419,10 @@ signals:
     void deputy_preshowed();
 
     void update_handcard_num();
+
+    void startPindian(const QString &requestor, const QString &reason, const QStringList &targets);
+    void onPindianReply(const QString &who, int card_id);
+    void pindianSuccess(bool success, int index);
 };
 
 extern Client *ClientInstance;

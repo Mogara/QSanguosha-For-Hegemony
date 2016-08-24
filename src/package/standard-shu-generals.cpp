@@ -305,11 +305,6 @@ public:
     {
         if (player->inDeputySkills("yizhi") && !player->inHeadSkills(this)) {
             if (player->askForSkillInvoke(this)) {
-                LogMessage log;
-                log.type = "#InvokeSkill";
-                log.from = player;
-                log.arg = objectName();
-                room->sendLog(log);
                 room->broadcastSkillInvoke("yizhi", player);
                 player->showGeneral(false);
                 return true;

@@ -636,37 +636,41 @@ bool ServerPlayer::hasNullification() const
 
 PindianStruct *ServerPlayer::pindianSelect(ServerPlayer *target, const QString &reason, const Card *card1)
 {
+    if (target == this) return NULL;
+    PindianStruct *pd = pindianSelect(QList<ServerPlayer *>() << target, reason, card1);
+    return pd;
+}
+
+PindianStruct *ServerPlayer::pindianSelect(const QList<ServerPlayer *> &targets, const QString &reason, const Card *card1)
+{
+    foreach (ServerPlayer *p, targets) {
+        Q_ASSERT(p != this);
+        if (p == this) return NULL;
+    }
     LogMessage log;
     log.type = "#Pindian";
     log.from = this;
-    log.to << target;
+    log.to = targets;
     room->sendLog(log);
 
     room->tryPause();
 
-    const Card *card2;
-
-    if (card1 == NULL) {
-        QList<const Card *> cards = room->askForPindianRace(this, target, reason);
-        card1 = cards.first();
-        card2 = cards.last();
-    } else {
-        if (card1->isVirtualCard()) {
-            int card_id = card1->getEffectiveId();
-            card1 = Sanguosha->getCard(card_id);
-        }
-        card2 = room->askForPindian(target, this, target, reason);
+    QList<const Card *> cards = room->askForPindianRace(this, targets, reason, card1);
+    card1 = cards.first();
+    QList<int> ids;
+    foreach (const Card *card, cards) {
+        if (card == NULL) return NULL;
+        if (card != card1) ids << card->getNumber();
     }
-
-    if (card1 == NULL || card2 == NULL) return NULL;
+    cards.removeOne(card1);
 
     PindianStruct *pindian = new PindianStruct;
     pindian->from = this;
-    pindian->to = target;
+    pindian->tos = targets;
     pindian->from_card = card1;
-    pindian->to_card = card2;
+    pindian->to_cards = cards;
     pindian->from_number = card1->getNumber();
-    pindian->to_number = card2->getNumber();
+    pindian->to_numbers = ids;
     pindian->reason = reason;
 
     QList<CardsMoveStruct> pd_move;
@@ -675,18 +679,21 @@ PindianStruct *ServerPlayer::pindianSelect(ServerPlayer *target, const QString &
     move1.from = pindian->from;
     move1.to = NULL;
     move1.to_place = Player::PlaceTable;
-    CardMoveReason reason1(CardMoveReason::S_REASON_PINDIAN, pindian->from->objectName(), pindian->to->objectName(), pindian->reason, QString());
+    CardMoveReason reason1(CardMoveReason::S_REASON_PINDIAN, pindian->from->objectName(), QString(), pindian->reason, QString());
     move1.reason = reason1;
+    pd_move << move1;
 
-    CardsMoveStruct move2;
-    move2.card_ids << pindian->to_card->getEffectiveId();
-    move2.from = pindian->to;
-    move2.to = NULL;
-    move2.to_place = Player::PlaceTable;
-    CardMoveReason reason2(CardMoveReason::S_REASON_PINDIAN, pindian->to->objectName());
-    move2.reason = reason2;
+    for (int i = 0; i < targets.length(); i++) {
+        CardsMoveStruct move2;
+        move2.card_ids << cards.at(i)->getEffectiveId();
+        move2.from = targets.at(i);
+        move2.to = NULL;
+        move2.to_place = Player::PlaceTable;
+        CardMoveReason reason2(CardMoveReason::S_REASON_PINDIAN, targets.at(i)->objectName());
+        move2.reason = reason2;
+        pd_move << move2;
+    }
 
-    pd_move << move1 << move2;
 
     LogMessage log2;
     log2.type = "$PindianResult";
@@ -694,25 +701,39 @@ PindianStruct *ServerPlayer::pindianSelect(ServerPlayer *target, const QString &
     log2.card_str = QString::number(pindian->from_card->getEffectiveId());
     room->sendLog(log2);
 
-    log2.type = "$PindianResult";
-    log2.from = pindian->to;
-    log2.card_str = QString::number(pindian->to_card->getEffectiveId());
-    room->sendLog(log2);
+    for (int i = 0; i < targets.length(); i++) {
+        log2.type = "$PindianResult";
+        log2.from = pindian->tos.at(i);
+        log2.card_str = QString::number(pindian->to_cards.at(i)->getEffectiveId());
+        room->sendLog(log2);
+    }
 
     room->moveCardsAtomic(pd_move, true);
 
     return pindian;
 }
 
-bool ServerPlayer::pindian(PindianStruct *pd)
+bool ServerPlayer::pindian(PindianStruct *pd, int index)
 {
     Q_ASSERT(pd != NULL);
-
+    Q_ASSERT(index <= pd->tos.length());
     room->tryPause();
 
+    ServerPlayer *target = pd->tos.at(index - 1);
+    const Card *to_card = pd->to_cards.at(index - 1);
+    int to_number = pd->to_numbers.at(index - 1);
     PindianStruct &pindian_struct = *pd;
+    pindian_struct.to = target;
+    pindian_struct.to_card = to_card;
+    pindian_struct.to_number = to_number;
     RoomThread *thread = room->getThread();
     PindianStruct *pindian_star = pd;
+
+    JsonArray arg;
+    arg << (int)S_GAME_EVENT_REVEAL_PINDIAN;
+    arg << pd->to->objectName();
+    room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
+
     QVariant data = QVariant::fromValue(pindian_star);
     Q_ASSERT(thread != NULL);
     thread->trigger(PindianVerifying, room, this, data);
@@ -722,6 +743,19 @@ bool ServerPlayer::pindian(PindianStruct *pd)
     pindian_struct.to_number = new_star->to_number;
     pindian_struct.success = (new_star->from_number > new_star->to_number);
 
+    room->getThread()->delay();
+    room->getThread()->delay();
+
+    arg.clear();
+    arg << S_GUANXING_FINISH;
+    arg << pindian_struct.success;
+    arg << index;
+    room->doBroadcastNotify(S_COMMAND_PINDIAN, arg);
+
+
+    room->getThread()->delay();
+    room->getThread()->delay();
+
     LogMessage log;
     log.type = pindian_struct.success ? "#PindianSuccess" : "#PindianFailure";
     log.from = this;
@@ -730,23 +764,13 @@ bool ServerPlayer::pindian(PindianStruct *pd)
     log.card_str.clear();
     room->sendLog(log);
 
-    JsonArray arg;
-    arg << (int)S_GAME_EVENT_REVEAL_PINDIAN;
-    arg << objectName();
-    arg << pindian_struct.from_card->getEffectiveId();
-    arg << pd->to->objectName();
-    arg << pindian_struct.to_card->getEffectiveId();
-    arg << pindian_struct.success;
-    arg << pd->reason;
-    room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
-
     pindian_star = &pindian_struct;
     data = QVariant::fromValue(pindian_star);
     thread->trigger(Pindian, room, this, data);
 
     QList<CardsMoveStruct> pd_move;
 
-    if (room->getCardPlace(pindian_struct.from_card->getEffectiveId()) == Player::PlaceTable) {
+    if (room->getCardPlace(pindian_struct.from_card->getEffectiveId()) == Player::PlaceTable && index == pd->tos.length()) {
         CardsMoveStruct move1;
         move1.card_ids << pindian_struct.from_card->getEffectiveId();
         move1.from = pindian_struct.from;
@@ -782,7 +806,7 @@ bool ServerPlayer::pindian(PindianStruct *pd)
 
 
     bool r = pindian_struct.success;
-    delete pd;
+    if (index == pd->tos.length()) delete pd;
     return r;
 }
 

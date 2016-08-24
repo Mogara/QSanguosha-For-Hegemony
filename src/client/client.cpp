@@ -102,6 +102,7 @@ Client::Client(QObject *parent, const QString &filename)
     callbacks[S_COMMAND_MIRROR_GUANXING_STEP] = &Client::mirrorGuanxingStep;
     callbacks[S_COMMAND_MIRROR_MOVECARDS_STEP] = &Client::mirrorMoveCardsStep;
     callbacks[S_COMMAND_SET_ACTULGENERAL] = &Client::setActualGeneral;
+    callbacks[S_COMMAND_PINDIAN] = &Client::askForPindian;
 
     // interactive methods
     interactions[S_COMMAND_CHOOSE_GENERAL] = &Client::askForGeneral;
@@ -685,6 +686,10 @@ void Client::onPlayerResponseCard(const Card *card, const QList<const Player *> 
         }
 
         replyToServer(S_COMMAND_RESPONSE_CARD, JsonArray() << card->toString() << QVariant::fromValue(targetNames));
+        if (_m_roomState.getCurrentCardResponsePrompt() == "pindian" && card != NULL) {
+            _m_roomState.setCurrentCardResponsePrompt(QString());
+            notifyServer(S_COMMAND_PINDIAN, JsonArray() << S_GUANXING_MOVE << QVariant::fromValue(Self->objectName()) << card->getEffectiveId());
+        }
 
         if (card->isVirtualCard() && !card->parent())
             delete card;
@@ -1981,16 +1986,63 @@ void Client::onPlayerReplyGongxin(int card_id)
 void Client::askForPindian(const QVariant &ask_str)
 {
     JsonArray ask = ask_str.value<JsonArray>();
-    if (!JsonUtils::isStringArray(ask, 0, 1)) return;
-    QString from = ask[0].toString();
-    if (from == Self->objectName())
-        prompt_doc->setHtml(tr("Please play a card for pindian"));
-    else {
-        QString requestor = getPlayerName(from);
-        prompt_doc->setHtml(tr("%1 ask for you to play a card to pindian").arg(requestor));
+    if (ask.size() == 2 && JsonUtils::isStringArray(ask, 0, 1)) {
+        QString from = ask[0].toString();
+        if (from == Self->objectName())
+            prompt_doc->setHtml(tr("Please play a card for pindian"));
+        else {
+            QString requestor = getPlayerName(from);
+            prompt_doc->setHtml(tr("%1 ask for you to play a card to pindian").arg(requestor));
+        }
+        _m_roomState.setCurrentCardUsePattern(".");
+        _m_roomState.setCurrentCardResponsePrompt("pindian");
+        setStatus(AskForShowOrPindian);
+    } else {
+        if (ask.isEmpty())
+            return;
+
+        GuanxingStep step = static_cast<GuanxingStep>(ask.at(0).toInt());
+        if (step == S_GUANXING_START) {
+
+            QString who = ask.at(1).toString();
+            QString reason = ask.at(2).toString();
+            QStringList targets;
+            JsonUtils::tryParse(ask[3], targets);
+            emit startPindian(who, reason, targets);
+
+            if (recorder) {
+                JsonArray stepArgs;
+                stepArgs << S_GUANXING_START << ask[1] << ask[2] << ask[3];
+                Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_PINDIAN);
+                packet.setMessageBody(stepArgs);
+                recorder->recordLine(packet.toJson());
+            }
+        } else if (step == S_GUANXING_MOVE) {
+            QString who = ask.at(1).toString();
+            int id = ask.at(2).toInt();
+            emit onPindianReply(who, id);
+
+            if (recorder) {
+                JsonArray stepArgs;
+                stepArgs << S_GUANXING_MOVE << ask[1] << ask[2];
+                Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_PINDIAN);
+                packet.setMessageBody(stepArgs);
+                recorder->recordLine(packet.toJson());
+            }
+        } else if (step == S_GUANXING_FINISH) {
+            bool success = ask.at(1).toBool();
+            int index = ask.at(2).toInt();
+            emit pindianSuccess(success, index);
+
+            if (recorder) {
+                JsonArray stepArgs;
+                stepArgs << S_GUANXING_FINISH << ask[1] << ask[2];
+                Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_PINDIAN);
+                packet.setMessageBody(stepArgs);
+                recorder->recordLine(packet.toJson());
+            }
+        }
     }
-    _m_roomState.setCurrentCardUsePattern(".");
-    setStatus(AskForShowOrPindian);
 }
 
 void Client::askForYiji(const QVariant &ask_str)

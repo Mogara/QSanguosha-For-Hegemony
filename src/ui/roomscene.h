@@ -33,12 +33,12 @@
 #include "sprite.h"
 #include "qsanbutton.h"
 
-
 class Window;
 class Button;
 class CardContainer;
 class GuanxingBox;
 class CardChooseBox;
+class PindianBox;
 class QSanButton;
 class QGroupBox;
 class ChooseGeneralBox;
@@ -272,7 +272,6 @@ private:
     QSanButton *ok_button, *cancel_button, *discard_button;
     QMenu *miscellaneous_menu;
     Window *prompt_box;
-    Window *pindian_box;
     CardItem *pindian_from_card, *pindian_to_card;
     QGraphicsItem *control_panel;
     QMap<PlayerCardContainer *, const ClientPlayer *> item2player;
@@ -299,6 +298,8 @@ private:
     GuanxingBox *m_guanxingBox;
 
     CardChooseBox *m_cardchooseBox;
+
+    PindianBox *m_pindianBox;
 
     ChooseGeneralBox *m_chooseGeneralBox;
 
@@ -384,7 +385,6 @@ private:
     QGraphicsItem *createDashboardButtons();
     void createReplayControlBar();
 
-    void showPindianBox(const QString &from_name, int from_id, const QString &to_name, int to_id, const QString &reason);
     void setChatBoxVisible(bool show);
 
     QRect getBubbleChatBoxShowArea(const QString &who) const;
@@ -399,7 +399,6 @@ private:
     void doIndicate(const QString &name, const QStringList &args);
     void doHuashen(const QString &, const QStringList &args);
     EffectAnimation *animations;
-    bool pindian_success;
 
     // re-layout attempts
     void _dispersePhotos(QList<Photo *> &photos, QRectF disperseRegion, Qt::Orientation orientation, Qt::Alignment align);
@@ -409,7 +408,6 @@ private:
     int _m_currentStage;
 
     QRectF _m_infoPlane;
-
 
     QSet<HeroSkinContainer *> m_heroSkinContainers;
 
@@ -456,8 +454,6 @@ private slots:
 
     void attachSkill(const QString &skill_name, const bool &head = true);
     void detachSkill(const QString &skill_name);
-
-    void doPindianAnimation();
 
     void updateHandcardNum();
 

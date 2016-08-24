@@ -420,7 +420,8 @@ public:
     DummyCard *wholeHandCards() const;
     bool hasNullification() const;
     PindianStruct *pindianSelect(ServerPlayer *target, const char *reason, const Card *card1 = NULL);
-    bool pindian(PindianStruct *pd); //pd is deleted after this function
+	PindianStruct *pindianSelect(const QList<ServerPlayer *> &target, const char *reason, const Card *card1 = NULL);
+    bool pindian(PindianStruct *pd, int index = 1); //pd is deleted after this function
     void turnOver();
     void play(QList<Player::Phase> set_phases = QList<Player::Phase>());
     bool changePhase(Player::Phase from, Player::Phase to);
@@ -751,11 +752,14 @@ struct PindianStruct {
     bool isSuccess() const;
 
     ServerPlayer *from;
+    QList<ServerPlayer *>tos;
     ServerPlayer *to;
     const Card *from_card;
+    QList<const Card *> to_cards;
     const Card *to_card;
     int from_number;
     int to_number;
+    QList<int> to_numbers;
     QString reason;
     bool success;
 };
@@ -1580,8 +1584,7 @@ public:
         bool is_preview = false, bool visible = false, bool optional = true, int max_num = -1,
         QList<ServerPlayer *> players = QList<ServerPlayer *>(), CardMoveReason reason = CardMoveReason(),
         const char *prompt = "", const char *expand_pile = "", bool notify_skill = false);
-    const Card *askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const char *reason);
-    QList<const Card *> askForPindianRace(ServerPlayer *from, ServerPlayer *to, const char *reason);
+    QList<const Card *> askForPindianRace(ServerPlayer *from, const QList<ServerPlayer *> &to, const char *reason);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const char *reason,
         const char *prompt = NULL, bool optional = false, bool notify_skill = false);
     QString askForGeneral(ServerPlayer *player, const char *generals, const char *default_choice = NULL, bool single_result = true, const char *skill_name = NULL, const QVariant &data = QVariant());

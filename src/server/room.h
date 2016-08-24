@@ -391,8 +391,7 @@ public:
         bool is_preview = false, bool visible = false, bool optional = true, int max_num = -1,
         QList<ServerPlayer *> players = QList<ServerPlayer *>(), CardMoveReason reason = CardMoveReason(),
         const QString &prompt = QString(),const QString &expand_pile = QString(), bool notify_skill = false);
-    const Card *askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const QString &reason);
-    QList<const Card *> askForPindianRace(ServerPlayer *from, ServerPlayer *to, const QString &reason);
+    QList<const Card *> askForPindianRace(ServerPlayer *from, const QList<ServerPlayer *> &to, const QString &reason, const Card *card = NULL);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const QString &reason,
         const QString &prompt = QString(), bool optional = false, bool notify_skill = false);
 
@@ -424,6 +423,7 @@ public:
     void fillRobotsCommand(ServerPlayer *player, const QVariant &arg = QVariant());
     void mirrorGuanxingStepCommand(ServerPlayer *player, const QVariant &arg);
     void mirrorMoveCardsStepCommand(ServerPlayer *player, const QVariant &arg);
+    void onPindianReply(ServerPlayer *, const QVariant &arg);
     void changeSkinCommand(ServerPlayer *player, const QVariant &arg);
 
     void processClientReply(ServerPlayer *player, const QSanProtocol::Packet &packet);

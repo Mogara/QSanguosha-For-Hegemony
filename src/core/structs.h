@@ -367,11 +367,13 @@ struct PindianStruct
     bool isSuccess() const;
 
     ServerPlayer *from;
+    QList<ServerPlayer *>tos;
     ServerPlayer *to;
     const Card *from_card;
+    QList<const Card *> to_cards;
     const Card *to_card;
-    int from_number;
-    int to_number;
+    int from_number, to_number;
+    QList<int> to_numbers;
     QString reason;
     bool success;
 };
