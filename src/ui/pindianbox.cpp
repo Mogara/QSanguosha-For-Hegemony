@@ -115,6 +115,7 @@ void PindianBox::onReply(const QString &who, int card_id)
             }
         }
     }
+    update();
     _m_mutex_pindian.unlock();
 }
 
@@ -129,6 +130,7 @@ void PindianBox::doPindianAnimation(const QString &who)
             break;
         }
     }
+    update();
     _m_mutex_pindian.unlock();
 }
 

@@ -198,6 +198,7 @@ public slots:
     void useSelectedCard();
     void updateStatus(Client::Status oldStatus, Client::Status newStatus);
     void cardMovedinCardchooseBox(const bool enable);
+    void playPindianSuccess(const bool success, int index);
     void killPlayer(const QString &who);
     void revivePlayer(const QString &who);
     void setDashboardShadow(const QString &who);

@@ -722,6 +722,7 @@ bool ServerPlayer::pindian(PindianStruct *pd, int index)
     ServerPlayer *target = pd->tos.at(index - 1);
     const Card *to_card = pd->to_cards.at(index - 1);
     int to_number = pd->to_numbers.at(index - 1);
+    int old_number = pd->from_number;
     PindianStruct &pindian_struct = *pd;
     pindian_struct.to = target;
     pindian_struct.to_card = to_card;
@@ -743,8 +744,8 @@ bool ServerPlayer::pindian(PindianStruct *pd, int index)
     pindian_struct.to_number = new_star->to_number;
     pindian_struct.success = (new_star->from_number > new_star->to_number);
 
-    room->getThread()->delay();
-    room->getThread()->delay();
+    thread->delay();
+    thread->delay();
 
     arg.clear();
     arg << S_GUANXING_FINISH;
@@ -752,9 +753,8 @@ bool ServerPlayer::pindian(PindianStruct *pd, int index)
     arg << index;
     room->doBroadcastNotify(S_COMMAND_PINDIAN, arg);
 
-
-    room->getThread()->delay();
-    room->getThread()->delay();
+    thread->delay();
+    thread->delay();
 
     LogMessage log;
     log.type = pindian_struct.success ? "#PindianSuccess" : "#PindianFailure";
@@ -767,6 +767,8 @@ bool ServerPlayer::pindian(PindianStruct *pd, int index)
     pindian_star = &pindian_struct;
     data = QVariant::fromValue(pindian_star);
     thread->trigger(Pindian, room, this, data);
+
+    pindian_struct.from_number = old_number;    //return the old for the next pd
 
     QList<CardsMoveStruct> pd_move;
 
@@ -803,7 +805,6 @@ bool ServerPlayer::pindian(PindianStruct *pd, int index)
         .arg(pd->to->objectName())
         .arg(pindian_struct.to_card->getEffectiveId()));
     thread->trigger(ChoiceMade, room, this, decisionData);
-
 
     bool r = pindian_struct.success;
     if (index == pd->tos.length()) delete pd;

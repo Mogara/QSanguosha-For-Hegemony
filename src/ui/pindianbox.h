@@ -30,6 +30,11 @@ public:
     PindianBox();
     virtual QRectF boundingRect() const;
     virtual void doPindianAnimation(const QString &who);
+    void playSuccess(bool success, int index);
+    inline QString getRequestor()
+    {
+        return zhuge;
+    }
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -37,7 +42,6 @@ protected:
 public slots:
     void doPindian(const QString &requestor, const QString &reason, const QStringList &targets);
     void onReply(const QString &who, int card_id);
-    void playSuccess(bool success, int index);
 
 private slots:
     void clear();

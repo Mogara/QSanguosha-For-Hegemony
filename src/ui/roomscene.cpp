@@ -236,7 +236,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     m_pindianBox->moveBy(-120, 0);
     connect(ClientInstance, &Client::startPindian, m_pindianBox, &PindianBox::doPindian);
     connect(ClientInstance, &Client::onPindianReply, m_pindianBox, &PindianBox::onReply);
-    connect(ClientInstance, &Client::pindianSuccess, m_pindianBox, &PindianBox::playSuccess);
+    connect(ClientInstance, &Client::pindianSuccess, this, &RoomScene::playPindianSuccess);
 
     m_chooseGeneralBox = new ChooseGeneralBox;
     m_chooseGeneralBox->hide();
@@ -2829,6 +2829,13 @@ void RoomScene::cardMovedinCardchooseBox(const bool enable)
             break;
         }
     }
+}
+
+void RoomScene::playPindianSuccess(const bool success, int index)
+{
+    if (!m_pindianBox->isVisible()) return;
+    setEmotion(m_pindianBox->getRequestor(), success ? "success" : "no-success");
+    m_pindianBox->playSuccess(success, index);
 }
 
 void RoomScene::onSkillDeactivated()
