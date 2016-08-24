@@ -122,7 +122,8 @@ SOURCES += \
     src/ui/guhuobox.cpp \
 	src/ui/cardchoosebox.cpp \   
     src/package/transformation.cpp \
-    src/ui/lightboxanimation.cpp
+    src/ui/lightboxanimation.cpp \
+    src/ui/pindianbox.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -236,7 +237,8 @@ HEADERS += \
     src/ui/guhuobox.h \
 	src/ui/cardchoosebox.h \
     src/package/transformation.h \
-    src/ui/lightboxanimation.h
+    src/ui/lightboxanimation.h \
+    src/ui/pindianbox.h
 
 FORMS += \
     src/dialog/cardoverview.ui \
