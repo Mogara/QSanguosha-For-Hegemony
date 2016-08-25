@@ -6286,7 +6286,8 @@ QList<const Card *> Room::askForPindianRace(ServerPlayer *from,const QList<Serve
             from_card = ai->askForPindian(from, reason);
         else
             players << from;
-    } else {
+    }
+    if (from_card) {
         stepArgs.clear();
         stepArgs << S_GUANXING_MOVE;
         stepArgs << from->objectName();
@@ -6295,6 +6296,7 @@ QList<const Card *> Room::askForPindianRace(ServerPlayer *from,const QList<Serve
     }
 
     QStringList to_names;
+    bool check = true;
     for (int i = 0; i < to.length(); i ++) {
         to_names << to.at(i)->objectName();
         if (to.at(i)->getHandcardNum() == 1)
@@ -6312,12 +6314,10 @@ QList<const Card *> Room::askForPindianRace(ServerPlayer *from,const QList<Serve
             stepArgs << to.at(i)->objectName();
             stepArgs << cards.at(i)->getEffectiveId();
             doBroadcastNotify(S_COMMAND_PINDIAN, stepArgs);
-        }
+        } else
+            check = false;
     }
 
-    bool check = true;
-    foreach (const Card *card, cards)
-        if (!card) check = false;
     if (from_card && check) {
         thread->delay();
         return QList<const Card *>() << from_card << cards;

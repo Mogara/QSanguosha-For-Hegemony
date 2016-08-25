@@ -128,7 +128,8 @@ void PindianBox::doPindianAnimation(const QString &who)
         if (who == targets.at(i)) {
             upItems.at(i)->setCard(Sanguosha->getCard(card_ids.at(i)));
             break;
-        }
+        } else
+            upItems.at(i)->setEnabled(false);
     }
     update();
     _m_mutex_pindian.unlock();

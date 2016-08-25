@@ -1867,7 +1867,7 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
             CardItem *card = cards[j];
             card->setFlag(QGraphicsItem::ItemIsMovable, false);
             if (!reason.m_skillName.isEmpty() && movement.from && movement.to_place != Player::PlaceHand && movement.to_place != Player::PlaceSpecial
-                    && movement.to_place != Player::PlaceEquip) {
+                    && movement.to_place != Player::PlaceEquip && movement.to_place != Player::PlaceDelayedTrick) {
                 ClientPlayer *target = ClientInstance->getPlayer(movement.from->objectName());
                 if (!reason.m_playerId.isEmpty() && reason.m_playerId != movement.from->objectName()) target = ClientInstance->getPlayer(reason.m_playerId);
                 if (target->hasSkill(reason.m_skillName) && !target->getSkillList().contains(Sanguosha->getSkill(reason.m_skillName)))

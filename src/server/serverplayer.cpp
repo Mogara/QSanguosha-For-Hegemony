@@ -672,6 +672,7 @@ PindianStruct *ServerPlayer::pindianSelect(const QList<ServerPlayer *> &targets,
     pindian->from_number = card1->getNumber();
     pindian->to_numbers = ids;
     pindian->reason = reason;
+    if (targets.length() == 1) pindian->to = targets.first();
 
     QList<CardsMoveStruct> pd_move;
     CardsMoveStruct move1;
