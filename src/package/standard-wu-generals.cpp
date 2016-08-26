@@ -1204,6 +1204,7 @@ class HaoshiViewAsSkill : public ViewAsSkill
 public:
     HaoshiViewAsSkill() : ViewAsSkill("haoshi")
     {
+        response_pattern = "@@haoshi!";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
@@ -1213,11 +1214,6 @@ public:
 
         int length = Self->getHandcardNum() / 2;
         return selected.length() < length;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
-    {
-        return pattern.startsWith("@@haoshi");
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
