@@ -602,6 +602,7 @@ bool ArraySummonSkill::isEnabledAtPlay(const Player *player) const
 {
     if (player->getAliveSiblings().length() < 3) return false;
     if (player->hasFlag("Global_SummonFailed")) return false;
+    if (!player->canShowGeneral(player->inHeadSkills(objectName()) ? "h" : "d")) return false;
     const BattleArraySkill *skill = qobject_cast<const BattleArraySkill *>(Sanguosha->getTriggerSkill(objectName()));
     if (skill) {
         ArrayType type = skill->getArrayType();
