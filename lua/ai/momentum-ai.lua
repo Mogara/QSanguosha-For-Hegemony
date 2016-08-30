@@ -322,7 +322,9 @@ sgs.ai_skill_invoke.fenming = function(self, data)
 end
 
 sgs.ai_skill_exchange.fenming = function(self)
-	return { self:askForDiscard("dummy_reason", 1, 1, false, true) }
+	local result = self:askForDiscard("dummy_reason", 1, 1, false, true)
+	if type(result) == "number" then return { result } end
+	return result
 end
 
 sgs.ai_skill_invoke.jiang = function(self, data)

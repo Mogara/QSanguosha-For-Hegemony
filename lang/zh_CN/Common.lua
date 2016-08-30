@@ -274,6 +274,8 @@ CommonTranslationTable = {
 	["SingleTargetTrick"] = "单体锦囊",
 	["MultiTarget"] = "群体锦囊",
 	["DelayedTrick"] = "延时锦囊",
+
+	["convert_general"] = "武将转换",
 }
 
 return CommonTranslationTable
