@@ -844,7 +844,7 @@ function SmartAI:useCardAllianceFeast(card, use)
 	if winner then
 		local target
 		if winner:startsWith("sgs") then
-			target = findPlayerByObjectName(winner:objectName())
+			target = findPlayerByObjectName(winner)
 		else
 			for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
 				if p:hasShownOneGeneral() and p:getRole() ~= "careerist" and p:getKingdom() == winner and self:hasTrickEffective(card, p, self.player) then
