@@ -2147,7 +2147,7 @@ QString Room::askForTriggerOrder(ServerPlayer *player, const QString &reason, SP
 
     QString answer;
     QStringList all_pairs;
-    QRegExp pattern("sgs\\d+'\\w+");
+    QRegExp pattern("sgs\\d+'#?\\w+");
     foreach (const ServerPlayer *p, skills.keys()) {
         foreach (const QString &str, skills.value(p)) {
             if (str.contains("!") && !str.contains("&"))
