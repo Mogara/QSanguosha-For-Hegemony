@@ -172,6 +172,8 @@ public:
 
     GuhuoBox *current_guhuo_box;
 
+    void updateGlobalCardBox(const ClientPlayer *player, int id = -1);
+
 public slots:
     void addPlayer(ClientPlayer *player);
     void removePlayer(const QString &player_name);
@@ -266,6 +268,10 @@ private:
     QMap<int, QList<QList<CardItem *> > > _m_cardsMoveStash;
     Button *add_robot, *fill_robots, *return_to_start_scene;
     QList<Photo *> photos;
+    QList<const ClientPlayer *> global_targets;
+    QList<PlayerCardBox *> card_boxes;
+    QList<int> selected_ids;
+    QHash<int, const ClientPlayer *> selected_targets_ids;
     QMap<QString, Photo *> name2photo;
     Dashboard *dashboard;
     TablePile *m_tablePile;

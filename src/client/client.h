@@ -63,6 +63,7 @@ public:
         AskForCardChosen = 0x010011,
         AskForSuit = 0x010012,
         AskForMoveCards = 0x000013,
+        GlobalCardChosen = 0x000014,
 
         RespondingUse = 0x000101,
         RespondingForDiscard = 0x000201,
@@ -188,6 +189,7 @@ public:
     void askForNullification(const QVariant &);
     void askForPindian(const QVariant &);
     void askForCardChosen(const QVariant &ask_str);
+    void globalCardChosen(const QVariant &ask_str);
     void askForPlayerChosen(const QVariant &players);
     void askForGeneral(const QVariant &);
     void askForYiji(const QVariant &);
@@ -262,6 +264,9 @@ public:
     QStringList players_to_choose;
     int choose_max_num;
     int choose_min_num;
+    int type;
+    bool handcard_visible;
+    QList<int> disabled_ids;
 
     int exchange_max;
     int exchange_min;
@@ -269,12 +274,15 @@ public:
     QString exchange_expand_pile;
     QString exchange_reason;
     bool _m_race = false;
+    QHash<QString, QList<int>> targets_cards;
+    QString text;
 
 public slots:
     void signup();
     void onPlayerChooseGeneral(const QString &_name);
     void onPlayerMakeChoice(const QString &choice);
     void onPlayerChooseCard(int index, int card_id = -2);
+    void onPlayerChooseCards(const QList<int> &ids = QList<int>());
     void onPlayerChooseAG(int card_id);
     void onPlayerChoosePlayer(const QList<const Player *> &players);
     void onPlayerChooseTriggerOrder(const QString &choice);

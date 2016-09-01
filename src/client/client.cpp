@@ -126,6 +126,7 @@ Client::Client(QObject *parent, const QString &filename)
     interactions[S_COMMAND_AMAZING_GRACE] = &Client::askForAG;
     interactions[S_COMMAND_PINDIAN] = &Client::askForPindian;
     interactions[S_COMMAND_CHOOSE_CARD] = &Client::askForCardChosen;
+    interactions[S_COMMAND_GLOBAL_CHOOSECARD] = &Client::globalCardChosen;
     interactions[S_COMMAND_CHOOSE_ORDER] = &Client::askForOrder;
     interactions[S_COMMAND_SURRENDER] = &Client::askForSurrender;
     interactions[S_COMMAND_LUCK_CARD] = &Client::askForLuckCard;
@@ -1215,6 +1216,14 @@ void Client::onPlayerChooseCard(int index, int card_id)
     setStatus(NotActive);
 }
 
+void Client::onPlayerChooseCards(const QList<int> &ids)
+{
+    QVariant reply = JsonUtils::toJsonArray(ids);
+
+    replyToServer(S_COMMAND_GLOBAL_CHOOSECARD, reply);
+    setStatus(NotActive);
+}
+
 void Client::onPlayerChoosePlayer(const QList<const Player *> &players)
 {
     if (replayer) return;
@@ -2121,6 +2130,43 @@ void Client::askForPlayerChosen(const QVariant &players)
     prompt_doc->setHtml(text);
 
     setStatus(AskForPlayerChoose);
+}
+
+void Client::globalCardChosen(const QVariant &ask_str)
+{
+    JsonArray args = ask_str.value<JsonArray>();
+    if (args.size() < 10 || !JsonUtils::isBool(args[7]) || !JsonUtils::isNumber(args[4]) || !JsonUtils::isNumber(args[5])) return;
+
+    players_to_choose.clear();
+    JsonUtils::tryParse(args[0], players_to_choose);
+    skill_name = args[1].toString();
+    skill_to_invoke = args[2].toString();
+    choose_min_num = args[4].toInt();
+    m_isDiscardActionRefusable = (args[4].toInt() == 0);
+    choose_max_num = args[5].toInt();
+
+    QString prompt = args[3].toString();
+    if (!prompt.isEmpty()) {
+        QStringList texts = prompt.split(":");
+        text = setPromptList(texts);
+    }
+    prompt_doc->setHtml(text);
+
+    type = args.at(6).toInt();
+    handcard_visible = args[7].toBool();
+
+    int i = 8;
+    targets_cards.clear();
+    for (int x = 0; x < players_to_choose.length(); x++) {
+        QList<int> ids;
+        JsonUtils::tryParse(args[i], ids);
+        targets_cards.insert(players_to_choose.at(x), ids);
+        i++;
+    }
+    disabled_ids.clear();
+    JsonUtils::tryParse(args[i], disabled_ids);
+
+    setStatus(GlobalCardChosen);
 }
 
 void Client::onPlayerReplyYiji(const Card *card, const Player *to)

@@ -124,6 +124,15 @@ RoomScene::RoomScene(QMainWindow *main_window)
         photo->setZValue(-0.5);
     }
 
+    // create global card boxes
+    for (int i = 0; i < player_count; i++) {
+        PlayerCardBox *cardbox = new PlayerCardBox;
+        card_boxes << cardbox;
+        addItem(cardbox);
+        cardbox->setZValue(-0.5);
+        connect(cardbox, &PlayerCardBox::global_choose, this, &RoomScene::updateGlobalCardBox);
+    }
+
     // create table pile
     m_tablePile = new TablePile;
     addItem(m_tablePile);
@@ -1116,9 +1125,11 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats)
     // set item to player mapping
     if (item2player.isEmpty()) {
         item2player.insert(dashboard, Self);
+        connect(dashboard, &Dashboard::global_selected_changed, this, &RoomScene::updateGlobalCardBox);
         connect(dashboard, &Dashboard::selected_changed, this, &RoomScene::updateSelectedTargets);
         foreach (Photo *photo, photos) {
             item2player.insert(photo, photo->getPlayer());
+            connect(photo, &Photo::global_selected_changed, this, &RoomScene::updateGlobalCardBox);
             connect(photo, &Photo::selected_changed, this, &RoomScene::updateSelectedTargets);
             connect(photo, &Photo::enable_changed, this, &RoomScene::onEnabledChange);
         }
@@ -1146,6 +1157,7 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats)
 void RoomScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsScene::mousePressEvent(event);
+
     m_mousePressed = true;
     bool changed = false;
     QPoint point(event->pos().x(), event->pos().y());
@@ -1164,7 +1176,6 @@ void RoomScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void RoomScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsScene::mouseReleaseEvent(event);
-
     m_mousePressed = false;
 
     if (m_isInDragAndUseMode) {
@@ -1185,15 +1196,12 @@ void RoomScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 void RoomScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsScene::mouseMoveEvent(event);
-
     if (!Config.EnableSuperDrag || !m_mousePressed)
         return;
-
     QGraphicsObject *obj = static_cast<QGraphicsObject *>(focusItem());
     CardItem *card_item = qobject_cast<CardItem *>(obj);
     if (!card_item || !card_item->isUnderMouse() || !dashboard->hasHandCard(card_item))
         return;
-
     static bool wasOutsideDashboard = false;
     const bool isOutsideDashboard = !dashboard->isUnderMouse()
         || dashboard->isAvatarUnderMouse();
@@ -2271,6 +2279,14 @@ void RoomScene::useSelectedCard()
             prompt_box->disappear();
             break;
         }
+        case Client::GlobalCardChosen: {
+            enableTargets(NULL);
+            foreach (PlayerCardBox *box, card_boxes)
+                box->clear();
+            ClientInstance->onPlayerChooseCards(selected_ids);
+            prompt_box->disappear();
+            break;
+        }
         case Client::AskForYiji: {
             const Card *card = dashboard->getPendingCard();
             if (card) {
@@ -2447,6 +2463,18 @@ void RoomScene::doTimeout()
             QList<const Player*> null;
             ClientInstance->onPlayerChoosePlayer(null);
             dashboard->stopPending();
+            prompt_box->disappear();
+            dashboard->highlightEquip(ClientInstance->skill_name, false);
+            break;
+        }
+        case Client::GlobalCardChosen: {
+            enableTargets(NULL);
+            foreach (PlayerCardBox *box, card_boxes)
+                box->clear();
+            if (ok_button->isEnabled())
+                ok_button->click();
+            else
+                ClientInstance->onPlayerChooseCards(QList<int>());
             prompt_box->disappear();
             dashboard->highlightEquip(ClientInstance->skill_name, false);
             break;
@@ -2750,6 +2778,40 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
 
             break;
         }
+        case Client::GlobalCardChosen: {
+            QString skill_name = ClientInstance->getSkillNameToInvoke();
+            dashboard->highlightEquip(skill_name, true);
+            highlightSkillButton(skill_name);
+            showPromptBox();
+
+            ok_button->setEnabled(false);
+            cancel_button->setEnabled(ClientInstance->m_isDiscardActionRefusable);
+            discard_button->setEnabled(false);
+
+            QStringList targets = ClientInstance->players_to_choose;
+            global_targets.clear();
+            selected_ids.clear();
+            selected_targets_ids.clear();
+            for (int i = 0; i < targets.length(); i++) {
+                card_boxes[i]->globalchooseCard(ClientInstance->getPlayer(targets.at(i)), skill_name, ClientInstance->skill_name,
+                    ClientInstance->handcard_visible, ClientInstance->disabled_ids, ClientInstance->targets_cards.value(targets.at(i)));
+                if (!card_boxes[i]->items.isEmpty()) global_targets << card_boxes[i]->player;
+            }
+
+            foreach (PlayerCardContainer *item, item2player.keys()) {
+                const ClientPlayer *target = item2player.value(item, NULL);
+                item->setMaxVotes(1);
+                item->setFlag(QGraphicsItem::ItemIsSelectable, true);
+                if (global_targets.length() == 1 && target == global_targets.first()) {
+                    item->setSelected(true);
+                    updateGlobalCardBox(target);
+                }
+                if (!global_targets.contains(target))
+                    item->setEnabled(false);
+            }
+
+            break;
+        }
         case Client::AskForAG: {
             dashboard->disableAllCards();
 
@@ -2993,6 +3055,15 @@ void RoomScene::doCancelButton()
             dashboard->stopPending();
             QList<const Player *> null;
             ClientInstance->onPlayerChoosePlayer(null);
+            prompt_box->disappear();
+            break;
+        }
+        case Client::GlobalCardChosen: {
+            enableTargets(NULL);
+            foreach (PlayerCardBox *box, card_boxes)
+                box->clear();
+            dashboard->highlightEquip(ClientInstance->skill_name, false);
+            ClientInstance->onPlayerChooseCards(QList<int>());
             prompt_box->disappear();
             break;
         }
@@ -4570,4 +4641,68 @@ void RoomScene::updateHandcardNum()
     foreach (Photo *p, photos) {
         p->updateHandcardNum();
     }
+}
+
+void RoomScene::updateGlobalCardBox(const ClientPlayer *player, int id)
+{
+    prompt_box->disappear();
+    ok_button->setEnabled(false);
+    foreach (PlayerCardContainer *item, item2player.keys()) {
+        const ClientPlayer *target = item2player.value(item, NULL);
+        if (global_targets.contains(target)) item->setEnabled(true);
+        if (target == player) item->setSelected(true);
+    }
+    foreach (PlayerCardBox *box, card_boxes)
+        box->reset();
+
+    if (id == -1) {
+        foreach (PlayerCardBox *box, card_boxes)
+            box->hide();
+
+        foreach (PlayerCardBox *box, card_boxes) {
+            if (box->player == player) {
+                box->show();
+                GraphicsBox::moveToCenter(box);
+                bringToFront(box);
+            }
+        }
+    } else {
+        if (!selected_ids.contains(id)) {
+            selected_ids.append(id);
+            selected_targets_ids.insert(id, player);
+        } else {
+            selected_ids.removeAll(id);
+            selected_targets_ids.remove(id);
+        }
+    }
+
+    foreach (PlayerCardContainer *item, item2player.keys()) {
+        const ClientPlayer *target = item2player.value(item, NULL);
+        if (target != player) item->setSelected(false);
+        if (!global_targets.contains(target)) item->setEnabled(false);
+    }
+
+    int type = ClientInstance->type;
+    QList<const ClientPlayer *> targets;
+    foreach (const int &key, selected_targets_ids.keys())
+        foreach (const ClientPlayer *p, selected_targets_ids.values(key))
+            if (!targets.contains(p)) targets << p;
+
+    if (type == 0)
+        foreach (PlayerCardBox *box, card_boxes)
+            if (targets.contains(box->player)) box->setfalse();
+
+    if (selected_ids.length() >= ClientInstance->choose_max_num && ClientInstance->choose_max_num > 0) {
+        foreach (PlayerCardBox *box, card_boxes)
+            box->setfalse();
+
+        foreach (PlayerCardContainer *item, item2player.keys()) {
+            const ClientPlayer *target = item2player.value(item, NULL);
+            if (!targets.contains(target))
+                 item->setEnabled(false);
+        }
+    }
+    if (selected_ids.length() > 0 && (selected_ids.length() <= ClientInstance->choose_max_num || ClientInstance->choose_max_num == 0)
+            && (selected_ids.length() >= ClientInstance->choose_min_num || ClientInstance->choose_min_num == 0))
+        ok_button->setEnabled(true);
 }

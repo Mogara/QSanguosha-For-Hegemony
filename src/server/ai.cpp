@@ -240,6 +240,11 @@ int TrustAI::askForCardChosen(ServerPlayer *, const QString &, const QString &, 
     return -1;
 }
 
+QList<int> TrustAI::askForCardsChosen(const QList<ServerPlayer *> &, const QString &, const QString &, int, int, const QList<int> &)
+{
+    return QList<int>();
+}
+
 const Card *TrustAI::askForCard(const QString &pattern, const QString &prompt, const QVariant &data)
 {
     Q_UNUSED(prompt);

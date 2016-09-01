@@ -1100,7 +1100,14 @@ public:
             room->broadcastSkillInvoke(objectName(), lengtong);
             return true;
         } else lengtong->tag.remove("liefeng_target");
+        /*
+        if (room->askForSkillInvoke(lengtong, objectName())) {
+            room->broadcastSkillInvoke(objectName(), lengtong);
+            return true;
+        }
+        */
         return false;
+
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *lengtong, QVariant &, ServerPlayer *) const
@@ -1109,8 +1116,16 @@ public:
         lengtong->tag.remove("liefeng_target");
         if (to && lengtong->canDiscard(to, "he")) {
             int card_id = room->askForCardChosen(lengtong, to, "he", objectName(), false, Card::MethodDiscard);
-            room->throwCard(card_id, to, lengtong);
+            CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, lengtong->objectName(), to->objectName(), objectName(), NULL);
+            room->throwCard(Sanguosha->getCard(card_id), reason, to, lengtong);
         }
+        /*
+        QList<int> ids = room->GlobalCardChosen(lengtong, room->getOtherPlayers(lengtong), "he", objectName(), "@liefeng", 1, 1,
+            Room::OnebyOne, false, Card::MethodDiscard);
+        ServerPlayer *to = room->getCardOwner(ids.first());
+        CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, lengtong->objectName(), to->objectName(), objectName(), NULL);
+        room->throwCard(Sanguosha->getCard(ids.first()), reason, to, lengtong);
+        */
         return false;
     }
 };
@@ -1233,30 +1248,14 @@ bool XuanlueCard::canPutEquipment(Room *room, QList<int> &cards) const
 
 void XuanlueCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    QList<ServerPlayer *> targets;
     QList<int> cards, cards_copy;
-    int i = 0;
     QList<CardsMoveStruct> moves;
-    do {
-        i++;
-        targets.clear();
-        foreach (ServerPlayer *p, room->getOtherPlayers(source)) {
-            foreach (const Card *card, p->getEquips())
-            if (!cards.contains(card->getEffectiveId()) && source->canGetCard(p, card->getEffectiveId()))
-                targets << p;
-        }
-        if (!targets.isEmpty()) {
-            ServerPlayer *to = room->askForPlayerChosen(source, targets, "xuanlue", "xuanlue-get", true, false);
-            if (to) {
-                int card_id = room->askForCardChosen(source, to, "e", "xuanlue", false, Card::MethodGet, cards);
-                CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, source->objectName());
-                CardsMoveStruct move(card_id, source, Player::PlaceHand, reason);
-                moves.append(move);
-                cards.append(card_id);
-            }
-        }
+    cards = room->GlobalCardChosen(source, room->getOtherPlayers(source), "e", "xuanlue", "@xuanlue", 1, 3, Room::NoLimited, false, Card::MethodGet);
+    foreach (int id, cards) {
+        CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, source->objectName());
+        CardsMoveStruct move(id, source, Player::PlaceHand, reason);
+        moves.append(move);
     }
-    while (cards.size() == i && i < 3);
 
     if (!cards.isEmpty()) {
         room->moveCardsAtomic(moves, true);
@@ -1347,7 +1346,14 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->getMark("@lue") >= 1;
+        bool check = false;
+        foreach (const Player *p, player->getAliveSiblings()) {
+            if (p != player && p->hasEquip()) {
+                check = true;
+                break;
+            }
+        }
+        return check && player->getMark("@lue") >= 1;
     }
 };
 

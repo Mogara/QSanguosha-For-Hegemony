@@ -25,6 +25,8 @@
 #include "card.h"
 #include "player.h"
 
+#include <QMutex>
+
 class ClientPlayer;
 class QGraphicsProxyWidget;
 class QSanCommandProgressBar;
@@ -40,25 +42,29 @@ public:
         const QString &flags = "hej", bool handcardVisible = false,
         Card::HandlingMethod method = Card::MethodNone,
         const QList<int> &disabledIds = QList<int>(), const QList<int> &handcards = QList<int>());
+    void globalchooseCard(const ClientPlayer *player, const QString &reason, const QString &flags, bool handcardVisible, const QList<int> &disabledIds, const QList<int> &handcards);
     void clear();
+    const ClientPlayer *player;
+    void setfalse();
+    void reset();
+    QList<CardItem *> items;
 
 protected:
     // GraphicsBox interface
     QRectF boundingRect() const;
     void paintLayout(QPainter *painter);
+    QMutex m_mutex;
 
 private:
     void paintArea(const QString &name, QPainter *painter);
     int getRowCount(const int &cardNumber) const;
     void updateNumbers(const int &cardNumber);
-    void arrangeCards(const CardList &cards, const QPoint &topLeft);
+    void arrangeCards(const CardList &cards, const QPoint &topLeft, bool is_globalchoose = false);
 
-    const ClientPlayer *player;
     QString flags;
     bool handcardVisible;
     Card::HandlingMethod method;
     QList<int> disabledIds;
-    QList<CardItem *> items;
 
     QGraphicsProxyWidget *progressBarItem;
     QSanCommandProgressBar *progressBar;
@@ -84,6 +90,10 @@ private:
 
 public slots:
     void reply();
+    void global_click();
+
+signals:
+    void global_choose(const ClientPlayer *player, int id);
 };
 
 #endif // PLAYERCARDBOX_H

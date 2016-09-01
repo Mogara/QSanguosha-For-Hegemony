@@ -1217,9 +1217,14 @@ void PlayerCardContainer::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem *item1 = getMouseClickReceiver();
     QGraphicsItem *item2 = getMouseClickReceiver2();
     if (_isSelected(item1) || _isSelected(item2)) {
-        if (event->button() == Qt::RightButton)
+        if (event->button() == Qt::RightButton && ClientInstance->getStatus() != Client::GlobalCardChosen)
             setSelected(false);
         else if (event->button() == Qt::LeftButton) {
+            if (ClientInstance->getStatus() == Client::GlobalCardChosen) {
+                setSelected(true);
+                emit global_selected_changed(getPlayer());
+                return;
+            }
             _m_votesGot++;
             setSelected(_m_votesGot <= _m_maxVotes);
             if (_m_votesGot > 1) emit selected_changed();
@@ -1258,7 +1263,8 @@ QVariant PlayerCardContainer::itemChange(GraphicsItemChange change, const QVaria
             }
         }
         updateVotes();
-        emit selected_changed();
+        if (ClientInstance->getStatus() != Client::GlobalCardChosen)
+            emit selected_changed();
     } else if (change == ItemEnabledHasChanged) {
         _m_votesGot = 0;
         emit enable_changed();

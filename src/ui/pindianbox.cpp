@@ -142,7 +142,7 @@ void PindianBox::playSuccess(bool success, int index)
     PixmapAnimation::GetPixmapAnimation(upItems.at(index - 1), success ? "judgebad" : "judgegood");
     _m_mutex_pindian.unlock();
     if (index == targets.length())
-        QTimer::singleShot(3000, this, SLOT(clear()));
+        QTimer::singleShot(2000, this, SLOT(clear()));
 }
 
 void PindianBox::clear()

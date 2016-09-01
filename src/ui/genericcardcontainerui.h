@@ -327,6 +327,7 @@ private:
 signals:
     void selected_changed();
     void enable_changed();
+    void global_selected_changed(const ClientPlayer *player, int id = -1);
 };
 
 #endif
