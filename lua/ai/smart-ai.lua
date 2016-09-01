@@ -390,7 +390,22 @@ function SmartAI:activate(use)
 				self.toUse = nil
 				return
 			end
-
+			if self.player:hasShownSkill("xichou") and use.card:getTypeId() ~= sgs.Card_TypeSkill then
+				local dying
+				for _, p in sgs.qlist(room:getAlivePlayers()) do
+					if p:hasFlag("Global_Dying") then
+						dying = true
+						break
+					end
+				end
+				if not dying and (use.card:isBlack() and self.player:getMark("xichou_color") ~= 1) or (use.card:isRed() and player:getMark("xichou_color") ~= 2)
+					or (not use.card:isRed() and not use.card:isBlack() and player:getMark("xichou_color") ~= 0) then
+					if self:isWeak() or self:getOverflow() < 2 then
+						self.toUse = nil
+						return
+					end
+				end				
+			end
 			if use.card then self:speak(use.card:getClassName(), self.player:isFemale()) end
 		end
 	end
