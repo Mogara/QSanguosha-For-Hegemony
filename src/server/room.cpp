@@ -2147,11 +2147,15 @@ QString Room::askForTriggerOrder(ServerPlayer *player, const QString &reason, SP
 
     QString answer;
     QStringList all_pairs;
+    QRegExp pattern("sgs\\d+'\\w+");
     foreach (const ServerPlayer *p, skills.keys()) {
         foreach (const QString &str, skills.value(p)) {
             if (str.contains("!") && !str.contains("&"))
                 all_pairs << QString("%1:%2*%3").arg(p->objectName()).arg(str.split("!").first()).arg(str.split("*").last());
-            else
+            else if (pattern.exactMatch(str)) {
+                QStringList texts = str.split("'");
+                all_pairs << QString("%1:%2").arg(texts.at(0)).arg(texts.at(1));
+            } else
                 all_pairs << QString("%1:%2").arg(p->objectName()).arg(str);
         }
     }
