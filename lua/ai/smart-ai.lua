@@ -517,8 +517,8 @@ end
 function sgs.gameProcess(update)
 	if not update and sgs.ai_process then return sgs.ai_process end
 
-	local scenario = global_room:getScenario():objectName()
-	if scenario == "jiange_defense" then return "wei>>>" end
+	local scenario = global_room:getScenario()
+	if scenario and scenario:objectName() == "jiange_defense" then return "wei>>>" end
 
 	local value = {}
 	local kingdoms = sgs.KingdomsTable
