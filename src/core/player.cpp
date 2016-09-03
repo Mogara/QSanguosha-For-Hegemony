@@ -491,7 +491,7 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const
             return hasSkill(main_skill);
     }
 
-    if (!include_lose && !hasEquipSkill(skill_name) && !getAcquiredSkills().contains(skill_name) && ownSkill(skill_name) && !hasShownSkill(skill_name) && !disableShow(inHeadSkills(skill_name)).isEmpty())
+    if (!include_lose && !hasEquipSkill(skill_name) && !getAcquiredSkills().contains(skill_name) && ownSkill(skill_name) && !canShowGeneral(inHeadSkills(skill_name) ? "h" : "d"))
         return false;
     QStringList InvalidSkill = property("invalid_skill_has").toString().split("+");
     if (InvalidSkill.contains(skill_name))

@@ -1023,7 +1023,7 @@ bool LuaViewHasSkill::ViewHas(const Player *player, const QString &skill_name, c
     if (Sanguosha->currentRoom())
         L = Sanguosha->currentRoom()->getLuaState();
     else
-        L = Sanguosha->getLuaState();
+        return false;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, is_viewhas);
     SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaViewHasSkill, 0);

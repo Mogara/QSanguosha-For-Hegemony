@@ -1965,17 +1965,7 @@ public:
     virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
     {
         if (flag != "skill") return false;
-        const Player *sunquan = NULL;
-        if (player->getActualGeneral1() && player->getActualGeneral1()->isLord()) sunquan = player;
-        if (!sunquan) {
-            QList<const Player *> sib = player->getAliveSiblings();
-            foreach (const Player *p, sib) {
-                if (p->getGeneral() && p->getGeneral()->isLord() && p->getKingdom() == player->getKingdom()) {
-                    sunquan = p;
-                    break;
-                }
-            }
-        }
+        const Player *sunquan = player->getLord();
         if (!sunquan) return false;
 
         if (skill_name == "yingzi" || skill_name == "yingziextra") {
