@@ -1589,7 +1589,7 @@ public:
         QStringList kingdom_list = Sanguosha->getKingdoms();
         kingdom_list << "careerist";
         bool broken = false;
-        int n = dfowner->getPlayerNumWithSameKingdom("DragonPhoenix", QString(), MaxCardsType::Min); // could be canceled later
+        int n = dfowner->getPlayerNumWithSameKingdom("AI", QString(), MaxCardsType::Min); // could be canceled later
         foreach (const QString &kingdom, Sanguosha->getKingdoms()) {
             if (kingdom == "god") continue;
             if (dfowner->getRole() == "careerist") {
@@ -1597,7 +1597,7 @@ public:
                     continue;
             } else if (dfowner->getKingdom() == kingdom)
                 continue;
-            int other_num = dfowner->getPlayerNumWithSameKingdom("DragonPhoenix", kingdom, MaxCardsType::Normal);
+            int other_num = dfowner->getPlayerNumWithSameKingdom("AI", kingdom, MaxCardsType::Normal);
             if (other_num > 0 && other_num < n) {
                 broken = true;
                 break;
