@@ -3309,7 +3309,7 @@ function SmartAI:getCardNeedPlayer(cards, friends_table, skillname)
 	for _, acard in ipairs(cards) do
 		if isCard("Jink", acard, self.player) and keptjink < 1 and not self.player:hasSkill("kongcheng") then
 			keptjink = keptjink + 1
-		else
+		elseif skillname ~= "WoodenOx" or not acard:isKindOf("Treasure") then
 			table.insert(cardtogive, acard)
 		end
 	end
@@ -5299,11 +5299,53 @@ function SmartAI:useEquipCard(card, use)
 			use.card = card
 		end
 	elseif card:isKindOf("Treasure") then
-		if not card:isKindOf("WoodenOx") and not self.player:getTreasure()then
-			for _, friend in ipairs(self.friends) do
-				if (friend:getTreasure() and friend:getPile("wooden_ox"):length() > 1) then
+		if self.player:getTreasure() and self.player:getTreasure():isKindOf("WoodenOx") then
+			for _, skill in ipairs(sgs.ai_skills) do
+				if skill.name == "WoodenOx" then
+					local skill_card = skill.getTurnUseCard(self)
+					if skill_card then
+						use.card = skill_card
+						return
+					elseif self.player:getPile("wooden_ox"):length() > 1 and not card:isKindOf("JadeSeal") then
+						return
+					end
+				end
+			end
+		end
+		if self.player:getTreasure() and self.player:getTreasure():isKindOf("Luminouspearl") and not self.player:hasUsed("ZhihengCard") then
+			local skill_card = sgs.Card_Parse("@ZhihengCard=.")
+			if skill_card then
+				sgs.ai_skill_use_func["ZhihengCard"](skill_card, use, self)
+				return
+			end
+		end
+		if not self.player:getTreasure() then
+			if #self.friends_noself > 0 then
+				for _, hcard in sgs.qlist(self.player:getCards("h")) do
+					if hcard:isKindOf("WoodenOx") and not hcard:toString() ~= card:toString() then
+						use.card = hcard
+						return
+					end
+				end
+			end
+			for _, hcard in sgs.qlist(self.player:getCards("h")) do
+				if hcard:isKindOf("Luminouspearl") and not hcard:toString() ~= card:toString() then
+					use.card = hcard
 					return
 				end
+			end
+		end
+		if card:isKindOf("Luminouspearl") and (self:getOverflow() > 0 or not self.player:getTreasure() or not self.player:getTreasure():isKindOf("JadeSeal")) then
+			local should_use = false
+			for _, hcard in sgs.qlist(self.player:getCards("h")) do
+				if hcard:isKindOf("Treasure") and not hcard:toString() ~= card:toString() then
+					should_use = true
+					break
+				end
+			end
+			local lord_sunquan = sgs.findPlayerByShownSkillName("jubao")
+			if should_use or not lord_sunquan or self:isFriend(lord_sunquan) then
+				use.card = card
 			end
 		end
 		if not self.player:getTreasure() or card:isKindOf("JadeSeal") then
