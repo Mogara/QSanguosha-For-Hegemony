@@ -669,6 +669,9 @@ void RoomScene::handleGameEvent(const QVariant &args)
                     if (photo) photo->showSkillName(skill_name);
                 }
             }
+            QString skillEmotion = QString("skill/%1").arg(skill_name);
+            if (QFile::exists(skillEmotion))
+                setEmotion(player_name, skillEmotion);
             break;
         }
         case S_GAME_EVENT_PAUSE: {

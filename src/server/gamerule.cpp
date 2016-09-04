@@ -26,7 +26,7 @@
 #include "settings.h"
 #include "json.h"
 #include "roomthread.h"
-
+#include <QFile>
 #include <QTime>
 
 class GameRule_AskForGeneralShowHead : public TriggerSkill
@@ -282,6 +282,8 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
     // Handle global events
     if (player == NULL) {
         if (triggerEvent == GameStart) {
+            if (QFile::exists("image/animate/gamestart.png"))
+                room->doLightbox("$gamestart", 3500);
             foreach (ServerPlayer *player, room->getPlayers()) {
                 Q_ASSERT(player->getGeneral() != NULL);
                 /*

@@ -68,6 +68,7 @@ void AmazingGrace::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
 void AmazingGrace::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
+     room->setEmotion(effect.from, "amazing_grace");
     QVariantList ag_list = room->getTag("AmazingGrace").toList();
     QList<int> card_ids;
     foreach(QVariant card_id, ag_list)
@@ -96,6 +97,7 @@ bool GodSalvation::isCancelable(const CardEffectStruct &effect) const
 void GodSalvation::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.to->getRoom();
+    room->setEmotion(effect.from, "god_salvation");
     if (!effect.to->isWounded());
     else {
         RecoverStruct recover;
@@ -114,6 +116,7 @@ SavageAssault::SavageAssault(Suit suit, int number)
 void SavageAssault::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.to->getRoom();
+    room->setEmotion(effect.from, "savage_assault");
     const Card *slash = room->askForCard(effect.to,
         "slash",
         "savage-assault-slash:" + effect.from->objectName(),
@@ -138,6 +141,7 @@ ArcheryAttack::ArcheryAttack(Card::Suit suit, int number)
 void ArcheryAttack::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.to->getRoom();
+     room->setEmotion(effect.from, "archery_attack");
     const Card *jink = room->askForCard(effect.to,
         "jink",
         "archery-attack-jink:" + effect.from->objectName(),
@@ -222,6 +226,7 @@ void Collateral::onEffect(const CardEffectStruct &effect) const
 {
     ServerPlayer *source = effect.from;
     Room *room = source->getRoom();
+    room->setEmotion(source, "collateral");
     ServerPlayer *killer = effect.to;
     ServerPlayer *victim = effect.to->tag["collateralVictim"].value<ServerPlayer *>();
     effect.to->tag.remove("collateralVictim");
@@ -306,6 +311,8 @@ bool ExNihilo::isAvailable(const Player *player) const
 
 void ExNihilo::onEffect(const CardEffectStruct &effect) const
 {
+    Room *room = effect.to->getRoom();
+     room->setEmotion(effect.to, "ex_nihilo");
     effect.to->drawCards(2);
 }
 
@@ -472,6 +479,7 @@ void Snatch::onEffect(const CardEffectStruct &effect) const
         return;
 
     Room *room = effect.to->getRoom();
+    room->setEmotion(effect.to, "snatch");
     if (!effect.from->canGetCard(effect.to, "hej"))
         return;
 
@@ -606,6 +614,7 @@ void Dismantlement::onEffect(const CardEffectStruct &effect) const
         return;
 
     Room *room = effect.to->getRoom();
+    room->setEmotion(effect.from, "dismantlement");
     if (!effect.from->canDiscard(effect.to, "hej"))
         return;
 
@@ -1203,6 +1212,7 @@ void FireAttack::onEffect(const CardEffectStruct &effect) const
         return;
 
     const Card *card = room->askForCardShow(effect.to, effect.from, objectName());
+    room->setEmotion(effect.from, "fire_attack");
     room->showCard(effect.to, card->getEffectiveId());
 
     QString suit_str = card->getSuitString();
