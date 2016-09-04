@@ -63,7 +63,7 @@ public:
     void clear();
 
 public slots:
-    void chooseGeneral(const QStringList &generals, bool m_viewOnly = false, bool single_result = false, const QString &reason = QString(), const Player *player = NULL);
+    void chooseGeneral(const QStringList &generals, bool m_viewOnly = false, bool single_result = false, const QString &reason = QString(), const Player *player = NULL, const bool can_convert = false);
     void reply();
     void adjustItems();
 

@@ -1590,7 +1590,7 @@ public:
     QList<const Card *> askForPindianRace(ServerPlayer *from, const QList<ServerPlayer *> &to, const char *reason);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const char *reason,
         const char *prompt = NULL, bool optional = false, bool notify_skill = false);
-    QString askForGeneral(ServerPlayer *player, const char *generals, const char *default_choice = NULL, bool single_result = true, const char *skill_name = NULL, const QVariant &data = QVariant());
+    QString askForGeneral(ServerPlayer *player, const char *generals, const char *default_choice = NULL, bool single_result = true, const char *skill_name = NULL, const QVariant &data = QVariant(), bool can_convert = false);
     const Card *askForSinglePeach(ServerPlayer *player, ServerPlayer *dying);
     void addPlayerHistory(ServerPlayer *player, const char *key, int times = 1);
 

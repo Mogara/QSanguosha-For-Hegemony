@@ -1617,7 +1617,8 @@ void Client::askForGeneral(const QVariant &arg)
     QStringList generals;
     if (!JsonUtils::tryParse(args[0], generals)) return;
     bool single_result = args[1].toBool();
-    emit generals_got(generals, single_result);
+    bool can_convert = args[2].toBool();
+    emit generals_got(generals, single_result, can_convert);
     setStatus(AskForGeneralChosen);
 }
 

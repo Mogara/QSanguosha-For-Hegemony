@@ -3366,6 +3366,7 @@ void Room::chooseGenerals(QList<ServerPlayer *> &to_assign, bool has_assign, boo
         JsonArray args;
         args << JsonUtils::toJsonArray(player->getSelected());
         args << false;
+        args << !is_scenario;
         player->m_commandArgs = args;
     }
 
@@ -6638,7 +6639,7 @@ QList<ServerPlayer *> Room::askForPlayersChosen(ServerPlayer *player, const QLis
     return result;
 }
 
-QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, const QString &_default_choice, bool single_result, const QString &skill_name, const QVariant &data)
+QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, const QString &_default_choice, bool single_result, const QString &skill_name, const QVariant &data, bool can_convert)
 {
     tryPause();
     notifyMoveFocus(player, S_COMMAND_CHOOSE_GENERAL);
@@ -6688,6 +6689,7 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, c
         JsonArray options;
         options << JsonUtils::toJsonArray(generals);
         options << single_result;
+        options << can_convert;
         bool success = doRequest(player, S_COMMAND_CHOOSE_GENERAL, options, true);
 
         const QVariant &clientResponse = player->getClientReply();
@@ -6708,9 +6710,9 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, c
     return default_choice;
 }
 
-QString Room::askForGeneral(ServerPlayer *player, const QString &generals, const QString &default_choice, bool single_result, const QString &skill_name, const QVariant &data)
+QString Room::askForGeneral(ServerPlayer *player, const QString &generals, const QString &default_choice, bool single_result, const QString &skill_name, const QVariant &data, bool can_convert)
 {
-    return askForGeneral(player, generals.split("+"), default_choice, single_result, skill_name, data); // For Lua only!!!
+    return askForGeneral(player, generals.split("+"), default_choice, single_result, skill_name, data, can_convert); // For Lua only!!!
 }
 
 bool Room::makeCheat(ServerPlayer *player)

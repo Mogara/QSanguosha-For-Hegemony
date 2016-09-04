@@ -54,10 +54,9 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *dengai) const
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *dengai) const
     {
         if (dengai->askForSkillInvoke(this, data)) {
-            room->broadcastSkillInvoke("tuntian", dengai);
             return true;
         }
 
@@ -124,10 +123,14 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
     {
         JudgeStruct *judge = data.value<JudgeStruct *>();
-        return judge->who->askForSkillInvoke("_tuntian", "gotofield");
+        if (judge->who->askForSkillInvoke("_tuntian", "gotofield")) {
+            room->broadcastSkillInvoke("tuntian");
+            return true;
+        }
+        return false;
     }
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const
@@ -1608,8 +1611,8 @@ public:
             return false;
 
         QStringList generals = Sanguosha->getLimitedGeneralNames(true);
-                foreach (QString name, room->getUsedGeneral())
-                    if (generals.contains(name)) generals.removeAll(name);
+            foreach (QString name, room->getUsedGeneral())
+                if (generals.contains(name)) generals.removeAll(name);
         QStringList avaliable_generals;
 
         foreach (const QString &general, generals) {

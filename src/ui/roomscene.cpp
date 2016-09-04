@@ -1607,7 +1607,7 @@ void RoomScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     }
 }
 
-void RoomScene::chooseGeneral(const QStringList &generals, const bool single_result)
+void RoomScene::chooseGeneral(const QStringList &generals, const bool single_result, const bool can_convert)
 {
     QApplication::alert(main_window);
     if (!main_window->isActiveWindow())
@@ -1617,7 +1617,7 @@ void RoomScene::chooseGeneral(const QStringList &generals, const bool single_res
         delete m_choiceDialog;
         m_choiceDialog = new FreeChooseDialog(main_window);
     } else {
-        m_chooseGeneralBox->chooseGeneral(generals, false, single_result);
+        m_chooseGeneralBox->chooseGeneral(generals, false, single_result, QString(), NULL, can_convert);
     }
 }
 

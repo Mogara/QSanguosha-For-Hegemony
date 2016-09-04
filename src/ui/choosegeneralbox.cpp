@@ -243,7 +243,7 @@ static bool sortByKingdom(const QString &gen1, const QString &gen2)
 
 }
 
-void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_only, bool single_result, const QString &reason, const Player *player)
+void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_only, bool single_result, const QString &reason, const Player *player, const bool can_convert)
 {
     //repaint background
     QStringList generals = _generals;
@@ -302,7 +302,7 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
         } else {
             general_item->setAutoBack(true);
             connect(general_item, &GeneralCardItem::released, this, &ChooseGeneralBox::_adjust);
-            if (!Sanguosha->getConvertGenerals(general).isEmpty()) {
+            if (!Sanguosha->getConvertGenerals(general).isEmpty() && can_convert) {
                 Button *button = new Button(Sanguosha->translate("convert_general"), 0.45);
                 button->setPos((93 - button->boundingRect().width()) / 2, 130 - button->boundingRect().height());
                 button->setParentItem(general_item);

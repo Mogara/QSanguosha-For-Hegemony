@@ -406,8 +406,8 @@ public:
                                               const QString &reason,int min_num = 0, int max_num = 2, const QString &prompt = QString(),
                                               bool notify_skill = false);
 
-    QString askForGeneral(ServerPlayer *player, const QStringList &generals, const QString &default_choice = QString(), bool single_result = true, const QString &skill_name = QString(), const QVariant &data = QVariant());
-    QString askForGeneral(ServerPlayer *player, const QString &generals, const QString &default_choice = QString(), bool single_result = true, const QString &skill_name = QString(), const QVariant &data = QVariant());
+    QString askForGeneral(ServerPlayer *player, const QStringList &generals, const QString &default_choice = QString(), bool single_result = true, const QString &skill_name = QString(), const QVariant &data = QVariant(), bool can_convert = false);
+    QString askForGeneral(ServerPlayer *player, const QString &generals, const QString &default_choice = QString(), bool single_result = true, const QString &skill_name = QString(), const QVariant &data = QVariant(), bool can_convert = false);
     const Card *askForSinglePeach(ServerPlayer *player, ServerPlayer *dying);
     QString askForTriggerOrder(ServerPlayer *player, const QString &reason, SPlayerDataMap &skills, bool optional = true, const QVariant &data = QVariant());
     void addPlayerHistory(ServerPlayer *player, const QString &key, int times = 1);

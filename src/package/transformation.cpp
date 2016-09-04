@@ -683,7 +683,7 @@ public:
         QStringList huashens = zuoci->tag["Huashens"].toStringList();
         if (huashens.isEmpty()) return;
 
-        QStringList result = room->askForGeneral(zuoci, huashens, QString(), false, reason).split("+");
+        QStringList result = room->askForGeneral(zuoci, huashens, QString(), false, reason, QVariant(), true).split("+");
         zuoci->tag["Huashens"] = result;
 
         foreach (QString name, huashens) {
