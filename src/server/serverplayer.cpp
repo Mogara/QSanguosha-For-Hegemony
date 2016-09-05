@@ -749,8 +749,9 @@ bool ServerPlayer::pindian(PindianStruct *pd, int index)
     thread->delay();
 
     arg.clear();
+    int pindian_type = pindian_struct.success ? 1 : new_star->from_number == new_star->to_number ? 2 : 3;
     arg << S_GUANXING_FINISH;
-    arg << pindian_struct.success;
+    arg << pindian_type;
     arg << index;
     room->doBroadcastNotify(S_COMMAND_PINDIAN, arg);
 

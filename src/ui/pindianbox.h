@@ -30,7 +30,7 @@ public:
     PindianBox();
     virtual QRectF boundingRect() const;
     virtual void doPindianAnimation(const QString &who);
-    void playSuccess(bool success, int index);
+    void playSuccess(int type, int index);
     inline QString getRequestor()
     {
         return zhuge;

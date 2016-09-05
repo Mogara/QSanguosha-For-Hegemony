@@ -2040,9 +2040,9 @@ void Client::askForPindian(const QVariant &ask_str)
                 recorder->recordLine(packet.toJson());
             }
         } else if (step == S_GUANXING_FINISH) {
-            bool success = ask.at(1).toBool();
+            int type = ask.at(1).toInt();
             int index = ask.at(2).toInt();
-            emit pindianSuccess(success, index);
+            emit pindianSuccess(type, index);
 
             if (recorder) {
                 JsonArray stepArgs;

@@ -88,7 +88,7 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 					self:useTrickCard(zcard, dummy_use)
 					if dummy_use.card then shouldUse = false end
 				end
-				if zcard:getTypeId() == sgs.Card_TypeEquip and not self.player:hasEquip(zcard) then
+				if zcard:getTypeId() == sgs.Card_TypeEquip and not self.player:hasEquip(zcard) and not(self.player:getTreasure() or zcard:isKindOf("Treasure")) then
 					local dummy_use = { isDummy = true }
 					self:useEquipCard(zcard, dummy_use)
 					if dummy_use.card then shouldUse = false end

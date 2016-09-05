@@ -2896,11 +2896,11 @@ void RoomScene::cardMovedinCardchooseBox(const bool enable)
     }
 }
 
-void RoomScene::playPindianSuccess(const bool success, int index)
+void RoomScene::playPindianSuccess(int type, int index)
 {
     if (!m_pindianBox->isVisible()) return;
-    setEmotion(m_pindianBox->getRequestor(), success ? "success" : "no-success");
-    m_pindianBox->playSuccess(success, index);
+    setEmotion(m_pindianBox->getRequestor(), type == 1 ? "success" : "no-success");
+    m_pindianBox->playSuccess(type, index);
 }
 
 void RoomScene::onSkillDeactivated()
