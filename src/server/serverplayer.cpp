@@ -1302,7 +1302,7 @@ void ServerPlayer::marshal(ServerPlayer *player) const
         arg << true;
         arg << "d";
         arg << reason;
-        doBroadcastNotify(S_COMMAND_DISABLE_SHOW, arg);
+        room->doNotify(player, S_COMMAND_DISABLE_SHOW, arg);
     }
 
     if (player == this || hasShownOneGeneral()) {
