@@ -798,7 +798,7 @@ public:
         return new_card;
     }
 
-    virtual bool viewFilter(const Card *to_select) const
+    virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const
     {
         Room *room = Sanguosha->currentRoom();
         if (room != NULL) { // Server
