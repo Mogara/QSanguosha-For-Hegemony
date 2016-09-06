@@ -65,5 +65,13 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class ShowMashu : public ShowDistanceCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ShowMashu();
+};
+
 #endif
 

@@ -344,8 +344,8 @@ void QSanSkillButton::setSkill(const Skill *skill)
 void QSanSkillButton::setState(ButtonState state)
 {
     //refine state here for certain conditions
-    if (_m_skillType == S_SKILL_COMPULSORY && state != S_STATE_CANPRESHOW)
-        state = S_STATE_DISABLED;
+    //if (_m_skillType == S_SKILL_COMPULSORY && !(state == S_STATE_CANPRESHOW || state == S_STATE_UP))
+    //    state = S_STATE_DISABLED;
     QSanButton::setState(state);
 }
 

@@ -458,6 +458,26 @@ bool LuaAI::getTable(lua_State *L, QList<int> &table)
     return true;
 }
 
+bool LuaAI::StringListgetTable(lua_State *L, QStringList &table)
+{
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    size_t len = lua_rawlen(L, -1);
+    size_t i;
+    for (i = 0; i < len; i++) {
+        lua_rawgeti(L, -1, i + 1);
+        table << lua_tostring(L, -1);
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+
+    return true;
+}
+
 int LuaAI::askForAG(const QList<int> &card_ids, bool refusable, const QString &reason)
 {
     lua_State *L = room->getLuaState();

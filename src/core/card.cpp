@@ -1071,6 +1071,24 @@ const Card *ArraySummonCard::validate(CardUseStruct &card_use) const
     return NULL;
 }
 
+ShowDistanceCard::ShowDistanceCard()
+    : SkillCard()
+{
+    mute = true;
+    target_fixed = true;
+    handling_method = Card::MethodNone;
+}
+
+const Card *ShowDistanceCard::validate(CardUseStruct &card_use) const
+{
+    QString c = toString().split(":").last();   //damn it again!
+    const DistanceSkill *skill = qobject_cast<const DistanceSkill *>(Sanguosha->getSkill(c));
+    if (skill) {
+        card_use.from->showGeneral(card_use.from->inHeadSkills(skill));
+    }
+    return NULL;
+}
+
 TransferCard::TransferCard()
 {
     will_throw = false;

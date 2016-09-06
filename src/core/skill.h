@@ -155,6 +155,9 @@ class FilterSkill : public OneCardViewAsSkill
 
 public:
     FilterSkill(const QString &name);
+
+    virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const = 0;
+    virtual bool isEnabledAtPlay(const Player *) const;
 };
 
 typedef QMap<ServerPlayer *, QStringList> TriggerList;
@@ -316,6 +319,22 @@ public:
     DistanceSkill(const QString &name);
 
     virtual int getCorrect(const Player *from, const Player *to) const = 0;
+    const ViewAsSkill *getViewAsSkill() const;
+
+protected:
+    const ViewAsSkill *view_as_skill;
+};
+
+class ShowDistanceSkill : public ZeroCardViewAsSkill
+{
+    Q_OBJECT
+
+public:
+
+    ShowDistanceSkill(const QString &name);
+
+    const Card *viewAs() const;
+    virtual bool isEnabledAtPlay(const Player *player) const;
 };
 
 class MaxCardsSkill : public Skill

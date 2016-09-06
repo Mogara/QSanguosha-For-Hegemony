@@ -535,6 +535,11 @@ public:
     }
 };
 
+ShowMashu::ShowMashu()
+    : ShowDistanceCard()
+{
+}
+
 Mashu::Mashu(const QString &owner) : DistanceSkill("mashu_" + owner)
 {
 }
@@ -1654,4 +1659,5 @@ void StandardPackage::addShuGenerals()
 
     addMetaObject<RendeCard>();
     addMetaObject<FangquanCard>();
+    addMetaObject<ShowMashu>();
 }

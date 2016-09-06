@@ -1034,6 +1034,9 @@ const ViewAsSkill *Engine::getViewAsSkill(const QString &skill_name) const
     else if (skill->inherits("TriggerSkill")) {
         const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
         return trigger_skill->getViewAsSkill();
+    } else if (skill->inherits("DistanceSkill")) {
+        const DistanceSkill *distance_skill = qobject_cast<const DistanceSkill *>(skill);
+        return distance_skill->getViewAsSkill();
     } else
         return NULL;
 }

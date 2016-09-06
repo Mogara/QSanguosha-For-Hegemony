@@ -156,6 +156,7 @@ private:
     void pushQIntList(lua_State *L, const QList<int> &list);
     void reportError(lua_State *L);
     bool getTable(lua_State *L, QList<int> &table);
+    bool StringListgetTable(lua_State *L, QStringList &table);
 };
 
 #endif

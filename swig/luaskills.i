@@ -207,13 +207,15 @@ public:
 class FilterSkill: public OneCardViewAsSkill {
 public:
     FilterSkill(const QString &name);
+
+    virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const = 0;
 };
 
 class LuaFilterSkill: public FilterSkill {
 public:
     LuaFilterSkill(const char *name);
 
-    virtual bool viewFilter(const Card *to_select) const;
+    virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const;
     virtual const Card *viewAs(const Card *originalCard) const;
 
     LuaFunction view_filter;
@@ -1196,19 +1198,20 @@ int LuaTargetModSkill::getExtraTargetNum(const Player *from, const Card *card) c
     return extra_target_func;
 }
 
-bool LuaFilterSkill::viewFilter(const Card *to_select) const
+bool LuaFilterSkill::viewFilter(const Card *to_select, ServerPlayer *player) const
 {
     if (view_filter == 0)
         return false;
 
-    lua_State *L = Sanguosha->getLuaState();
+    lua_State *L = player->getRoom()->getLuaState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, view_filter);
 
     SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaFilterSkill, 0);
     SWIG_NewPointerObj(L, to_select, SWIGTYPE_p_Card, 0);
+	SWIG_NewPointerObj(L, player, SWIGTYPE_p_ServerPlayer, 0);
 
-    int error = lua_pcall(L, 2, 1, 0);
+    int error = lua_pcall(L, 3, 1, 0);
     if (error) {
         Error(L);
         return false;

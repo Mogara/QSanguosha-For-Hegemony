@@ -68,7 +68,7 @@ void AmazingGrace::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
 void AmazingGrace::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
-     room->setEmotion(effect.from, "amazing_grace");
+    room->setEmotion(effect.from, "amazing_grace");
     QVariantList ag_list = room->getTag("AmazingGrace").toList();
     QList<int> card_ids;
     foreach(QVariant card_id, ag_list)
@@ -141,7 +141,7 @@ ArcheryAttack::ArcheryAttack(Card::Suit suit, int number)
 void ArcheryAttack::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.to->getRoom();
-     room->setEmotion(effect.from, "archery_attack");
+    room->setEmotion(effect.from, "archery_attack");
     const Card *jink = room->askForCard(effect.to,
         "jink",
         "archery-attack-jink:" + effect.from->objectName(),
@@ -312,7 +312,7 @@ bool ExNihilo::isAvailable(const Player *player) const
 void ExNihilo::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.to->getRoom();
-     room->setEmotion(effect.to, "ex_nihilo");
+    room->setEmotion(effect.to, "ex_nihilo");
     effect.to->drawCards(2);
 }
 

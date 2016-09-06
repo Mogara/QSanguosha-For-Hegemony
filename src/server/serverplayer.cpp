@@ -1284,6 +1284,11 @@ void ServerPlayer::marshal(ServerPlayer *player) const
         }
     }
 
+    QStringList huashens = tag["Huashens"].toStringList();
+    if (!huashens.isEmpty())
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            room->doAnimate(QSanProtocol::S_ANIMATE_HUASHEN, objectName(), huashens.join(":"), QList<ServerPlayer *>() << p);
+
     if (player == this || hasShownOneGeneral()) {
         foreach (const QString &mark_name, marks.keys()) {
             if (mark_name.startsWith("@")) {

@@ -5343,6 +5343,16 @@ void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool ref
     QSet<const Skill *> skills = player->getSkills(false, false);
     QList<const FilterSkill *> filterSkills;
 
+    foreach (QString name, Sanguosha->getSkillNames()) {
+        if (Sanguosha->getSkill(name)->inherits("ViewHasSkill")) {
+            const ViewHasSkill *skill = qobject_cast<const ViewHasSkill *>(Sanguosha->getSkill(name));
+            foreach (QString name1, Sanguosha->getSkillNames()) {
+                if (!Sanguosha->getSkill(name1)->inherits("ViewHasSkill") && skill->ViewHas(player, name1, "skill"))
+                    skills.insert(Sanguosha->getSkill(name1));
+            }
+        }
+    }
+
     foreach (const Skill *skill, skills) {
         if (player->hasSkill(skill->objectName()) && skill->inherits("FilterSkill")) {
             const FilterSkill *filter = qobject_cast<const FilterSkill *>(skill);
@@ -5367,7 +5377,7 @@ void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool ref
             bool converged = true;
             foreach (const FilterSkill *skill, filterSkills) {
                 Q_ASSERT(skill);
-                if (skill->viewFilter(cards[i])) {
+                if (skill->viewFilter(cards[i], player)) {
                     cards[i] = skill->viewAs(card);
                     Q_ASSERT(cards[i] != NULL);
                     converged = false;

@@ -191,7 +191,7 @@ class LuaFilterSkill : public FilterSkill
 public:
     LuaFilterSkill(const char *name);
 
-    virtual bool viewFilter(const Card *to_select) const;
+    virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const;
     virtual const Card *viewAs(const Card *originalCard) const;
 
     LuaFunction view_filter;

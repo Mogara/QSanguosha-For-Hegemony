@@ -1611,8 +1611,8 @@ public:
             return false;
 
         QStringList generals = Sanguosha->getLimitedGeneralNames(true);
-            foreach (QString name, room->getUsedGeneral())
-                if (generals.contains(name)) generals.removeAll(name);
+        foreach (QString name, room->getUsedGeneral())
+            if (generals.contains(name)) generals.removeAll(name);
         QStringList avaliable_generals;
 
         foreach (const QString &general, generals) {
