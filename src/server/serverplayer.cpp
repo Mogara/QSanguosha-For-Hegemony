@@ -1284,6 +1284,21 @@ void ServerPlayer::marshal(ServerPlayer *player) const
         }
     }
 
+    if (!getActualGeneral1Name().isEmpty()) {                       //for actualGeneral
+        JsonArray args;
+        args << objectName();
+        args << getActualGeneral1Name();
+        args << true;
+        room->doNotify(player, QSanProtocol::S_COMMAND_SET_ACTULGENERAL, args);
+    }
+    if (!getActualGeneral2Name().isEmpty()) {
+        JsonArray args;
+        args << objectName();
+        args << getActualGeneral2Name();
+        args << false;
+        room->doNotify(player, QSanProtocol::S_COMMAND_SET_ACTULGENERAL, args);
+    }
+
     foreach (QString key, marks.keys()) {                           //for playerMark
         JsonArray arg;
         arg << objectName();
