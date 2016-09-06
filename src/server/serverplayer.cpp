@@ -1300,11 +1300,13 @@ void ServerPlayer::marshal(ServerPlayer *player) const
     }
 
     foreach (QString key, marks.keys()) {                           //for playerMark
-        JsonArray arg;
-        arg << objectName();
-        arg << key;
-        arg << marks.value(key, 0);
-        room->doNotify(player, S_COMMAND_SET_MARK, arg);
+        if (!key.startsWith("@") || hasShownOneGeneral()) {
+            JsonArray arg;
+            arg << objectName();
+            arg << key;
+            arg << marks.value(key, 0);
+            room->doNotify(player, S_COMMAND_SET_MARK, arg);
+        }
     }
 
     QStringList huashens = tag["Huashens"].toStringList();          //for huashen
@@ -1329,18 +1331,6 @@ void ServerPlayer::marshal(ServerPlayer *player) const
     }
 
     if (player == this || hasShownOneGeneral()) {
-        foreach (const QString &mark_name, marks.keys()) {
-            if (mark_name.startsWith("@")) {
-                int value = getMark(mark_name);
-                if (value > 0) {
-                    JsonArray arg;
-                    arg << objectName();
-                    arg << mark_name;
-                    arg << value;
-                    room->doNotify(player, S_COMMAND_SET_MARK, arg);
-                }
-            }
-        }
         room->notifyProperty(player, this, "kingdom");
         room->notifyProperty(player, this, "role");
     } else {

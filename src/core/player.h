@@ -373,9 +373,8 @@ public:
 
     QVariantMap tag;
 
-    QMap<QString, int> marks;
-
 protected:
+    QMap<QString, int> marks;
     QMap<QString, QList<int> > piles;
     QMap<QString, QStringList> pile_open;
     QSet<QString> head_acquired_skills, deputy_acquired_skills;
