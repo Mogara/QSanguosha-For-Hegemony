@@ -1284,10 +1284,26 @@ void ServerPlayer::marshal(ServerPlayer *player) const
         }
     }
 
-    QStringList huashens = tag["Huashens"].toStringList();
+    QStringList huashens = tag["Huashens"].toStringList();          //for huashen
     if (!huashens.isEmpty())
-        foreach (ServerPlayer *p, room->getAllPlayers())
-            room->doAnimate(QSanProtocol::S_ANIMATE_HUASHEN, objectName(), huashens.join(":"), QList<ServerPlayer *>() << p);
+        room->doAnimate(QSanProtocol::S_ANIMATE_HUASHEN, objectName(), huashens.join(":"), QList<ServerPlayer *>() << player);
+
+    foreach (QString reason, disableShow(true)) {                   //for disableshow
+        JsonArray arg;
+        arg << objectName();
+        arg << true;
+        arg << "h";
+        arg << reason;
+        room->doNotify(player, S_COMMAND_DISABLE_SHOW, arg);
+    }
+    foreach (QString reason, disableShow(false)) {
+        JsonArray arg;
+        arg << objectName();
+        arg << true;
+        arg << "d";
+        arg << reason;
+        doBroadcastNotify(S_COMMAND_DISABLE_SHOW, arg);
+    }
 
     if (player == this || hasShownOneGeneral()) {
         foreach (const QString &mark_name, marks.keys()) {
