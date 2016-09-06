@@ -1284,6 +1284,14 @@ void ServerPlayer::marshal(ServerPlayer *player) const
         }
     }
 
+    foreach (QString key, marks.keys()) {                           //for playerMark
+        JsonArray arg;
+        arg << objectName();
+        arg << key;
+        arg << marks.value(key, 0);
+        room->doNotify(player, S_COMMAND_SET_MARK, arg);
+    }
+
     QStringList huashens = tag["Huashens"].toStringList();          //for huashen
     if (!huashens.isEmpty())
         room->doAnimate(QSanProtocol::S_ANIMATE_HUASHEN, objectName(), huashens.join(":"), QList<ServerPlayer *>() << player);
