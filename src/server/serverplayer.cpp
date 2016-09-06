@@ -1299,14 +1299,26 @@ void ServerPlayer::marshal(ServerPlayer *player) const
         room->doNotify(player, QSanProtocol::S_COMMAND_SET_ACTULGENERAL, args);
     }
 
+    QStringList pmarks;
     foreach (QString key, marks.keys()) {                           //for playerMark
-        if (!key.startsWith("@") || hasShownOneGeneral()) {
+        if (!key.startsWith("@") && marks.value(key, 0) > 0) {
             JsonArray arg;
             arg << objectName();
             arg << key;
             arg << marks.value(key, 0);
             room->doNotify(player, S_COMMAND_SET_MARK, arg);
-        }
+        } else if (key.startsWith("@") && marks.value(key, 0) > 0)
+            pmarks << key;
+    }
+    foreach (const Skill *skill, getSkillList(false, false))
+        if (skill->getFrequency() == Skill::Limited && pmarks.contains(skill->getLimitMark()) && !hasShownSkill(skill))
+            pmarks.removeOne(skill->getLimitMark());
+    foreach (QString mark, pmarks) {
+        JsonArray arg;
+        arg << objectName();
+        arg << mark;
+        arg << getMark(mark);
+        room->doNotify(player, S_COMMAND_SET_MARK, arg);
     }
 
     QStringList huashens = tag["Huashens"].toStringList();          //for huashen
