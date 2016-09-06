@@ -800,19 +800,8 @@ public:
 
     virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const
     {
-        Room *room = Sanguosha->currentRoom();
-        if (room != NULL) { // Server
-            foreach(ServerPlayer *p, room->getAlivePlayers()) {
-                if (p->ownSkill(objectName()) && p->hasShownSkill(objectName()))
-                    return to_select->getSuit() == Card::Spade;
-            }
-        }
-//         } else { //Client
-//             foreach (const Player *p, Self->getAliveSiblings()) {
-//                 if (p->ownSkill(objectName()) && p->hasShownSkill(objectName()))
-//                     return to_select->getSuit() == Card::Spade;
-//             }
-//         }
+        if (player->hasShownSkill(objectName()))
+            return to_select->getSuit() == Card::Spade;
 
         return false;
     }
