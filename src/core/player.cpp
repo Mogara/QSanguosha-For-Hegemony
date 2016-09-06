@@ -201,8 +201,8 @@ bool Player::canShowGeneral(const QString &flags) const
     bool head = true, deputy = true;
     foreach (const QString &dis_str, disable_show) {
         QStringList dis_list = dis_str.split(',');
-        if (dis_list.contains("h")) head = false;
-        if (dis_list.contains("d")) deputy = false;
+        if (dis_list.at(0).contains("h")) head = false;
+        if (dis_list.at(0).contains("d")) deputy = false;
     }
     if (flags.isEmpty()) return head || deputy || hasShownOneGeneral();
     if (flags == "h") return head || hasShownGeneral1();
