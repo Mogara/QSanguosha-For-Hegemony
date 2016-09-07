@@ -515,9 +515,10 @@ public:
             return (data.toBool() == player->inHeadSkills(objectName())) ? QStringList(objectName()) : QStringList();
         else if (triggerEvent == CardUsed && player->getPhase() == Player::Play && TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (player->hasFlag(objectName()) && use.card->getTypeId() != Card::TypeSkill && ((use.card->isBlack() && player->getMark(objectName() + "_color") != 1) ||
-                    (use.card->isRed() && player->getMark(objectName() + "_color") != 2) ||
-                    (!use.card->isRed() && !use.card->isBlack() && player->getMark(objectName() + "_color") != 0))) {
+            if (player->getMark("xichou_color") == 0) return QStringList();
+            if (use.card->getTypeId() != Card::TypeSkill && ((use.card->isBlack() && player->getMark("xichou_color") != 1) ||
+                    (use.card->isRed() && player->getMark("xichou_color") != 2) ||
+                    (use.card->getSuit() == Card::NoSuit && player->getMark("xichou_color") != 3))) {
                 foreach (ServerPlayer *p, room->getAlivePlayers())
                     if (p->hasFlag("Global_Dying"))
                         return QStringList();
@@ -526,10 +527,8 @@ public:
         }
         else if (triggerEvent == EventPhaseChanging && TriggerSkill::triggerable(player)) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.from == Player::Play) {
-                room->setPlayerMark(player, objectName() + "_color", 0);
-                room->setPlayerFlag(player, "-" + objectName());
-            }
+            if (change.from == Player::Play)
+                room->setPlayerMark(player, "xichou_color", 0);
         }
         return QStringList();
     }
@@ -577,8 +576,7 @@ public:
 
     virtual void record(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play) {
-            room->setPlayerFlag(player, "xichou");
+        if (player->hasSkill("xichou") && player->getPhase() == Player::Play) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->getTypeId() != Card::TypeSkill) {
                 if (use.card->isBlack())
@@ -586,7 +584,7 @@ public:
                 else if (use.card->isRed())
                     room->setPlayerMark(player, "xichou_color", 2);
                 else
-                    room->setPlayerMark(player, "xichou_color", 0);
+                    room->setPlayerMark(player, "xichou_color", 3);
             }
         }
     }
@@ -1467,7 +1465,7 @@ class Diancai : public TriggerSkill
 public:
     Diancai() : TriggerSkill("diancai")
     {
-        events << CardsMoveOneTime << EventPhaseEnd;
+        events << CardsMoveOneTime << EventPhaseEnd << EventPhaseChanging;
     }
 
     virtual bool canPreshow() const
@@ -1477,6 +1475,13 @@ public:
 
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::Play)
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                    p->setMark(objectName(), 0);
+            return;
+        }
         if (!(triggerEvent == CardsMoveOneTime && TriggerSkill::triggerable(player) && player != room->getCurrent() && room->getCurrent()->getPhase() == Player::Play))
             return;
 
@@ -1495,8 +1500,6 @@ public:
             if (TriggerSkill::triggerable(p))
                 if (p->isWounded() && p->getMark(objectName()) >= p->getLostHp())
                     skill_list.insert(p, QStringList(objectName()));
-                else
-                    p->setMark(objectName(), 0);
         }
         return skill_list;
     }
@@ -1694,7 +1697,7 @@ void GongxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         if (card->getSuit() == Card::Heart)
             ids.append(card->getEffectiveId());
 
-    int card_id = room->doGongxin(source, target, ids);
+    int card_id = room->doGongxin(source, target, ids, "gongxin");
     if (card_id == -1) return;
     room->getThread()->delay();
     room->broadcastSkillInvoke("gongxin", 1);
