@@ -1209,7 +1209,7 @@ bool LuaFilterSkill::viewFilter(const Card *to_select, ServerPlayer *player) con
 
     SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaFilterSkill, 0);
     SWIG_NewPointerObj(L, to_select, SWIGTYPE_p_Card, 0);
-	SWIG_NewPointerObj(L, player, SWIGTYPE_p_ServerPlayer, 0);
+    SWIG_NewPointerObj(L, player, SWIGTYPE_p_ServerPlayer, 0);
 
     int error = lua_pcall(L, 3, 1, 0);
     if (error) {
