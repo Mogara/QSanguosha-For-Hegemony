@@ -573,36 +573,17 @@ public:
     }
 };
 
-class YiZhi : public TriggerSkill
+class Yizhi : public ViewHasSkill
 {
 public:
-    YiZhi() : TriggerSkill("yizhi")
+    Yizhi() : ViewHasSkill("yizhi")
     {
         relate_to_place = "deputy";
         frequency = Compulsory;
     }
-
-    virtual bool canPreshow() const
-    {
-        return false;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &) const
-    {
-        return QStringList();
-    }
-
-};
-
-class YizhiVH : public ViewHasSkill
-{
-public:
-    YizhiVH() : ViewHasSkill("#yizhi-viewhas")
-    {
-    }
     virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
     {
-        if (flag == "skill" && skill_name == "guanxing" && player->inDeputySkills("yizhi") && !player->inHeadSkills(skill_name))
+        if (flag == "skill" && skill_name == "guanxing" && player->hasSkill("yizhi") && !player->inHeadSkills(skill_name))
             return true;
         return false;
     }
@@ -1456,9 +1437,7 @@ FormationPackage::FormationPackage()
 
     General *jiangwei = new General(this, "jiangwei", "shu"); // SHU 012 G
     jiangwei->addSkill(new Tiaoxin);
-    jiangwei->addSkill(new YiZhi);
-    jiangwei->addSkill(new YizhiVH);
-    insertRelatedSkills("yizhi", "#yizhi-viewhas");
+    jiangwei->addSkill(new Yizhi);
     jiangwei->setDeputyMaxHpAdjustedValue(-1);
     jiangwei->addSkill(new Tianfu);
     jiangwei->addRelateSkill("kanpo");

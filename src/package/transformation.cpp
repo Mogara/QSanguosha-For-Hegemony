@@ -1967,7 +1967,7 @@ public:
     }
     virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
     {
-        if (flag != "skill") return false;
+        if (flag != "skill" || !player->canShowGeneral()) return false;
         const Player *sunquan = player->getLord();
         if (!sunquan) return false;
 
