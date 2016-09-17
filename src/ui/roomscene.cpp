@@ -1900,6 +1900,8 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
             }
             card->setFootnote(_translateMovement(movement));
             card->hideFootnote();
+            if (Self->hasFlag("marshalling") && movement.to_place == Player::PlaceHand && movement.to->objectName() == Self->objectName())
+                card->setOpacity(1);
         }
         bringToFront(to_container);
         to_container->addCardItems(cards, movement);

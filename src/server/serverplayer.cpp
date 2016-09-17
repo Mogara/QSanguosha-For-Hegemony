@@ -1735,30 +1735,6 @@ void ServerPlayer::removeGeneral(bool head_general)
             if (skill)
                 room->detachSkillFromPlayer(this, skill->objectName(), true);
         }
-        if (!hasShownGeneral2()) {
-            room->setPlayerProperty(this, "kingdom", kingdom);
-
-            QString role = HegemonyMode::GetMappedRole(kingdom);
-            int i = 1;
-            bool has_lord = isAlive() && getGeneral()->isLord();
-            if (!has_lord) {
-                foreach (ServerPlayer *p, room->getOtherPlayers(this, true)) {
-                    if (p->getKingdom() == kingdom) {
-                        if (p->isAlive() && p->getGeneral()->isLord()) {
-                            has_lord = true;
-                            break;
-                        }
-                        if (p->hasShownOneGeneral() && p->getRole() != "careerist")
-                            ++i;
-                    }
-                }
-            }
-
-            if (!has_lord && i > (room->getPlayers().length() / 2))
-                role = "careerist";
-
-            room->setPlayerProperty(this, "role", role);
-        }
     } else {
         if (!hasShownGeneral2())
             showGeneral(false); //zoushi?
@@ -1787,30 +1763,6 @@ void ServerPlayer::removeGeneral(bool head_general)
         foreach (const Skill *skill, getDeputySkillList()) {
             if (skill)
                 room->detachSkillFromPlayer(this, skill->objectName());
-        }
-        if (!hasShownGeneral1()) {
-            room->setPlayerProperty(this, "kingdom", kingdom);
-
-            QString role = HegemonyMode::GetMappedRole(kingdom);
-            int i = 1;
-            bool has_lord = isAlive() && getGeneral()->isLord();
-            if (!has_lord) {
-                foreach (ServerPlayer *p, room->getOtherPlayers(this, true)) {
-                    if (p->getKingdom() == kingdom) {
-                        if (p->isAlive() && p->getGeneral()->isLord()) {
-                            has_lord = true;
-                            break;
-                        }
-                        if (p->hasShownOneGeneral() && p->getRole() != "careerist")
-                            ++i;
-                    }
-                }
-            }
-
-            if (!has_lord && i > (room->getPlayers().length() / 2))
-                role = "careerist";
-
-            room->setPlayerProperty(this, "role", role);
         }
     }
 
