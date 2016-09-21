@@ -203,10 +203,10 @@ public:
     bool isLord() const;
 
     void acquireSkill(const char *skill_name, bool head = true);
-    void detachSkill(const char *skill_name);
+    void detachSkill(const char *skill_name, bool head = true);
     void detachAllSkills();
     virtual void addSkill(const char *skill_name, bool head_skill = true);
-    virtual void loseSkill(const char *skill_name);
+    virtual void loseSkill(const char *skill_name, bool head = true);
     bool hasSkill(const char *skill_name, bool include_lose = false) const;
     bool hasSkill(const Skill *skill, bool include_lose = false) const;
     bool hasSkills(const char *skill_name, bool include_lose = false) const;
@@ -437,7 +437,7 @@ public:
     void loseAllMarks(const char *mark_name);
 
     virtual void addSkill(const char *skill_name, bool head_skill = true);
-    virtual void loseSkill(const char *skill_name);
+    virtual void loseSkill(const char *skill_name, bool head = true);
     virtual void setGender(General::Gender gender);
 
     void setAI(AI *ai);
@@ -1412,7 +1412,7 @@ public:
     void slashEffect(const SlashEffectStruct &effect);
     void slashResult(const SlashEffectStruct &effect, const Card *jink);
     void attachSkillToPlayer(ServerPlayer *player, const char *skill_name);
-    void detachSkillFromPlayer(ServerPlayer *player, const char *skill_name, bool is_equip = false, bool acquire_only = false);
+    void detachSkillFromPlayer(ServerPlayer *player, const char *skill_name, bool is_equip = false, bool acquire_only = false, bool head = true);
     void handleAcquireDetachSkills(ServerPlayer *player, const char *skill_names, bool acquire_only = false);
     void setPlayerFlag(ServerPlayer *player, const char *flag);
     void setPlayerProperty(ServerPlayer *player, const char *property_name, const QVariant &value);
@@ -1480,6 +1480,7 @@ public:
     void broadcastSkillInvoke(const char *skillName, int type,
                               const ServerPlayer *player = NULL);
     void broadcastSkillInvoke(const char *skillName, bool isMale, int type);
+    void broadcastSkillInvoke(const QString &skillName, const QString &category, int type, const ServerPlayer *who = NULL, const QString &general = QString());
     void doLightbox(const char *lightboxName, int duration = 2000);
     void doSuperLightbox(const char *heroName, const char *skillName);
 

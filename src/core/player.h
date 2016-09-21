@@ -179,10 +179,10 @@ public:
     bool isLord() const;
 
     void acquireSkill(const QString &skill_name, bool head = true);
-    void detachSkill(const QString &skill_name);
+    void detachSkill(const QString &skill_name, bool head = true);
     void detachAllSkills();
     virtual void addSkill(const QString &skill_name, bool head_skill = true);
-    virtual void loseSkill(const QString &skill_name);
+    virtual void loseSkill(const QString &skill_name, bool head = true);
     bool hasSkill(const QString &skill_name, bool include_lose = false) const;
     bool hasSkill(const Skill *skill, bool include_lose = false) const;
     bool hasSkills(const QString &skill_name, bool include_lose = false) const;
@@ -270,8 +270,8 @@ public:
     QSet<const TriggerSkill *> getTriggerSkills() const;
     QSet<const Skill *> getSkills(bool include_equip = false, bool visible_only = true) const;
     QList<const Skill *> getSkillList(bool include_equip = false, bool visible_only = true) const;
-    QList<const Skill *> getHeadSkillList(bool visible_only = true) const;
-    QList<const Skill *> getDeputySkillList(bool visible_only = true) const;
+    QList<const Skill *> getHeadSkillList(bool visible_only = true, bool inclue_acquired = false) const;
+    QList<const Skill *> getDeputySkillList(bool visible_only = true, bool inclue_acquired = false) const;
     QSet<const Skill *> getVisibleSkills(bool include_equip = false) const;
     QList<const Skill *> getVisibleSkillList(bool include_equip = false) const;
     QSet<QString> getAcquiredSkills() const;

@@ -117,6 +117,7 @@ public:
     Replayer *getReplayer() const;
     QString getPlayerName(const QString &str);
     QString getSkillNameToInvoke() const;
+    QString getSkillToHighLight() const;
 
     QTextDocument *getLinesDoc() const;
     QTextDocument *getPromptDoc() const;
@@ -319,6 +320,7 @@ private:
     QTextDocument *lines_doc, *prompt_doc;
     int pile_num;
     QString skill_to_invoke;
+    QString skill_position;
     QList<int> available_cards;
 
     unsigned int _m_lastServerSerial;
@@ -392,7 +394,7 @@ signals:
     void move_cards_got(int moveId, QList<CardsMoveStruct> moves);
 
     void skill_attached(const QString &skill_name, bool from_left);
-    void skill_detached(const QString &skill_name);
+    void skill_detached(const QString &skill_name, bool head = true);
     void do_filter();
 
     void nullification_asked(bool asked);

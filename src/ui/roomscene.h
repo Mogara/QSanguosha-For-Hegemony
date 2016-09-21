@@ -385,7 +385,7 @@ private:
     void cancelViewAsSkill();
     void highlightSkillButton(const QString &skillName,
         const CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_UNKNOWN,
-        const QString &pattern = QString());
+        const QString &pattern = QString(), const QString &head = QString());
 
     void freeze();
     void addRestartButton(QDialog *dialog);
@@ -460,7 +460,7 @@ private slots:
     void takeAmazingGrace(ClientPlayer *taker, int card_id, bool move_cards);
 
     void attachSkill(const QString &skill_name, const bool &head = true);
-    void detachSkill(const QString &skill_name);
+    void detachSkill(const QString &skill_name, bool head);
 
     void updateHandcardNum();
 

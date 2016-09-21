@@ -99,7 +99,7 @@ public:
     void slashEffect(const SlashEffectStruct &effect);
     void slashResult(const SlashEffectStruct &effect, const Card *jink);
     void attachSkillToPlayer(ServerPlayer *player, const QString &skill_name);
-    void detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name, bool is_equip = false, bool acquire_only = false);
+    void detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name, bool is_equip = false, bool acquire_only = false, bool head = true);
     void handleAcquireDetachSkills(ServerPlayer *player, const QStringList &skill_names, bool acquire_only = false);
     void handleAcquireDetachSkills(ServerPlayer *player, const QString &skill_names, bool acquire_only = false);
     void setPlayerFlag(ServerPlayer *player, const QString &flag);
@@ -269,6 +269,7 @@ public:
     void broadcastSkillInvoke(const QString &skillName, const QString &category);
     void broadcastSkillInvoke(const QString &skillName, int type, const ServerPlayer *who = NULL);
     void broadcastSkillInvoke(const QString &skillName, bool isMale, int type);
+    void broadcastSkillInvoke(const QString &skillName, const QString &category, int type, const ServerPlayer *who = NULL, const QString &position = QString());
     void doLightbox(const QString &lightboxName, int duration = 2000);
     void doSuperLightbox(const QString &heroName, const QString &skillName);
     void doAnimate(QSanProtocol::AnimateType type, const QString &arg1 = QString(), const QString &arg2 = QString(),

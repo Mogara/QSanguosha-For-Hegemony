@@ -601,7 +601,7 @@ public:
 
     static void playAudioEffect(ServerPlayer *zuoci, const QString &skill_name)
     {
-        zuoci->getRoom()->broadcastSkillInvoke(skill_name, zuoci->isMale(), -1);
+        zuoci->getRoom()->broadcastSkillInvoke(skill_name, zuoci->isMale() ? "male" : "female", -1, zuoci);
     }
 
     static void AcquireGenerals(ServerPlayer *zuoci, int n, QString reason)
@@ -626,8 +626,9 @@ public:
             huashens.clear();
 
             QStringList old_skills;
+            bool ishead = zuoci->inHeadSkills("huashen");
             foreach (QString name, zuoci->tag["HuashenSkill"].toStringList())
-                old_skills << "-" + name;
+                old_skills << "-" + name + (ishead ? "" : "!");
 
             foreach (ServerPlayer *p, room->getAllPlayers())
                 room->doAnimate(QSanProtocol::S_ANIMATE_HUASHEN, zuoci->objectName(), drops.join(":"), QList<ServerPlayer *>() << p);

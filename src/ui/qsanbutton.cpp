@@ -456,6 +456,7 @@ QSanSkillButton *QSanInvokeSkillDock::addSkillButtonByName(const QString &skillN
 
     const Skill *skill = Sanguosha->getSkill(skillName);
     button->setSkill(skill);
+    button->setObjectName(this->objectName());
     connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_activated), this, &QSanInvokeSkillDock::skill_activated);
     connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_deactivated), this, &QSanInvokeSkillDock::skill_deactivated);
     _m_buttons.append(button);

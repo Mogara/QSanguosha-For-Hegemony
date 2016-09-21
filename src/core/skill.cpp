@@ -857,11 +857,17 @@ bool ArmorSkill::cost(Room *room, ServerPlayer *target, QVariant &data) const
         return getFrequency() == Skill::Compulsory || target->askForSkillInvoke(objectName(), data);
 
     QStringList skill_names;
+    bool show = false;
     foreach (QString name, Sanguosha->getSkillNames()) {
         if (Sanguosha->getSkill(name)->inherits("ViewHasSkill")) {
             const ViewHasSkill *skill = qobject_cast<const ViewHasSkill *>(Sanguosha->getSkill(name));
-            if (skill->ViewHas(target, objectName(), "armor"))
-                skill_names << name;
+            if (skill->ViewHas(target, objectName(), "armor")) {
+                if (target->hasShownSkill(skill)) show = true;
+                if (target->inHeadSkills(skill) && target->canShowGeneral("h"))
+                    skill_names << "left?" + name;
+                if (target->inDeputySkills(skill) && target->canShowGeneral("d"))
+                    skill_names << "right?" + name;
+            }
         }
     }
     if (skill_names.isEmpty()) return false;
@@ -870,14 +876,15 @@ bool ArmorSkill::cost(Room *room, ServerPlayer *target, QVariant &data) const
     if (skill_names.length() > 1){
         SPlayerDataMap map;
         map.insert(target, skill_names);
-        QString answer = room->askForTriggerOrder(target, "armorskill", map, true, data);
+        bool option = show && getFrequency() == Skill::Compulsory;
+        QString answer = room->askForTriggerOrder(target, "armorskill", map, !option, data);
         if (answer != "cancel") invoke = true;
-        name = answer.remove(target->objectName() + ":");
+        name = answer.split(":").first().split("?").last() + "?" + answer.split(":").last();
     } else {
         name = skill_names.first();
-        invoke = target->hasShownSkill(name)
-                && getFrequency() == Skill::Compulsory
-                || target->askForSkillInvoke(target->hasShownSkill(name) ? objectName() : name, data);
+        QString skill_name = name.split("?").last();
+        invoke = target->hasShownSkill(skill_name) && getFrequency() == Skill::Compulsory
+                || target->askForSkillInvoke(target->hasShownSkill(skill_name) ? objectName() : skill_name, data);
     }
     if (!invoke) return false;
 
@@ -891,8 +898,8 @@ bool ArmorSkill::cost(Room *room, ServerPlayer *target, QVariant &data) const
     log.arg = objectName();
     room->sendLog(log);
 
-    if (!qobject_cast<const ViewHasSkill *>(Sanguosha->getSkill(name))->isGlobal())
-        target->showGeneral(target->inHeadSkills(name));
+    if (!qobject_cast<const ViewHasSkill *>(Sanguosha->getSkill(name.split("?").last()))->isGlobal())
+        target->showGeneral(name.split("?").first() == "left" ? true : false);
     return true;
 }
 
@@ -901,7 +908,7 @@ void ArmorSkill::playAudio(const ServerPlayer *target) const
     Room *room = target->getRoom();
     QStringList names = room->getTag(objectName() + target->objectName()).toStringList();
     if (names.isEmpty()) return;
-    room->broadcastSkillInvoke(names.last(), target);
+    room->broadcastSkillInvoke(names.last().split("?").last(), "male", -1, target, names.last().split("?").first());
     names.removeLast();
     room->setTag(objectName() + target->objectName(), names);
 }

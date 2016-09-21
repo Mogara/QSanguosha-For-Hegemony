@@ -325,11 +325,11 @@ public:
             bool show1 = player->hasShownSkill(this);
             bool show2 = player->hasShownSkill("yizhi");
             QStringList choices;
-            if (!show1)
+            if (!show1 && player->canShowGeneral("h"))
                 choices << "show_head_general";
-            if (!show2)
+            if (!show2 && player->canShowGeneral("d"))
                 choices << "show_deputy_general";
-            if (choices.length() == 2)
+            if (choices.length() == 2 && player->canShowGeneral("hd"))
                 choices << "show_both_generals";
             if (choices.length() != 3)
                 choices << "cancel";

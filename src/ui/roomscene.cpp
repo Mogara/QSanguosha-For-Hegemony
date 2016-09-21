@@ -488,7 +488,10 @@ void RoomScene::handleGameEvent(const QVariant &args)
                 QString playerName = arg[4].toString();
                 player = ClientInstance->getPlayer(playerName);
             }
-            Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(skillName, category, type, player));
+            QString general;
+            if (player && arg.size() >= 6 && JsonUtils::isString(arg[5]))
+                general = arg[5].toString();
+            Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(skillName, category, type, player, general));
             break;
         }
         case S_GAME_EVENT_JUDGE_RESULT: {
@@ -500,10 +503,11 @@ void RoomScene::handleGameEvent(const QVariant &args)
         case S_GAME_EVENT_DETACH_SKILL: {
             QString player_name = arg[1].toString();
             QString skill_name = arg[2].toString();
+            bool head = arg[3].toBool();
 
             ClientPlayer *player = ClientInstance->getPlayer(player_name);
-            player->detachSkill(skill_name);
-            if (player == Self) detachSkill(skill_name);
+            player->detachSkill(skill_name, head);
+            if (player == Self) detachSkill(skill_name, head);
 
             // stop huashen animation
             PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
@@ -545,9 +549,10 @@ void RoomScene::handleGameEvent(const QVariant &args)
         case S_GAME_EVENT_LOSE_SKILL: {
             QString player_name = arg[1].toString();
             QString skill_name = arg[2].toString();
+            bool head = arg[3].toBool();
 
             ClientPlayer *player = ClientInstance->getPlayer(player_name);
-            player->loseSkill(skill_name);
+            player->loseSkill(skill_name, head);
 
             PlayerCardContainer *container = qobject_cast<PlayerCardContainer *>(_getGenericCardContainer(Player::PlaceHand, player));
             if (container != NULL)
@@ -632,7 +637,7 @@ void RoomScene::handleGameEvent(const QVariant &args)
             const General* newHero = Sanguosha->getGeneral(newHeroName);
             if (oldHero) {
                 foreach (const Skill *skill, oldHero->getVisibleSkills(true, !isSecondaryHero))
-                    detachSkill(skill->objectName());
+                    detachSkill(skill->objectName(), !isSecondaryHero);
                 if (oldHero->hasSkill("huashen")) {
                     PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
                     container->stopHuaShen();
@@ -1881,7 +1886,10 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
                     && movement.to_place != Player::PlaceEquip && movement.to_place != Player::PlaceDelayedTrick) {
                 ClientPlayer *target = ClientInstance->getPlayer(movement.from->objectName());
                 if (!reason.m_playerId.isEmpty() && reason.m_playerId != movement.from->objectName()) target = ClientInstance->getPlayer(reason.m_playerId);
-                if (target->hasSkill(reason.m_skillName) && !target->getSkillList().contains(Sanguosha->getSkill(reason.m_skillName)))
+                if (!reason.m_eventName.isEmpty() && reason.m_eventName == target->getActualGeneral1Name()
+                        || reason.m_eventName == target->getActualGeneral2Name())
+                    card->showAvatar(reason.m_eventName == target->getActualGeneral1Name() ? target->getActualGeneral1() : target->getActualGeneral2(), reason.m_skillName);
+                else if (target->hasSkill(reason.m_skillName) && !target->getSkillList().contains(Sanguosha->getSkill(reason.m_skillName)))
                     card->showAvatar(target->hasShownGeneral1() ? target->getGeneral() : target->getGeneral2(), reason.m_skillName);
                 else if (target->inHeadSkills(reason.m_skillName) || (target->getActualGeneral1() ? target->getActualGeneral1()->hasSkill(reason.m_skillName) : NULL))
                     card->showAvatar(target->getActualGeneral1(), reason.m_skillName);
@@ -2185,11 +2193,17 @@ void RoomScene::acquireSkill(const ClientPlayer *player, const QString &skill_na
 
 void RoomScene::updateSkillButtons()
 {
-    foreach (const Skill *skill, Self->getVisibleSkillList()) {
+    foreach (const Skill *skill, Self->getHeadSkillList(true, true)) {
         if (Self->isDuanchang(Self->inHeadSkills(skill->objectName())))
             continue;
 
-        addSkillButton(skill);
+        addSkillButton(skill, true);
+    }
+    foreach (const Skill *skill, Self->getDeputySkillList(true, true)) {
+        if (Self->isDuanchang(Self->inDeputySkills(skill->objectName())))
+            continue;
+
+        addSkillButton(skill, false);
     }
 
     // Do not disable all skill buttons for we need to preshow some skills
@@ -2361,12 +2375,13 @@ void RoomScene::cancelViewAsSkill()
     updateStatus(status, status);
 }
 
-void RoomScene::highlightSkillButton(const QString &skillName, const CardUseStruct::CardUseReason reason, const QString &pattern)
+void RoomScene::highlightSkillButton(const QString &skillName, const CardUseStruct::CardUseReason reason, const QString &pattern, const QString &head)
 {
     const bool isViewAsSkill = reason != CardUseStruct::CARD_USE_REASON_UNKNOWN && !pattern.isEmpty();
     if (Self->hasSkill(skillName, true)) {
         foreach (QSanSkillButton *button, m_skillButtons) {
             Q_ASSERT(button != NULL);
+            if (!head.isEmpty() && button->objectName() != head) continue;
             if (isViewAsSkill) {
                 const ViewAsSkill *vsSkill = button->getViewAsSkill();
                 if (vsSkill != NULL && vsSkill->objectName() == skillName
@@ -2761,7 +2776,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         case Client::AskForSkillInvoke: {
             QString skill_name = ClientInstance->getSkillNameToInvoke();
             dashboard->highlightEquip(skill_name, true);
-            highlightSkillButton(skill_name);
+            highlightSkillButton(skill_name, CardUseStruct::CARD_USE_REASON_UNKNOWN, QString(), ClientInstance->getSkillToHighLight());
             showPromptBox();
             ok_button->setEnabled(!ClientInstance->getSkillNameToInvoke().endsWith("!"));
             cancel_button->setEnabled(true);
@@ -3814,7 +3829,7 @@ void RoomScene::attachSkill(const QString &skill_name, const bool &head)
         addSkillButton(skill, head);
 }
 
-void RoomScene::detachSkill(const QString &skill_name)
+void RoomScene::detachSkill(const QString &skill_name, bool head)
 {
     // for shuangxiong { Client::updateProperty(const Json::Value &) }
     // this is an EXTREMELY DIRTY HACK!!! for we should prevent shuangxiong skill button been removed temporily by duanchang
@@ -3822,11 +3837,11 @@ void RoomScene::detachSkill(const QString &skill_name)
         && skill_name == "shuangxiong" && Self->getPhase() <= Player::Discard) {
         Self->setFlags("shuangxiong_postpone");
     } else {
-        QSanSkillButton *btn = dashboard->removeSkillButton(skill_name);
+        QSanSkillButton *btn = dashboard->removeSkillButton(skill_name, head);
         if (btn == NULL) return;    //be care LordSkill and SPConvertSkill
         m_skillButtons.removeAll(btn);
         btn->deleteLater();
-        if (guhuo_items[skill_name] != NULL)
+        if (guhuo_items[skill_name] != NULL && !Self->hasSkill(skill_name))
             guhuo_items[skill_name]->deleteLater(); //added by Xusine for GuhuoBox
     }
 }

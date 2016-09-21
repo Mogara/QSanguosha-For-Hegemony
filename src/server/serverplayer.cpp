@@ -90,9 +90,8 @@ void ServerPlayer::broadcastSkillInvoke(const Card *card) const
                 broadcastSkillInvoke(card->objectName());
             else
                 room->broadcastSkillInvoke(card->getCommonEffectName(), "common");
-        } else {
-            room->broadcastSkillInvoke(skill_name, index, this);
-        }
+        } else
+            room->broadcastSkillInvoke(skill_name, "male", index, this, card->getSkillPosition());
     }
 }
 
@@ -1025,13 +1024,14 @@ void ServerPlayer::addSkill(const QString &skill_name, bool head_skill)
     room->doNotify(this, QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 
-void ServerPlayer::loseSkill(const QString &skill_name)
+void ServerPlayer::loseSkill(const QString &skill_name, bool head)
 {
-    Player::loseSkill(skill_name);
+    Player::loseSkill(skill_name, head);
     JsonArray args;
     args << (int)QSanProtocol::S_GAME_EVENT_LOSE_SKILL;
     args << objectName();
     args << skill_name;
+    args << head;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 
@@ -1713,7 +1713,6 @@ void ServerPlayer::removeGeneral(bool head_general)
         from_general = getActualGeneral1Name();
         if (from_general.contains("sujiang")) return;
         General::Gender gender = getActualGeneral1()->getGender();
-        QString kingdom = getActualGeneral1()->getKingdom();
         general_name = gender == General::Male ? "sujiang" : "sujiangf";
 
         room->setPlayerProperty(this, "actual_general1", general_name);
@@ -1733,7 +1732,7 @@ void ServerPlayer::removeGeneral(bool head_general)
 
         foreach (const Skill *skill, getHeadSkillList()) {
             if (skill)
-                room->detachSkillFromPlayer(this, skill->objectName(), true);
+                room->detachSkillFromPlayer(this, skill->objectName(), false, false, true);
         }
     } else {
         if (!hasShownGeneral2())
@@ -1742,7 +1741,6 @@ void ServerPlayer::removeGeneral(bool head_general)
         from_general = getActualGeneral2Name();
         if (from_general.contains("sujiang")) return;
         General::Gender gender = getActualGeneral2()->getGender();
-        QString kingdom = getActualGeneral2()->getKingdom();
         general_name = gender == General::Male ? "sujiang" : "sujiangf";
 
         room->setPlayerProperty(this, "actual_general2", general_name);
@@ -1762,7 +1760,7 @@ void ServerPlayer::removeGeneral(bool head_general)
 
         foreach (const Skill *skill, getDeputySkillList()) {
             if (skill)
-                room->detachSkillFromPlayer(this, skill->objectName());
+                room->detachSkillFromPlayer(this, skill->objectName(), false, false, false);
         }
     }
 
@@ -1806,6 +1804,7 @@ void ServerPlayer::disconnectSkillsFromOthers(bool head_skill /* = true */)
         args << (int)QSanProtocol::S_GAME_EVENT_DETACH_SKILL;
         args << objectName();
         args << skill;
+        args << head_skill;
         foreach(ServerPlayer *p, room->getOtherPlayers(this, true))
             room->doNotify(p, QSanProtocol::S_COMMAND_LOG_EVENT, args);
     }

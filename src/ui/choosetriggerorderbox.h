@@ -64,6 +64,7 @@ private:
     QString m_skillStr;
     QString m_text;
     QString playerName;
+    QString position;
     int width;
 };
 

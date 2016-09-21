@@ -686,7 +686,10 @@ void Client::onPlayerResponseCard(const Card *card, const QList<const Player *> 
                 targetNames << target->objectName();
         }
 
-        replyToServer(S_COMMAND_RESPONSE_CARD, JsonArray() << card->toString() << QVariant::fromValue(targetNames));
+        QString card_str = card->toString();            //add the position info to card. by weidouncle
+        if (!Self->tag[card->getSkillName(true) + "_position"].toString().isEmpty())
+            card_str = QString("%1?%2").arg(card_str).arg(Self->tag[card->getSkillName(true) + "_position"].toString());
+        replyToServer(S_COMMAND_RESPONSE_CARD, JsonArray() << card_str << QVariant::fromValue(targetNames));
         if (_m_roomState.getCurrentCardResponsePrompt() == "pindian" && card != NULL) {
             _m_roomState.setCurrentCardResponsePrompt(QString());
             notifyServer(S_COMMAND_PINDIAN, JsonArray() << S_GUANXING_MOVE << QVariant::fromValue(Self->objectName()) << card->getEffectiveId());
@@ -988,6 +991,11 @@ QString Client::getSkillNameToInvoke() const
     return skill_to_invoke;
 }
 
+QString Client::getSkillToHighLight() const
+{
+    return skill_position;
+}
+
 void Client::onPlayerInvokeSkill(bool invoke)
 {
     if (skill_name == "surrender")
@@ -1095,6 +1103,9 @@ void Client::askForSkillInvoke(const QVariant &arg)
     QString skill_name = args[0].toString();
     QString data = args[1].toString();
 
+    skill_position.clear();
+    if (args.size() >= 3 && !JsonUtils::isString(args[2]))
+        skill_position = args[2].toString();
     skill_to_invoke = skill_name;
 
     if (skill_name.endsWith("!"))
@@ -1552,8 +1563,10 @@ void Client::killPlayer(const QVariant &player_name)
     alive_count--;
     ClientPlayer *player = getPlayer(name);
     if (player == Self) {
-        foreach(const Skill *skill, Self->getVisibleSkills())
-            emit skill_detached(skill->objectName());
+        foreach(const Skill *skill, Self->getHeadSkillList(true, true))
+            emit skill_detached(skill->objectName(), true);
+        foreach(const Skill *skill, Self->getDeputySkillList(true, true))
+            emit skill_detached(skill->objectName(), false);
     }
     player->detachAllSkills();
 

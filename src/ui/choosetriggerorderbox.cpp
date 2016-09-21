@@ -65,7 +65,7 @@ static int getSkinId(const QString &playerName, const QString &generalName)
 TriggerOptionButton::TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skillStr, const int width)
     : QGraphicsObject(parent),
     m_skillStr(skillStr), m_text(displayedTextOf(skillStr)),
-    playerName(player), width(width)
+    playerName(player.split("?").first()), position(player.contains("?") ? player.split("?").last() : QString()), width(width)
 {
     QString realSkill = skillStr;
     if (realSkill.contains("'")) // "sgs1'songwei"
@@ -85,6 +85,8 @@ QString TriggerOptionButton::getGeneralNameBySkill() const
 {
     QString generalName;
     const ClientPlayer *player = ClientInstance->getPlayer(playerName);
+    if (!position.isEmpty())
+        return position == "left" ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
     QString skillName = m_skillStr;
     if (m_skillStr.contains("*"))
         skillName = m_skillStr.split("*").first();
@@ -127,8 +129,7 @@ void TriggerOptionButton::paint(QPainter *painter, const QStyleOptionGraphicsIte
     painter->drawRoundedRect(rect, 5, 5);
     painter->restore();
 
-    const QString generalName = getGeneralNameBySkill();
-
+    QString generalName = getGeneralNameBySkill();
     QPixmap pixmap = G_ROOM_SKIN.getGeneralPixmap(generalName, QSanRoomSkin::S_GENERAL_ICON_SIZE_TINY, getSkinId(playerName, generalName));
     pixmap = pixmap.scaledToHeight(optionButtonHeight, Qt::SmoothTransformation);
     QRect pixmapRect(QPoint(0, (rect.height() - pixmap.height()) / 2), pixmap.size());
@@ -191,6 +192,11 @@ QString TriggerOptionButton::displayedTextOf(const QString &str)
         QString targetName = ClientInstance->getPlayer(targetObj)->getFootnoteName();
         text = tr("%1 (use upon %2)").arg(Sanguosha->translate(realSkill))
             .arg(Sanguosha->translate(targetName));
+    }
+    if (skillName.contains("'")) {
+        QString realSkill = skillName.split("'").last();
+        text = tr("%1 (use upon %2)").arg(Sanguosha->translate(realSkill))
+                .arg(Sanguosha->translate(skillName.split("'").first()));
     }
     if (time > 1)
         //text += " " + tr("*") + time;

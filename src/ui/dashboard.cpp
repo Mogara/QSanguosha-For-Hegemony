@@ -264,12 +264,14 @@ void Dashboard::_createRight()
     m_leftSkillDock->setPos(avatar1.left(), avatar1.bottom() -
         G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() / 1.3);
     m_leftSkillDock->setWidth(avatar1.width());
+    m_leftSkillDock->setObjectName("left");
 
     QRect avatar2 = G_DASHBOARD_LAYOUT.m_secondaryAvatarArea;
     m_rightSkillDock = new QSanInvokeSkillDock(rightFrame);
     m_rightSkillDock->setPos(avatar2.left(), avatar2.bottom() -
         G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() / 1.3);
     m_rightSkillDock->setWidth(avatar2.width());
+    m_rightSkillDock->setObjectName("right");
 
     _m_shadow_layer1 = new QGraphicsRectItem(rightFrame);
     _m_shadow_layer1->setRect(G_DASHBOARD_LAYOUT.m_avatarArea);
@@ -613,18 +615,13 @@ QSanSkillButton *Dashboard::addSkillButton(const QString &skillName, const bool 
     const Skill *skill = Sanguosha->getSkill(skillName);
     Q_ASSERT(skill && !skill->inherits("WeaponSkill") && !skill->inherits("ArmorSkill"));
 #endif
-    if (m_leftSkillDock->getSkillButtonByName(skillName)) {
+    if (m_leftSkillDock->getSkillButtonByName(skillName) && head)
         //_m_button_recycle.append(_m_rightSkillDock->getSkillButtonByName(skillName));
         return NULL;
-    } else if (m_rightSkillDock->getSkillButtonByName(skillName)) {
+    if (m_rightSkillDock->getSkillButtonByName(skillName) && !head)
         //_m_button_recycle.append(_m_leftSkillDock->getSkillButtonByName(skillName));
         return NULL;
-    }
-    QSanInvokeSkillDock *dock = NULL;
-    if (Self->ownSkill(skillName) || Self->getAcquiredSkills().contains(skillName))
-        dock = Self->inHeadSkills(skillName) ? m_leftSkillDock : m_rightSkillDock;
-    else
-        dock = head ? m_leftSkillDock : m_rightSkillDock;
+    QSanInvokeSkillDock *dock = head ? m_leftSkillDock : m_rightSkillDock;
 
     if (dock == m_leftSkillDock)
         updateLeftHiddenMark();
@@ -634,7 +631,7 @@ QSanSkillButton *Dashboard::addSkillButton(const QString &skillName, const bool 
     return dock->addSkillButtonByName(skillName);
 }
 
-QSanSkillButton *Dashboard::removeSkillButton(const QString &skillName)
+QSanSkillButton *Dashboard::removeSkillButton(const QString &skillName, bool head)
 {
     QSanSkillButton *btn = NULL;
     _mutexEquipAnim.lock();
@@ -650,13 +647,10 @@ QSanSkillButton *Dashboard::removeSkillButton(const QString &skillName)
     }
     _mutexEquipAnim.unlock();
     if (btn == NULL) {
-        QSanInvokeSkillDock *dock = m_leftSkillDock;
-        QSanSkillButton *temp = m_leftSkillDock->getSkillButtonByName(skillName);
-        if (temp == NULL) {
-            temp = m_rightSkillDock->getSkillButtonByName(skillName);
-            dock = m_rightSkillDock;
-        }
-        btn = dock->removeSkillButtonByName(skillName);
+        QSanInvokeSkillDock *dock = head ? m_leftSkillDock : m_rightSkillDock;
+        QSanSkillButton *temp = dock->getSkillButtonByName(skillName);
+        if (temp != NULL)
+            btn = dock->removeSkillButtonByName(skillName);
     }
     return btn;
 }
@@ -699,6 +693,7 @@ void Dashboard::_createExtraButtons()
     m_btnReverseSelection->hide();
     m_btnSortHandcard->hide();
     m_btnNoNullification->hide();
+
     connect(m_trustButton, &QSanButton::clicked, RoomSceneInstance, &RoomScene::trust);
     connect(Self, &ClientPlayer::state_changed, this, &Dashboard::updateTrustButton);
     connect(m_btnReverseSelection, &QSanButton::clicked, this, &Dashboard::reverseSelection);
@@ -738,6 +733,10 @@ QList<TransferButton *> Dashboard::getTransferButtons() const
 void Dashboard::skillButtonActivated()
 {
     QSanSkillButton *button = qobject_cast<QSanSkillButton *>(sender());
+    if (!button->objectName().isEmpty()) {                          //for record which button is pressed. by weidouncle
+        QString position = button->objectName();
+        Self->tag[button->getSkill()->objectName() + "_position"] = position;
+    }
     QList<QSanInvokeSkillButton *> buttons = m_leftSkillDock->getAllSkillButtons()
         + m_rightSkillDock->getAllSkillButtons();
     foreach (QSanSkillButton *btn, buttons) {
@@ -1439,6 +1438,7 @@ void Dashboard::updatePending()
     QList<const Card *> pended;
     if (!viewAsSkill->inherits("OneCardViewAsSkill"))
         pended = cards;
+
     foreach (CardItem *item, m_handCards) {
         if (!item->isSelected() || pendings.isEmpty()) {
             const bool frozen = !viewAsSkill->viewFilter(pended, item->getCard());

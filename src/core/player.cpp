@@ -549,10 +549,12 @@ void Player::acquireSkill(const QString &skill_name, bool head)
     skills.insert(skill_name);
 }
 
-void Player::detachSkill(const QString &skill_name)
+void Player::detachSkill(const QString &skill_name, bool head)
 {
-    head_acquired_skills.remove(skill_name);
-    deputy_acquired_skills.remove(skill_name);
+    if (head)
+        head_acquired_skills.remove(skill_name);
+    else
+        deputy_acquired_skills.remove(skill_name);
 }
 
 void Player::detachAllSkills()
@@ -571,10 +573,12 @@ void Player::addSkill(const QString &skill_name, bool head_skill)
         deputy_skills[skill_name] = !skill->canPreshow() || general2_showed;
 }
 
-void Player::loseSkill(const QString &skill_name)
+void Player::loseSkill(const QString &skill_name, bool head)
 {
-    head_skills.remove(skill_name);
-    deputy_skills.remove(skill_name);
+    if (head)
+        head_skills.remove(skill_name);
+    else
+        deputy_skills.remove(skill_name);
 }
 
 QString Player::getPhaseString() const
@@ -1285,26 +1289,32 @@ QList<const Skill *> Player::getSkillList(bool include_equip, bool visible_only)
     return skillList;
 }
 
-QList<const Skill *> Player::getHeadSkillList(bool visible_only) const
+QList<const Skill *> Player::getHeadSkillList(bool visible_only, bool inclue_acquired) const
 {
     QList<const Skill *> skillList;
-
-    foreach (const QString &skill_name, head_skills.keys()) {
+    QList<QString> skills;
+    if (inclue_acquired)
+        skills = head_skills.keys() + head_acquired_skills.toList();
+    else
+        skills = head_skills.keys();
+    foreach (const QString &skill_name, skills) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
-        if (skill
-            && (!hasEquipSkill(skill->objectName()))
-            && (!visible_only || skill->isVisible()))
+        if (skill && (!hasEquipSkill(skill->objectName())) && (!visible_only || skill->isVisible()))
             skillList << skill;
     }
 
     return skillList;
 }
 
-QList<const Skill *> Player::getDeputySkillList(bool visible_only) const
+QList<const Skill *> Player::getDeputySkillList(bool visible_only, bool inclue_acquired) const
 {
     QList<const Skill *> skillList;
-
-    foreach (const QString &skill_name, deputy_skills.keys()) {
+    QList<QString> skills;
+    if (inclue_acquired)
+        skills = deputy_skills.keys() + deputy_acquired_skills.toList();
+    else
+        skills = deputy_skills.keys();
+    foreach (const QString &skill_name, skills) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
         if (skill
             && (!hasEquipSkill(skill->objectName()))
@@ -1360,10 +1370,11 @@ QString Player::getSkillDescription(bool inToolTip) const
 QString Player::getHeadSkillDescription() const
 {
     QString description = QString();
-
-    foreach (const Skill *skill, getVisibleSkillList()) {
-        if (!inHeadSkills(skill->objectName())) continue;
-        QString skill_name = Sanguosha->translate(skill->objectName());
+    const QList<QString> skills = head_skills.keys() + head_acquired_skills.toList();
+    foreach (const QString &skillname, skills) {
+        const Skill *skill = Sanguosha->getSkill(skillname);
+        if (!skill->isVisible()) continue;
+        QString skill_name = Sanguosha->translate(skillname);
         QString desc = skill->getDescription();
         desc.replace("\n", "<br/>");
         description.append(QString("<font color=%1><b>%2</b>:</font> %3 <br/> <br/>").arg(Config.SkillDescriptionInToolTipColor.name()).arg(skill_name).arg(desc));
@@ -1374,9 +1385,11 @@ QString Player::getHeadSkillDescription() const
 QString Player::getDeputySkillDescription() const
 {
     QString description = QString();
-    foreach (const Skill *skill, getVisibleSkillList()) {
-        if (inHeadSkills(skill->objectName())) continue;
-        QString skill_name = Sanguosha->translate(skill->objectName());
+    const QList<QString> skills = deputy_skills.keys() + deputy_acquired_skills.toList();
+    foreach (const QString &skillname, skills) {
+        const Skill *skill = Sanguosha->getSkill(skillname);
+        if (!skill->isVisible()) continue;
+        QString skill_name = Sanguosha->translate(skillname);
         QString desc = skill->getDescription();
         desc.replace("\n", "<br/>");
         description.append(QString("<font color=%1><b>%2</b>:</font> %3 <br/> <br/>").arg(Config.SkillDescriptionInToolTipColor.name()).arg(skill_name).arg(desc));
@@ -1650,6 +1663,15 @@ void Player::preshowSkill(const QString &skill_name)
 
 bool Player::inHeadSkills(const QString &skill_name) const
 {
+    const Skill *skill = Sanguosha->getSkill(skill_name);
+    if (skill == NULL)
+        return false;
+
+    if (!skill->isVisible()) {
+        const Skill *main_skill = Sanguosha->getMainSkill(skill_name);
+        if (main_skill != NULL)
+            return inHeadSkills(main_skill->objectName());
+    }
     return head_skills.contains(skill_name) || head_acquired_skills.contains(skill_name);
 }
 
@@ -1663,6 +1685,15 @@ bool Player::inHeadSkills(const Skill *skill) const
 
 bool Player::inDeputySkills(const QString &skill_name) const
 {
+    const Skill *skill = Sanguosha->getSkill(skill_name);
+    if (skill == NULL)
+        return false;
+
+    if (!skill->isVisible()) {
+        const Skill *main_skill = Sanguosha->getMainSkill(skill_name);
+        if (main_skill != NULL)
+            return inDeputySkills(main_skill->objectName());
+    }
     return deputy_skills.contains(skill_name) || deputy_acquired_skills.contains(skill_name);
 }
 

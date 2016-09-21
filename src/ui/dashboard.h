@@ -79,7 +79,7 @@ public:
     void showControlButtons();
     virtual void showProgressBar(QSanProtocol::Countdown countdown);
 
-    QSanSkillButton *removeSkillButton(const QString &skillName);
+    QSanSkillButton *removeSkillButton(const QString &skillName, bool head);
     QSanSkillButton *addSkillButton(const QString &skillName, const bool &head = true);
     bool isAvatarUnderMouse();
 

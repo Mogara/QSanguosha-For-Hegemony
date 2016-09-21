@@ -110,7 +110,7 @@ public:
     void loseAllMarks(const QString &mark_name);
 
     virtual void addSkill(const QString &skill_name, bool head_skill = true);
-    virtual void loseSkill(const QString &skill_name);
+    virtual void loseSkill(const QString &skill_name, bool head = true);
     virtual void setGender(General::Gender gender);
 
     void setAI(AI *ai);

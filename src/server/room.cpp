@@ -595,23 +595,25 @@ void Room::attachSkillToPlayer(ServerPlayer *player, const QString &skill_name)
     doNotify(player, S_COMMAND_ATTACH_SKILL, skill_name);
 }
 
-void Room::detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name, bool is_equip, bool acquire_only)
+void Room::detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name, bool is_equip, bool acquire_only, bool head)
 {
-    if (!(player->getAcquiredSkills().contains(skill_name) || player->ownSkill(skill_name))) return;
+    const Skill *skill = Sanguosha->getSkill(skill_name);
+    if (head && !player->getAcquiredSkills("head").contains(skill_name) && !player->getHeadSkillList(false, false).contains(skill)) return;
+    if (!head && !player->getAcquiredSkills("deputy").contains(skill_name) && !player->getDeputySkillList(false, false).contains(skill)) return;
 
-    if (player->getAcquiredSkills().contains(skill_name))
-        player->detachSkill(skill_name);
-    else if (!acquire_only)
-        player->loseSkill(skill_name);
+    if (player->getAcquiredSkills(head ? "head" : "deputy").contains(skill_name)) {
+        player->detachSkill(skill_name, head);
+    } else if (!acquire_only)
+        player->loseSkill(skill_name, head);
     else
         return;
 
-    const Skill *skill = Sanguosha->getSkill(skill_name);
     if (skill && skill->isVisible()) {
         JsonArray args;
         args << (int)QSanProtocol::S_GAME_EVENT_DETACH_SKILL;
         args << player->objectName();
         args << skill_name;
+        args << head;
         doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
         if (!is_equip) {
@@ -640,11 +642,19 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
     foreach (const QString &_skill_name, skill_names) {
         if (_skill_name.startsWith("-")) {
             QString actual_skill = _skill_name.mid(1);
-            if (!player->ownSkill(actual_skill) && !player->getAcquiredSkills().contains(actual_skill)) continue;
-            if (player->getAcquiredSkills().contains(actual_skill))
-                player->detachSkill(actual_skill);
+            bool head = true;
+            if (actual_skill.endsWith("!")) {
+                actual_skill.chop(1);
+                head = false;
+            }
+            if (head && !player->getAcquiredSkills("head").contains(actual_skill) &&
+                    !player->getHeadSkillList(false, false).contains(Sanguosha->getSkill(actual_skill))) continue;
+            if (!head && !player->getAcquiredSkills("deputy").contains(actual_skill) &&
+                    !player->getDeputySkillList(false, false).contains(Sanguosha->getSkill(actual_skill))) continue;
+            if (player->getAcquiredSkills(head ? "head" : "deputy").contains(actual_skill))
+                player->detachSkill(actual_skill, head);
             else if (!acquire_only)
-                player->loseSkill(actual_skill);
+                player->loseSkill(actual_skill, head);
             else
                 continue;
             const Skill *skill = Sanguosha->getSkill(actual_skill);
@@ -653,6 +663,7 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
                 args << (int)QSanProtocol::S_GAME_EVENT_DETACH_SKILL;
                 args << player->objectName();
                 args << actual_skill;
+                args << head;
                 doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
                 LogMessage log;
@@ -1068,7 +1079,8 @@ bool Room::askForSkillInvoke(ServerPlayer *player, const QString &skill_name, co
                 data_str = "playerdata:" + player->objectName();
             skillCommand << skill_name << data_str;
         }
-
+        if (player != NULL && !getTag(skill_name + player->objectName()).toStringList().isEmpty())
+            skillCommand << getTag(skill_name + player->objectName()).toStringList().last();
         if (!doRequest(player, S_COMMAND_INVOKE_SKILL, skillCommand, true) || skill_name.endsWith("!"))
             invoked = false;
         else {
@@ -1701,6 +1713,8 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 card_ids << card->getEffectiveId();
             if (!card_ids.isEmpty()) {
                 CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(), QString(), card->getSkillName(), QString());
+                if (!card->getSkillPosition().isEmpty())
+                    reason.m_eventName = card->getSkillPosition() == "left" ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
                 QList<CardsMoveStruct> moves;
                 foreach (int id, card_ids) {
                     CardsMoveStruct move(id, NULL, Player::PlaceTable, reason);
@@ -1709,11 +1723,16 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 moveCardsAtomic(moves, true);
             }
             QString skill_name = card->showSkill();
-            if (!skill_name.isNull() && player->ownSkill(skill_name)
-                && !player->hasShownSkill(skill_name))
-                player->showGeneral(player->inHeadSkills(skill_name));
-            else if (!skill_name.isNull() && skill_name == "showforviewhas" && !player->hasShownOneGeneral()) {
-                QStringList q;
+            if (!skill_name.isNull() && (player->inHeadSkills(skill_name) || player->inDeputySkills(skill_name))) {
+                if (!card->getSkillPosition().isEmpty()) {
+                    bool head = card->getSkillPosition() == "left" ? true : false;
+                    player->showGeneral(head);
+                } else {
+                    bool head = player->inHeadSkills(skill_name) && player->canShowGeneral("h");
+                    player->showGeneral(head);
+                }
+            } else if (!skill_name.isNull() && skill_name == "showforviewhas" && !player->hasShownOneGeneral()) {   //this is added for some skills that player doesnt own but
+                QStringList q;                                                                                      //need to show, such as hongfa-slash. by weirdouncle
                 if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
                 if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
                 SPlayerDataMap map;
@@ -1743,6 +1762,8 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             if (!card_ids.isEmpty()) {
                 CardMoveReason reason(CardMoveReason::S_REASON_RESPONSE, player->objectName());
                 reason.m_skillName = card->getSkillName();
+                if (!card->getSkillPosition().isEmpty())
+                    reason.m_eventName = card->getSkillPosition() == "left" ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
                 QList<CardsMoveStruct> moves;
                 foreach (int id, card_ids) {
                     CardsMoveStruct move(id, NULL, Player::PlaceTable, reason);
@@ -1751,11 +1772,16 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 moveCardsAtomic(moves, true);
             }
             QString skill_name = card->showSkill();
-            if (!skill_name.isNull() && player->ownSkill(skill_name)
-                && !player->hasShownSkill(skill_name))
-                player->showGeneral(player->inHeadSkills(skill_name));
-            else if (!skill_name.isNull() && skill_name == "showforviewhas" && !player->hasShownOneGeneral()) {
-                QStringList q;
+            if (!skill_name.isNull() && (player->inHeadSkills(skill_name) || player->inDeputySkills(skill_name))) {
+                if (!card->getSkillPosition().isEmpty()) {
+                    bool head = card->getSkillPosition() == "left" ? true : false;
+                    player->showGeneral(head);
+                } else {
+                    bool head = player->inHeadSkills(skill_name) && player->canShowGeneral("h");
+                    player->showGeneral(head);
+                }
+            } else if (!skill_name.isNull() && skill_name == "showforviewhas" && !player->hasShownOneGeneral()) {   //this is added for some skills that player doesnt own but
+                QStringList q;                                                                                      //need to show, such as hongfa-slash. by weirdouncle
                 if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
                 if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
                 SPlayerDataMap map;
@@ -1784,6 +1810,8 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                     DummyCard dummy(table_cardids);
                     CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(),
                         QString(), card->getSkillName(), QString());
+                    if (!card->getSkillPosition().isEmpty())
+                        reason.m_eventName = card->getSkillPosition() == "left" ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
                     moveCardTo(&dummy, NULL, Player::DiscardPile, reason, true);
                 }
                 CardUseStruct card_use;
@@ -1798,6 +1826,8 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                     DummyCard dummy(table_cardids);
                     CardMoveReason reason(CardMoveReason::S_REASON_RESPONSE, player->objectName());
                     reason.m_skillName = card->getSkillName();
+                    if (!card->getSkillPosition().isEmpty())
+                        reason.m_eventName = card->getSkillPosition() == "left" ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
                     moveCardTo(&dummy, NULL, Player::DiscardPile, reason, true);
                 }
             }
@@ -2147,21 +2177,53 @@ QString Room::askForTriggerOrder(ServerPlayer *player, const QString &reason, SP
 
     QString answer;
     QStringList all_pairs;
-    QRegExp pattern("sgs\\d+'#?\\w+");
-    foreach (const ServerPlayer *p, skills.keys()) {
-        foreach (const QString &str, skills.value(p)) {
-            if (str.contains("!") && !str.contains("&"))
-                all_pairs << QString("%1:%2*%3").arg(p->objectName()).arg(str.split("!").first()).arg(str.split("*").last());
-            else if (pattern.exactMatch(str)) {
-                QStringList texts = str.split("'");
-                all_pairs << QString("%1:%2").arg(texts.at(0)).arg(texts.at(1));
-            } else
-                all_pairs << QString("%1:%2").arg(p->objectName()).arg(str);
+    foreach (const ServerPlayer *p, skills.keys()) {                            //if string not contains the skill_postion info, then it will check for each general
+        foreach (const QString &str, skills.value(p)) {                         //sample as: player_name?skill_position:skill_name(*skill_time or ->skill_target)
+            if (str.contains("!") && !str.contains("&")) {                      //it means skill will invoke serveral times
+                QString skill_name = str.split("!").first();
+                if (p->inHeadSkills(skill_name) || p->inDeputySkills(skill_name)) {
+                    if (p->inHeadSkills(skill_name) && p->canShowGeneral("h"))
+                        all_pairs << QString("%1?%2:%3*%4").arg(p->objectName()).arg("left").arg(str.split("!").first()).arg(str.split("*").last());
+                    if (p->inDeputySkills(skill_name) && p->canShowGeneral("d"))
+                        all_pairs << QString("%1?%2:%3*%4").arg(p->objectName()).arg("right").arg(str.split("!").first()).arg(str.split("*").last());
+                } else
+                    all_pairs << QString("%1:%2*%3").arg(p->objectName()).arg(str.split("!").first()).arg(str.split("*").last());   //it means player doesnt has this skill
+            } else {
+                if (p->inHeadSkills(str) || p->inDeputySkills(str)) {
+                    if (p->inHeadSkills(str) && p->canShowGeneral("h"))
+                        all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("left").arg(str);
+                    if (p->inDeputySkills(str) && p->canShowGeneral("d"))
+                        all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("right").arg(str);
+                } else {                                                        //it means str contains much infomation
+                    if (str.contains("->")) {
+                        QString skill_name = str.split("->").first();
+                        QString targets = str.split("->").last();
+                        QString skill_position;
+                        if (skill_name.contains("?")) {
+                            skill_position = skill_name.split("?").first();
+                            skill_name = skill_name.split("?").last();
+                        }
+                        if (!skill_position.isEmpty())
+                            all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg(skill_position).arg(skill_name + "->" + targets);
+                        else {
+                            if (p->inHeadSkills(skill_name) && p->canShowGeneral("h"))
+                                all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("left").arg(str);
+                            if (p->inDeputySkills(skill_name) && p->canShowGeneral("d"))
+                                all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("right").arg(str);
+                            if (!p->getSkillList(false, false).contains(Sanguosha->getSkill(skill_name)))   //it means player doesnt has this skill
+                                 all_pairs << QString("%1:%2").arg(p->objectName()).arg(str);
+                        }
+                    } else if (str.contains("?"))
+                        all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg(str.split("?").first()).arg(str.split("?").last());
+                    else                                                                                    //it means player doesnt has this skill. sgs1'songwei also here,
+                        all_pairs << QString("%1:%2").arg(p->objectName()).arg(str);                        //cause its very complicated when invoke others skill
+                }
+            }
         }
     }
 
-    if (!optional && skills.values().length() == 1 && skills.values().first().length() == 1) {
-        answer = skills.values().first().first();
+    if (all_pairs.length() == 1 && reason != "GameRule:TurnStart") {                                        //do not use this function when only 1 choice except turnstart
+        answer = all_pairs.first();
     } else {
         notifyMoveFocus(player, S_COMMAND_TRIGGER_ORDER);
 
@@ -2171,7 +2233,9 @@ QString Room::askForTriggerOrder(ServerPlayer *player, const QString &reason, SP
             //Temporary method to keep compatible with existing AI system
             QStringList all_skills;
             foreach (const QStringList &list, skills)
-                all_skills << list;
+                foreach (QString str, list)
+                    if (!all_skills.contains(str.split("?").last()))
+                        all_skills << str.split("?").last();
 
             if (optional)
                 all_skills << "cancel";
@@ -5185,45 +5249,42 @@ void Room::notifySkillInvoked(ServerPlayer *player, const QString &skill_name)
 
 void Room::broadcastSkillInvoke(const QString &skill_name, const QString &category)
 {
-    JsonArray args;
-    args << QSanProtocol::S_GAME_EVENT_PLAY_EFFECT;
-    args << skill_name;
-    args << category;
-    args << -1;
-    doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+    broadcastSkillInvoke(skill_name, category, -1, NULL);
 }
 
 void Room::broadcastSkillInvoke(const QString &skill_name, const ServerPlayer *who)
 {
-    JsonArray args;
-    args << QSanProtocol::S_GAME_EVENT_PLAY_EFFECT;
-    args << skill_name;
-    args << true;
-    args << -1;
-    if (who != NULL)
-        args << who->objectName();
-    doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+    broadcastSkillInvoke(skill_name, "male", -1, who);
 }
 
 void Room::broadcastSkillInvoke(const QString &skill_name, int type, const ServerPlayer *who)
 {
-    JsonArray args;
-    args << QSanProtocol::S_GAME_EVENT_PLAY_EFFECT;
-    args << skill_name;
-    args << true;
-    args << type;
-    if (who != NULL)
-        args << who->objectName();
-    doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+    broadcastSkillInvoke(skill_name, "male", type, who);
 }
 
 void Room::broadcastSkillInvoke(const QString &skill_name, bool isMale, int type)
 {
+    broadcastSkillInvoke(skill_name, isMale ? "male" : "female", type, NULL);
+}
+
+void Room::broadcastSkillInvoke(const QString &skill_name, const QString &category, int type, const ServerPlayer *who, const QString &position)
+{
+    QString position_copy = position;
+    if (who != NULL && position.isEmpty()) {
+        QStringList names = getTag(skill_name + who->objectName()).toStringList();
+        if (!names.isEmpty())
+            position_copy = names.last();
+    }
     JsonArray args;
     args << QSanProtocol::S_GAME_EVENT_PLAY_EFFECT;
     args << skill_name;
-    args << isMale;
+    args << category;
     args << type;
+    if (who != NULL) {
+        args << who->objectName();
+        if (!position_copy.isEmpty())
+            args << (position_copy == "left" ? who->getActualGeneral1Name() : who->getActualGeneral2Name());
+    }
     doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 
