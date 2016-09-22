@@ -436,42 +436,12 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         bool do_effect = false;
                         if (result_skill->cost(triggerEvent, room, skill_target, data, p)) {
                             do_effect = true;
-                            if (p && p->ownSkill(result_skill)) {
-                                QStringList skill_positions = room->getTag(result_skill->objectName() + p->objectName()).toStringList();    //get show position
-                                bool head = p->inHeadSkills(result_skill->objectName()) && p->canShowGeneral("h");
-                                if (!skill_positions.isEmpty())
-                                    head = skill_positions.last() == "left" ? true : false;
-                                if (head && !p->hasShownGeneral1()) {
-                                    p->showGeneral(true);
-                                    p->tag["JustShownSkill"] = result_skill->objectName();
-                                }
-                                if (!head && !p->hasShownGeneral2()) {
-                                    p->showGeneral(false);
-                                    p->tag["JustShownSkill"] = result_skill->objectName();
-                                }
-                            } else if (p && !p->ownSkill(result_skill) && !p->hasShownSkill(result_skill)) {
-                                const ViewHasSkill *vhskill = Sanguosha->ViewHas(p, result_skill->objectName(), "skill");
-                                if (vhskill && p->ownSkill(vhskill)) {
-                                    p->showGeneral(p->inHeadSkills(vhskill->objectName()));
-                                    p->tag["JustShownSkill"] = result_skill->objectName();
-                                } else if (vhskill && !vhskill->isGlobal()) {
-                                    QStringList q;
-                                    if (p->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
-                                    if (p->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
-                                    SPlayerDataMap map;
-                                    map.insert(p, q);
-                                    QString name;
-                                    if (q.length() > 1) {
-                                        name = room->askForTriggerOrder(p, "GameRule:ShowGeneral", map, false);
-                                        name.remove(p->objectName() + ":");
-                                    } else
-                                        name = q.first();
-                                    p->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
-                                    p->tag["JustShownSkill"] = result_skill->objectName();
-                                }
+                            if (p) {
+                                QStringList skill_positions = room->getTag(result_skill->objectName() + p->objectName()).toStringList();
+                                bool show = p->showSkill(result_skill->objectName(), skill_positions.last());
+                                if (show) p->tag["JustShownSkill"] = result_skill->objectName();
                             }
                         }
-
 
                         if (p && p->hasFlag("Global_askForSkillCost"))          // for next time
                             p->setFlags("-Global_askForSkillCost");

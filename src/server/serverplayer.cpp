@@ -1446,6 +1446,70 @@ bool ServerPlayer::CompareByActionOrder(ServerPlayer *a, ServerPlayer *b)
     return room->getFront(a, b) == a;
 }
 
+bool ServerPlayer::showSkill(const QString &skill_name, const QString &skill_position)
+{
+    if (skill_name.isEmpty()) return false;
+    bool result = false;
+    if (skill_name == "showforviewhas") {           //this is for some skills that player doesnt own but need to show, such as hongfa-slash. by weirdouncle
+        if (!hasShownOneGeneral()) {
+            QStringList q;
+            if (canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
+            if (canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
+            SPlayerDataMap map;
+            map.insert(this, q);
+            QString name;
+            if (q.length() > 1) {
+                name = room->askForTriggerOrder(this, "GameRule:ShowGeneral", map, false);
+                name.remove(objectName() + ":");
+            } else
+                 name = q.first();
+            showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
+            result = true;
+        }
+        return result;
+    }
+
+    const Skill *skill = Sanguosha->getSkill(skill_name);
+    if (!skill->isVisible()) skill = Sanguosha->getMainSkill(skill_name);    //player doesnt own invisible skills, so it must be converted to main skill
+    if (skill == NULL) return false;
+    QString actived_skill = skill->objectName();
+
+    if (ownSkill(actived_skill)) {                                          //acquired skills no need to show
+        bool head = inHeadSkills(actived_skill) && canShowGeneral("h");
+        if (!skill_position.isEmpty())
+            head = skill_position == "left" ? true : false;
+        if (head && !hasShownGeneral1()) {
+            showGeneral(true);
+            result = true;
+        }
+        if (!head && !hasShownGeneral2()) {
+            showGeneral(false);
+            result = true;
+        }
+    } else if (!hasShownSkill(actived_skill)) {                             //for show viewhasSkills, not consider duplicate yet. by weidouncle
+        const ViewHasSkill *vhskill = Sanguosha->ViewHas(this, actived_skill, "skill");
+        if (vhskill && ownSkill(vhskill)) {
+            showGeneral(inHeadSkills(vhskill->objectName()));
+            result = true;
+        } else if (vhskill && !vhskill->isGlobal()) {
+            QStringList q;
+            if (canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
+            if (canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
+            SPlayerDataMap map;
+            map.insert(this, q);
+            QString name;
+            if (q.length() > 1) {
+                name = room->askForTriggerOrder(this, "GameRule:ShowGeneral", map, false);
+                name.remove(objectName() + ":");
+            } else
+                name = q.first();
+            showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
+            result = true;
+        }
+    }
+    return result;
+}
+
 void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendLog, bool ignore_rule)
 {
     QStringList names = room->getTag(objectName()).toStringList();
@@ -2041,6 +2105,7 @@ void ServerPlayer::changeToLord()
         arg_loseskill << (int)QSanProtocol::S_GAME_EVENT_LOSE_SKILL;
         arg_loseskill << objectName();
         arg_loseskill << skill_name;
+        arg_loseskill << true;
         room->doNotify(this, QSanProtocol::S_COMMAND_LOG_EVENT, arg_loseskill);
 
         const Skill *skill = Sanguosha->getSkill(skill_name);
@@ -2071,7 +2136,7 @@ void ServerPlayer::changeToLord()
     room->broadcastProperty(this, "maxhp");
     room->broadcastProperty(this, "hp");
 
-    setActualGeneral1(lord);
+    setActualGeneral1Name(name);
     room->notifyProperty(this, this, "actual_general1");
 
     JsonArray arg_changehero;

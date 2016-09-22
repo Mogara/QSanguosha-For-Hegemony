@@ -1285,43 +1285,98 @@ QList<const Skill *> Player::getSkillList(bool include_equip, bool visible_only)
             }
         }
     }
-
     return skillList;
 }
 
-QList<const Skill *> Player::getHeadSkillList(bool visible_only, bool inclue_acquired) const
+QList<const Skill *> Player::getHeadSkillList(bool visible_only, bool include_acquired, bool include_equip) const
 {
     QList<const Skill *> skillList;
     QList<QString> skills;
-    if (inclue_acquired)
+    if (include_acquired)
         skills = head_skills.keys() + head_acquired_skills.toList();
     else
         skills = head_skills.keys();
     foreach (const QString &skill_name, skills) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
-        if (skill && (!hasEquipSkill(skill->objectName())) && (!visible_only || skill->isVisible()))
-            skillList << skill;
+        if (skill != NULL) {
+            if ((include_equip || !hasEquipSkill(skill->objectName())) && (!visible_only || skill->isVisible()))
+                skillList << skill;
+            if (skill->isVisible() && !visible_only) {
+                QList<const Skill *> related_skill = Sanguosha->getRelatedSkills(skill->objectName());
+                foreach (const Skill *s, related_skill) {
+                    if (!skillList.contains(s) && !s->isVisible())
+                        skillList << s;
+                }
+            }
+        }
     }
-
     return skillList;
 }
 
-QList<const Skill *> Player::getDeputySkillList(bool visible_only, bool inclue_acquired) const
+QList<const Skill *> Player::getDeputySkillList(bool visible_only, bool include_acquired, bool include_equip) const
 {
     QList<const Skill *> skillList;
     QList<QString> skills;
-    if (inclue_acquired)
+    if (include_acquired)
         skills = deputy_skills.keys() + deputy_acquired_skills.toList();
     else
         skills = deputy_skills.keys();
     foreach (const QString &skill_name, skills) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
-        if (skill
-            && (!hasEquipSkill(skill->objectName()))
-            && (!visible_only || skill->isVisible()))
-            skillList << skill;
+        if (skill != NULL) {
+            if ((include_equip || !hasEquipSkill(skill->objectName())) && (!visible_only || skill->isVisible()))
+                skillList << skill;
+            if (skill->isVisible() && !visible_only) {
+                QList<const Skill *> related_skill = Sanguosha->getRelatedSkills(skill->objectName());
+                foreach (const Skill *s, related_skill) {
+                    if (!skillList.contains(s) && !s->isVisible())
+                        skillList << s;
+                }
+            }
+        }
     }
+    return skillList;
+}
 
+QList<const Skill *> Player::getHeadActivedSkills() const           //new function for checking skills can be actived. by weidouncle
+{
+    QList<const Skill *> skillList;
+    QList<QString> skills = head_acquired_skills.toList();
+    if (canShowGeneral("h")) skills << head_skills.keys();
+    foreach (const QString &skill_name, skills) {
+        const Skill *skill = Sanguosha->getSkill(skill_name);
+        if (skill != NULL) {
+            if (!hasEquipSkill(skill->objectName()))
+                skillList << skill;
+            if (skill->isVisible()) {
+                QList<const Skill *> related_skill = Sanguosha->getRelatedSkills(skill->objectName());
+                foreach (const Skill *s, related_skill)
+                    if (!skillList.contains(s) && !s->isVisible())
+                        skillList << s;
+            }
+        }
+    }
+    return skillList;
+}
+
+QList<const Skill *> Player::getDeputyActivedSkills() const
+{
+    QList<const Skill *> skillList;
+    QList<QString> skills = deputy_acquired_skills.toList();
+    if (canShowGeneral("d")) skills << deputy_skills.keys();
+    foreach (const QString &skill_name, skills) {
+        const Skill *skill = Sanguosha->getSkill(skill_name);
+        if (skill != NULL) {
+            if (!hasEquipSkill(skill->objectName()))
+                skillList << skill;
+            if (skill->isVisible()) {
+                QList<const Skill *> related_skill = Sanguosha->getRelatedSkills(skill->objectName());
+                foreach (const Skill *s, related_skill)
+                    if (!skillList.contains(s) && !s->isVisible())
+                        skillList << s;
+            }
+        }
+    }
     return skillList;
 }
 
@@ -1335,7 +1390,7 @@ QList<const Skill *> Player::getVisibleSkillList(bool include_equip) const
     return getSkillList(include_equip, true);
 }
 
-QSet<QString> Player::getAcquiredSkills() const
+QSet<QString> Player::getAcquiredSkills() const                     //this function & below get visible skills only. by weirdouncle
 {
     return head_acquired_skills + deputy_acquired_skills;
 }
@@ -1605,7 +1660,7 @@ bool Player::hasShownSkill(const Skill *skill) const
 
     const ViewHasSkill *vhskill = Sanguosha->ViewHas(this, skill->objectName(), "skill");
     if (vhskill) {
-        if (vhskill->isGlobal())
+        if (vhskill->isGlobal())                                                                //isGlobal do not need to show general
             return true;
         else {
             if (ownSkill(vhskill)) {
@@ -1614,7 +1669,7 @@ bool Player::hasShownSkill(const Skill *skill) const
                 else if (general2_showed && deputy_skills.contains(vhskill->objectName()))
                     return true;
             } else
-                return hasShownOneGeneral();
+                return hasShownOneGeneral();                                                    //if player doesnt own it, then must showOneGeneral
         }
     }
     return false;
@@ -1667,7 +1722,7 @@ bool Player::inHeadSkills(const QString &skill_name) const
     if (skill == NULL)
         return false;
 
-    if (!skill->isVisible()) {
+    if (!skill->isVisible()) {                                              //really confused about invisible skills! by weidouncle
         const Skill *main_skill = Sanguosha->getMainSkill(skill_name);
         if (main_skill != NULL)
             return inHeadSkills(main_skill->objectName());

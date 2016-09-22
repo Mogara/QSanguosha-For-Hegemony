@@ -290,8 +290,10 @@ public:
 
     bool hasEquipSkill(const char *skill_name) const;
     QList<const Skill *> getSkillList(bool include_equip = false, bool visible_only = true) const;
-    QList<const Skill *> getHeadSkillList(bool visible_only = true) const;
-    QList<const Skill *> getDeputySkillList(bool visible_only = true) const;
+    QList<const Skill *> getHeadSkillList(bool visible_only = true, bool include_acquired = false, bool include_equip = false) const;
+    QList<const Skill *> getDeputySkillList(bool visible_only = true, bool include_acquired = false, bool include_equip = false) const;
+    QList<const Skill *> getHeadActivedSkills() const;
+    QList<const Skill *> getDeputyActivedSkills() const;
     QList<const Skill *> getVisibleSkillList(bool include_equip = false) const;
     QString getSkillDescription(bool inToolTip = true) const;
     QString getHeadSkillDescription() const;
@@ -489,6 +491,7 @@ public:
     // static function
     static bool CompareByActionOrder(ServerPlayer *a, ServerPlayer *b);
 
+    bool showSkill(const char *skill_name, const char *skill_position = QString());
     void showGeneral(bool head_general = true, bool trigger_event = true, bool sendLog = true, bool ignore_rule = true);
     void hideGeneral(bool head_general = true);
     void removeGeneral(bool head_general = true);

@@ -1104,7 +1104,7 @@ void Client::askForSkillInvoke(const QVariant &arg)
     QString data = args[1].toString();
 
     skill_position.clear();
-    if (args.size() >= 3 && !JsonUtils::isString(args[2]))
+    if (args.size() >= 3 && JsonUtils::isString(args[2]))
         skill_position = args[2].toString();
     skill_to_invoke = skill_name;
 

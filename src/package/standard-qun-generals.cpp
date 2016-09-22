@@ -966,11 +966,10 @@ public:
 
         QList<const Skill *> skills = choice == "head_general" ? target->getActualGeneral1()->getVisibleSkillList()
             : target->getActualGeneral2()->getVisibleSkillList();
-        foreach (const Skill *skill, skills) {
-            if (!skill->isAttachedLordSkill()) {
-                    room->detachSkillFromPlayer(target, skill->objectName(), !target->hasShownSkill(skill), false, choice == "head_general" ? true : false);
-            }
-        }
+        foreach (const Skill *skill, skills)
+            if (!skill->isAttachedLordSkill())
+                room->detachSkillFromPlayer(target, skill->objectName(), !target->hasShownSkill(skill), false, choice == "head_general" ? true : false);
+
         if (death.damage->from->isAlive())
             death.damage->from->gainMark("@duanchang");
 

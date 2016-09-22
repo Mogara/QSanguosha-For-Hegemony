@@ -780,58 +780,14 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
         }
         room->moveCardsAtomic(moves, true);
         // show general
-        QString skill_name = card_use.card->showSkill();
-        if (!skill_name.isNull() && (player->inHeadSkills(skill_name) || player->inDeputySkills(skill_name))) {
-            if (!card_use.card->getSkillPosition().isEmpty()) {
-                bool head = card_use.card->getSkillPosition() == "left" ? true : false;
-                player->showGeneral(head);
-            } else {
-                bool head = player->inHeadSkills(skill_name) && player->canShowGeneral("h");
-                player->showGeneral(head);
-            }
-        } else if (!skill_name.isNull() && skill_name == "showforviewhas" && !player->hasShownOneGeneral()) {   //this is added for some skills that player doesnt own but
-            QStringList q;                                                                                      //need to show, such as hongfa-slash. by weirdouncle
-            if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
-            if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
-            SPlayerDataMap map;
-            map.insert(player, q);
-            QString name;
-            if (q.length() > 1) {
-                name = room->askForTriggerOrder(card_use.from, "GameRule:ShowGeneral", map, false);
-                name.remove(player->objectName() + ":");
-            } else
-                name = q.first();
-            player->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
-        }
+        player->showSkill(card_use.card->showSkill(), card_use.card->getSkillPosition());                           //new function by weidouncle
     } else {
         const SkillCard *skill_card = qobject_cast<const SkillCard *>(card_use.card);
         if (skill_card)
             skill_card->extraCost(room, card_use);
 
         // show general
-        QString skill_name = card_use.card->showSkill();
-        if (!skill_name.isNull() && (player->inHeadSkills(skill_name) || player->inDeputySkills(skill_name))) {
-            if (!card_use.card->getSkillPosition().isEmpty()) {
-                bool head = card_use.card->getSkillPosition() == "left" ? true : false;
-                player->showGeneral(head);
-            } else {
-                bool head = player->inHeadSkills(skill_name) && player->canShowGeneral("h");
-                player->showGeneral(head);
-            }
-        } else if (!skill_name.isNull() && skill_name == "showforviewhas" && !player->hasShownOneGeneral()) {       //this is added for some skills that player doesnt own but
-            QStringList q;                                                                                          //need to show, such as hongfa-slash. by weirdouncle
-            if (player->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
-            if (player->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
-            SPlayerDataMap map;
-            map.insert(player, q);
-            QString name;
-            if (q.length() > 1) {
-                name = room->askForTriggerOrder(player, "GameRule:ShowGeneral", map, false);
-                name.remove(player->objectName() + ":");
-            } else
-                name = q.first();
-            player->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
-        }
+        player->showSkill(card_use.card->showSkill(), card_use.card->getSkillPosition());                           //new function by weidouncle
 
         if (card_use.card->willThrow()) {
             QList<int> table_cardids = room->getCardIdsOnTable(card_use.card);
@@ -1111,7 +1067,7 @@ const Card *ArraySummonCard::validate(CardUseStruct &card_use) const
 {
     const BattleArraySkill *skill = qobject_cast<const BattleArraySkill *>(Sanguosha->getTriggerSkill(objectName()));
     if (skill) {
-        card_use.from->showGeneral(card_use.from->inHeadSkills(skill));
+        card_use.from->showSkill(skill->objectName(), card_use.card->getSkillPosition());                           //new function by weidouncle
         skill->summonFriends(card_use.from);
     }
     return NULL;

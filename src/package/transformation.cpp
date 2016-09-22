@@ -1677,22 +1677,6 @@ void GongxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
 {
     room->broadcastSkillInvoke("gongxin", 2);
     ServerPlayer *target = targets.first();
-    /*
-    if (!source->hasShownOneGeneral()) {
-        QStringList q;
-        if (source->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
-        if (source->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
-        SPlayerDataMap map;
-        map.insert(source, q);
-        QString name;
-        if (q.length() > 1) {
-            name = room->askForTriggerOrder(source, "GameRule:ShowGeneral", map, false);
-            name.remove(source->objectName() + ":");
-        } else
-            name = q.first();
-        source->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
-    }
-    */
     QList<int> ids;
     foreach (const Card *card, target->getHandcards())
         if (card->getSuit() == Card::Heart)
@@ -1764,20 +1748,7 @@ void FlameMapCard::onUse(Room *room, const CardUseStruct &card_use) const
         }
     }
     else {
-        if (!source->hasShownOneGeneral()) {
-            QStringList q;
-            if (source->canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
-            if (source->canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
-            SPlayerDataMap map;
-            map.insert(source, q);
-            QString name;
-            if (q.length() > 1) {
-                name = room->askForTriggerOrder(source, "GameRule:ShowGeneral", map, false);
-                name.remove(source->objectName() + ":");
-            } else
-                name = q.first();
-            source->showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true);
-        }
+        source->showSkill(this->showSkill());
         ServerPlayer *sunquan = room->getLord(source->getKingdom());
         room->setCardFlag((subcards.first()), "flame_map");
         sunquan->addToPile("flame_map", subcards, true, room->getAllPlayers(), CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, source->objectName()));

@@ -213,6 +213,7 @@ public:
     // static function
     static bool CompareByActionOrder(ServerPlayer *a, ServerPlayer *b);
 
+    bool showSkill(const QString &skill_name, const QString &skill_position = QString());
     void showGeneral(bool head_general = true, bool trigger_event = true, bool sendLog = true, bool ignore_rule = true);
     void hideGeneral(bool head_general = true);
     void removeGeneral(bool head_general = true);

@@ -863,9 +863,9 @@ bool ArmorSkill::cost(Room *room, ServerPlayer *target, QVariant &data) const
             const ViewHasSkill *skill = qobject_cast<const ViewHasSkill *>(Sanguosha->getSkill(name));
             if (skill->ViewHas(target, objectName(), "armor")) {
                 if (target->hasShownSkill(skill)) show = true;
-                if (target->inHeadSkills(skill) && target->canShowGeneral("h"))
+                if (target->getHeadActivedSkills().contains(skill))
                     skill_names << "left?" + name;
-                if (target->inDeputySkills(skill) && target->canShowGeneral("d"))
+                if (target->getDeputyActivedSkills().contains(skill))
                     skill_names << "right?" + name;
             }
         }
@@ -898,8 +898,7 @@ bool ArmorSkill::cost(Room *room, ServerPlayer *target, QVariant &data) const
     log.arg = objectName();
     room->sendLog(log);
 
-    if (!qobject_cast<const ViewHasSkill *>(Sanguosha->getSkill(name.split("?").last()))->isGlobal())
-        target->showGeneral(name.split("?").first() == "left" ? true : false);
+    target->showSkill(name.split("?").last(), name.split("?").first());
     return true;
 }
 

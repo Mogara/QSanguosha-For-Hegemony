@@ -104,10 +104,12 @@ QString TriggerOptionButton::getGeneralNameBySkill() const
             realSkillName = realSkillName.split("'").last();
         else if (realSkillName.contains("->")) // "tieqi->sgs4&1"
             realSkillName = realSkillName.split("->").first();
-        if (player->inHeadSkills(Sanguosha->getMainSkill(realSkillName)))
+        if (player->inHeadSkills(realSkillName))
             generalName = player->getGeneralName();
-        else
+        else if (player->inDeputySkills(realSkillName))
             generalName = player->getGeneral2Name();
+        else
+            generalName = player->getGeneralName();
     }
     return generalName;
 }
