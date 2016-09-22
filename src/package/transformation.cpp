@@ -1052,7 +1052,7 @@ public:
             if (to->canTransform())
                 room->transformDeputyGeneral(to);
         }
-        return false;
+        return true;
     }
 };
 
