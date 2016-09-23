@@ -1099,7 +1099,7 @@ TransferCard::TransferCard()
 
 bool TransferCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    if (!targets.isEmpty())
+    if (!targets.isEmpty() || to_select == Self)
         return false;
     if (!Self->hasShownOneGeneral())
         return !to_select->hasShownOneGeneral();

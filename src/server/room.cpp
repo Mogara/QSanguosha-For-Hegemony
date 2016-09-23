@@ -1047,7 +1047,17 @@ bool Room::notifyMoveFocus(const QList<ServerPlayer *> &focuses, const Countdown
 bool Room::askForSkillInvoke(ServerPlayer *player, const QString &skill_name, const QVariant &data)
 {
     tryPause();
-    notifyMoveFocus(player, S_COMMAND_INVOKE_SKILL);
+    if (data.type() == QVariant::String && data.toString() == "GameStart") {
+        Countdown countdown;
+        countdown.max = ServerInfo.getCommandTimeout(S_COMMAND_INVOKE_SKILL, S_CLIENT_INSTANCE);
+        if (countdown.max == ServerInfo.getCommandTimeout(S_COMMAND_UNKNOWN, S_CLIENT_INSTANCE))
+            countdown.type = Countdown::S_COUNTDOWN_USE_DEFAULT;
+        else
+            countdown.type = Countdown::S_COUNTDOWN_USE_SPECIFIED;
+
+        notifyMoveFocus(getAllPlayers(), countdown);
+    } else
+        notifyMoveFocus(player, S_COMMAND_INVOKE_SKILL);
 
     bool invoked = false;
     AI *ai = player->getAI();
@@ -1950,6 +1960,9 @@ QList<int> Room::GlobalCardChosen(ServerPlayer *player, QList<ServerPlayer *> ta
         if (!result.isEmpty() && notify_skill)
             thread->delay();
     } else {
+        if (!getTag(skillName + player->objectName()).toStringList().isEmpty())
+            req << getTag(skillName + player->objectName()).toStringList().last();
+
         bool success = doRequest(player, S_COMMAND_GLOBAL_CHOOSECARD, req, true);
         if (success) {
             JsonArray clientReply = player->getClientReply().value<JsonArray>();
@@ -5754,6 +5767,8 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
         ask_str << include_equip;
         ask_str << prompt;
         ask_str << reason;
+        if (!getTag(reason + player->objectName()).toStringList().isEmpty())
+            ask_str << getTag(reason + player->objectName()).toStringList().last();
 
         bool success = doRequest(player, S_COMMAND_DISCARD_CARD, ask_str, true);
 
@@ -5825,6 +5840,8 @@ const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, in
         exchange_str << _expand_pile;
         exchange_str << (pattern.isEmpty() ? new_pattern : pattern);
         exchange_str << reason;
+        if (!getTag(reason + player->objectName()).toStringList().isEmpty())
+            exchange_str << getTag(reason + player->objectName()).toStringList().last();
 
         bool success = doRequest(player, S_COMMAND_EXCHANGE_CARD, exchange_str, true);
         //@todo: also check if the player does have that card!!!
@@ -6114,7 +6131,6 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
         if (length_equal && result_equal)
             success = true;
 
-
         if (!can_refuse) {
             if (bottom_cards.length() < min_num) {
                 if (downcards.length() >= min_num && (max_num == 0 || downcards.length() <= qMax(min_num, max_num))) {
@@ -6258,6 +6274,9 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
         CardChooseArgs << min_num;
         CardChooseArgs << max_num;
         CardChooseArgs << can_refuse;
+        if (!getTag(skillName + zhuge->objectName()).toStringList().isEmpty())
+            CardChooseArgs << getTag(skillName + zhuge->objectName()).toStringList().last();
+
         success = doRequest(zhuge, S_COMMAND_SKILL_MOVECARDS, CardChooseArgs, true);
         if (success) {
             JsonArray clientReply = zhuge->getClientReply().value<JsonArray>();
@@ -6520,6 +6539,9 @@ ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerP
         req << prompt;
         req << 1;
         req << (optional ? 0 : 1);
+        if (!getTag(skillName + player->objectName()).toStringList().isEmpty())
+            req << getTag(skillName + player->objectName()).toStringList().last();
+
         bool success = doRequest(player, S_COMMAND_CHOOSE_PLAYER, req, true);
 
         const QVariant &clientReply = player->getClientReply();
@@ -6581,6 +6603,9 @@ QList<ServerPlayer *> Room::askForPlayersChosen(ServerPlayer *player, const QLis
         req << prompt;
         req << max_num;
         req << min_num;
+        if (!getTag(skillName + player->objectName()).toStringList().isEmpty())
+            req << getTag(skillName + player->objectName()).toStringList().last();
+
         bool success = doRequest(player, S_COMMAND_CHOOSE_PLAYER, req, true);
 
         const QVariant &clientReply = player->getClientReply();

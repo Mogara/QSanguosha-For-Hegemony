@@ -309,7 +309,7 @@ class Luoyi : public TriggerSkill
 public:
     Luoyi() : TriggerSkill("luoyi")
     {
-        events << DrawNCards << DamageCaused << PreCardUsed;
+        events << DrawNCards << PreCardUsed;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
@@ -317,30 +317,20 @@ public:
         if (triggerEvent == DrawNCards) {
             if (TriggerSkill::triggerable(player))
                 return QStringList(objectName());
-        } else if (triggerEvent == PreCardUsed) {
+        } else {
             if (player != NULL && player->isAlive() && player->hasFlag("luoyi")) {
                 CardUseStruct use = data.value<CardUseStruct>();
                 if (use.card != NULL && (use.card->isKindOf("Slash") || use.card->isKindOf("Duel"))) {
                     room->setCardFlag(use.card, objectName());
                 }
             }
-        } else if (triggerEvent == DamageCaused) {
-            if (player != NULL && player->isAlive() && player->hasFlag("luoyi")) {
-                DamageStruct damage = data.value<DamageStruct>();
-                if (damage.card != NULL && damage.card->hasFlag("luoyi") && !damage.chain && !damage.transfer && damage.by_user) {
-                    return QStringList(objectName());
-                }
-            }
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (triggerEvent == DamageCaused) {
-            room->broadcastSkillInvoke(objectName(), 1, player);
-            return true;
-        } else if (player->askForSkillInvoke(this)) {
+        if (player->askForSkillInvoke(this)) {
             data = data.toInt() - 1;
             room->broadcastSkillInvoke(objectName(), 2, player);
             return true;
@@ -348,21 +338,47 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (triggerEvent == DamageCaused) {
-            DamageStruct damage = data.value<DamageStruct>();
-            LogMessage log;
-            log.type = "#LuoyiBuff";
-            log.from = player;
-            log.to << damage.to;
-            log.arg = QString::number(damage.damage);
-            log.arg2 = QString::number(++damage.damage);
-            room->sendLog(log);
+        room->setPlayerFlag(player, objectName());
 
-            data = QVariant::fromValue(damage);
-        } else
-            room->setPlayerFlag(player, objectName());
+        return false;
+    }
+};
+
+class LuoyiDamage : public TriggerSkill
+{
+public:
+    LuoyiDamage() : TriggerSkill("#luoyi-damage")
+    {
+        events << DamageCaused;
+        frequency = Skill::Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    {
+        if (player != NULL && player->isAlive() && player->hasFlag("luoyi")) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card != NULL && damage.card->hasFlag("luoyi") && !damage.chain && !damage.transfer && damage.by_user) {
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        room->broadcastSkillInvoke("luoyi", 1, player);
+        DamageStruct damage = data.value<DamageStruct>();
+        LogMessage log;
+        log.type = "#LuoyiBuff";
+        log.from = player;
+        log.to << damage.to;
+        log.arg = QString::number(damage.damage);
+        log.arg2 = QString::number(++damage.damage);
+        room->sendLog(log);
+
+        data = QVariant::fromValue(damage);
 
         return false;
     }
@@ -1417,6 +1433,8 @@ void StandardPackage::addWeiGenerals()
 
     General *xuchu = new General(this, "xuchu", "wei"); // WEI 005
     xuchu->addSkill(new Luoyi);
+    xuchu->addSkill(new LuoyiDamage);
+    insertRelatedSkills("luoyi", "#luoyi-damage");
 
     General *guojia = new General(this, "guojia", "wei", 3); // WEI 006
     guojia->addSkill(new Tiandu);

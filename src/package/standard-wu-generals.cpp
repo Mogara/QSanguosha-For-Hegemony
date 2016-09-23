@@ -107,42 +107,31 @@ public:
     }
 };
 
-class KejiRecord : public TriggerSkill
-{
-public:
-    KejiRecord() : TriggerSkill("#keji-record")
-    {
-        events << PreCardUsed << CardResponded;
-        frequency = Compulsory;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
-    {
-        if (player != NULL && player->isAlive()) {
-            const Card *card = NULL;
-            if (triggerEvent == PreCardUsed)
-                card = data.value<CardUseStruct>().card;
-            else
-                card = data.value<CardResponseStruct>().m_card;
-            if (card->isKindOf("Slash") && player->getPhase() == Player::Play)
-                player->setFlags("KejiSlashInPlayPhase");
-        }
-        return QStringList();
-    }
-};
-
 class Keji : public TriggerSkill
 {
 public:
     Keji() : TriggerSkill("keji")
     {
-        events << EventPhaseChanging;
+        events << EventPhaseChanging << PreCardUsed << CardResponded;
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    virtual void record(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data) const
     {
-        if (TriggerSkill::triggerable(player)) {
+        if (player != NULL && player->isAlive() && (triggerEvent == PreCardUsed || triggerEvent == CardResponded)) {
+            const Card *card = NULL;
+            if (triggerEvent == PreCardUsed)
+                card = data.value<CardUseStruct>().card;
+            else if (triggerEvent == CardResponded)
+                card = data.value<CardResponseStruct>().m_card;
+            if (card->isKindOf("Slash") && player->getPhase() == Player::Play)
+                player->setFlags("KejiSlashInPlayPhase");
+        }
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    {
+        if (TriggerSkill::triggerable(player) && triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (!player->hasFlag("KejiSlashInPlayPhase") && change.to == Player::Discard)
                 return QStringList(objectName());
@@ -775,9 +764,15 @@ public:
         if (player == NULL) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (player->isAlive() && damage.transfer && damage.transfer_reason == "tianxiang")
-            player->drawCards(player->getLostHp());
+            return QStringList(objectName());
 
         return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        player->drawCards(player->getLostHp());
+        return false;
     }
 };
 
@@ -787,7 +782,6 @@ public:
     HongyanFilter() : FilterSkill("hongyan")
     {
     }
-
 
     static WrappedCard *changeToHeart(int cardId)
     {
@@ -1764,8 +1758,6 @@ void StandardPackage::addWuGenerals()
 
     General *lvmeng = new General(this, "lvmeng", "wu"); // WU 003
     lvmeng->addSkill(new Keji);
-    lvmeng->addSkill(new KejiRecord);
-    insertRelatedSkills("keji", "#keji-record");
 
     General *huanggai = new General(this, "huanggai", "wu"); // WU 004
     huanggai->addSkill(new Kurou);

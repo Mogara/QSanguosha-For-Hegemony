@@ -206,6 +206,27 @@ public:
         events << TurnStart << CardsMoveOneTime << EventPhaseChanging;
         frequency = Compulsory;
     }
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+         if (triggerEvent == EventPhaseChanging) {
+             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+             if (change.to != Player::NotActive) return;
+             QList<ServerPlayer *> zangbas;
+             foreach (ServerPlayer *p, room->getAllPlayers()) {
+                 if (p->getMark("HengjiangInvoke") > 0) {
+                     zangbas << p;
+                 }
+             }
+             if (!zangbas.isEmpty() && player->getMark("@hengjiang") > 0 && !player->hasFlag("HengjiangDiscarded")) {
+                 LogMessage log;
+                 log.type = "#HengjiangDraw";
+                 log.from = player;
+                 log.to = zangbas;
+                 log.arg = "hengjiang";
+                 room->sendLog(log);
+             }
+         }
+    }
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
@@ -230,28 +251,14 @@ public:
                     zangbas << p;
                 }
             }
-            if (zangbas.isEmpty()) return skill_list;
-            if (player->getMark("@hengjiang") > 0) {
-                bool invoke = false;
-                if (!player->hasFlag("HengjiangDiscarded")) {
-                    LogMessage log;
-                    log.type = "#HengjiangDraw";
-                    log.from = player;
-                    log.to = zangbas;
-                    log.arg = "hengjiang";
-                    room->sendLog(log);
-
-                    invoke = true;
-                }
-                if (invoke)
-                    foreach(ServerPlayer *zangba, zangbas)
+            if (!zangbas.isEmpty() && player->getMark("@hengjiang") > 0 && !player->hasFlag("HengjiangDiscarded"))
+                foreach(ServerPlayer *zangba, zangbas)
                     skill_list.insert(zangba, QStringList(objectName()));
-            }
         }
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         room->setPlayerMark(ask_who, "HengjiangInvoke", 0);
         room->setPlayerMark(player, "@hengjiang", 0);
@@ -273,21 +280,19 @@ public:
         return -1;
     }
 
-    virtual void record(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to == Player::NotActive) {
-            QList<ServerPlayer *> zangbas;
-            foreach (ServerPlayer *p, room->getAllPlayers()) {
-                if (p->getMark("HengjiangInvoke") > 0) {
-                    zangbas << p;
-                }
-            }
-            if (!zangbas.isEmpty() && player->getMark("@hengjiang") > 0 && player->hasFlag("HengjiangDiscarded")) {
+            if (player->getMark("@hengjiang") > 0) {
                 player->setFlags("-HengjiangDiscarded");
                 room->setPlayerMark(player, "@hengjiang", 0);
             }
+            foreach(ServerPlayer *p, room->getAllPlayers())
+                if (p->getMark("HengjiangInvoke") > 0)
+                    room->setPlayerMark(p, "HengjiangInvoke", 0);
         }
+        return TriggerList();
     }
 };
 
@@ -911,7 +916,7 @@ public:
     {
         if (player != NULL && player->getPhase() == Player::NotActive && player->getMark("hunshang") > 0) {
             player->setMark("hunshang", 0);
-            room->handleAcquireDetachSkills(player, "-yinghun_sunce|-yingzi_sunce", true);
+            room->handleAcquireDetachSkills(player, "-yinghun_sunce!|-yingzi_sunce!", true);
         }
         return QStringList();
     }

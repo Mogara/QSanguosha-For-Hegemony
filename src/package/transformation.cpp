@@ -503,7 +503,7 @@ class Xichou : public TriggerSkill
 public:
     Xichou() : TriggerSkill("xichou")
     {
-        events << GeneralShown << DFDebut << CardUsed << EventPhaseChanging;
+        events << GeneralShown << DFDebut << CardUsed << EventPhaseChanging << CardResponded;
         frequency = Compulsory;
     }
 
@@ -513,12 +513,18 @@ public:
             return QStringList(objectName());
         else if (triggerEvent == GeneralShown && TriggerSkill::triggerable(player) && player->getMark(objectName()) == 0)
             return (data.toBool() == player->inHeadSkills(objectName())) ? QStringList(objectName()) : QStringList();
-        else if (triggerEvent == CardUsed && player->getPhase() == Player::Play && TriggerSkill::triggerable(player)) {
-            CardUseStruct use = data.value<CardUseStruct>();
+        else if ((triggerEvent == CardUsed || triggerEvent == CardResponded) && player->getPhase() == Player::Play && TriggerSkill::triggerable(player)) {
+            const Card *card = NULL;
+            if (triggerEvent == CardUsed)
+                card = data.value<CardUseStruct>().card;
+            else if (triggerEvent == CardResponded && data.value<CardResponseStruct>().m_isUse)
+                card = data.value<CardResponseStruct>().m_card;
+            if (card == NULL) return QStringList();
+
             if (player->getMark("xichou_color") == 0) return QStringList();
-            if (use.card->getTypeId() != Card::TypeSkill && ((use.card->isBlack() && player->getMark("xichou_color") != 1) ||
-                    (use.card->isRed() && player->getMark("xichou_color") != 2) ||
-                    (use.card->getSuit() == Card::NoSuit && player->getMark("xichou_color") != 3))) {
+            if (card->getTypeId() != Card::TypeSkill && ((card->isBlack() && player->getMark("xichou_color") != 1) ||
+                    (card->isRed() && player->getMark("xichou_color") != 2) ||
+                    (card->getSuit() == Card::NoSuit && player->getMark("xichou_color") != 3))) {
                 foreach (ServerPlayer *p, room->getAlivePlayers())
                     if (p->hasFlag("Global_Dying"))
                         return QStringList();
@@ -566,7 +572,7 @@ class Xichou_record : public TriggerSkill
 public:
     Xichou_record() : TriggerSkill("#xichou-record")
     {
-        events << CardUsed;
+        events << CardUsed << CardResponded;
     }
 
     virtual int getPriority() const
@@ -574,19 +580,30 @@ public:
         return -1;
     }
 
-    virtual void record(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
         if (player->hasSkill("xichou") && player->getPhase() == Player::Play) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getTypeId() != Card::TypeSkill) {
-                if (use.card->isBlack())
+            const Card *card = NULL;
+            if (triggerEvent == CardUsed)
+                card = data.value<CardUseStruct>().card;
+            else if (triggerEvent == CardResponded && data.value<CardResponseStruct>().m_isUse)
+                card = data.value<CardResponseStruct>().m_card;
+            if (card == NULL) return;
+
+            if (card->getTypeId() != Card::TypeSkill) {
+                if (card->isBlack())
                     room->setPlayerMark(player, "xichou_color", 1);
-                else if (use.card->isRed())
+                else if (card->isRed())
                     room->setPlayerMark(player, "xichou_color", 2);
                 else
                     room->setPlayerMark(player, "xichou_color", 3);
             }
         }
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer* &) const
+    {
+        return QStringList();
     }
 };
 
@@ -720,7 +737,7 @@ public:
         }
         foreach (QString name, old_skills) {
             if (!skill_names.contains(name))
-                ac_dt_list.append("-" + name);
+                ac_dt_list.append("-" + name + (ishead ? "" : "!"));
         }
         room->handleAcquireDetachSkills(zuoci, ac_dt_list, true);
     }
@@ -859,7 +876,7 @@ class JiliRecord : public TriggerSkill
 public:
     JiliRecord() : TriggerSkill("#jili-record")
     {
-        events << CardUsed;
+        events << CardUsed << CardResponded;
     }
 
     virtual int getPriority() const
@@ -867,14 +884,26 @@ public:
         return 7;
     }
 
-    virtual void record(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
         if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getTypeId() != Card::TypeSkill)
+            const Card *card = NULL;
+            if (triggerEvent == CardUsed)
+                card = data.value<CardUseStruct>().card;
+            else if (triggerEvent == CardResponded && data.value<CardResponseStruct>().m_isUse)
+                card = data.value<CardResponseStruct>().m_card;
+            if (card == NULL) return;
+
+            if (card->getTypeId() != Card::TypeSkill)
                 room->setPlayerMark(player, "jili", player->getMark("jili") + 1);
         }
     }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer* &) const
+    {
+        return QStringList();
+    }
+
 };
 
 class Jili : public TriggerSkill
@@ -882,15 +911,21 @@ class Jili : public TriggerSkill
 public:
     Jili() : TriggerSkill("jili")
     {
-        events << CardUsed << EventPhaseChanging;
+        events << CardUsed << EventPhaseChanging << CardResponded;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (triggerEvent == CardUsed && player->getPhase() == Player::Play && player->getWeapon() && TriggerSkill::triggerable(player)) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            const Weapon *card = qobject_cast<const Weapon *>(player->getWeapon()->getRealCard());
-            if (use.card->getTypeId() != Card::TypeSkill && player->getMark("jili") == card->getRange()) {
+        if ((triggerEvent == CardUsed || triggerEvent == CardResponded) && player->getPhase() == Player::Play && player->getWeapon() && TriggerSkill::triggerable(player)) {
+            const Card *card = NULL;
+            if (triggerEvent == CardUsed)
+                card = data.value<CardUseStruct>().card;
+            else if (triggerEvent == CardResponded && data.value<CardResponseStruct>().m_isUse)
+                card = data.value<CardResponseStruct>().m_card;
+            if (card == NULL) return QStringList();
+
+            const Weapon *wcard = qobject_cast<const Weapon *>(player->getWeapon()->getRealCard());
+            if (card->getTypeId() != Card::TypeSkill && player->getMark("jili") == wcard->getRange()) {
                 return QStringList(objectName());
             }
         } else if (triggerEvent == EventPhaseChanging && TriggerSkill::triggerable(player)) {
@@ -1810,10 +1845,10 @@ public:
         attached_lord_skill = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const
+    virtual void record(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
         ServerPlayer *sunquan = room->getLord(player->getKingdom());
-        if (!sunquan || sunquan->isDead() || !TriggerSkill::triggerable(player)) return QStringList();
+        if (!sunquan || sunquan->isDead() || !TriggerSkill::triggerable(player)) return;
         QList<int> ids = player->getPile("flame_map");
         if (!ids.isEmpty()) {
             if (!room->askForUseCard(player, "@@flamemap!", "@flamemap", -1, Card::MethodNone, false)) {
@@ -1829,6 +1864,10 @@ public:
                 }
             }
         }
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer* &) const
+    {
         return QStringList();
     }
 };

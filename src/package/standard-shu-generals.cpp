@@ -772,19 +772,18 @@ public:
     }
 };
 
-
-class KuangguRecord : public TriggerSkill
+class Kuanggu : public TriggerSkill
 {
 public:
-    KuangguRecord() : TriggerSkill("#kuanggu-record")
+    Kuanggu() : TriggerSkill("kuanggu")
     {
-        events << PreDamageDone;
         frequency = Compulsory;
+        events << Damage << PreDamageDone;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    virtual void record(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data) const
     {
-        if (player != NULL) {
+        if (player != NULL && event == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
             ServerPlayer *weiyan = damage.from;
             if (weiyan != NULL) {
@@ -794,23 +793,11 @@ public:
                     weiyan->tag.remove("InvokeKuanggu");
             }
         }
-
-        return QStringList();
-    }
-};
-
-class Kuanggu : public TriggerSkill
-{
-public:
-    Kuanggu() : TriggerSkill("kuanggu")
-    {
-        frequency = Compulsory;
-        events << Damage;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
     {
-        if (TriggerSkill::triggerable(player)) {
+        if (TriggerSkill::triggerable(player) && event == Damage) {
             bool ok = false;
             int recorded_damage = player->tag["InvokeKuanggu"].toInt(&ok);
             if (ok && recorded_damage > 0 && player->isWounded()) {
@@ -1622,8 +1609,6 @@ void StandardPackage::addShuGenerals()
 
     General *weiyan = new General(this, "weiyan", "shu"); // SHU 009
     weiyan->addSkill(new Kuanggu);
-    weiyan->addSkill(new KuangguRecord);
-    insertRelatedSkills("kuanggu", "#kuanggu-record");
 
     General *pangtong = new General(this, "pangtong", "shu", 3); // SHU 010
     pangtong->addSkill(new Lianhuan);

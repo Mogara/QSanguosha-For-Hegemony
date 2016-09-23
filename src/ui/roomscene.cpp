@@ -2747,7 +2747,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             discard_skill->setMinNum(ClientInstance->min_num);
             discard_skill->setIncludeEquip(ClientInstance->m_canDiscardEquip);
             discard_skill->setIsDiscard(true);
-            highlightSkillButton(ClientInstance->discard_reason);
+            highlightSkillButton(ClientInstance->discard_reason, CardUseStruct::CARD_USE_REASON_UNKNOWN, QString(), ClientInstance->getSkillToHighLight());
             dashboard->startPending(discard_skill);
             break;
         }
@@ -2759,7 +2759,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             discard_button->setEnabled(false);
             exchange_skill->initialize(ClientInstance->exchange_max, ClientInstance->exchange_min,
                 ClientInstance->exchange_expand_pile, ClientInstance->exchange_pattern);
-            highlightSkillButton(ClientInstance->exchange_reason);
+            highlightSkillButton(ClientInstance->exchange_reason, CardUseStruct::CARD_USE_REASON_UNKNOWN, QString(), ClientInstance->getSkillToHighLight());
             dashboard->startPending(exchange_skill);
             break;
         }
@@ -2786,7 +2786,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         case Client::AskForPlayerChoose: {
             QString skill_name = ClientInstance->getSkillNameToInvoke();
             dashboard->highlightEquip(skill_name, true);
-            highlightSkillButton(skill_name);
+            highlightSkillButton(skill_name, CardUseStruct::CARD_USE_REASON_UNKNOWN, QString(), ClientInstance->getSkillToHighLight());
             showPromptBox();
 
             ok_button->setEnabled(false);
@@ -2801,7 +2801,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         case Client::GlobalCardChosen: {
             QString skill_name = ClientInstance->getSkillNameToInvoke();
             dashboard->highlightEquip(skill_name, true);
-            highlightSkillButton(skill_name);
+            highlightSkillButton(skill_name, CardUseStruct::CARD_USE_REASON_UNKNOWN, QString(), ClientInstance->getSkillToHighLight());
             showPromptBox();
 
             ok_button->setEnabled(false);
@@ -2860,7 +2860,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             ok_button->setEnabled(ClientInstance->m_isDiscardActionRefusable);
             cancel_button->setEnabled(ClientInstance->m_canDiscardEquip);
             discard_button->setEnabled(false);
-            highlightSkillButton(ClientInstance->skill_name);
+            highlightSkillButton(ClientInstance->skill_name, CardUseStruct::CARD_USE_REASON_UNKNOWN, QString(), ClientInstance->getSkillToHighLight());
             break;
         }
         case Client::AskForGuanxing:

@@ -149,7 +149,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
-        return ask_who->askForSkillInvoke("userdefine:changetolord");
+        return ask_who->askForSkillInvoke("userdefine:changetolord", "GameStart");
     }
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const

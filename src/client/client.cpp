@@ -1433,7 +1433,7 @@ void Client::updatePileNum()
 void Client::askForDiscard(const QVariant &reqvar)
 {
     JsonArray req = reqvar.value<JsonArray>();
-    if (req.size() != 6 || !JsonUtils::isNumber(req[0]) || !JsonUtils::isNumber(req[1]) || !JsonUtils::isBool(req[2])
+    if (req.size() < 6 || !JsonUtils::isNumber(req[0]) || !JsonUtils::isNumber(req[1]) || !JsonUtils::isBool(req[2])
         || !JsonUtils::isBool(req[3]) || !JsonUtils::isString(req[4]) || !JsonUtils::isString(req[5]))
         return;
 
@@ -1443,6 +1443,10 @@ void Client::askForDiscard(const QVariant &reqvar)
     m_canDiscardEquip = req[3].toBool();
     QString prompt = req[4].toString();
     discard_reason = req[5].toString();
+
+    skill_position.clear();
+    if (req.size() >= 7 && JsonUtils::isString(req[6]))
+        skill_position = req[6].toString();
 
     if (prompt.isEmpty()) {
         if (m_canDiscardEquip)
@@ -1482,7 +1486,7 @@ void Client::askForExchange(const QVariant &exchange)
     //    min_num = discard_num;
     //    m_isDiscardActionRefusable = args[3].toBool();
     JsonArray args = exchange.value<JsonArray>();
-    if (args.size() != 6 || !JsonUtils::isNumber(args[0]) || !JsonUtils::isNumber(args[1])
+    if (args.size() < 6 || !JsonUtils::isNumber(args[0]) || !JsonUtils::isNumber(args[1])
         || !JsonUtils::isString(args[2]) || !JsonUtils::isString(args[3])
         || !JsonUtils::isString(args[4]) || !JsonUtils::isString(args[5])) {
         QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
@@ -1495,6 +1499,11 @@ void Client::askForExchange(const QVariant &exchange)
     exchange_pattern = args[4].toString();
     exchange_reason = args[5].toString();
     m_isDiscardActionRefusable = (exchange_min == 0);
+
+    skill_position.clear();
+    if (args.size() >= 7 && JsonUtils::isString(args[6]))
+        skill_position = args[6].toString();
+
     if (prompt.isEmpty()) {
         if (m_isDiscardActionRefusable)
             prompt = tr("Please give %1 cards to exchange at most").arg(exchange_max);
@@ -1943,6 +1952,10 @@ void Client::askForMoveCards(const QVariant &arg)
     int max_num = args[7].toInt();
     bool can_refuse = args[8].toBool();
 
+    skill_position.clear();
+    if (args.size() >= 10 && JsonUtils::isString(args[9]))
+        skill_position = args[9].toString();
+
     QList<int> upcard_ids, downcard_ids;
     JsonUtils::tryParse(up, upcard_ids);
     JsonUtils::tryParse(down, downcard_ids);
@@ -2110,7 +2123,7 @@ void Client::askForYiji(const QVariant &ask_str)
 void Client::askForPlayerChosen(const QVariant &players)
 {
     JsonArray args = players.value<JsonArray>();
-    if (args.size() != 5) return;
+    if (args.size() < 5) return;
     if (!JsonUtils::isString(args[1]) || !args[0].canConvert<JsonArray>() || !JsonUtils::isNumber(args[3]) || !JsonUtils::isNumber(args[4])) return;
     JsonArray choices = args[0].value<JsonArray>();
     if (choices.size() == 0) return;
@@ -2122,6 +2135,11 @@ void Client::askForPlayerChosen(const QVariant &players)
     m_isDiscardActionRefusable = (args[4].toInt() == 0);
     choose_max_num = args[3].toInt();
     choose_min_num = args[4].toInt();
+
+    skill_position.clear();
+    if (args.size() >= 6 && JsonUtils::isString(args[5]))
+        skill_position = args[5].toString();
+
     QString text;
     QString description = Sanguosha->translate(ClientInstance->skill_name);
     QString prompt = args[2].toString();
