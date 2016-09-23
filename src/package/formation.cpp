@@ -1372,6 +1372,7 @@ FormationPackage::FormationPackage()
     caohong->addCompanion("caoren");
     caohong->addSkill(new Huyuan);
     caohong->addSkill(new Heyi);
+    caohong->addRelateSkill("feiying");
 
     General *jiangwei = new General(this, "jiangwei", "shu"); // SHU 012 G
     jiangwei->addSkill(new Tiaoxin);
