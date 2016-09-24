@@ -421,10 +421,13 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                             result_skill = Sanguosha->getTriggerSkill(name);
                         }
 
-                        if (p && !skill_position.isEmpty()) {
-                            QStringList skill_positions = room->getTag(result_skill->objectName() + p->objectName()).toStringList();   //for player audio & show
+                        const Skill *mainskill = NULL;
+                        if (p && result_skill && !skill_position.isEmpty())
+                            mainskill = Sanguosha->getMainSkill(result_skill->objectName());
+                        if (mainskill != NULL) {
+                            QStringList skill_positions = room->getTag(mainskill->objectName() + p->objectName()).toStringList();   //for player audio & show
                             skill_positions.append(skill_position);
-                            room->setTag(result_skill->objectName() + p->objectName(), skill_positions);
+                            room->setTag(mainskill->objectName() + p->objectName(), skill_positions);
                         }
 
                         Q_ASSERT(skill_target && result_skill);
@@ -437,8 +440,10 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         if (result_skill->cost(triggerEvent, room, skill_target, data, p)) {
                             do_effect = true;
                             if (p) {
-                                QStringList skill_positions = room->getTag(result_skill->objectName() + p->objectName()).toStringList();
-                                bool show = p->showSkill(result_skill->objectName(), skill_positions.last());
+                                QString position;
+                                if (mainskill)
+                                    position = room->getTag(mainskill->objectName() + p->objectName()).toStringList().last();
+                                bool show = p->showSkill(result_skill->objectName(), position);
                                 if (show) p->tag["JustShownSkill"] = result_skill->objectName();
                             }
                         }
@@ -451,21 +456,23 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         if (do_effect) {
                             broken = result_skill->effect(triggerEvent, room, skill_target, data, p);
                             if (broken) {
-                                QStringList skill_positions = room->getTag(result_skill->objectName() + p->objectName()).toStringList();    //remove this record before broken
-                                if (!skill_positions.isEmpty()) {
-                                    skill_positions.removeLast();
-                                    room->setTag(result_skill->objectName() + p->objectName(), skill_positions);
+                                if (mainskill != NULL) {
+                                    QStringList skill_positions = room->getTag(mainskill->objectName() + p->objectName()).toStringList();    //remove this record before broken
+                                    if (!skill_positions.isEmpty()) {
+                                        skill_positions.removeLast();
+                                        room->setTag(mainskill->objectName() + p->objectName(), skill_positions);
+                                    }
                                 }
                                 p->tag.remove("JustShownSkill");
                                 break;
                             }
                         }
                         //-----------------------------------------------
-                        if (p != NULL && result_skill) {
-                            QStringList skill_positions = room->getTag(result_skill->objectName() + p->objectName()).toStringList();        //remove this record
+                        if (mainskill != NULL) {
+                            QStringList skill_positions = room->getTag(mainskill->objectName() + p->objectName()).toStringList();           //remove this record
                             if (!skill_positions.isEmpty()) {
                                 skill_positions.removeLast();
-                                room->setTag(result_skill->objectName() + p->objectName(), skill_positions);
+                                room->setTag(mainskill->objectName() + p->objectName(), skill_positions);
                             }
                         }
                         p->tag.remove("JustShownSkill");

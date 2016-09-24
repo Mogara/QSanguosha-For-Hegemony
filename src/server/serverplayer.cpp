@@ -1470,7 +1470,6 @@ bool ServerPlayer::showSkill(const QString &skill_name, const QString &skill_pos
     }
 
     const Skill *skill = Sanguosha->getSkill(skill_name);
-    if (!skill->isVisible()) skill = Sanguosha->getMainSkill(skill_name);    //player doesnt own invisible skills, so it must be converted to main skill
     if (skill == NULL) return false;
     QString actived_skill = skill->objectName();
 
@@ -1760,6 +1759,8 @@ void ServerPlayer::hideGeneral(bool head_general)
     room->getThread()->trigger(GeneralHidden, room, this, _head);
 
     room->filterCards(this, getCards("he"), true);
+    setSkillsPreshowed(head_general ? "h" : "d");
+    notifyPreshow();
 }
 
 void ServerPlayer::removeGeneral(bool head_general)

@@ -1057,6 +1057,10 @@ void Client::askForCardOrUseCard(const QVariant &cardUsage)
     if (usage.size() >= 4 && JsonUtils::isNumber(usage[3]) && usage[3].toInt() > 0)
         index = usage[3].toInt();
 
+    skill_position.clear();
+    if (usage.size() >= 5 && JsonUtils::isString(usage[4]))
+        skill_position = usage[4].toString();
+
     if (texts.isEmpty()) {
         _m_roomState.setCurrentCardResponsePrompt(QString());
         return;
