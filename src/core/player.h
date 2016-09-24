@@ -335,10 +335,10 @@ public:
     void setGeneral2Showed(bool showed);
     bool hasShownOneGeneral() const;
     bool hasShownAllGenerals() const;
-    void setSkillPreshowed(const QString &skill, bool preshowed = true);
+    void setSkillPreshowed(const QString &skill, bool preshowed = true, bool head = true);
     void setSkillsPreshowed(const QString &falgs = "hd", bool preshowed = true);
-    bool hasPreshowedSkill(const QString &name) const;
-    bool hasPreshowedSkill(const Skill *skill) const;
+    bool hasPreshowedSkill(const QString &name, bool head) const;
+    bool hasPreshowedSkill(const Skill *skill, bool head) const;
     bool isHidden(const bool &head_general) const;
 
     inline bool getScenarioRoleShown() const

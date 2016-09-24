@@ -807,9 +807,8 @@ bool DetachEffectSkill::effect(TriggerEvent, Room *room, ServerPlayer *player, Q
 {
     if (!pile_name.isEmpty())
         player->clearOnePrivatePile(pile_name);
-    else
-        onSkillDetached(room, player);
 
+    onSkillDetached(room, player);
     return false;
 }
 

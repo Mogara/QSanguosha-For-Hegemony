@@ -1687,8 +1687,7 @@ void ServerPlayer::hideGeneral(bool head_general)
         arg << "anjiang";
         arg << false;
         arg << false;
-        foreach(ServerPlayer *p, room->getOtherPlayers(this, true))
-            room->doNotify(p, S_COMMAND_LOG_EVENT, arg);
+        room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
         room->changePlayerGeneral(this, "anjiang");
 
         disconnectSkillsFromOthers();
@@ -1724,8 +1723,7 @@ void ServerPlayer::hideGeneral(bool head_general)
         arg << "anjiang";
         arg << true;
         arg << false;
-        foreach(ServerPlayer *p, room->getOtherPlayers(this, true))
-            room->doNotify(p, S_COMMAND_LOG_EVENT, arg);
+        room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
         room->changePlayerGeneral2(this, "anjiang");
 
         disconnectSkillsFromOthers(false);

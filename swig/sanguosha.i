@@ -345,10 +345,10 @@ public:
     void setGeneral2Showed(bool showed);
     bool hasShownOneGeneral() const;
     bool hasShownAllGenerals() const;
-    void setSkillPreshowed(const char *skill, bool preshowed = true);
+    void setSkillPreshowed(const char *skill, bool preshowed = true, bool head = true);
     void setSkillsPreshowed(const char *falgs = "hd", bool preshowed = true);
-    bool hasPreshowedSkill(const char *name) const;
-    bool hasPreshowedSkill(const Skill *skill) const;
+    bool hasPreshowedSkill(const char *name, bool head) const;
+    bool hasPreshowedSkill(const Skill *skill, bool head) const;
     bool isHidden(const bool &head_general) const;
 
     bool ownSkill(const char *skill_name) const;

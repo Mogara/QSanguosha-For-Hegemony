@@ -576,10 +576,13 @@ void RoomScene::handleGameEvent(const QVariant &args)
 
                 if (Config.EnableAutoPreshow && auto_preshow_available) {
                     const Skill *s = Sanguosha->getSkill(skill);
-                    if (s != NULL && s->canPreshow())
-                        ClientInstance->preshow(skill, true);
+                    if (s != NULL && s->canPreshow()) {
+                        ClientInstance->preshow(skill, true, true);
+                        ClientInstance->preshow(skill, true, false);
+                    }
                 } else {
-                    Self->setSkillPreshowed(skill, showed);
+                    Self->setSkillPreshowed(skill, showed, true);
+                    Self->setSkillPreshowed(skill, showed, false);
                     if (!showed) {
                         foreach (QSanSkillButton *btn, m_skillButtons) {
                             if (btn->getSkill()->objectName() == skill) {
@@ -613,6 +616,9 @@ void RoomScene::handleGameEvent(const QVariant &args)
             bool isSecondaryHero = arg[3].toBool();
             bool sendLog = arg[4].toBool();
             ClientPlayer *player = ClientInstance->getPlayer(playerName);
+            PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
+            container->refresh();
+            if (newHeroName == "anjiang" && player == Self) break;
             const General* oldHero = isSecondaryHero ? player->getGeneral2() : player->getGeneral();
             if (Sanguosha->getGeneral(newHeroName)) {
                 if (isSecondaryHero) {
@@ -635,11 +641,11 @@ void RoomScene::handleGameEvent(const QVariant &args)
                 }
             }
             const General* newHero = Sanguosha->getGeneral(newHeroName);
+
             if (oldHero) {
                 foreach (const Skill *skill, oldHero->getVisibleSkills(true, !isSecondaryHero))
                     detachSkill(skill->objectName(), !isSecondaryHero);
                 if (oldHero->hasSkill("huashen")) {
-                    PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
                     container->stopHuaShen();
                     player->tag.remove("Huashens");
                     player->changePile("huashencard", false, QList<int>());
@@ -2212,10 +2218,11 @@ void RoomScene::updateSkillButtons()
 
     foreach (QSanSkillButton *button, m_skillButtons) {
         const Skill *skill = button->getSkill();
+        bool head = button->objectName() == "left";
         button->setEnabled(skill->canPreshow()
             && !Self->hasShownSkill(skill));
-        if (skill->canPreshow() && !Self->hasShownSkill(skill)) {
-            if (Self->hasPreshowedSkill(skill->objectName()))
+        if (skill->canPreshow() && Self->ownSkill(skill) && (head ? !Self->hasShownGeneral1() : !Self->hasShownGeneral2())) {
+            if (Self->hasPreshowedSkill(skill->objectName(), head))
                 button->setState(QSanButton::S_STATE_DISABLED);
             else
                 button->setState(QSanButton::S_STATE_CANPRESHOW);

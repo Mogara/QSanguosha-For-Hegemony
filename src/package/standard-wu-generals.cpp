@@ -1147,7 +1147,7 @@ public:
 class BuquClear : public DetachEffectSkill
 {
 public:
-    BuquClear() : DetachEffectSkill("buqu")
+    BuquClear() : DetachEffectSkill("buqu", "buqu")
     {
         frequency = Compulsory;
     }

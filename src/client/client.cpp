@@ -1286,15 +1286,16 @@ void Client::trust()
     setStatus(NotActive);
 }
 
-void Client::preshow(const QString &skill_name, const bool isPreshowed)
+void Client::preshow(const QString &skill_name, const bool isPreshowed, bool head)
 {
     JsonArray arg;
     arg << skill_name;
     arg << isPreshowed;
+    arg << head;
     requestServer(S_COMMAND_PRESHOW, arg);
-    Self->setSkillPreshowed(skill_name, isPreshowed);
+    Self->setSkillPreshowed(skill_name, isPreshowed, head);
 
-    if (Self->inHeadSkills(skill_name))
+    if (head)
         emit head_preshowed();
     else
         emit deputy_preshowed();

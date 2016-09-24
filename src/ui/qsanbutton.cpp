@@ -257,13 +257,14 @@ void QSanSkillButton::onMouseClick()
 {
     if (_m_skill == NULL) return;
 
-    if (!Self->hasPreshowedSkill(_m_skill) && _m_state == QSanButton::S_STATE_CANPRESHOW) {
+    bool head = objectName() == "left";
+    if (!Self->hasPreshowedSkill(_m_skill, head) && _m_state == QSanButton::S_STATE_CANPRESHOW) {
         setState(S_STATE_DISABLED);
-        ClientInstance->preshow(_m_skill->objectName(), true);
-    } else if (Self->hasPreshowedSkill(_m_skill) && _m_state == QSanButton::S_STATE_DISABLED
+        ClientInstance->preshow(_m_skill->objectName(), true, head);
+    } else if (Self->hasPreshowedSkill(_m_skill, head) && _m_state == QSanButton::S_STATE_DISABLED
         && _m_skill->canPreshow() && !Self->hasShownSkill(_m_skill)) {
         setState(QSanButton::S_STATE_CANPRESHOW);
-        ClientInstance->preshow(_m_skill->objectName(), false);
+        ClientInstance->preshow(_m_skill->objectName(), false, head);
     } else {
         if ((_m_style == S_STYLE_TOGGLE && isDown() && _m_emitActivateSignal) || _m_style == S_STYLE_PUSH) {
             emit skill_activated();
@@ -364,9 +365,10 @@ void QSanSkillButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void QSanSkillButton::setEnabled(bool enabled)
 {
+    bool head = objectName() == "left";
     if (!enabled && _m_skill->canPreshow()
         && (!Self->hasShownSkill(_m_skill) || Self->hasFlag("hiding"))) {
-        setState(Self->hasPreshowedSkill(_m_skill) ? S_STATE_DISABLED : S_STATE_CANPRESHOW);
+        setState(Self->hasPreshowedSkill(_m_skill, head) ? S_STATE_DISABLED : S_STATE_CANPRESHOW);
     } else {
         QSanButton::setEnabled(enabled);
     }

@@ -1842,11 +1842,11 @@ void Player::setGeneral2Showed(bool showed)
     emit deputy_state_changed();
 }
 
-void Player::setSkillPreshowed(const QString &skill, bool preshowed)
+void Player::setSkillPreshowed(const QString &skill, bool preshowed, bool head)
 {
-    if (head_skills.contains(skill))
+    if (head && head_skills.contains(skill))
         head_skills[skill] = preshowed;
-    else if (deputy_skills.contains(skill))
+    else if (!head && deputy_skills.contains(skill))
         deputy_skills[skill] = preshowed;
 }
 
@@ -1866,14 +1866,17 @@ void Player::setSkillsPreshowed(const QString &flags, bool preshowed)
     }
 }
 
-bool Player::hasPreshowedSkill(const QString &name) const
+bool Player::hasPreshowedSkill(const QString &name, bool head) const
 {
-    return head_skills.value(name, false) || deputy_skills.value(name, false);
+    if (head)
+        return head_skills.value(name, false);
+    else
+        return deputy_skills.value(name, false);
 }
 
-bool Player::hasPreshowedSkill(const Skill *skill) const
+bool Player::hasPreshowedSkill(const Skill *skill, bool head) const
 {
-    return hasPreshowedSkill(skill->objectName());
+    return hasPreshowedSkill(skill->objectName(), head);
 }
 
 bool Player::isHidden(const bool &head_general) const
@@ -1882,7 +1885,7 @@ bool Player::isHidden(const bool &head_general) const
     const QList<const Skill *> skills = head_general ? getHeadSkillList() : getDeputySkillList();
     int count = 0;
     foreach (const Skill *skill, skills) {
-        if (skill->canPreshow() && hasPreshowedSkill(skill->objectName()))
+        if (skill->canPreshow() && hasPreshowedSkill(skill->objectName(), head_general))
             return false;
         else if (!skill->canPreshow())
             ++count;

@@ -3163,12 +3163,13 @@ void Room::processRequestPreshow(ServerPlayer *player, const QVariant &arg)
         return;
 
     JsonArray args = arg.value<JsonArray>();
-    if (args.size() != 2 || !JsonUtils::isString(args[0]) || !JsonUtils::isBool(args[1])) return;
+    if (args.size() != 3 || !JsonUtils::isString(args[0]) || !JsonUtils::isBool(args[1]) || !JsonUtils::isBool(args[2])) return;
     player->acquireLock(ServerPlayer::SEMA_MUTEX);
 
     const QString skill_name = args[0].toString();
     const bool isPreshowed = args[1].toBool();
-    player->setSkillPreshowed(skill_name, isPreshowed);
+    const bool head = args[2].toBool();
+    player->setSkillPreshowed(skill_name, isPreshowed, head);
 
     player->releaseLock(ServerPlayer::SEMA_MUTEX);
 }
