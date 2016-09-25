@@ -375,7 +375,7 @@ public:
     QPixmap getCardAvatarPixmap(const QString &generalName) const;
     QPixmap getGeneralPixmap(const QString &generalName, GeneralIconSize size, const int skinId = 0) const;
     QString getPlayerAudioEffectPath(const QString &eventName, bool isMale, int index = -1) const;
-    QString getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index = -1, const Player *player = NULL, const QString &general_name = QString()) const;
+    QString getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index = -1, const Player *player = NULL, const QString &postion = QString()) const;
     QPixmap getProgressBarPixmap(int percentile) const;
     QPixmap getCardTinyPixmap(const QString &card_name) const;
 

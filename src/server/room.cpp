@@ -5232,7 +5232,7 @@ void Room::broadcastSkillInvoke(const QString &skill_name, const QString &catego
     if (who != NULL) {
         args << who->objectName();
         if (!position_copy.isEmpty())
-            args << (position_copy == "left" ? who->getActualGeneral1Name() : who->getActualGeneral2Name());
+            args << position_copy;
     }
     doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }

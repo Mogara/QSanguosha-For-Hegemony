@@ -441,7 +441,7 @@ QPixmap QSanRoomSkin::getGeneralPixmap(const QString &generalName, GeneralIconSi
     return getPixmap(key, name, id, true);
 }
 
-QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index, const Player *player, const QString &general_name) const
+QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index, const Player *player, const QString &postion) const
 {
     QString fileName;
     QString key = QString(QSanRoomSkin::S_SKIN_KEY_PLAYER_AUDIO_EFFECT).arg(category).arg(eventName);
@@ -467,9 +467,11 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
         QString general;
         int skinId = 0;
         if (player != NULL) {
-            if (!general_name.isEmpty())
-                general = general_name;
-            else if ((player->inHeadSkills(eventName) || player->getActualGeneral1()->hasSkill(eventName)) && player->canShowGeneral("h")) {
+            if (!postion.isEmpty()) {
+                bool head = postion == "left";
+                general = head ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
+                skinId = head ? player->getHeadSkinId() : player->getDeputySkinId();
+            } else if ((player->inHeadSkills(eventName) || player->getActualGeneral1()->hasSkill(eventName)) && player->canShowGeneral("h")) {
                 general = player->getActualGeneral1Name();
                 skinId = player->getHeadSkinId();
             } else if ((player->inDeputySkills(eventName) || player->getActualGeneral2()->hasSkill(eventName)) && player->canShowGeneral("d")) {

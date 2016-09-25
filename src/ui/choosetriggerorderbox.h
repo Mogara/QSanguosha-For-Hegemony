@@ -59,6 +59,7 @@ private:
     TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skillStr, const int width);
     bool isPreferentialSkillOf(const TriggerOptionButton *other) const;
 
+    int getSkinId(const QString &playerName, const QString &generalName) const;
     QString getGeneralNameBySkill() const;
 
     QString m_skillStr;

@@ -271,6 +271,7 @@ public:
     virtual const Card *viewAs() const
     {
         FanjianCard *fj = new FanjianCard;
+        fj->setSkillName(objectName());
         fj->setShowSkill(objectName());
         return fj;
     }
