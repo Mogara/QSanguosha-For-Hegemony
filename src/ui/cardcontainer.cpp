@@ -248,12 +248,13 @@ void CardContainer::clear()
     }
 
     items.clear();
-    if (!items_stack.isEmpty()) {
+
+    if (!items_stack.isEmpty() && Sanguosha->currentRoomObject() != NULL) {
         items = items_stack.pop();
         bool retained = retained_stack.pop();
         fillCards();
         if (retained && confirm_button)
-            confirm_button->show();
+            addConfirmButton();
     } else {
         ids.clear();
         confirm_button->hide();
@@ -332,14 +333,15 @@ void CardContainer::addConfirmButton()
     confirm_button->show();
     if (!progressBar) {
         progressBar = new QSanCommandProgressBar();
-        progressBar->setMaximumWidth(boundingRect().width() - 10);
-        progressBar->setMaximumHeight(10);
-        progressBar->setTimerEnabled(true);
         progressBarItem = new QGraphicsProxyWidget(this);
-        progressBarItem->setWidget(progressBar);
-        progressBarItem->setPos(boundingRect().center().x() - progressBarItem->boundingRect().width() / 2, boundingRect().height() - 20);
-        connect(progressBar, &QSanCommandProgressBar::timedOut, this, &CardContainer::clear);
     }
+    progressBar->setMaximumWidth(boundingRect().width() - 10);
+    progressBar->setMaximumHeight(10);
+    progressBar->setTimerEnabled(true);
+    progressBarItem->setWidget(progressBar);
+    progressBarItem->setPos(boundingRect().center().x() - progressBarItem->boundingRect().width() / 2, boundingRect().height() - 20);
+    connect(progressBar, &QSanCommandProgressBar::timedOut, this, &CardContainer::clear);
+
     Countdown countdown;
     countdown.max = 10000;
     countdown.type = Countdown::S_COUNTDOWN_USE_SPECIFIED;
