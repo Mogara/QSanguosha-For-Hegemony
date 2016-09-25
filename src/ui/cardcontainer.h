@@ -25,8 +25,11 @@ class Button;
 
 #include "carditem.h"
 #include "genericcardcontainerui.h"
+#include "protocol.h"
 
 #include <QStack>
+
+class QSanCommandProgressBar;
 
 class CardContainer : public GenericCardContainer
 {
@@ -73,6 +76,8 @@ protected:
     int itemCount;
 
     static const int cardInterval = 3;
+    QGraphicsProxyWidget *progressBarItem;
+    QSanCommandProgressBar *progressBar;
 
 private:
     QList<CardItem *> items;

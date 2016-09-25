@@ -24,6 +24,7 @@
 #include "carditem.h"
 #include "timedprogressbar.h"
 #include "graphicsbox.h"
+#include "protocol.h"
 
 class Button;
 class QGraphicsDropShadowEffect;

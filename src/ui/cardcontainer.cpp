@@ -26,13 +26,16 @@
 #include "roomscene.h"
 #include "button.h"
 #include "graphicsbox.h"
+#include "timedprogressbar.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 
+using namespace QSanProtocol;
+
 CardContainer::CardContainer()
     : confirm_button(new Button(tr("confirm"), 0.6)),
-    scene_width(0), itemCount(0)
+    scene_width(0), itemCount(0), progressBar(NULL)
 {
     confirm_button->setParentItem(this);
     confirm_button->hide();
@@ -83,7 +86,7 @@ QRectF CardContainer::boundingRect() const
         width = (card_width + cardInterval) * ((itemCount + 1) / 2) - cardInterval + 50;
         one_row = false;
     }
-    int height = (one_row ? 1 : 2) * card_height + 90 + (one_row ? 0 : cardInterval);
+    int height = (one_row ? 1 : 2) * card_height + 90 + (one_row ? 0 : cardInterval) + 20;
 
     return QRectF(0, 0, width, height);
 }
@@ -153,7 +156,7 @@ void CardContainer::fillCards(const QList<int> &card_ids, const QList<int> &disa
         item->show();
         ids << item->getId();
     }
-    confirm_button->setPos(boundingRect().center().x() - confirm_button->boundingRect().width() / 2, boundingRect().height() - 40);
+    confirm_button->setPos(boundingRect().center().x() - confirm_button->boundingRect().width() / 2, boundingRect().height() - 60);
 }
 
 void CardContainer::fillGeneralCards(const QList<CardItem *> &card_item, const QList<CardItem *> &disabled_item)
@@ -232,6 +235,12 @@ bool CardContainer::retained()
 
 void CardContainer::clear()
 {
+    if (progressBar != NULL) {
+        progressBar->hide();
+        progressBar->deleteLater();
+        progressBar = NULL;
+    }
+
     foreach (CardItem *item, items) {
         item->hide();
         item->deleteLater();
@@ -321,6 +330,21 @@ void CardContainer::addConfirmButton()
         card->setFlag(ItemIsMovable, false);
 
     confirm_button->show();
+    if (!progressBar) {
+        progressBar = new QSanCommandProgressBar();
+        progressBar->setMaximumWidth(boundingRect().width() - 10);
+        progressBar->setMaximumHeight(10);
+        progressBar->setTimerEnabled(true);
+        progressBarItem = new QGraphicsProxyWidget(this);
+        progressBarItem->setWidget(progressBar);
+        progressBarItem->setPos(boundingRect().center().x() - progressBarItem->boundingRect().width() / 2, boundingRect().height() - 20);
+        connect(progressBar, &QSanCommandProgressBar::timedOut, this, &CardContainer::clear);
+    }
+    Countdown countdown;
+    countdown.max = 10000;
+    countdown.type = Countdown::S_COUNTDOWN_USE_SPECIFIED;
+    progressBar->setCountdown(countdown);
+    progressBar->show();
 }
 
 void CardContainer::grabItem()

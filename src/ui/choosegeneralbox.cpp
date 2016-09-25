@@ -33,6 +33,8 @@
 #include <QGraphicsProxyWidget>
 #include <QPushButton>
 
+using namespace QSanProtocol;
+
 GeneralCardItem::GeneralCardItem(const QString &generalName, const int skinId)
     : CardItem(generalName), hasCompanion(false)
 {
@@ -372,10 +374,10 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
     if (!view_only && !single_result)
         _initializeItems();
 
-    if (!view_only && ServerInfo.OperationTimeout != 0) {
+    if (view_only || ServerInfo.OperationTimeout != 0) {
         if (!progress_bar) {
             progress_bar = new QSanCommandProgressBar();
-            progress_bar->setMinimumWidth(200);
+            progress_bar->setMaximumWidth(boundingRect().width() - 10);
             progress_bar->setMaximumHeight(12);
             progress_bar->setTimerEnabled(true);
             progress_bar_item = new QGraphicsProxyWidget(this);
@@ -383,7 +385,13 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
             progress_bar_item->setPos(boundingRect().center().x() - progress_bar_item->boundingRect().width() / 2, boundingRect().height() - 20);
             connect(progress_bar, &QSanCommandProgressBar::timedOut, this, &ChooseGeneralBox::reply);
         }
-        progress_bar->setCountdown(QSanProtocol::S_COMMAND_CHOOSE_GENERAL);
+        if (view_only) {
+            Countdown countdown;
+            countdown.max = 10000;
+            countdown.type = Countdown::S_COUNTDOWN_USE_SPECIFIED;
+            progress_bar->setCountdown(countdown);
+        } else
+            progress_bar->setCountdown(QSanProtocol::S_COMMAND_CHOOSE_GENERAL);
         progress_bar->show();
     }
 }
@@ -518,6 +526,12 @@ void ChooseGeneralBox::_initializeItems()
 
 void ChooseGeneralBox::reply()
 {
+    if (progress_bar != NULL) {
+        progress_bar->hide();
+        progress_bar->deleteLater();
+        progress_bar = NULL;
+    }
+
     if (m_viewOnly)
         return clear();
 
@@ -526,11 +540,6 @@ void ChooseGeneralBox::reply()
         generals = selected.first()->objectName();
         if (selected.length() == 2)
             generals += ("+" + selected.last()->objectName());
-    }
-    if (progress_bar != NULL) {
-        progress_bar->hide();
-        progress_bar->deleteLater();
-        progress_bar = NULL;
     }
     ClientInstance->onPlayerChooseGeneral(generals);
 }
