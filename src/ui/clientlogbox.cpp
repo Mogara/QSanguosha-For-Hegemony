@@ -201,6 +201,10 @@ void ClientLogBox::appendLog(const QStringList &log_str)
 
 void ClientLogBox::append(const QString &text)
 {
-    QTextEdit::append(QString("<p style=\"margin:3px 2px; line-height:120%;\">%1</p>").arg(text));
+    QString text_copy = text;
+#ifdef Q_OS_ANDROID
+    text_copy = QString("<font size='20'>%1</font>").arg(text_copy);
+#endif
+    QTextEdit::append(QString("<p style=\"margin:3px 2px; line-height:120%;\">%1</p>").arg(text_copy));
 }
 

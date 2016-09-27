@@ -253,6 +253,12 @@ MainWindow::MainWindow(QWidget *parent)
     menuBar()->hide();
 #elif defined(Q_OS_ANDROID)
     ui->menuSumMenu->removeAction(ui->menuView->menuAction());
+    ui->menuSumMenu->removeAction(ui->menuDIY->menuAction());
+    ui->menuSumMenu->setStyleSheet("background-color: white; color: black;");
+    ui->menuGame->setStyleSheet("background-color: white; color: black;");
+    ui->menuOptions->setStyleSheet("background-color: white; color: black;");
+    ui->menuCheat->setStyleSheet("background-color: white; color: black;");
+    ui->menuHelp->setStyleSheet("background-color: white; color: black;");
 #endif
     repaintButtons();
 
@@ -417,9 +423,11 @@ void MainWindow::restoreFromConfig()
     move(Config.value("WindowPosition", QPoint(-8, -8)).toPoint());
     setWindowState((Qt::WindowStates) Config.value("WindowState", 0).toInt());
 
+#ifndef Q_OS_ANDROID
     QFont font;
     if (Config.UIFont != font)
         QApplication::setFont(Config.UIFont, "QTextEdit");
+#endif
 
     ui->actionEnable_Hotkey->setChecked(Config.EnableHotKey);
     ui->actionNever_nullify_my_trick->setChecked(Config.NeverNullifyMyTrick);

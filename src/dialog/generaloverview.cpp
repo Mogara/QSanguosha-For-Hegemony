@@ -68,7 +68,6 @@ GeneralSearch::GeneralSearch(GeneralOverview *parent)
 
     layout->addWidget(createInfoTab());
     layout->addLayout(createButtonLayout());
-
     connect(this, &GeneralSearch::search, parent, (void (GeneralOverview::*)(const SearchDetails &))(&GeneralOverview::startSearch));
 }
 
@@ -292,7 +291,10 @@ GeneralOverview *GeneralOverview::getInstance(QWidget *main_window)
 {
     if (Overview == NULL)
         Overview = new GeneralOverview(main_window);
-
+#if defined Q_OS_ANDROID
+    Overview->setMinimumSize(main_window->width(), main_window->height());
+    Overview->setStyleSheet("background-color: #F0FFF0; color: black;");
+#endif
     return Overview;
 }
 
@@ -300,6 +302,12 @@ GeneralOverview::GeneralOverview(QWidget *parent)
     : FlatDialog(parent, false), ui(new Ui::GeneralOverview), all_generals(NULL)
 {
     ui->setupUi(this);
+
+#ifdef Q_OS_ANDROID
+    //ui->skillTextEdit->setMinimumWidth(parent->width() / 5 * 2);
+    ui->skillTextEdit->setMaximumWidth(parent->width() / 3);
+#endif
+
     origin_window_title = windowTitle();
     connect(this, &GeneralOverview::windowTitleChanged, ui->titleLabel, &QLabel::setText);
     connect(ui->closeButton, &QPushButton::clicked, this, &GeneralOverview::reject);
@@ -321,7 +329,10 @@ GeneralOverview::GeneralOverview(QWidget *parent)
     connect(ui->changeHeroSkinButton, &QPushButton::clicked, this, &GeneralOverview::showNextSkin);
 
     general_search = new GeneralSearch(this);
+#ifndef Q_OS_ANDROID
+    ui->searchButton->hide();
     connect(ui->searchButton, &QPushButton::clicked, general_search, &GeneralSearch::show);
+#endif
     ui->returnButton->hide();
     connect(ui->returnButton, &QPushButton::clicked, this, &GeneralOverview::fillAllGenerals);
 
@@ -370,14 +381,21 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
     model->setParent(this);
 #if !defined(Q_OS_IOS)
     ui->tableView->setModel(model);
-
+#ifdef Q_OS_ANDROID
+    ui->tableView->setColumnWidth(0, 180);
+    ui->tableView->setColumnWidth(1, 120);
+    ui->tableView->setColumnWidth(2, 60);
+    ui->tableView->setColumnWidth(3, 60);
+    ui->tableView->setColumnWidth(4, 100);
+    ui->tableView->setColumnWidth(5, 100);
+#else
     ui->tableView->setColumnWidth(0, 80);
     ui->tableView->setColumnWidth(1, 95);
     ui->tableView->setColumnWidth(2, 40);
     ui->tableView->setColumnWidth(3, 50);
     ui->tableView->setColumnWidth(4, 60);
     ui->tableView->setColumnWidth(5, 85);
-
+#endif
     on_tableView_clicked(model->firstIndex());
 #else
     const QString str = "caocao";
@@ -666,7 +684,12 @@ void GeneralOverview::on_tableView_clicked(const QModelIndex &index)
         ui->companionsLineEdit->setText(tr("None"));
     else
         ui->companionsLineEdit->setText(companions_text);
-    ui->skillTextEdit->append(general->getSkillDescription(false, false, true));
+
+    QString skill_description = general->getSkillDescription(false, false, true);
+#ifdef Q_OS_ANDROID
+    skill_description = QString("<font size='4'>%1</font>").arg(skill_description);
+#endif
+    ui->skillTextEdit->append(skill_description);
 #endif
 }
 

@@ -26,6 +26,7 @@
 class QGroupBox;
 class QLineEdit;
 class QSpinBox;
+class QSlider;
 class QCheckBox;
 class QButtonGroup;
 class QAbstractButton;
@@ -112,6 +113,7 @@ private:
 
     QLineEdit *server_name_edit;
     QSpinBox *timeout_spinbox;
+    QSlider *timeout_slider;
     QCheckBox *nolimit_checkbox;
     QCheckBox *random_seat_checkbox;
     QCheckBox *enable_cheat_checkbox;
@@ -133,6 +135,8 @@ private:
     QSpinBox *ai_delay_spinbox;
     QCheckBox *ai_delay_altered_checkbox;
     QSpinBox *ai_delay_ad_spinbox;
+    QSlider *ai_deley_slider;
+    QSlider *ai_delay_ad_slider;
     QCheckBox *surrender_at_death_checkbox;
     QLabel *luck_card_label;
     QSpinBox *luck_card_spinbox;

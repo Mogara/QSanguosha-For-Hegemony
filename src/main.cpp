@@ -176,8 +176,13 @@ int main(int argc, char *argv[])
 
     showSplashMessage(QSplashScreen::tr("Loading user's configurations..."));
     Config.init();
-    if (!noGui)
-        qApp->setFont(Config.AppFont);
+    if (!noGui) {
+        QFont f = Config.AppFont;
+#ifdef Q_OS_ANDROID
+        f.setPointSize(24);
+#endif
+        qApp->setFont(f);
+    }
 
     if (qApp->arguments().contains("-server")) {
         Server *server = new Server(qApp);

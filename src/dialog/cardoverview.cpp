@@ -53,12 +53,20 @@ CardOverview::CardOverview(QWidget *parent)
 
     connect(this, &CardOverview::windowTitleChanged, ui->titleLabel, &QLabel::setText);
 
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     ui->tableWidget->setColumnWidth(0, 80);
     ui->tableWidget->setColumnWidth(1, 60);
     ui->tableWidget->setColumnWidth(2, 30);
     ui->tableWidget->setColumnWidth(3, 60);
     ui->tableWidget->setColumnWidth(4, 70);
+#endif
+#ifdef Q_OS_ANDROID
+    ui->tableWidget->setMaximumWidth(parent->width() * 2 / 3);
+    ui->tableWidget->setColumnWidth(0, 160);
+    ui->tableWidget->setColumnWidth(1, 100);
+    ui->tableWidget->setColumnWidth(2, 60);
+    ui->tableWidget->setColumnWidth(3, 120);
+    ui->tableWidget->setColumnWidth(4, 140);
 #endif
 
     connect(ui->getCardButton, &QPushButton::clicked, this, &CardOverview::askCard);
@@ -74,6 +82,10 @@ CardOverview::CardOverview(QWidget *parent)
     ui->tableWidget->verticalScrollBar()->setStyleSheet(style);
 #else
     ui->cardDescriptionBox->verticalScrollBar()->setStyleSheet(style);
+#endif
+#if defined Q_OS_ANDROID
+    setMinimumSize(parent->width(), parent->height());
+    setStyleSheet("background-color: #F0FFF0; color: black;");
 #endif
 }
 

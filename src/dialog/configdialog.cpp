@@ -40,6 +40,12 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     : FlatDialog(parent, false), ui(new Ui::ConfigDialog)
 {
     ui->setupUi(this);
+#ifdef Q_OS_ANDROID
+    setMinimumSize(parent->width(), parent->height());
+    setStyleSheet("background-color: #F0FFF0; color: black;");
+    delete ui->toolTipBackgroundColorButton;
+    delete ui->fontSetupGroupBox;
+#endif
 
     connect(this, &ConfigDialog::windowTitleChanged, ui->windowTitle, &QLabel::setText);
 
@@ -49,12 +55,12 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     ui->tableBgPathLineEdit->setText(Config.TableBgImage);
 
     QFont font = Config.AppFont;
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     showFont(ui->appFontLineEdit, font);
 #endif
 
     font = Config.UIFont;
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     showFont(ui->textEditFontLineEdit, font);
 #endif
 
@@ -63,7 +69,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     QColor color = Config.TextEditColor;
     int aver = (color.red() + color.green() + color.blue()) / 3;
     palette.setColor(QPalette::Base, aver >= 208 ? Qt::black : Qt::white);
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     ui->textEditFontLineEdit->setPalette(palette);
 #endif
 
@@ -180,7 +186,7 @@ void ConfigDialog::setAppFont(const QVariant &font)
 {
     QFont newFont = font.value<QFont>();
     Config.AppFont = newFont;
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     showFont(ui->appFontLineEdit, newFont);
 #endif
 
@@ -191,7 +197,7 @@ void ConfigDialog::setTextEditFont(const QVariant &font)
 {
     QFont newFont = font.value<QFont>();
     Config.UIFont = newFont;
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     showFont(ui->textEditFontLineEdit, newFont);
 #endif
     QApplication::setFont(newFont, "QTextEdit");

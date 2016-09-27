@@ -6171,11 +6171,12 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
         }
 
         bool isTrustAI = zhuge->getState() == "trust";
+        if (isTrustAI) {
+            stepArgs[3] = JsonUtils::toJsonArray(upcards);
+            stepArgs[4] = JsonUtils::toJsonArray(downcards);
+            zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);
+        }
         if (success && visible) {
-            if (isTrustAI) {
-                stepArgs[1] = QVariant();
-                zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);
-            }
             thread->delay();
             thread->delay();
 

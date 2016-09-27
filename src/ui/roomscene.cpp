@@ -488,10 +488,10 @@ void RoomScene::handleGameEvent(const QVariant &args)
                 QString playerName = arg[4].toString();
                 player = ClientInstance->getPlayer(playerName);
             }
-            QString general;
+            QString postion;
             if (player && arg.size() >= 6 && JsonUtils::isString(arg[5]))
-                general = arg[5].toString();
-            Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(skillName, category, type, player, general));
+                postion = arg[5].toString();
+            Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(skillName, category, type, player, postion));
             break;
         }
         case S_GAME_EVENT_JUDGE_RESULT: {
@@ -713,12 +713,25 @@ QGraphicsItem *RoomScene::createDashboardButtons()
     QGraphicsItem *widget = new QGraphicsPixmapItem(G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_DASHBOARD_BUTTON_SET_BG)
         .scaled(G_DASHBOARD_LAYOUT.m_buttonSetSize));
 
+#ifdef Q_OS_ANDROID
+    ok_button = new QSanButton("platter", "confirm_android", widget);
+    ok_button->setRect(QRect(-650, -100, 150, 80));
+
+    cancel_button = new QSanButton("platter", "cancel_android", widget);
+    cancel_button->setRect(QRect(-450, -100, 150, 80));
+
+    discard_button = new QSanButton("platter", "discard_android", widget);
+    QRect r;
+    r.setSize(G_DASHBOARD_LAYOUT.m_buttonSetSize);
+    discard_button->setRect(r);
+#else
     ok_button = new QSanButton("platter", "confirm", widget);
     ok_button->setRect(G_DASHBOARD_LAYOUT.m_confirmButtonArea);
     cancel_button = new QSanButton("platter", "cancel", widget);
     cancel_button->setRect(G_DASHBOARD_LAYOUT.m_cancelButtonArea);
     discard_button = new QSanButton("platter", "discard", widget);
     discard_button->setRect(G_DASHBOARD_LAYOUT.m_discardButtonArea);
+#endif
     connect(ok_button, &QSanButton::clicked, this, &RoomScene::doOkButton);
     connect(cancel_button, &QSanButton::clicked, this, &RoomScene::doCancelButton);
     connect(discard_button, &QSanButton::clicked, this, &RoomScene::doDiscardButton);

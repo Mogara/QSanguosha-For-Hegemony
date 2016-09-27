@@ -73,6 +73,9 @@ ServerDialog::ServerDialog(QWidget *parent)
     //change by SE for ios
 #ifdef Q_OS_IOS
     setMinimumSize(480, 320);
+#elif defined Q_OS_ANDROID
+    setMinimumSize(parent->width(), parent->height());
+    setStyleSheet("background-color: #F0FFF0; color: black;");
 #else
     setMinimumSize(574, 380);
 #endif
@@ -84,9 +87,9 @@ QWidget *ServerDialog::createBasicTab()
     server_name_edit->setText(Config.ServerName);
 
     timeout_spinbox = new QSpinBox;
-    timeout_spinbox->setMinimum(5);
-    timeout_spinbox->setMaximum(60);
+    timeout_spinbox->setRange(5, 60);
     timeout_spinbox->setValue(Config.OperationTimeout);
+
     timeout_spinbox->setSuffix(tr(" seconds"));
     nolimit_checkbox = new QCheckBox(tr("No limit"));
     nolimit_checkbox->setChecked(Config.OperationNoLimit);
@@ -112,8 +115,17 @@ QWidget *ServerDialog::createBasicTab()
     QFormLayout *form_layout = new QFormLayout;
     form_layout->addRow(tr("Server name"), server_name_edit);
 
+
     QHBoxLayout *lay = new QHBoxLayout;
     lay->addWidget(timeout_spinbox);
+#ifdef Q_OS_ANDROID
+    timeout_slider = new QSlider(Qt::Horizontal);
+    timeout_slider->setRange(5, 60);
+    timeout_slider->setValue(Config.OperationTimeout);
+    QObject::connect(timeout_slider, SIGNAL(valueChanged(int)), timeout_spinbox, SLOT(setValue(int)));
+    QObject::connect(timeout_spinbox, SIGNAL(valueChanged(int)), timeout_slider, SLOT(setValue(int)));
+    lay->addWidget(timeout_slider);
+#endif
     lay->addWidget(nolimit_checkbox);
     lay->addWidget(edit_button);
     form_layout->addRow(tr("Operation timeout"), lay);
@@ -346,6 +358,7 @@ QWidget *ServerDialog::createMiscTab()
     ai_delay_spinbox = new QSpinBox;
     ai_delay_spinbox->setMinimum(0);
     ai_delay_spinbox->setMaximum(5000);
+    ai_delay_spinbox->setRange(0, 5000);
     ai_delay_spinbox->setValue(Config.OriginAIDelay);
     ai_delay_spinbox->setSuffix(tr(" millisecond"));
     ai_delay_spinbox->setDisabled(Config.ForbidAddingRobot);
@@ -366,10 +379,28 @@ QWidget *ServerDialog::createMiscTab()
     connect(ai_delay_altered_checkbox, &QCheckBox::toggled, ai_delay_ad_spinbox, &QSpinBox::setEnabled);
     connect(forbid_adding_robot_checkbox, &QCheckBox::toggled, ai_delay_ad_spinbox, &QSpinBox::setDisabled);
 
+#ifdef Q_OS_ANDROID
+    ai_deley_slider = new QSlider(Qt::Horizontal);
+    ai_deley_slider->setRange(0, 5000);
+    ai_deley_slider->setValue(Config.OriginAIDelay);
+    QObject::connect(ai_deley_slider, SIGNAL(valueChanged(int)), ai_delay_spinbox, SLOT(setValue(int)));
+    QObject::connect(ai_delay_spinbox, SIGNAL(valueChanged(int)), ai_deley_slider, SLOT(setValue(int)));
+    layout->addWidget(ai_deley_slider);
+#endif
+
     layout->addLayout(HLay(forbid_adding_robot_checkbox, ai_chat_checkbox));
     layout->addLayout(HLay(new QLabel(tr("AI delay")), ai_delay_spinbox));
     layout->addWidget(ai_delay_altered_checkbox);
     layout->addLayout(HLay(new QLabel(tr("AI delay After Death")), ai_delay_ad_spinbox));
+
+#ifdef Q_OS_ANDROID
+    ai_delay_ad_slider = new QSlider(Qt::Horizontal);
+    ai_delay_ad_slider->setRange(0, 5000);
+    ai_delay_ad_slider->setValue(Config.AlterAIDelayAD);
+    QObject::connect(ai_delay_ad_slider, SIGNAL(valueChanged(int)), ai_delay_ad_spinbox, SLOT(setValue(int)));
+    QObject::connect(ai_delay_ad_spinbox, SIGNAL(valueChanged(int)), ai_delay_ad_slider, SLOT(setValue(int)));
+    layout->addWidget(ai_delay_ad_slider);
+#endif
 
     ai_groupbox->setLayout(layout);
 #endif

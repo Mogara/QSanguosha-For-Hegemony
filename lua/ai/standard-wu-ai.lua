@@ -32,8 +32,10 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 	local unlimited
 	if self.player:hasTreasure("Luminouspearl") and self.player:ownSkill("zhiheng") then unlimited = true end
 	local show = "&zhiheng"
-	if self.player:hasTreasure("Luminouspearl") and not self.player:ownSkill("zhiheng") then show = "" end
-	if self.player:hasTreasure("Luminouspearl") and ((self.player:inHeadSkills("zhiheng") and not self.player:hasShownGeneral(true)) or (self.player:inDeputySkills("zhiheng") and not self.player:hasShownGeneral2())) then show = "" end
+	if not self.player:ownSkill("zhiheng") then show = "" end
+	local skill = sgs.Sanguosha:getSkill("zhiheng")
+	if self.player:hasTreasure("Luminouspearl") and ((self.player:getHeadSkillList(true, false, false):contains(skill) and not self.player:hasShownGeneral1())
+		or (self.player:getDeputySkillList(true, false, false):contains(skill) and not self.player:hasShownGeneral2())) then show = "" end
 
 	if self:getCardsNum("Crossbow", 'he') > 0 and #self.enemies > 0 and self.player:getCardCount(true) >= 4 then
 		local zcards = sgs.QList2Table(self.player:getCards("he"))

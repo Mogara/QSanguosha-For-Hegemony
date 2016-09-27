@@ -376,6 +376,10 @@ void QSanSkillButton::setEnabled(bool enabled)
 
 void QSanInvokeSkillButton::_repaint()
 {
+    setSize(G_ROOM_SKIN.getSkillButtonPixmap(S_STATE_DISABLED, _m_skillType, _m_enumWidth).size());
+#ifdef Q_OS_ANDROID
+    setScale(2);
+#endif
     for (int i = 0; i < (int)S_NUM_BUTTON_STATES; i++) {
         _m_bgPixmap[i] = G_ROOM_SKIN.getSkillButtonPixmap((ButtonState)i, _m_skillType, _m_enumWidth);
         if (_m_bgPixmap[i].isNull()) continue;
@@ -403,7 +407,6 @@ void QSanInvokeSkillButton::_repaint()
         if (_m_skillType == S_SKILL_ATTACHEDLORD) skill_rect.setHeight(skill_rect.height() + 10);
         font.paintText(&painter, skill_rect, Qt::AlignCenter, skillName);
     }
-    setSize(_m_bgPixmap[0].size());
 }
 
 void QSanInvokeSkillButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
@@ -491,8 +494,18 @@ void QSanInvokeSkillDock::update()
             regular_buttons << btn;
     }
     int lordskillNum = lordskill_buttons.length();
-
     int numButtons = regular_buttons.length();
+
+#ifdef Q_OS_ANDROID
+    int rows = numButtons;
+    int rowH = G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() * 2;
+    for (int i = 0; i < rows; i++) {
+        int rowTop = -rowH - rowH * (rows - i - 1);
+        QSanInvokeSkillButton *button = regular_buttons[i];
+        button->setButtonWidth(QSanInvokeSkillButton::S_WIDTH_MED);
+        button->setPos(0, rowTop);
+    }
+#else
     int rows = (numButtons == 0) ? 0 : (numButtons - 1) / 2 + 1;
     int rowH = G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height();
     int *btnNum = new int[rows + lordskillNum + 2 + 1]; // we allocate one more row in case we need it.
@@ -522,15 +535,20 @@ void QSanInvokeSkillDock::update()
             button->setPos(btnWidth * j + adj_value, rowTop);
         }
     }
+    delete[] btnNum;
+#endif
     int m1 = 0;
+#ifdef Q_OS_ANDROID
+    int rowTop1 = G_DASHBOARD_LAYOUT.m_confirmButtonArea.top() - G_DASHBOARD_LAYOUT.m_confirmButtonArea.height() - (G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() * 2);
+#else
     int rowTop1 = G_DASHBOARD_LAYOUT.m_confirmButtonArea.top() - G_DASHBOARD_LAYOUT.m_confirmButtonArea.height() - G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height();
+#endif
     int gh = G_DASHBOARD_LAYOUT.m_avatarArea.width() * 2;
     for (int i = 1; i <= lordskillNum; i++) {
         QSanInvokeSkillButton *button = lordskill_buttons[m1++];
         button->setButtonWidth((QSanInvokeSkillButton::SkillButtonWidth)(0));
         button->setPos(-gh - _m_width*i, rowTop1);
     }
-    delete[] btnNum;
     QGraphicsObject::update();
 }
 

@@ -320,6 +320,9 @@ void CardItem::setTransferable(const bool transferable)
     _transferable = transferable;
     if (transferable && _transferButton == NULL) {
         _transferButton = new TransferButton(this);
+#ifdef Q_OS_ANDROID
+        _transferButton->setScale(2);
+#endif
         _transferButton->setPos(0, -20);
         _transferButton->setEnabled(false);
         _transferButton->hide();
