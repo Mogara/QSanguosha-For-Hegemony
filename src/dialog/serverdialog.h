@@ -71,7 +71,7 @@ public:
 
 private:
     QWidget *createBasicTab();
-#ifdef Q_OS_IOS
+#if ((defined Q_OS_IOS) || (defined Q_OS_ANDROID))
     QWidget *createGameModeTab();
     QWidget *createAiTab();
 #endif

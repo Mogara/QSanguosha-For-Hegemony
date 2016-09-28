@@ -35,6 +35,7 @@
 #include <QRadioButton>
 #include <QBoxLayout>
 #include <QScrollBar>
+#include <QDesktopWidget>
 
 static const int ShrinkWidth = 317;
 static const int ExpandWidth = 619;
@@ -42,8 +43,14 @@ static const int ExpandWidth = 619;
 ConnectionDialog::ConnectionDialog(QWidget *parent)
     : FlatDialog(parent, false), ui(new Ui::ConnectionDialog)
 {
+    QDesktopWidget* desktop = qApp->desktop();
+#ifdef Q_OS_ANDROID
+    QFont f = this->font();
+    f.setPointSize(3);
+    setFont(f);
+#endif
     ui->setupUi(this);
-
+    //QMetaObject::connect(ui->cancelButton, SIGNAL(QPushButton::click()), this, SLOT(reject());)
     ui->nameLineEdit->setText(Config.UserName.left(8));
 
     ui->hostComboBox->addItems(Config.HistoryIPs);
@@ -61,7 +68,37 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     QScrollBar *bar = ui->avatarList->verticalScrollBar();
     bar->setStyleSheet(StyleHelper::styleSheetOfScrollBar());
 
+#ifdef Q_OS_ANDROID
+    setMinimumSize(desktop->width(), desktop->height());
+    setStyleSheet("background-color: #F0FFF0; color: black;");
+    ui->groupBox->setMinimumSize(desktop->width() / 2, desktop->height() / 5 * 4);
+    ui->layoutWidget1->setGeometry(QRect(10, 17, desktop->width() / 2, desktop->height() / 3 -10));
+    ui->nameLineEdit->setGeometry(QRect(100, 30, 500, 100));
+    ui->hostComboBox->setGeometry(QRect(100, 150, 500, 100));
+    ui->nameLabel->setGeometry(QRect(10, 30, 130, 20));
+    ui->hostLabel->setGeometry(QRect(10, 150, 130, 20));
+/*
+    delete ui->formLayout;
+    ui->formLayout = new QFormLayout(ui->layoutWidget1);
+    ui->formLayout->setObjectName(QStringLiteral("formLayout"));
+    ui->formLayout->setContentsMargins(0, 0, 0, 0);
+    ui->formLayout->setWidget(0, QFormLayout::LabelRole, ui->nameLabel);
+    ui->formLayout->setWidget(0, QFormLayout::FieldRole, ui->nameLineEdit);
+    ui->formLayout->setWidget(1, QFormLayout::LabelRole, ui->hostLabel);
+    ui->formLayout->setWidget(1, QFormLayout::FieldRole, ui->hostComboBox);
+*/
+    ui->avatarLabel->setGeometry(QRect(20, desktop->height() / 3, 42, 80));
+    ui->avatarPixmap->setGeometry(QRect(15, desktop->height() / 3 + 80, 114, 136));
+    ui->changeAvatarButton->setGeometry(QRect(140, desktop->height() / 3 + 280, 400, 100));
+    ui->detectLANButton->setGeometry(QRect(140, desktop->height() / 3 + 80, 400, 100));
+    ui->clearHistoryButton->setGeometry(QRect(140, desktop->height() / 3 + 180, 400, 100));
+    ui->layoutWidget2->setGeometry(QRect(10, desktop->height() / 5 * 4 + 40, desktop->width(), 120));
+    ui->reconnectionCheckBox->setGeometry(QRect(20, desktop->height() / 5 * 4 + 40, desktop->width() / 3 - 20, 60));
+    ui->connectButton->setGeometry(QRect(desktop->width() / 3, desktop->height() / 5 * 4 + 40, 400, 100));
+    ui->cancelButton->setGeometry(QRect(desktop->width() / 3 + 450, desktop->height() / 5 * 4 + 40, 400, 100));
+#else
     resize(ShrinkWidth, height());
+#endif
 
     ui->avatarList->hide();
 }
@@ -123,13 +160,17 @@ void ConnectionDialog::on_changeAvatarButton_clicked()
             on_avatarList_doubleClicked(index);
         } else {
             hideAvatarList();
+#ifndef Q_OS_ANDROID
             resize(ShrinkWidth, height());
+#endif
         }
     } else {
         showAvatarList();
         //Avoid violating the constraints
         //setFixedWidth(ExpandWidth);
+#ifndef Q_OS_ANDROID
         resize(ExpandWidth, height());
+#endif
     }
 }
 
@@ -141,8 +182,9 @@ void ConnectionDialog::on_avatarList_doubleClicked(const QModelIndex &index)
     Config.UserAvatar = general_name;
     Config.setValue("UserAvatar", general_name);
     hideAvatarList();
-
+#ifndef Q_OS_ANDROID
     resize(ShrinkWidth, height());
+#endif
 }
 
 void ConnectionDialog::on_clearHistoryButton_clicked()

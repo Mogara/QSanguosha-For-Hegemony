@@ -39,6 +39,7 @@
 #include <QRadioButton>
 #include <QHostInfo>
 #include <QComboBox>
+class QFont;
 
 static QLayout *HLay(QWidget *left, QWidget *right)
 {
@@ -55,14 +56,14 @@ ServerDialog::ServerDialog(QWidget *parent)
 
     QTabWidget *tab_widget = new QTabWidget;
     //changed by SE for ios
-#ifdef Q_OS_IOS
+#if ((defined Q_OS_IOS) || (defined Q_OS_ANDROID))
     tab_widget->addTab(createGameModeTab(), tr("Game mode"));
 #endif
     tab_widget->addTab(createBasicTab(), tr("Basic"));
     tab_widget->addTab(createPackageTab(), tr("Game Pacakge Selection"));
     tab_widget->addTab(createAdvancedTab(), tr("Advanced"));
     tab_widget->addTab(createConversionTab(), tr("Conversion Selection"));
-#ifdef Q_OS_IOS
+#if ((defined Q_OS_IOS) || (defined Q_OS_ANDROID))
     tab_widget->addTab(createAiTab(), tr("AI"));
 #endif
     tab_widget->addTab(createMiscTab(), tr("Miscellaneous"));
@@ -119,6 +120,7 @@ QWidget *ServerDialog::createBasicTab()
     QHBoxLayout *lay = new QHBoxLayout;
     lay->addWidget(timeout_spinbox);
 #ifdef Q_OS_ANDROID
+    timeout_spinbox->setMinimumHeight(80);
     timeout_slider = new QSlider(Qt::Horizontal);
     timeout_slider->setRange(5, 60);
     timeout_slider->setValue(Config.OperationTimeout);
@@ -133,7 +135,9 @@ QWidget *ServerDialog::createBasicTab()
     form_layout->addRow(HLay(pile_swapping_label, pile_swapping_spinbox));
     form_layout->addRow(HLay(hegemony_maxchoice_label, hegemony_maxchoice_spinbox));
 #else
+#ifndef Q_OS_ANDROID
     form_layout->addRow(createGameModeBox());
+#endif
 #endif
 
 
@@ -144,7 +148,7 @@ QWidget *ServerDialog::createBasicTab()
     return widget;
 }
 
-#ifdef Q_OS_IOS
+#if ((defined Q_OS_IOS) || (defined Q_OS_ANDROID))
 QWidget *ServerDialog::createGameModeTab()
 {
     QFormLayout *form_layout = new QFormLayout;
@@ -185,6 +189,11 @@ QWidget *ServerDialog::createPackageTab()
         const QString &extension = package->objectName();
         bool forbid_package = Config.value("ForbidPackages").toStringList().contains(extension);
         QCheckBox *checkbox = new QCheckBox;
+#ifdef Q_OS_ANDROID
+        QFont f = checkbox->font();
+        f.setPointSize(6);
+        checkbox->setFont(f);
+#endif
         checkbox->setObjectName(extension);
         checkbox->setText(Sanguosha->translate(extension));
         checkbox->setChecked(!ban_packages.contains(extension) && !forbid_package);
@@ -250,11 +259,17 @@ QWidget *ServerDialog::createAdvancedTab()
     pile_swapping_label = new QLabel(tr("Pile-swapping limitation"));
     pile_swapping_label->setToolTip(tr("<font color=%1>-1 means no limitations</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
     pile_swapping_spinbox = new QSpinBox;
+#ifdef Q_OS_ANDROID
+    pile_swapping_spinbox->setMinimumHeight(80);
+#endif
     pile_swapping_spinbox->setRange(-1, 15);
     pile_swapping_spinbox->setValue(Config.value("PileSwappingLimitation", 5).toInt());
 
     hegemony_maxchoice_label = new QLabel(tr("Upperlimit for hegemony"));
     hegemony_maxchoice_spinbox = new QSpinBox;
+#ifdef Q_OS_ANDROID
+    hegemony_maxchoice_spinbox->setMinimumHeight(80);
+#endif
     hegemony_maxchoice_spinbox->setRange(5, 7); //wait for a new extension
     hegemony_maxchoice_spinbox->setValue(Config.value("HegemonyMaxChoice", 7).toInt());
 #endif
@@ -277,11 +292,12 @@ QWidget *ServerDialog::createAdvancedTab()
     layout->addLayout(HLay(pile_swapping_label, pile_swapping_spinbox));
     layout->addLayout(HLay(hegemony_maxchoice_label, hegemony_maxchoice_spinbox));
 #endif
+#ifndef Q_OS_ANDROID
     layout->addLayout(HLay(new QLabel(tr("Address")), address_edit));
     layout->addWidget(detect_button);
     layout->addLayout(HLay(new QLabel(tr("Port")), port_edit));
     layout->addStretch();
-
+#endif
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
 
@@ -340,9 +356,15 @@ QWidget *ServerDialog::createMiscTab()
     luck_card_spinbox->setRange(0, 3);
     luck_card_spinbox->setValue(Config.LuckCardLimitation);
 
+#ifdef Q_OS_ANDROID
+    game_start_spinbox->setMinimumHeight(80);
+    nullification_spinbox->setMinimumHeight(80);
+    luck_card_spinbox->setMinimumHeight(80);
+#endif
+
     reward_the_first_showing_player_checkbox = new QCheckBox(tr("The first player to show general can draw 2 cards"));
     reward_the_first_showing_player_checkbox->setChecked(Config.RewardTheFirstShowingPlayer);
-#if !defined(Q_OS_IOS)
+#if !defined(Q_OS_IOS) && !defined(Q_OS_ANDROID)
     QGroupBox *ai_groupbox = new QGroupBox(tr("Artificial intelligence"));
     ai_groupbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QVBoxLayout *layout = new QVBoxLayout;
@@ -379,28 +401,10 @@ QWidget *ServerDialog::createMiscTab()
     connect(ai_delay_altered_checkbox, &QCheckBox::toggled, ai_delay_ad_spinbox, &QSpinBox::setEnabled);
     connect(forbid_adding_robot_checkbox, &QCheckBox::toggled, ai_delay_ad_spinbox, &QSpinBox::setDisabled);
 
-#ifdef Q_OS_ANDROID
-    ai_deley_slider = new QSlider(Qt::Horizontal);
-    ai_deley_slider->setRange(0, 5000);
-    ai_deley_slider->setValue(Config.OriginAIDelay);
-    QObject::connect(ai_deley_slider, SIGNAL(valueChanged(int)), ai_delay_spinbox, SLOT(setValue(int)));
-    QObject::connect(ai_delay_spinbox, SIGNAL(valueChanged(int)), ai_deley_slider, SLOT(setValue(int)));
-    layout->addWidget(ai_deley_slider);
-#endif
-
     layout->addLayout(HLay(forbid_adding_robot_checkbox, ai_chat_checkbox));
     layout->addLayout(HLay(new QLabel(tr("AI delay")), ai_delay_spinbox));
     layout->addWidget(ai_delay_altered_checkbox);
     layout->addLayout(HLay(new QLabel(tr("AI delay After Death")), ai_delay_ad_spinbox));
-
-#ifdef Q_OS_ANDROID
-    ai_delay_ad_slider = new QSlider(Qt::Horizontal);
-    ai_delay_ad_slider->setRange(0, 5000);
-    ai_delay_ad_slider->setValue(Config.AlterAIDelayAD);
-    QObject::connect(ai_delay_ad_slider, SIGNAL(valueChanged(int)), ai_delay_ad_spinbox, SLOT(setValue(int)));
-    QObject::connect(ai_delay_ad_spinbox, SIGNAL(valueChanged(int)), ai_delay_ad_slider, SLOT(setValue(int)));
-    layout->addWidget(ai_delay_ad_slider);
-#endif
 
     ai_groupbox->setLayout(layout);
 #endif
@@ -410,7 +414,7 @@ QWidget *ServerDialog::createMiscTab()
     tablayout->addLayout(HLay(minimize_dialog_checkbox, surrender_at_death_checkbox));
     tablayout->addLayout(HLay(luck_card_label, luck_card_spinbox));
     tablayout->addWidget(reward_the_first_showing_player_checkbox);
-#if !defined(Q_OS_IOS)
+#if !defined(Q_OS_IOS) && !defined(Q_OS_ANDROID)
     tablayout->addWidget(ai_groupbox);
 #endif
     tablayout->addStretch();
@@ -420,7 +424,7 @@ QWidget *ServerDialog::createMiscTab()
     return widget;
 }
 
-#ifdef Q_OS_IOS
+#if ((defined Q_OS_IOS) || (defined Q_OS_ANDROID))
 QWidget *ServerDialog::createAiTab()
 {
     QVBoxLayout *layout = new QVBoxLayout;
@@ -435,11 +439,18 @@ QWidget *ServerDialog::createAiTab()
 
     ai_delay_spinbox = new QSpinBox;
     ai_delay_spinbox->setMinimum(0);
+    ai_delay_spinbox->setMinimumHeight(80);
     ai_delay_spinbox->setMaximum(5000);
     ai_delay_spinbox->setValue(Config.OriginAIDelay);
     ai_delay_spinbox->setSuffix(tr(" millisecond"));
     ai_delay_spinbox->setDisabled(Config.ForbidAddingRobot);
     connect(forbid_adding_robot_checkbox, &QCheckBox::toggled, ai_delay_spinbox, &QSpinBox::setDisabled);
+
+    ai_deley_slider = new QSlider(Qt::Horizontal);
+    ai_deley_slider->setRange(0, 5000);
+    ai_deley_slider->setValue(Config.OriginAIDelay);
+    QObject::connect(ai_deley_slider, SIGNAL(valueChanged(int)), ai_delay_spinbox, SLOT(setValue(int)));
+    QObject::connect(ai_delay_spinbox, SIGNAL(valueChanged(int)), ai_deley_slider, SLOT(setValue(int)));
 
     ai_delay_altered_checkbox = new QCheckBox(tr("Alter AI Delay After Death"));
     ai_delay_altered_checkbox->setChecked(Config.AlterAIDelayAD);
@@ -447,6 +458,7 @@ QWidget *ServerDialog::createAiTab()
     connect(forbid_adding_robot_checkbox, &QCheckBox::toggled, ai_delay_altered_checkbox, &QCheckBox::setDisabled);
 
     ai_delay_ad_spinbox = new QSpinBox;
+    ai_delay_ad_spinbox->setMinimumHeight(80);
     ai_delay_ad_spinbox->setMinimum(0);
     ai_delay_ad_spinbox->setMaximum(5000);
     ai_delay_ad_spinbox->setValue(Config.AIDelayAD);
@@ -456,11 +468,18 @@ QWidget *ServerDialog::createAiTab()
     connect(ai_delay_altered_checkbox, &QCheckBox::toggled, ai_delay_ad_spinbox, &QSpinBox::setEnabled);
     connect(forbid_adding_robot_checkbox, &QCheckBox::toggled, ai_delay_ad_spinbox, &QSpinBox::setDisabled);
 
+    ai_delay_ad_slider = new QSlider(Qt::Horizontal);
+    ai_delay_ad_slider->setRange(0, 5000);
+    ai_delay_ad_slider->setValue(Config.AIDelayAD);
+    QObject::connect(ai_delay_ad_slider, SIGNAL(valueChanged(int)), ai_delay_ad_spinbox, SLOT(setValue(int)));
+    QObject::connect(ai_delay_ad_spinbox, SIGNAL(valueChanged(int)), ai_delay_ad_slider, SLOT(setValue(int)));
+
     layout->addLayout(HLay(forbid_adding_robot_checkbox, ai_chat_checkbox));
     layout->addLayout(HLay(new QLabel(tr("AI delay")), ai_delay_spinbox));
+    layout->addWidget(ai_deley_slider);
     layout->addWidget(ai_delay_altered_checkbox);
     layout->addLayout(HLay(new QLabel(tr("AI delay After Death")), ai_delay_ad_spinbox));
-
+    layout->addWidget(ai_delay_ad_slider);
 
     QWidget *widget = new QWidget;
     widget->setLayout(layout);

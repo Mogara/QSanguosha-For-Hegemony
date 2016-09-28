@@ -889,7 +889,11 @@ void RoomScene::onSceneRectChanged(const QRectF &rect)
     _m_infoPlane.setWidth(newRect.width() * _m_roomLayout->m_infoPlaneWidthPercentage);
     _m_infoPlane.moveRight(newRect.right());
     _m_infoPlane.setTop(newRect.top() + _m_roomLayout->m_roleBoxHeight);
+#ifdef Q_OS_ANDROID
+    _m_infoPlane.setBottom(dashboard->y() - _m_roomLayout->m_chatTextBoxHeight - G_DASHBOARD_LAYOUT.m_avatarArea.height());
+#else
     _m_infoPlane.setBottom(dashboard->y() - _m_roomLayout->m_chatTextBoxHeight);
+#endif
     m_rolesBoxBackground = m_rolesBoxBackground.scaled(_m_infoPlane.width(), _m_roomLayout->m_roleBoxHeight);
     m_rolesBox->setPixmap(m_rolesBoxBackground);
     m_rolesBox->setPos(_m_infoPlane.left(), newRect.top());
@@ -1292,7 +1296,6 @@ void RoomScene::enableTargets(const Card *card)
     }
 
     selected_targets.clear();
-
     // unset avatar and all photo
     foreach (PlayerCardContainer *item, item2player.keys())
         item->setSelected(false);

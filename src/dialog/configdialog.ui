@@ -42,7 +42,7 @@
        <attribute name="title">
         <string>Display</string>
        </attribute>
-       <widget class="QGroupBox" name="bgGroupBox">
+       <widget class="QFrame" name="bgFrame">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -50,9 +50,6 @@
           <width>461</width>
           <height>281</height>
          </rect>
-        </property>
-        <property name="title">
-         <string>Background</string>
         </property>
         <widget class="QWidget" name="layoutWidget1">
          <property name="geometry">
@@ -72,9 +69,6 @@
                <widget class="QLabel" name="backgrounSetupLabel">
                 <property name="text">
                  <string>Setup background</string>
-                </property>
-                <property name="buddy">
-                 <cstring>bgPathLineEdit</cstring>
                 </property>
                </widget>
               </item>
@@ -128,9 +122,6 @@
                <widget class="QLabel" name="tableBgSetupLabel">
                 <property name="text">
                  <string>Setup tableBg</string>
-                </property>
-                <property name="buddy">
-                 <cstring>bgPathLineEdit</cstring>
                 </property>
                </widget>
               </item>
@@ -223,7 +214,7 @@
          </layout>
         </widget>
        </widget>
-       <widget class="QGroupBox" name="fontSetupGroupBox">
+       <widget class="QFrame" name="fontSetupFrame">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -237,9 +228,6 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Font setup</string>
         </property>
         <widget class="QWidget" name="layoutWidget2">
          <property name="geometry">
@@ -257,9 +245,6 @@
              <widget class="QLabel" name="appFontLabel">
               <property name="text">
                <string>Application font</string>
-              </property>
-              <property name="buddy">
-               <cstring>appFontLineEdit</cstring>
               </property>
              </widget>
             </item>
@@ -288,9 +273,6 @@
              <widget class="QLabel" name="textEditFontLabel">
               <property name="text">
                <string>Text edit font</string>
-              </property>
-              <property name="buddy">
-               <cstring>textEditFontLineEdit</cstring>
               </property>
              </widget>
             </item>
@@ -694,15 +676,12 @@
           </layout>
          </item>
          <item>
-          <widget class="QGroupBox" name="gameRecordGroupBox">
+          <widget class="QFrame" name="gameRecordFrame">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
-           </property>
-           <property name="title">
-            <string>Game Record</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_15">
             <item>

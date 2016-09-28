@@ -304,7 +304,7 @@ GeneralOverview::GeneralOverview(QWidget *parent)
     ui->setupUi(this);
 
 #ifdef Q_OS_ANDROID
-    //ui->skillTextEdit->setMinimumWidth(parent->width() / 5 * 2);
+    ui->tableView->setMinimumWidth(parent->width() * 3 / 5);
     ui->skillTextEdit->setMaximumWidth(parent->width() / 3);
 #endif
 
@@ -687,7 +687,7 @@ void GeneralOverview::on_tableView_clicked(const QModelIndex &index)
 
     QString skill_description = general->getSkillDescription(false, false, true);
 #ifdef Q_OS_ANDROID
-    skill_description = QString("<font size='4'>%1</font>").arg(skill_description);
+    skill_description = QString("<font size='1'>%1</font>").arg(skill_description);
 #endif
     ui->skillTextEdit->append(skill_description);
 #endif

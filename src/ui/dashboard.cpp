@@ -261,15 +261,23 @@ void Dashboard::_createRight()
 
     QRect avatar1 = G_DASHBOARD_LAYOUT.m_avatarArea;
     m_leftSkillDock = new QSanInvokeSkillDock(rightFrame);
+#ifdef Q_OS_ANDROID
+    m_leftSkillDock->setPos(avatar1.left(), avatar1.top());
+#else
     m_leftSkillDock->setPos(avatar1.left(), avatar1.bottom() -
         G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() / 1.3);
+#endif
     m_leftSkillDock->setWidth(avatar1.width());
     m_leftSkillDock->setObjectName("left");
 
     QRect avatar2 = G_DASHBOARD_LAYOUT.m_secondaryAvatarArea;
     m_rightSkillDock = new QSanInvokeSkillDock(rightFrame);
+#ifdef Q_OS_ANDROID
+    m_rightSkillDock->setPos(avatar2.left(), avatar2.top());
+#else
     m_rightSkillDock->setPos(avatar2.left(), avatar2.bottom() -
         G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() / 1.3);
+#endif
     m_rightSkillDock->setWidth(avatar2.width());
     m_rightSkillDock->setObjectName("right");
 

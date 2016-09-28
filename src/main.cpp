@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
     if (!noGui) {
         QFont f = Config.AppFont;
 #ifdef Q_OS_ANDROID
-        f.setPointSize(24);
+        f.setPointSize(12);
 #endif
         qApp->setFont(f);
     }

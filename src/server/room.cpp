@@ -4201,7 +4201,9 @@ void Room::damage(const DamageStruct &data)
 #undef REMOVE_QINGGANG_TAG
 
         if (!enter_stack) {
+            damage_data = qdata.value<DamageStruct>();
             damage_data.prevented = true;
+            qdata = QVariant::fromValue(damage_data);
             setTag("SkipGameRule", true);
         }
         damage_data = qdata.value<DamageStruct>();
@@ -6172,6 +6174,7 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
 
         bool isTrustAI = zhuge->getState() == "trust";
         if (isTrustAI) {
+            stepArgs[1] = QVariant();
             stepArgs[3] = JsonUtils::toJsonArray(upcards);
             stepArgs[4] = JsonUtils::toJsonArray(downcards);
             zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);

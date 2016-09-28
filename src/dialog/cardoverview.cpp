@@ -61,7 +61,7 @@ CardOverview::CardOverview(QWidget *parent)
     ui->tableWidget->setColumnWidth(4, 70);
 #endif
 #ifdef Q_OS_ANDROID
-    ui->tableWidget->setMaximumWidth(parent->width() * 2 / 3);
+    ui->tableWidget->setMinimumWidth(parent->width() * 3 / 5);
     ui->tableWidget->setColumnWidth(0, 160);
     ui->tableWidget->setColumnWidth(1, 100);
     ui->tableWidget->setColumnWidth(2, 60);

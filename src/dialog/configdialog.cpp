@@ -35,16 +35,18 @@
 #include <QColorDialog>
 #include <QTextStream>
 #include <QLineEdit>
+#include <QDesktopWidget>
 
 ConfigDialog::ConfigDialog(QWidget *parent)
     : FlatDialog(parent, false), ui(new Ui::ConfigDialog)
 {
     ui->setupUi(this);
 #ifdef Q_OS_ANDROID
-    setMinimumSize(parent->width(), parent->height());
+    QDesktopWidget* desktop = qApp->desktop();
+    setMinimumSize(desktop->width(), desktop->height());
     setStyleSheet("background-color: #F0FFF0; color: black;");
     delete ui->toolTipBackgroundColorButton;
-    delete ui->fontSetupGroupBox;
+    delete ui->fontSetupFrame;
 #endif
 
     connect(this, &ConfigDialog::windowTitleChanged, ui->windowTitle, &QLabel::setText);

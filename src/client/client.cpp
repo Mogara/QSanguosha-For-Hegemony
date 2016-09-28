@@ -1432,7 +1432,11 @@ void Client::updatePileNum()
 {
     QString pile_str = tr("Draw pile: <b>%1</b>, discard pile: <b>%2</b>, swap times: <b>%3</b>")
         .arg(pile_num).arg(discarded_list.length()).arg(swap_pile);
-    lines_doc->setHtml(QString("<font color='%1'><p align = \"center\">" + pile_str + "</p></font>").arg(Config.TextEditColor.name()));
+    pile_str = QString("<font color='%1'><p align = \"center\">" + pile_str + "</p></font>").arg(Config.TextEditColor.name());
+#ifdef Q_OS_ANDROID
+    pile_str = QString("<font size='1'>%1</font>").arg(pile_str);
+#endif
+    lines_doc->setHtml(pile_str);
 }
 
 void Client::askForDiscard(const QVariant &reqvar)

@@ -423,7 +423,11 @@ void MainWindow::restoreFromConfig()
     move(Config.value("WindowPosition", QPoint(-8, -8)).toPoint());
     setWindowState((Qt::WindowStates) Config.value("WindowState", 0).toInt());
 
-#ifndef Q_OS_ANDROID
+#ifdef Q_OS_ANDROID
+    QFont font = Config.UIFont;
+    font.setPointSize(16);
+    QApplication::setFont(font, "QTextEdit");
+#else
     QFont font;
     if (Config.UIFont != font)
         QApplication::setFont(Config.UIFont, "QTextEdit");
