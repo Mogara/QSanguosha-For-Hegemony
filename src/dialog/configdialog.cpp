@@ -45,7 +45,10 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     QDesktopWidget* desktop = qApp->desktop();
     setMinimumSize(desktop->width(), desktop->height());
     setStyleSheet("background-color: #F0FFF0; color: black;");
+    ui->layoutWidget->setGeometry(QRect(1, 1, desktop->width() - 2, desktop->height() - 1));
+    ui->layoutWidget4->setMinimumSize(desktop->width() - 200, desktop->height() - 250);
     delete ui->toolTipBackgroundColorButton;
+    //delete ui->gameRecordFrame;
     delete ui->fontSetupFrame;
 #endif
 

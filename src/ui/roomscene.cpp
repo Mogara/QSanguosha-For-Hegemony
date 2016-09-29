@@ -3332,7 +3332,12 @@ void RoomScene::onGameOver()
 
 void RoomScene::addRestartButton(QDialog *dialog)
 {
+#ifdef Q_OS_ANDROID
+    dialog->resize(sceneRect().width(), sceneRect().height());
+    dialog->setStyleSheet("background-color: #F0FFF0; color: black;");
+#else
     dialog->resize(main_window->width() / 2, dialog->height());
+#endif
 
     QPushButton *restartButton = new QPushButton(tr("Restart Game"));
     QPushButton *returnButton = new QPushButton(tr("Return to main menu"));
