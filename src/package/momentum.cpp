@@ -1007,9 +1007,12 @@ public:
             if (p->isChained() && player->canDiscard(p, "he") && player->isAlive()) {
                 CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, player->objectName(), p->objectName(), objectName(), NULL);
                 const Card *card;
-                if (p == player)
+                if (p == player) {
                     card = room->askForExchange(player, objectName(), 1, 1, "@fengming", "", ".");
-                else
+                    int id = card->getEffectiveId();
+                    delete card;
+                    card = Sanguosha->getCard(id);
+                } else
                     card = Sanguosha->getCard(room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodDiscard));
                 room->throwCard(card, reason, p, player);
             }

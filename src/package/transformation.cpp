@@ -403,7 +403,9 @@ public:
             player->tag.remove(objectName());
             if (card) {
                 CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName());
-                room->obtainCard(use.from, card, reason, false);
+                int id = card->getEffectiveId();
+                delete card;
+                room->obtainCard(use.from, Sanguosha->getCard(id), reason, false);
                 LogMessage log;
                 log.type = "#InvokeSkill";
                 log.from = player;
