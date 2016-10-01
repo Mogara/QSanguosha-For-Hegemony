@@ -92,10 +92,10 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     ui->changeAvatarButton->setGeometry(QRect(140, desktop->height() / 3 + 280, 400, 100));
     ui->detectLANButton->setGeometry(QRect(140, desktop->height() / 3 + 80, 400, 100));
     ui->clearHistoryButton->setGeometry(QRect(140, desktop->height() / 3 + 180, 400, 100));
-    ui->layoutWidget2->setGeometry(QRect(10, desktop->height() / 5 * 4 + 40, desktop->width(), 120));
-    ui->reconnectionCheckBox->setGeometry(QRect(20, desktop->height() / 5 * 4 + 40, desktop->width() / 3 - 20, 60));
-    ui->connectButton->setGeometry(QRect(desktop->width() / 3, desktop->height() / 5 * 4 + 40, 400, 100));
-    ui->cancelButton->setGeometry(QRect(desktop->width() / 3 + 450, desktop->height() / 5 * 4 + 40, 400, 100));
+    ui->frame->setGeometry(QRect(desktop->width() / 2, desktop->height() / 4, desktop->width(), desktop->height()));
+    ui->reconnectionCheckBox->setGeometry(QRect(0, 10, 400, 60));
+    ui->connectButton->setGeometry(QRect(0, 170, 300, 100));
+    ui->cancelButton->setGeometry(QRect(0, 280, 300, 100));
 #else
     resize(ShrinkWidth, height());
 #endif
