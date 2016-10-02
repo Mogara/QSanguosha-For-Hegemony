@@ -399,13 +399,11 @@ public:
             }
         }
         else {
-            const Card *card = room->askForExchange(player, objectName(), 1, 0, "@wanwei2:" + use.from->objectName(), "", ".");
+            QList<int> ints = room->askForExchange(player, objectName(), 1, 0, "@wanwei2:" + use.from->objectName(), "", ".");
             player->tag.remove(objectName());
-            if (card) {
+            if (!ints.isEmpty()) {
                 CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName());
-                int id = card->getEffectiveId();
-                delete card;
-                room->obtainCard(use.from, Sanguosha->getCard(id), reason, false);
+                room->obtainCard(use.from, Sanguosha->getCard(ints.first()), reason, false);
                 LogMessage log;
                 log.type = "#InvokeSkill";
                 log.from = player;

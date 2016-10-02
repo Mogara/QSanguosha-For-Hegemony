@@ -2303,16 +2303,12 @@ QList<int> Room::notifyChooseCards(ServerPlayer *player, const QList<int> &cards
     else
         new_pattern = pattern;
 
-    const Card *result = askForExchange(player, reason, max_num, min_num, prompt, "#" + reason, new_pattern);
+    QList<int> result = askForExchange(player, reason, max_num, min_num, prompt, "#" + reason, new_pattern);
 
     notifyMoveToPile(player, cards, reason, notify_to_place, false, false);
 
     setPlayerFlag(player, "-Global_InTempMoving");
-    if (result)
-        return result->getSubcards();
-    else
-        return QList<int>();
-
+    return result;
 }
 
 void Room::setPlayerFlag(ServerPlayer *player, const QString &flag)
@@ -5824,10 +5820,10 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
     return true;
 }
 
-const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, int exchange_num, int min_num, const QString &prompt, const QString &_expand_pile, const QString &pattern)
+QList<int> Room::askForExchange(ServerPlayer *player, const QString &reason, int exchange_num, int min_num, const QString &prompt, const QString &_expand_pile, const QString &pattern)
 {
     if (!player->isAlive())
-        return NULL;
+        return QList<int>();
     tryPause();
     notifyMoveFocus(player, S_COMMAND_EXCHANGE_CARD);
 
@@ -5870,20 +5866,18 @@ const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, in
         //@todo: also check if the player does have that card!!!
         JsonArray clientReply = player->getClientReply().value<JsonArray>();
         if (!success || (int)clientReply.size() < min_num || (int)clientReply.size() > exchange_num || !JsonUtils::tryParse(clientReply, to_exchange)) {
-            if (min_num == 0) return NULL;
+            if (min_num == 0) return QList<int>();
             to_exchange = player->forceToDiscard(min_num, pattern, _expand_pile, false);
         }
     }
 
-    if (to_exchange.isEmpty()) return NULL;
-
-    DummyCard *card = new DummyCard(to_exchange);
+    if (to_exchange.isEmpty()) return QList<int>();
 
     QVariant data;
-    data = QString("%1:%2:%3").arg("cardExchange").arg(reason).arg(card->toString());
+    data = QString("%1:%2:%3").arg("cardExchange").arg(reason).arg(IntList2StringList(to_exchange).join("+"));
     thread->trigger(ChoiceMade, this, player, data);
 
-    return card;
+    return to_exchange;
 }
 
 void Room::setCardMapping(int card_id, ServerPlayer *owner, Player::Place place)

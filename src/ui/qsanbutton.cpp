@@ -376,10 +376,6 @@ void QSanSkillButton::setEnabled(bool enabled)
 
 void QSanInvokeSkillButton::_repaint()
 {
-    setSize(G_ROOM_SKIN.getSkillButtonPixmap(S_STATE_DISABLED, _m_skillType, _m_enumWidth).size());
-#ifdef Q_OS_ANDROID
-    setScale(2);
-#endif
     for (int i = 0; i < (int)S_NUM_BUTTON_STATES; i++) {
         _m_bgPixmap[i] = G_ROOM_SKIN.getSkillButtonPixmap((ButtonState)i, _m_skillType, _m_enumWidth);
         if (_m_bgPixmap[i].isNull()) continue;
@@ -407,6 +403,10 @@ void QSanInvokeSkillButton::_repaint()
         if (_m_skillType == S_SKILL_ATTACHEDLORD) skill_rect.setHeight(skill_rect.height() + 10);
         font.paintText(&painter, skill_rect, Qt::AlignCenter, skillName);
     }
+    setSize(_m_bgPixmap[0].size());
+#ifdef Q_OS_ANDROID
+    setScale(2);
+#endif
 }
 
 void QSanInvokeSkillButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
@@ -535,7 +535,6 @@ void QSanInvokeSkillDock::update()
             button->setPos(btnWidth * j + adj_value, rowTop);
         }
     }
-    delete[] btnNum;
 #endif
     int m1 = 0;
 #ifdef Q_OS_ANDROID
@@ -553,6 +552,7 @@ void QSanInvokeSkillDock::update()
         button->setButtonWidth((QSanInvokeSkillButton::SkillButtonWidth)(0));
         button->setPos(-gh - _m_width * i, rowTop1);
     }
+    delete[] btnNum;
 #endif
     QGraphicsObject::update();
 }

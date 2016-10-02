@@ -1008,10 +1008,8 @@ public:
                 CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, player->objectName(), p->objectName(), objectName(), NULL);
                 const Card *card;
                 if (p == player) {
-                    card = room->askForExchange(player, objectName(), 1, 1, "@fengming", "", ".");
-                    int id = card->getEffectiveId();
-                    delete card;
-                    card = Sanguosha->getCard(id);
+                    QList<int> ints = room->askForExchange(player, objectName(), 1, 1, "@fengming", "", ".");
+                    card = Sanguosha->getCard(ints.first());
                 } else
                     card = Sanguosha->getCard(room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodDiscard));
                 room->throwCard(card, reason, p, player);
@@ -1435,14 +1433,13 @@ public:
                 player->tag["HongfaTianbingData"] = data; // for AI
                 QString prompt = QString("@hongfa-tianbing:%1").arg(player_num.m_reason);
                 //const Card *card = room->askForUseCard(player, "@@hongfa2", prompt, 2, Card::MethodNone);
-                const Card *card = room->askForExchange(player,"hongfa2",player->getPile("heavenly_army").length(),0,prompt,"heavenly_army");
+                QList<int> ints = room->askForExchange(player,"hongfa2",player->getPile("heavenly_army").length(),0,prompt,"heavenly_army");
                 player->tag.remove("HongfaTianbingData");
-                if (card != NULL) {
+                if (!ints.isEmpty()) {
                     player->showGeneral(player->inHeadSkills(objectName()));
-                    player_num.m_num += card->subcardsLength();
+                    player_num.m_num += ints.length();
                     room->notifySkillInvoked(player,objectName());
                     room->broadcastSkillInvoke(objectName(),2);
-                    delete card;
                 }
             }
             data = QVariant::fromValue(player_num);
@@ -1452,12 +1449,11 @@ public:
         else if (triggerEvent == PreHpLost) {
             player->tag.remove("hongfa_prevent");
             //return room->askForUseCard(player, "@@hongfa1", "@hongfa-prevent", 1, Card::MethodNone);
-            const Card *card = room->askForExchange(player,"hongfa1",1,0,"@hongfa-prevent","heavenly_army");
-            if (card != NULL) {
+            QList<int> ints = room->askForExchange(player,"hongfa1",1,0,"@hongfa-prevent","heavenly_army");
+            if (!ints.isEmpty()) {
                 room->notifySkillInvoked(player,objectName());
                 room->broadcastSkillInvoke(objectName(),1);
-                player->tag["hongfa_prevent"] = card->getEffectiveId();
-                delete card;
+                player->tag["hongfa_prevent"] = ints.first();
                 return true;
             }
         }
