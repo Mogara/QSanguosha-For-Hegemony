@@ -1189,8 +1189,11 @@ void Client::askForNullification(const QVariant &arg)
     ClientPlayer *source = NULL;
     if (!source_name.isNull())
         source = getPlayer(source_name.toString());
-
+#ifndef Q_OS_ANDROID
     const Card *trick_card = Sanguosha->findChild<const Card *>(trick_name);
+#else
+    const Card *trick_card = Card::Parse(trick_name + ":[no_suit:0]=.&");
+#endif
     if (Config.NeverNullifyMyTrick && source == Self) {
         if (trick_card->isKindOf("SingleTargetTrick") || trick_card->isKindOf("IronChain")) {
             onPlayerResponseCard(NULL);

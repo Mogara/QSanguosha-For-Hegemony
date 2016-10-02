@@ -405,7 +405,8 @@ void QSanInvokeSkillButton::_repaint()
     }
     setSize(_m_bgPixmap[0].size());
 #ifdef Q_OS_ANDROID
-    setScale(2);
+    if (getViewAsSkill() != NULL)
+        setScale(2);
 #endif
 }
 
@@ -486,6 +487,55 @@ void QSanInvokeSkillDock::setWidth(int width)
 
 void QSanInvokeSkillDock::update()
 {
+#ifdef Q_OS_ANDROID
+    QList<QSanInvokeSkillButton *> regular_buttons, lordskill_buttons, viewas_buttons/*, all_buttons*/;
+    foreach (QSanInvokeSkillButton *btn, _m_buttons) {
+        if (btn->getSkill()->isAttachedLordSkill())
+            lordskill_buttons << btn;
+        else if (btn->getViewAsSkill() != NULL)
+            viewas_buttons << btn;
+        else
+            regular_buttons << btn;
+    }
+    int lordskillNum = lordskill_buttons.length();
+    int numButtons = regular_buttons.length();
+    int rows = (numButtons == 0) ? 0 : (numButtons - 1) / 2 + 1;
+    int rowH = G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height();
+    int *btnNum = new int[rows + lordskillNum + 2 + 1]; // we allocate one more row in case we need it.
+    int remainingBtns = numButtons;
+    for (int i = 0; i < rows; i++) {
+        btnNum[i] = qMin(2, remainingBtns);
+        remainingBtns -= 2;
+    }
+    if (lordskillNum > 0) {
+        for (int k = 0; k < lordskillNum; k++) {
+            btnNum[rows + k] = 2;
+        }
+    }
+
+    int m = 0;
+    for (int i = 0; i < rows; i++) {
+        int rowTop = -rowH - 2 * (rows - i - 1);
+        int btnWidth = _m_width / btnNum[i];
+        int pix_wid = G_DASHBOARD_LAYOUT.m_skillButtonsSize[btnNum[i] - 1].width();
+        for (int j = 0; j < btnNum[i]; j++) {
+            int adj_value = (btnWidth - pix_wid) / 2;
+            QSanInvokeSkillButton *button = regular_buttons[m++];
+            button->setButtonWidth((QSanInvokeSkillButton::SkillButtonWidth)(btnNum[i] - 1));
+            if (btnNum[i] == 2)
+                adj_value += (j ? -2 : 2);
+            button->setPos(btnWidth * j + adj_value, rowTop + G_DASHBOARD_LAYOUT.m_avatarArea.height());
+        }
+    }
+
+    rowH = G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() * 2;
+    for (int i = 0; i < viewas_buttons.length(); i++) {
+        int rowTop = -rowH - rowH * (viewas_buttons.length() - i - 1);
+        QSanInvokeSkillButton *button = viewas_buttons[i];
+        button->setButtonWidth(QSanInvokeSkillButton::S_WIDTH_MED);
+        button->setPos(0, rowTop);
+    }
+#else
     QList<QSanInvokeSkillButton *> regular_buttons, lordskill_buttons/*, all_buttons*/;
     foreach (QSanInvokeSkillButton *btn, _m_buttons) {
         if (btn->getSkill()->isAttachedLordSkill())
@@ -495,17 +545,6 @@ void QSanInvokeSkillDock::update()
     }
     int lordskillNum = lordskill_buttons.length();
     int numButtons = regular_buttons.length();
-
-#ifdef Q_OS_ANDROID
-    int rows = numButtons;
-    int rowH = G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() * 2;
-    for (int i = 0; i < rows; i++) {
-        int rowTop = -rowH - rowH * (rows - i - 1);
-        QSanInvokeSkillButton *button = regular_buttons[i];
-        button->setButtonWidth(QSanInvokeSkillButton::S_WIDTH_MED);
-        button->setPos(0, rowTop);
-    }
-#else
     int rows = (numButtons == 0) ? 0 : (numButtons - 1) / 2 + 1;
     int rowH = G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height();
     int *btnNum = new int[rows + lordskillNum + 2 + 1]; // we allocate one more row in case we need it.
