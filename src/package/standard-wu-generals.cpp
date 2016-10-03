@@ -965,7 +965,7 @@ class BuquRemove : public TriggerSkill
 public:
     BuquRemove() : TriggerSkill("#buqu-remove")
     {
-        events << HpRecover;
+        events << HpRecover << AskForPeachesDone;
         frequency = Compulsory;
     }
 
@@ -1009,38 +1009,13 @@ public:
         }
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *zhoutai, QVariant &, ServerPlayer* &) const
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &) const
     {
-        if (!zhoutai || !zhoutai->isAlive() || !zhoutai->hasSkill("buqu")) return QStringList();
-        if (zhoutai->getPile("buqu").length() > 0)
+        if (!zhoutai || !zhoutai->isAlive() || !zhoutai->hasSkill("buqu")) return;
+        if (triggerEvent == HpRecover && zhoutai->getPile("buqu").length() > 0)
             Remove(zhoutai);
-
-        return QStringList();
-    }
-};
-
-class Buqu : public TriggerSkill
-{
-public:
-    Buqu() : TriggerSkill("buqu")
-    {
-        events << PostHpReduced << AskForPeachesDone;
-        frequency = Frequent;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &, ServerPlayer* &) const
-    {
-        if (!TriggerSkill::triggerable(zhoutai)) return QStringList();
-        if (triggerEvent == PostHpReduced && zhoutai->getHp() < 1)
-            return QStringList(objectName());
-        else if (triggerEvent == AskForPeachesDone) {
+        else if (triggerEvent == AskForPeachesDone && zhoutai->getHp() <= 0 && room->getTag("Buqu").toString() == zhoutai->objectName()) {
             const QList<int> &buqu = zhoutai->getPile("buqu");
-
-            if (zhoutai->getHp() > 0)
-                return QStringList();
-            if (room->getTag("Buqu").toString() != zhoutai->objectName())
-                return QStringList();
-            room->setTag("Buqu", QVariant());
 
             QList<int> duplicate_numbers;
             QSet<int> numbers;
@@ -1054,11 +1029,8 @@ public:
                     numbers << number;
             }
 
-            if (duplicate_numbers.isEmpty()) {
-                room->broadcastSkillInvoke("buqu", zhoutai);
-                room->setPlayerFlag(zhoutai, "-Global_Dying");
-                return QStringList(objectName());
-            } else {
+            if (!duplicate_numbers.isEmpty()) {
+                room->setTag("Buqu", QVariant());
                 LogMessage log;
                 log.type = "#BuquDuplicate";
                 log.from = zhoutai;
@@ -1093,14 +1065,65 @@ public:
                 }
             }
         }
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &, ServerPlayer* &) const
+    {
+        if (triggerEvent == AskForPeachesDone) {
+            const QList<int> &buqu = zhoutai->getPile("buqu");
+            if (zhoutai->getHp() > 0)
+                return QStringList();
+            if (room->getTag("Buqu").toString() != zhoutai->objectName())
+                return QStringList();
+
+            QList<int> duplicate_numbers;
+            QSet<int> numbers;
+            foreach (int card_id, buqu) {
+                const Card *card = Sanguosha->getCard(card_id);
+                int number = card->getNumber();
+
+                if (numbers.contains(number) && !duplicate_numbers.contains(number))
+                    duplicate_numbers << number;
+                else
+                    numbers << number;
+            }
+
+            if (duplicate_numbers.isEmpty())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &, ServerPlayer *) const
+    {
+        room->setTag("Buqu", QVariant());
+        room->broadcastSkillInvoke("buqu", zhoutai);
+        room->setPlayerFlag(zhoutai, "-Global_Dying");
+        return true;
+    }
+};
+
+class Buqu : public TriggerSkill
+{
+public:
+    Buqu() : TriggerSkill("buqu")
+    {
+        events << PostHpReduced;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(zhoutai)) return QStringList();
+        if (zhoutai->getHp() < 1)
+            return QStringList(objectName());
 
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &data, ServerPlayer *) const
     {
-        if (triggerEvent == AskForPeachesDone)
-            return true;
+
         if (zhoutai->askForSkillInvoke(this, data)) {
             room->broadcastSkillInvoke(objectName(), zhoutai);
             const QList<int> &buqu = zhoutai->getPile("buqu");
@@ -1115,10 +1138,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &, ServerPlayer *) const
     {
-        if (triggerEvent == AskForPeachesDone)
-            return true;
         if (zhoutai->getHp() < 1) {
             room->setTag("Buqu", zhoutai->objectName());
 
