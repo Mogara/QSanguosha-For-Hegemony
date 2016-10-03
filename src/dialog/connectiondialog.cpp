@@ -72,11 +72,11 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     setMinimumSize(desktop->width(), desktop->height());
     setStyleSheet("background-color: #F0FFF0; color: black;");
     ui->groupBox->setMinimumSize(desktop->width() / 2, desktop->height() / 5 * 4);
-    ui->layoutWidget1->setGeometry(QRect(10, 17, desktop->width() / 2, desktop->height() / 3 -10));
-    ui->nameLineEdit->setGeometry(QRect(100, 30, 500, 100));
-    ui->hostComboBox->setGeometry(QRect(100, 150, 500, 100));
-    ui->nameLabel->setGeometry(QRect(10, 30, 130, 20));
-    ui->hostLabel->setGeometry(QRect(10, 150, 130, 20));
+    ui->layoutWidget1->setGeometry(QRect(10, 17, desktop->width() / 2, 310));
+    ui->nameLineEdit->setMinimumSize(desktop->width() / 3, 100);
+    ui->hostComboBox->setMinimumSize(desktop->width() / 3, 150);
+    ui->nameLabel->setMinimumSize(100, 20);
+    ui->hostLabel->setMinimumSize(100, 20);
 /*
     delete ui->formLayout;
     ui->formLayout = new QFormLayout(ui->layoutWidget1);
@@ -87,15 +87,15 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     ui->formLayout->setWidget(1, QFormLayout::LabelRole, ui->hostLabel);
     ui->formLayout->setWidget(1, QFormLayout::FieldRole, ui->hostComboBox);
 */
-    ui->avatarLabel->setGeometry(QRect(20, desktop->height() / 3, 42, 80));
-    ui->avatarPixmap->setGeometry(QRect(15, desktop->height() / 3 + 80, 114, 136));
-    ui->changeAvatarButton->setGeometry(QRect(140, desktop->height() / 3 + 280, 400, 100));
-    ui->detectLANButton->setGeometry(QRect(140, desktop->height() / 3 + 80, 400, 100));
-    ui->clearHistoryButton->setGeometry(QRect(140, desktop->height() / 3 + 180, 400, 100));
-    ui->frame->setGeometry(QRect(desktop->width() / 2, desktop->height() / 4, desktop->width(), desktop->height()));
-    ui->reconnectionCheckBox->setGeometry(QRect(0, 10, 400, 60));
-    ui->connectButton->setGeometry(QRect(0, 170, 300, 100));
-    ui->cancelButton->setGeometry(QRect(0, 280, 300, 100));
+    ui->avatarLabel->setGeometry(QRect(20, 320, 42, 80));
+    ui->avatarPixmap->setGeometry(QRect(15, 400, 114, 136));
+    ui->changeAvatarButton->setGeometry(QRect(140, 600, 400, 100));
+    ui->detectLANButton->setGeometry(QRect(140, 400, 400, 100));
+    ui->clearHistoryButton->setGeometry(QRect(140, 500, 400, 100));
+    ui->frame->setGeometry(QRect(desktop->width() / 2 + 20, desktop->height() / 4, desktop->width(), desktop->height()));
+    ui->reconnectionCheckBox->setGeometry(QRect(30, 10, 400, 60));
+    ui->connectButton->setGeometry(QRect(30, 170, 300, 100));
+    ui->cancelButton->setGeometry(QRect(30, 280, 300, 100));
 #else
     resize(ShrinkWidth, height());
 #endif

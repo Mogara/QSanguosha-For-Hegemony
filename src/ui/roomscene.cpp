@@ -383,6 +383,20 @@ RoomScene::RoomScene(QMainWindow *main_window)
     fill_robots = NULL;
     return_to_start_scene = NULL;
     if (!ServerInfo.ForbidAddingRobot) {
+#ifdef Q_OS_ANDROID
+        int width = G_DASHBOARD_LAYOUT.m_avatarArea.width() * 4;
+        int height = G_DASHBOARD_LAYOUT.m_normalHeight * 2;
+        control_panel = addRect(0, 0, width, height, Qt::NoPen);
+        control_panel->hide();
+
+        add_robot = new Button(tr("Add a robot"), QSizeF(width - 20, height / 3));
+        add_robot->setParentItem(control_panel);
+        add_robot->setPos(0, -add_robot->boundingRect().height() - 10);
+
+        fill_robots = new Button(tr("Fill robots"), QSizeF(width - 20, height / 3));
+        fill_robots->setParentItem(control_panel);
+#else
+
         control_panel = addRect(0, 0, 500, 150, Qt::NoPen);
         control_panel->hide();
 
@@ -394,16 +408,28 @@ RoomScene::RoomScene(QMainWindow *main_window)
         fill_robots = new Button(tr("Fill robots"), 1.0);
         fill_robots->setParentItem(control_panel);
         fill_robots->setTransform(QTransform::fromTranslate(-fill_robots->boundingRect().width() / 2, -fill_robots->boundingRect().height() / 2), true);
+#endif
         connect(add_robot, &Button::clicked, ClientInstance, &Client::addRobot);
         connect(fill_robots, &Button::clicked, ClientInstance, &Client::fillRobots);
         connect(Self, &ClientPlayer::owner_changed, this, &RoomScene::showOwnerButtons);
     } else {
         control_panel = NULL;
     }
+
+#ifdef Q_OS_ANDROID
+    int width = G_DASHBOARD_LAYOUT.m_avatarArea.width() * 4;
+    int height = G_DASHBOARD_LAYOUT.m_normalHeight * 2;
+    return_to_start_scene = new Button(tr("Return to main menu"), QSizeF(width - 20, height / 3));
+    addItem(return_to_start_scene);
+    return_to_start_scene->setZValue(10000);
+#else
+
     return_to_start_scene = new Button(tr("Return to main menu"), 1.0);
+
     addItem(return_to_start_scene);
     return_to_start_scene->setZValue(10000);
     return_to_start_scene->setTransform(QTransform::fromTranslate(-return_to_start_scene->boundingRect().width() / 2, -return_to_start_scene->boundingRect().height() / 2), true);
+#endif
     connect(return_to_start_scene, &Button::clicked, this, &RoomScene::return_to_start);
 
     animations = new EffectAnimation();
@@ -1052,9 +1078,16 @@ void RoomScene::updateTable()
     dashboard->setFloatingArea(tableBottomBar);
 
     m_tableCenterPos = tableRect.center();
+#ifdef Q_OS_ANDROID
+    if (control_panel)
+        control_panel->setPos(m_tableCenterPos.x() - add_robot->boundingRect().width() / 2, m_tableCenterPos.y() / 4 * 3);
+    return_to_start_scene->setPos(m_tableCenterPos.x() - return_to_start_scene->boundingRect().width() / 2,
+                                  m_tableCenterPos.y() + return_to_start_scene->boundingRect().height() + 10);
+#else
     if (control_panel)
         control_panel->setPos(m_tableCenterPos);
     return_to_start_scene->setPos(m_tableCenterPos + QPointF(0, return_to_start_scene->boundingRect().height() + 10));
+#endif
     m_tablePile->setPos(m_tableCenterPos);
     m_tablePile->setSize(qMax((int)tableRect.width() - _m_roomLayout->m_discardPilePadding * 2,
         _m_roomLayout->m_discardPileMinWidth), _m_commonLayout->m_cardNormalHeight);

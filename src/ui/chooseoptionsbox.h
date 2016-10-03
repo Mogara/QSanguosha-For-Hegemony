@@ -50,8 +50,8 @@ private:
     QStringList options;
     QString skillName;
     QList<Button *> buttons;
-    static const int minButtonWidth = 100;
-    static const int defaultButtonHeight = 30;
+    int minButtonWidth = 100;
+    int defaultButtonHeight = 30;
     static const int topBlankWidth = 42;
     static const int bottomBlankWidth = 25;
     static const int interval = 15;

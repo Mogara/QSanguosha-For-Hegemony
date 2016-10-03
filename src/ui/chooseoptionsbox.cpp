@@ -24,6 +24,7 @@
 #include "client.h"
 #include "clientstruct.h"
 #include "timedprogressbar.h"
+#include "skinbank.h"
 
 #include <QGraphicsProxyWidget>
 
@@ -63,6 +64,10 @@ QRectF ChooseOptionsBox::boundingRect() const
 
 void ChooseOptionsBox::chooseOption(const QStringList &options)
 {
+#ifdef Q_OS_ANDROID
+    minButtonWidth = G_DASHBOARD_LAYOUT.m_avatarArea.width() * 2;
+    defaultButtonHeight = G_DASHBOARD_LAYOUT.m_normalHeight / 2;
+#endif
     //repaint background
     this->options = options;
 
