@@ -1153,7 +1153,7 @@ public:
         frequency = Compulsory;
     }
 
-    virtual void onSkillDetached(Room *room, ServerPlayer *player) const
+    virtual void onSkillDetached(Room *room, ServerPlayer *player, QVariant &) const
     {
         if (player->getHp() <= 0)
             room->enterDying(player, NULL);

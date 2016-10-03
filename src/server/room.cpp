@@ -623,7 +623,7 @@ void Room::detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name
             log.arg = skill_name;
             sendLog(log);
 
-            QVariant data = skill_name;
+            QVariant data = skill_name + ":" + (head ? "head" : "deputy");
             thread->trigger(EventLoseSkill, this, player, data);
         }
 
@@ -638,6 +638,7 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
 {
     if (skill_names.isEmpty()) return;
     QList<bool> isLost;
+    QList<bool> isHead;
     QStringList triggerList;
     foreach (const QString &_skill_name, skill_names) {
         if (_skill_name.startsWith("-")) {
@@ -674,6 +675,7 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
 
                 triggerList << actual_skill;
                 isLost << true;
+                isHead << head;
             }
         } else {
             bool head = true;
@@ -700,12 +702,13 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
 
                 triggerList << skill_name;
                 isLost << false;
+                isHead << head;
             }
         }
     }
     if (!triggerList.isEmpty()) {
         for (int i = 0; i < triggerList.length(); i++) {
-            QVariant data = triggerList.at(i);
+            QVariant data = triggerList.at(i) + ":" + (isHead.at(i) ? "head" : "deputy");
             thread->trigger(isLost.at(i) ? EventLoseSkill : EventAcquireSkill, this, player, data);
         }
     }
@@ -5437,7 +5440,7 @@ void Room::acquireSkill(ServerPlayer *player, const Skill *skill, bool open, boo
             doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
 
-        QVariant data = skill_name;
+        QVariant data = skill_name + ":" + (head ? "head" : "deputy");
         thread->trigger(EventAcquireSkill, this, player, data);
     }
 }

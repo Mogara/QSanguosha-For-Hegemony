@@ -769,11 +769,12 @@ public:
     HuashenClear() : DetachEffectSkill("huashen")
     {
     }
-    virtual void onSkillDetached(Room *room, ServerPlayer *player) const
+    virtual void onSkillDetached(Room *room, ServerPlayer *player, QVariant &data) const
     {
         QStringList huashen_skill = player->tag["HuashenSkill"].toStringList();
+        bool head = data.toString().split(":").last() == "head";
         foreach (QString skill_name, huashen_skill) {
-            room->detachSkillFromPlayer(player, skill_name, false, true);
+            room->detachSkillFromPlayer(player, skill_name, false, true, head);
         }
         player->tag.remove("Huashens");
     }
@@ -1961,7 +1962,7 @@ public:
     JiaheClear() : DetachEffectSkill("jiahe")
     {
     }
-    virtual void onSkillDetached(Room *room, ServerPlayer *) const
+    virtual void onSkillDetached(Room *room, ServerPlayer *, QVariant &) const
     {
         foreach(ServerPlayer *p, room->getAlivePlayers()) {
             room->detachSkillFromPlayer(p, "flamemap");

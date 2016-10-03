@@ -500,7 +500,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
     }
     case EventAcquireSkill:
     case EventLoseSkill: {
-        QString skill_name = data.toString();
+        QString skill_name = data.toString().split(":").first();
         const Skill *skill = Sanguosha->getSkill(skill_name);
         bool refilter = skill->inherits("FilterSkill");
 

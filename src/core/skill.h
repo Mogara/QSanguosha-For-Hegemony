@@ -422,7 +422,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
-    virtual void onSkillDetached(Room *room, ServerPlayer *player) const;
+    virtual void onSkillDetached(Room *room, ServerPlayer *player, QVariant &data) const;
 
 private:
     QString name, pile_name;

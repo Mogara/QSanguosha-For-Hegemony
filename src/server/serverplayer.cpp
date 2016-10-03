@@ -1861,7 +1861,7 @@ void ServerPlayer::sendSkillsToOthers(bool head_skill /* = true */)
 void ServerPlayer::disconnectSkillsFromOthers(bool head_skill /* = true */)
 {
     foreach (const QString &skill, head_skill ? head_skills.keys() : deputy_skills.keys()) {
-        QVariant _skill = skill;
+        QVariant _skill = skill + ":" + (head_skill ? "head" : "deputy");
         room->getThread()->trigger(EventLoseSkill, room, this, _skill);
         JsonArray args;
         args << (int)QSanProtocol::S_GAME_EVENT_DETACH_SKILL;
