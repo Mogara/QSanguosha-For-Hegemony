@@ -741,10 +741,11 @@ QGraphicsItem *RoomScene::createDashboardButtons()
 
 #ifdef Q_OS_ANDROID
     ok_button = new QSanButton("platter", "confirm_android", widget);
-    ok_button->setRect(QRect(-650, -100, 150, 80));
+    int width = main_window->width() - G_DASHBOARD_LAYOUT.m_buttonSetSize.width() - G_DASHBOARD_LAYOUT.m_leftWidth - G_DASHBOARD_LAYOUT.m_rightWidth - 20;
+    ok_button->setRect(QRect(-width / 2 - 160, -100, 150, 80));
 
     cancel_button = new QSanButton("platter", "cancel_android", widget);
-    cancel_button->setRect(QRect(-450, -100, 150, 80));
+    cancel_button->setRect(QRect(-width / 2 + 10, -100, 150, 80));
 
     discard_button = new QSanButton("platter", "discard_android", widget);
     QRect r;

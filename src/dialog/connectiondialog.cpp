@@ -35,7 +35,9 @@
 #include <QRadioButton>
 #include <QBoxLayout>
 #include <QScrollBar>
+#ifdef Q_OS_ANDROID
 #include <QDesktopWidget>
+#endif
 
 static const int ShrinkWidth = 317;
 static const int ExpandWidth = 619;
@@ -43,7 +45,6 @@ static const int ExpandWidth = 619;
 ConnectionDialog::ConnectionDialog(QWidget *parent)
     : FlatDialog(parent, false), ui(new Ui::ConnectionDialog)
 {
-    QDesktopWidget* desktop = qApp->desktop();
 #ifdef Q_OS_ANDROID
     QFont f = this->font();
     f.setPointSize(3);
@@ -69,6 +70,7 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     bar->setStyleSheet(StyleHelper::styleSheetOfScrollBar());
 
 #ifdef Q_OS_ANDROID
+    QDesktopWidget* desktop = qApp->desktop();
     setMinimumSize(desktop->width(), desktop->height());
     setStyleSheet("background-color: #F0FFF0; color: black;");
     ui->groupBox->setMinimumSize(desktop->width() / 2, desktop->height() / 5 * 4);
@@ -77,16 +79,6 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     ui->hostComboBox->setMinimumSize(desktop->width() / 3, 150);
     ui->nameLabel->setMinimumSize(100, 20);
     ui->hostLabel->setMinimumSize(100, 20);
-/*
-    delete ui->formLayout;
-    ui->formLayout = new QFormLayout(ui->layoutWidget1);
-    ui->formLayout->setObjectName(QStringLiteral("formLayout"));
-    ui->formLayout->setContentsMargins(0, 0, 0, 0);
-    ui->formLayout->setWidget(0, QFormLayout::LabelRole, ui->nameLabel);
-    ui->formLayout->setWidget(0, QFormLayout::FieldRole, ui->nameLineEdit);
-    ui->formLayout->setWidget(1, QFormLayout::LabelRole, ui->hostLabel);
-    ui->formLayout->setWidget(1, QFormLayout::FieldRole, ui->hostComboBox);
-*/
     ui->avatarLabel->setGeometry(QRect(20, 320, 42, 80));
     ui->avatarPixmap->setGeometry(QRect(15, 400, 114, 136));
     ui->changeAvatarButton->setGeometry(QRect(140, 600, 400, 100));
