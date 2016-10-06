@@ -214,6 +214,7 @@ public:
     bool isGeneralHidden(const QString &general_name) const;
 
     TransferSkill *getTransfer() const;
+    QList<Card *> getCards() const;
 
 private:
     void _loadMiniScenarios();

@@ -577,11 +577,11 @@ void QSanInvokeSkillDock::update()
 #endif
     int m1 = 0;
 #ifdef Q_OS_ANDROID
-    int rowTop1 = G_DASHBOARD_LAYOUT.m_confirmButtonArea.top() - G_DASHBOARD_LAYOUT.m_confirmButtonArea.height() - (G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height());
+    int rowTop1 = -G_DASHBOARD_LAYOUT.m_avatarArea.height() / 2 - G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height();
     for (int i = 1; i <= lordskillNum; i++) {
         QSanInvokeSkillButton *button = lordskill_buttons[m1++];
         button->setButtonWidth((QSanInvokeSkillButton::SkillButtonWidth)(0));
-        button->setPos(-_m_width * i, rowTop1);
+        button->setPos(-button->boundingRect().width() * i * 2, rowTop1);
     }
 #else
     int rowTop1 = G_DASHBOARD_LAYOUT.m_confirmButtonArea.top() - G_DASHBOARD_LAYOUT.m_confirmButtonArea.height() - G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height();

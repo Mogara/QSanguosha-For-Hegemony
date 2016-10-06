@@ -2,23 +2,17 @@
 #define GUHUOBOX
 
 #include "graphicsbox.h"
+#include "button.h"
 #include "title.h"
 
-class GuhuoButton : public QGraphicsObject
+class CardButton : public QGraphicsObject
 {
     Q_OBJECT
-
-public:
-    static QFont defaultFont();
-
-    GuhuoButton(QGraphicsObject *parent,const QString &card, const int width, const QColor &color);
+    friend class GuhuoBox;
 
 signals:
     void clicked();
-    void hovered(bool entering);
 
-public slots:
-    void needDisabled(bool disabled);
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
     virtual QRectF boundingRect() const;
@@ -28,8 +22,9 @@ protected:
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
 private:
-    int width;
-    QColor color;
+    CardButton(QGraphicsObject *parent, const QString &card, int scale);
+    QString cardName;
+    int Scale;
 };
 
 class GuhuoBox : public GraphicsBox
@@ -54,11 +49,7 @@ public slots:
 protected:
     virtual QRectF boundingRect() const;
 
-    int getButtonWidth() const;
-
     bool isButtonEnable(const QString &card) const;
-
-    QColor getColor(const QString &card) const;
 
     QString translate(const QString &option) const;
 
@@ -66,20 +57,19 @@ protected:
     QString flags;
     QString skill_name;
 
-    QMap<QString, QStringList> card_list;
+    QList<CardButton *> buttons;
 
-    QMap<QString, GuhuoButton *> buttons;
+    QList<Title*> titles;
 
-    QMap<QString, Title*> titles;
-
-    static const int minButtonWidth;
-    static const int defaultButtonHeight;
     static const int topBlankWidth;
     static const int bottomBlankWidth;
     static const int interval;
     static const int outerBlankWidth;
 
     static const int titleWidth;
+
+private:
+    int maxcardcount, maxrow, scale;
 };
 
 #endif // GUHUOBOX

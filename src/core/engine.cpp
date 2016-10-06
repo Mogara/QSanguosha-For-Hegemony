@@ -1151,3 +1151,8 @@ int Engine::correctAttackRange(const Player *target, bool include_weapon, bool f
 
     return extra;
 }
+
+QList<Card *> Engine::getCards() const
+{
+    return cards;
+}
