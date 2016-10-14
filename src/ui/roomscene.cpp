@@ -346,6 +346,13 @@ RoomScene::RoomScene(QMainWindow *main_window)
     log_box_widget->setObjectName("log_box_widget");
     log_box_widget->setZValue(-1.0);
     log_box_widget->setParent(this);
+#ifdef Q_OS_ANDROID
+    log_box->setStyleSheet("background-color: transparent");
+    //log_box->setAttribute(Qt::WA_TranslucentBackground);
+    log_box->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    log_box->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    log_box->setLineWrapMode(QTextEdit::NoWrap);
+#endif
     connect(ClientInstance, &Client::log_received, log_box, (void (ClientLogBox::*)(const QStringList &))(&ClientLogBox::appendLog));
 
     prompt_box = new Window(tr("QSanguosha"), QSize(480, 200));
@@ -917,7 +924,7 @@ void RoomScene::onSceneRectChanged(const QRectF &rect)
     _m_infoPlane.moveRight(newRect.right());
     _m_infoPlane.setTop(newRect.top() + _m_roomLayout->m_roleBoxHeight);
 #ifdef Q_OS_ANDROID
-    _m_infoPlane.setBottom(dashboard->y() - _m_roomLayout->m_chatTextBoxHeight - G_DASHBOARD_LAYOUT.m_avatarArea.height());
+    _m_infoPlane.setBottom((dashboard->y() - _m_roomLayout->m_chatTextBoxHeight) * (1 - _m_roomLayout->m_logBoxHeightPercentage));
 #else
     _m_infoPlane.setBottom(dashboard->y() - _m_roomLayout->m_chatTextBoxHeight);
 #endif
@@ -925,6 +932,16 @@ void RoomScene::onSceneRectChanged(const QRectF &rect)
     m_rolesBox->setPixmap(m_rolesBoxBackground);
     m_rolesBox->setPos(_m_infoPlane.left(), newRect.top());
 
+#ifdef Q_OS_ANDROID
+    log_box_widget->setPos(G_DASHBOARD_LAYOUT.m_leftWidth, main_window->height() - G_DASHBOARD_LAYOUT.m_normalHeight - 200);
+    log_box->resize(main_window->width() - G_DASHBOARD_LAYOUT.m_leftWidth - _m_infoPlane.width(), main_window->height() / 5);
+    chat_box_widget->setPos(_m_infoPlane.topLeft());
+    chatBox->resize(_m_infoPlane.width(), _m_infoPlane.bottom() - chat_box_widget->y());
+    chat_edit_widget->setPos(_m_infoPlane.left(), _m_infoPlane.bottom());
+    chatEdit->resize(_m_infoPlane.width() - chat_widget->boundingRect().width(), _m_roomLayout->m_chatTextBoxHeight);
+    chat_widget->setPos(_m_infoPlane.right() - chat_widget->boundingRect().width(),
+        chat_edit_widget->y() + (_m_roomLayout->m_chatTextBoxHeight - chat_widget->boundingRect().height()) / 2);
+#else
     log_box_widget->setPos(_m_infoPlane.topLeft());
     log_box->resize(_m_infoPlane.width(), _m_infoPlane.height() * _m_roomLayout->m_logBoxHeightPercentage);
     chat_box_widget->setPos(_m_infoPlane.left(), _m_infoPlane.bottom() - _m_infoPlane.height() * _m_roomLayout->m_chatBoxHeightPercentage);
@@ -933,14 +950,18 @@ void RoomScene::onSceneRectChanged(const QRectF &rect)
     chatEdit->resize(_m_infoPlane.width() - chat_widget->boundingRect().width(), _m_roomLayout->m_chatTextBoxHeight);
     chat_widget->setPos(_m_infoPlane.right() - chat_widget->boundingRect().width(),
         chat_edit_widget->y() + (_m_roomLayout->m_chatTextBoxHeight - chat_widget->boundingRect().height()) / 2);
+#endif
 
     m_tablew = newRect.width();// - infoPlane.width();
     m_tableh = newRect.height();// - dashboard->boundingRect().height();
     m_tableh -= _m_roomLayout->m_photoDashboardPadding;
     updateTable();
     updateRolesBox();
+#ifdef Q_OS_ANDROID
+    setChatBoxVisible(true);
+#else
     setChatBoxVisible(chat_box_widget->isVisible());
-
+#endif
     QMapIterator<QString, BubbleChatBox *> iter(bubbleChatBoxes);
     while (iter.hasNext()) {
         iter.next();
@@ -992,7 +1013,7 @@ void RoomScene::_dispersePhotos(QList<Photo *> &photos, QRectF fillRegion,
 void RoomScene::updateTable()
 {
     int pad = _m_roomLayout->m_scenePadding + _m_roomLayout->m_photoRoomPadding;
-    int tablew = log_box_widget->x() - pad * 2;
+    int tablew = chatBox->x() - pad * 2;
     int tableh = sceneRect().height() - pad * 2 - dashboard->boundingRect().height();
     int photow = _m_photoLayout->m_normalWidth;
     int photoh = _m_photoLayout->m_normalHeight;
@@ -1074,7 +1095,7 @@ void RoomScene::updateTable()
 
     QRectF tableRect(col1, row1, col2 - col1, row2 - row1);
 
-    QRect tableBottomBar(0, 0, log_box_widget->x() - col1, G_DASHBOARD_LAYOUT.m_floatingAreaHeight);
+    QRect tableBottomBar(0, 0, chatBox->x() - col1, G_DASHBOARD_LAYOUT.m_floatingAreaHeight);
     tableBottomBar.moveBottomLeft(QPoint((int)tableRect.left(), 0));
     dashboard->setFloatingArea(tableBottomBar);
 
@@ -1199,7 +1220,7 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats)
             connect(photo, &Photo::enable_changed, this, &RoomScene::onEnabledChange);
         }
     }
-
+#ifndef Q_OS_ANDROID
     bool all_robot = true;
     foreach (const ClientPlayer *p, ClientInstance->getPlayers()) {
         if (p != Self && p->getState() != "robot") {
@@ -1209,7 +1230,7 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats)
     }
     if (all_robot)
         setChatBoxVisible(false);
-
+#endif
     //update the positions of bubbles after setting seats
     QList<QString> names = name2photo.keys();
     foreach (const QString &who, names) {
@@ -1330,6 +1351,7 @@ void RoomScene::enableTargets(const Card *card)
     }
 
     selected_targets.clear();
+
     // unset avatar and all photo
     foreach (PlayerCardContainer *item, item2player.keys())
         item->setSelected(false);
@@ -2638,12 +2660,12 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             } else if (newStatus == Client::Playing) {
                 reason = CardUseStruct::CARD_USE_REASON_PLAY;
             }
-            if (!ClientInstance->getSkillToHighLight().isEmpty() && pattern.startsWith("@@"))
+            if (!ClientInstance->getSkillToHighLight().isEmpty() && pattern.startsWith("@@")) {
                 if (ClientInstance->getSkillToHighLight() == button->objectName())
                     button->setEnabled(vsSkill->isAvailable(Self, reason, pattern) && !pattern.endsWith("!"));
                 else
                     button->setEnabled(false);
-            else
+            } else
                 button->setEnabled(vsSkill->isAvailable(Self, reason, pattern) && !pattern.endsWith("!"));
         } else {
             const Skill *skill = button->getSkill();
@@ -4710,16 +4732,20 @@ void RoomScene::setChatBoxVisible(bool show)
         chat_box_widget->hide();
         chatEdit->hide();
         chat_widget->hide();
+#ifndef Q_OS_ANDROID
         log_box->resize(_m_infoPlane.width(),
             _m_infoPlane.height() * (_m_roomLayout->m_logBoxHeightPercentage
             + _m_roomLayout->m_chatBoxHeightPercentage)
             + _m_roomLayout->m_chatTextBoxHeight);
+#endif
     } else {
         chat_box_widget->show();
         chatEdit->show();
         chat_widget->show();
+#ifndef Q_OS_ANDROID
         log_box->resize(_m_infoPlane.width(),
             _m_infoPlane.height() * _m_roomLayout->m_logBoxHeightPercentage);
+#endif
     }
 }
 

@@ -70,7 +70,15 @@ void GraphicsBox::stylize(QGraphicsObject *target)
 void GraphicsBox::moveToCenter(QGraphicsObject *target)
 {
     const QRectF rect = target->boundingRect();
+#ifdef Q_OS_ANDROID
+    int height = RoomSceneInstance->sceneRect().height() - G_DASHBOARD_LAYOUT.m_normalHeight - 200 - rect.height();
+    if (height > 0)
+        target->setPos(RoomSceneInstance->tableCenterPos().x() - rect.width() / 2, height / 2);
+    else
+        target->setPos(RoomSceneInstance->tableCenterPos().x() - rect.width() / 2, 0);
+#else
     target->setPos(RoomSceneInstance->tableCenterPos() - QPointF(rect.width() / 2, rect.height() / 2));
+#endif
 }
 
 void GraphicsBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)

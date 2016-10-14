@@ -193,8 +193,9 @@ QString TriggerOptionButton::displayedTextOf(const QString &str)
     }
     if (skillName.contains("'")) {
         QString realSkill = skillName.split("'").last();
+        QString targetName = ClientInstance->getPlayer(skillName.split("'").first())->getFootnoteName();
         text = tr("%1 (use upon %2)").arg(Sanguosha->translate(realSkill))
-                .arg(Sanguosha->translate(skillName.split("'").first()));
+                .arg(Sanguosha->translate(targetName));
     }
     if (time > 1)
         //text += " " + tr("*") + time;

@@ -795,8 +795,10 @@ public:
 
     virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const
     {
+        Room *room = player->getRoom();
+        int id = to_select->getEffectiveId();
         if (player->hasShownSkill(objectName()))
-            return to_select->getSuit() == Card::Spade;
+            return to_select->getSuit() == Card::Spade && (room->getCardPlace(id) == Player::PlaceEquip || room->getCardPlace(id) == Player::PlaceHand);
 
         return false;
     }

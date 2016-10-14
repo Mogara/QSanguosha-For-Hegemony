@@ -26,6 +26,7 @@
 #include "roomscene.h"
 #include "heroskincontainer.h"
 #include "graphicspixmaphoveritem.h"
+#include "skinbank.h"
 
 #include <QPainter>
 #include <QGraphicsScene>
@@ -259,26 +260,24 @@ void Dashboard::_createRight()
         _getPixmap(QSanRoomSkin::S_SKIN_KEY_AVATAR_FRAME), rightFrame);
     rightFrame->setZValue(-1000); // nobody should be under me.
 
+#ifdef Q_OS_ANDROID
+    m_leftSkillDock = new QSanInvokeSkillDock(leftFrame);
+
+    m_rightSkillDock = new QSanInvokeSkillDock(leftFrame);
+#else
     QRect avatar1 = G_DASHBOARD_LAYOUT.m_avatarArea;
     m_leftSkillDock = new QSanInvokeSkillDock(rightFrame);
-#ifdef Q_OS_ANDROID
-    m_leftSkillDock->setPos(avatar1.left(), avatar1.top());
-#else
     m_leftSkillDock->setPos(avatar1.left(), avatar1.bottom() -
         G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() / 1.3);
-#endif
     m_leftSkillDock->setWidth(avatar1.width());
-    m_leftSkillDock->setObjectName("left");
 
     QRect avatar2 = G_DASHBOARD_LAYOUT.m_secondaryAvatarArea;
     m_rightSkillDock = new QSanInvokeSkillDock(rightFrame);
-#ifdef Q_OS_ANDROID
-    m_rightSkillDock->setPos(avatar2.left(), avatar2.top());
-#else
     m_rightSkillDock->setPos(avatar2.left(), avatar2.bottom() -
         G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() / 1.3);
-#endif
     m_rightSkillDock->setWidth(avatar2.width());
+#endif
+    m_leftSkillDock->setObjectName("left");
     m_rightSkillDock->setObjectName("right");
 
     _m_shadow_layer1 = new QGraphicsRectItem(rightFrame);
@@ -622,6 +621,20 @@ QSanSkillButton *Dashboard::addSkillButton(const QString &skillName, const bool 
 #ifndef QT_NO_DEBUG
     const Skill *skill = Sanguosha->getSkill(skillName);
     Q_ASSERT(skill && !skill->inherits("WeaponSkill") && !skill->inherits("ArmorSkill"));
+#endif
+#ifdef Q_OS_ANDROID
+    int screen_width = RoomSceneInstance->sceneRect().width();
+    int screen_height = RoomSceneInstance->sceneRect().height();
+    int plane_height = (screen_height - G_DASHBOARD_LAYOUT.m_normalHeight - G_ROOM_LAYOUT.m_chatTextBoxHeight) * (1 - G_ROOM_LAYOUT.m_logBoxHeightPercentage)
+            + G_ROOM_LAYOUT.m_chatTextBoxHeight;
+    m_leftSkillDock->setPos(screen_width * (1 - G_ROOM_LAYOUT.m_infoPlaneWidthPercentage),
+                            10 -(screen_height - G_DASHBOARD_LAYOUT.m_normalHeight - plane_height));
+    m_leftSkillDock->setWidth(screen_width * G_ROOM_LAYOUT.m_infoPlaneWidthPercentage / 2);
+
+    m_rightSkillDock->setPos(screen_width * (1 - G_ROOM_LAYOUT.m_infoPlaneWidthPercentage / 2),
+                             10 -(screen_height - G_DASHBOARD_LAYOUT.m_normalHeight - plane_height));
+    m_leftSkillDock->setWidth(screen_width * G_ROOM_LAYOUT.m_infoPlaneWidthPercentage / 2);
+    m_rightSkillDock->setWidth(screen_width * G_ROOM_LAYOUT.m_infoPlaneWidthPercentage / 2);
 #endif
     if (m_leftSkillDock->getSkillButtonByName(skillName) && head)
         //_m_button_recycle.append(_m_rightSkillDock->getSkillButtonByName(skillName));
@@ -1474,6 +1487,7 @@ void Dashboard::updatePending()
             delete pendingCard;
             pendingCard = NULL;
         }
+
         pendingCard = new_pending_card;
         emit card_selected(pendingCard);
     }

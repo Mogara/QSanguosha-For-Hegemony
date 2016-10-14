@@ -511,6 +511,7 @@ sgs.ai_skill_cardask["@luanwu-slash"] = function(self)
 		local targets = {}
 		local EXT = 1 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, self.player, slash)
 		for _, friend in ipairs(players) do
+			if not self.player:canSlash(friend, slash) then continue end
 			if self:isFriend(friend) and not self:hasHeavySlashDamage(self.player, slash, friend)
 				and not self:slashProhibit(slash, friend) and self:slashIsEffective(slash, friend)
 				and self:isPriorFriendOfSlash(friend, slash, self.player)
@@ -520,6 +521,7 @@ sgs.ai_skill_cardask["@luanwu-slash"] = function(self)
 		end
 
 		for _, enemy in ipairs(players) do
+			if not self.player:canSlash(enemy, slash) then continue end
 			if self:isEnemy(enemy) and not self:slashProhibit(slash, enemy) and self:slashIsEffective(slash, enemy)
 				and sgs.isGoodTarget(enemy, players, self) and not table.contains(targets, enemy:objectName()) then
 				table.insert(targets, enemy:objectName())
@@ -527,6 +529,7 @@ sgs.ai_skill_cardask["@luanwu-slash"] = function(self)
 		end
 
 		for _, friend in ipairs(players) do
+			if not self.player:canSlash(friend, slash) then continue end
 			if self:isFriend(friend) and not self:hasHeavySlashDamage(self.player, slash, friend)
 				and not self:slashProhibit(slash, friend) and self:slashIsEffective(slash, friend)
 				and (self:getDamagedEffects(friend, self.player, true) or self:needToLoseHp(friend, self.player, true))
@@ -537,6 +540,7 @@ sgs.ai_skill_cardask["@luanwu-slash"] = function(self)
 
 		if self:isWeak() then
 			for _, enemy in ipairs(players) do
+				if not self.player:canSlash(enemy, slash) then continue end
 				if not table.contains(targets, enemy:objectName()) and self:isEnemy(enemy) then
 					table.insert(targets, enemy:objectName())
 				end
@@ -545,6 +549,7 @@ sgs.ai_skill_cardask["@luanwu-slash"] = function(self)
 
 		if self:isWeak() then
 			for _, friend in ipairs(players) do
+				if not self.player:canSlash(friend, slash) then continue end
 				if not table.contains(targets, friend:objectName()) and self:isFriend(friend) and (not self:isFriend(friend) or getKnownCard(friend, self.player, "Jink", true) > 0) then
 					table.insert(targets, friend:objectName())
 				end

@@ -34,10 +34,21 @@ ClientLogBox::ClientLogBox(QWidget *parent)
 {
     setReadOnly(true);
 
+#ifdef Q_OS_ANDROID
+    connect(&timer, &QTimer::timeout, this, &ClientLogBox::clear);
+#else
     const QString style = StyleHelper::styleSheetOfScrollBar();
     verticalScrollBar()->setStyleSheet(style);
     horizontalScrollBar()->setStyleSheet(style);
+#endif
 }
+
+#ifdef Q_OS_ANDROID
+ClientLogBox::~ClientLogBox()
+{
+    timer.stop();
+}
+#endif
 
 void ClientLogBox::appendLog(const QString &type, const QString &from_general, const QStringList &tos,
     QString card_str, QString arg, QString arg2)
@@ -204,6 +215,7 @@ void ClientLogBox::append(const QString &text)
     QString text_copy = text;
 #ifdef Q_OS_ANDROID
     text_copy = QString("<font size='20'>%1</font>").arg(text_copy);
+    timer.start(5000);
 #endif
     QTextEdit::append(QString("<p style=\"margin:3px 2px; line-height:120%;\">%1</p>").arg(text_copy));
 }

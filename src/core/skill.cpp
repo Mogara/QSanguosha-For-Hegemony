@@ -133,8 +133,8 @@ void Skill::initMediaSource()
     QStringList names = dir.entryList();
     QStringList newnames = names.filter(objectName() + "_");
     foreach (QString name, newnames) {
-        if (QFile::exists("audio/skill/" +  name))
-            sources << "audio/skill/" +  name;
+        if (QFile::exists("audio/skill/" + name))
+            sources << "audio/skill/" + name;
     }
 
     for (int i = 1;; ++i) {

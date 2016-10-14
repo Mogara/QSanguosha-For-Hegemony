@@ -569,7 +569,7 @@ public:
             }
         }
 
-        if (triggerEvent == EventLoseSkill && data.toString() == "tianfu")
+        if (triggerEvent == EventLoseSkill && data.toString().split(":").first() == "tianfu")
             return QStringList();
         if (triggerEvent == GeneralHidden && player->ownSkill(this) && player->inHeadSkills(objectName()) == data.toBool())
             return QStringList();

@@ -1640,7 +1640,7 @@ public:
             return r;
         if (triggerEvent == Death && (data.value<DeathStruct>().who != player || !player->hasShownSkill(this)))
             return r;
-        if ((triggerEvent == EventAcquireSkill || triggerEvent == EventLoseSkill) && data.toString() != objectName())
+        if ((triggerEvent == EventAcquireSkill || triggerEvent == EventLoseSkill) && data.toString().split(":").first() != objectName())
             return r;
 
         bool set = false;

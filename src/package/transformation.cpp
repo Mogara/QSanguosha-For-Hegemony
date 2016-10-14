@@ -692,6 +692,7 @@ public:
 
     static void dohuashen(ServerPlayer *zuoci, QString reason)
     {
+        if (!zuoci->isAlive()) return;
         Room *room = zuoci->getRoom();
         QStringList ac_dt_list;
         QStringList old_skills = zuoci->tag["HuashenSkill"].toStringList();

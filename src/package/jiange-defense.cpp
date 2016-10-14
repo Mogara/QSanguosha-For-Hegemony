@@ -153,7 +153,7 @@ public:
             } else if (player->getPhase() == Player::Start)
                 return QStringList(objectName());
         } else if ((player != NULL && (triggerEvent == Death && player->hasSkill(objectName()) && data.value<DeathStruct>().who == player))
-            || (triggerEvent == EventLoseSkill && data.toString() == objectName())) {
+            || (triggerEvent == EventLoseSkill && data.toString().split(":").first() == objectName())) {
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 p->loseAllMarks("@gale");
                 p->loseAllMarks("@fog");
