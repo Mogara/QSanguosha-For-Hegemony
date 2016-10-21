@@ -409,12 +409,17 @@ public:
         if (triggerEvent == EventPhaseStart) {
             if (player != NULL && player->isAlive() && player->getPhase() == Player::RoundStart) {
                 ServerPlayer *caohong = room->findPlayerBySkillName("heyi");
-                if (caohong && caohong->isAlive() && caohong->hasShownSkill("heyi") && player->inFormationRalation(caohong))
+                if (caohong && caohong->isAlive() && caohong->hasShownSkill("heyi") && player->inFormationRalation(caohong)) {
+                    room->doBattleArrayAnimate(caohong);
                     room->broadcastSkillInvoke(objectName(), caohong);
+                }
             }
-        } else if (triggerEvent == GeneralShown)
-            if (TriggerSkill::triggerable(player) && player->hasShownSkill(objectName()) && data.toBool() == player->inHeadSkills(objectName()))
+        } else if (triggerEvent == GeneralShown) {
+            if (TriggerSkill::triggerable(player) && player->hasShownSkill(objectName()) && data.toBool() == player->inHeadSkills(objectName())) {
+                room->doBattleArrayAnimate(player);
                 room->broadcastSkillInvoke(objectName(), player);
+            }
+        }
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &) const
@@ -582,6 +587,7 @@ public:
         if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
             QList<ServerPlayer *> jiangweis = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *jiangwei, jiangweis) {
+                room->doBattleArrayAnimate(jiangwei);
                 if (jiangwei->hasShownSkill(this) && jiangwei->inFormationRalation(current) && !jiangwei->hasInnateSkill("kanpo")) {
                     jiangwei->setMark("tianfu_kanpo", 1);
                     room->attachSkillToPlayer(jiangwei, "kanpo");
@@ -721,8 +727,10 @@ void ShangyiCard::onEffect(const CardEffectStruct &effect) const
     if (!effect.to->hasShownAllGenerals())
         choices << "hidden_general";
 
+    room->setPlayerFlag(effect.to, "shangyiTarget");        //for AI
     QString choice = room->askForChoice(effect.from, "shangyi%to:" + effect.to->objectName(),
         choices.join("+"), QVariant::fromValue(effect.to));
+    room->setPlayerFlag(effect.to, "-shangyiTarget");
     LogMessage log;
     log.type = "#KnownBothView";
     log.from = effect.from;
@@ -746,24 +754,27 @@ void ShangyiCard::onEffect(const CardEffectStruct &effect) const
         room->throwCard(Sanguosha->getCard(to_discard), reason, effect.to, effect.from);
     } else {
         room->broadcastSkillInvoke("shangyi", 2, effect.from);
-        QStringList list;
-        if (!effect.to->hasShownGeneral1())
-            list << effect.to->getActualGeneral1Name();
-        if (!effect.to->hasShownGeneral2())
-            list << effect.to->getActualGeneral2Name();
+        QStringList list, list2;
+        if (!effect.to->hasShownGeneral1()) {
+            list << "head_general";
+            list2 << effect.to->getActualGeneral1Name();
+        }
+        if (!effect.to->hasShownGeneral2()) {
+            list << "deputy_general";
+            list2 << effect.to->getActualGeneral2Name();
+        }
         foreach (const QString &name, list) {
             LogMessage log;
             log.type = "$KnownBothViewGeneral";
             log.from = effect.from;
             log.to << effect.to;
-            QString position = effect.to->getActualGeneral1Name() == name ? "head_general" : "deputy_general";
-            log.arg = Sanguosha->translate(position);
-            log.arg2 = name;
+            log.arg = Sanguosha->translate(name);
+            log.arg2 = (name == "head_general" ? effect.to->getActualGeneral1Name() : effect.to->getActualGeneral2Name());
             room->doNotify(effect.from, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
         }
         JsonArray arg;
         arg << "shangyi";
-        arg << JsonUtils::toJsonArray(list);
+        arg << JsonUtils::toJsonArray(list2);
         room->doNotify(effect.from, QSanProtocol::S_COMMAND_VIEW_GENERALS, arg);
     }
 }
@@ -826,9 +837,10 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *ask_who) const
     {
         if (ask_who != NULL && ask_who->hasShownSkill(this)) {
+            room->doBattleArrayAnimate(ask_who, skill_target);
             room->broadcastSkillInvoke(objectName(), ask_who);
             return true;
         }
@@ -1060,9 +1072,11 @@ public:
 
         Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
         analeptic->setSkillName("_zhendu");
-        room->useCard(CardUseStruct(analeptic, player, QList<ServerPlayer *>(), true));
-        if (player->isAlive())
-            room->damage(DamageStruct(objectName(), hetaihou, player));
+        if (analeptic->isAvailable(player) && room->useCard(CardUseStruct(analeptic, player, QList<ServerPlayer *>(), true))) {
+            if (player->isAlive())
+                room->damage(DamageStruct(objectName(), hetaihou, player));
+        } else
+            analeptic->deleteLater();
 
         return false;
     }

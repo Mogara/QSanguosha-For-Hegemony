@@ -29,7 +29,7 @@ qice_skill.getTurnUseCard = function(self,room,player,data)
 	local preventdamaget = false
 	if not (caocao and self:isFriend(caocao)
 		and caocao:getHp() > 1 
-		and (caocao:hasShownSkill("jianxiong") or caocao:hasShownSkill("jjianxiong"))
+		and self:hasSkill("jianxiong|jjianxiong", caocao)
 		and not self:willSkipPlayPhase(caocao))
 		and getCardsNum("Peach", self.player) > 0 then
 		preventdamage = true
@@ -254,12 +254,13 @@ sgs.ai_skill_choice.huashen = function(self, choice, data)
 	for _, name1 in ipairs(names) do
 		local g1 = sgs.Sanguosha:getGeneral(name1)
 		if not g1 then continue end
+		--[[
 		for _, skill in sgs.qlist(g1:getVisibleSkillList(true, head)) do
 			if skill:getFrequency() == sgs.Skill_Limited and skill:getLimitMark() ~= "" and self.player:getMark(skill:getLimitMark()) == 0 and self.player:hasSkill(skill:objectName()) then
-				ajust = ajust - 1
+				ajust1 = ajust1 - 1
 			end
 		end
-
+		--]]
 		for _, name2 in ipairs(names) do
 			local g2 = sgs.Sanguosha:getGeneral(name2)
 			if not g2 or g1:getKingdom() ~= g2:getKingdom() or name1 == name2 then continue end
@@ -347,10 +348,10 @@ function SmartAI:getHuashenPairValue(g1, g2)
 			end
 			for _, p in sgs.qlist(self.room:getOtherPlayers(player)) do
 				if self:isFriend(p) then
-					if p:hasShownSkill("duoshi") then
+					if self:hasSkill("duoshi", p) then
 						current_value = current_value + 0.4
 					end
-					if p:hasShownSkill("zhijian") then
+					if self:hasSkill("zhijian", p) then
 						current_value = current_value + 0.3
 					end
 				end
@@ -384,7 +385,7 @@ sgs.ai_skill_invoke.zhiman = function(self, data)
 	if self:isFriend(damage.to) and (table.contains(promo, target) or not self:needToLoseHp(target, self.player)) then return true end
 	if not self:isFriend(damage.to) and damage.damage > 1 and not target:hasArmorEffect("SilverLion") then return false end
 	if table.contains(promo, target) then return true end
-	if target:hasShownSkills(sgs.masochism_skill) and self.player:canGetCard(target, "e") then self.player:speak("因为防止卖血") return true end
+	if self:hasSkill(sgs.masochism_skill, target) and self.player:canGetCard(target, "e") then self.player:speak("因为防止卖血") return true end
 	return false
 end
 
@@ -409,7 +410,7 @@ sgs.ai_choicemade_filter.cardChosen.zhiman = function(self, player, promptlist)
 	if self:needToThrowArmor(target) and self.room:getCardPlace(id) == sgs.Player_PlaceEquip and card:isKindOf("Armor") then
 		intention = -intention
 	elseif self:doNotDiscard(target) then intention = -intention
-	elseif target:hasShownSkills(sgs.lose_equip_skill) and not target:getEquips():isEmpty() and
+	elseif self:hasSkill(sgs.lose_equip_skill, target) and not target:getEquips():isEmpty() and
 		self.room:getCardPlace(id) == sgs.Player_PlaceEquip and card:isKindOf("EquipCard") then
 			intention = -intention
 	elseif self.room:getCardPlace(id) == sgs.Player_PlaceJudge then
@@ -458,7 +459,7 @@ sgs.ai_skill_use_func.SanyaoCard = function(card, use, self)
 	end
 	if not target then
 		for _, p in sgs.qlist(targets) do
-			if self:isEnemy(p) and not p:hasShownSkills(sgs.masochism_skill) and self:getOverflow() > 0 then target = p break end
+			if self:isEnemy(p) and not self:hasSkill(sgs.masochism_skill, p) and self:getOverflow() > 0 then target = p break end
 		end
 	end
 
@@ -531,7 +532,7 @@ sgs.ai_choicemade_filter.cardChosen.liefeng = function(self, player, promptlist)
 	if self:needToThrowArmor(target) and self.room:getCardPlace(id) == sgs.Player_PlaceEquip and card:isKindOf("Armor") then
 		intention = -intention
 	elseif self:doNotDiscard(target) then intention = -intention
-	elseif target:hasShownSkills(sgs.lose_equip_skill) and not target:getEquips():isEmpty() and
+	elseif self:hasSkill(sgs.lose_equip_skill, target) and not target:getEquips():isEmpty() and
 		self.room:getCardPlace(id) == sgs.Player_PlaceEquip and card:isKindOf("EquipCard") then
 			intention = -intention
 	elseif self:getOverflow(target) > 2 then intention = 0
@@ -586,7 +587,7 @@ xuanlue_skill.getTurnUseCard = function(self)
 	end
 
 	for _, p in ipairs(self.friends) do
-		if self:isFriend(p) and p:hasSkills(sgs.need_equip_skill .. "|" .. sgs.lose_equip_skill) then
+		if self:isFriend(p) and self:hasSkill(sgs.need_equip_skill .. "|" .. sgs.lose_equip_skill, p) then
 			for _, card in ipairs(danger) do
 				if (card:isKindOf("Weapon") and not p:getWeapon() and not p:hasFlag("xuanlue_gotweapon")) then
 					p:setFlags("xuanlue_gotweapon")
@@ -670,7 +671,7 @@ xuanlue_skill.getTurnUseCard = function(self)
 				if not table.contains(self.resultcard, p:getArmor()) then table.insert(self.resultcard, p:getArmor()) end
 				if not table.contains(self.resulttargets, p) then table.insert(self.resulttargets, p) end
 			end
-			if p:hasShownSkills(sgs.lose_equip_skill) and p:hasEquip() then
+			if self:hasSkills(sgs.lose_equip_skill, p) and p:hasEquip() then
 				for _, eq in sgs.qlist(p:getEquips()) do
 					if self.player:canGetCard(p, eq:getEffectiveId()) then
 						if not table.contains(self.resultcard, eq) then table.insert(self.resultcard, eq) end
@@ -690,35 +691,13 @@ sgs.ai_skill_use_func.XuanlueCard = function(card, use, self)
 	use.card = card
 end
 
-sgs.ai_skill_playerchosen.xuanlue = function(self, targets)
-	local targetlist = sgs.QList2Table(targets)
-	for _, p in ipairs(targetlist) do
-		if not self:isFriend(p) and table.contains(self.resulttargets, p) then
-			for _, eq in sgs.qlist(p:getEquips()) do
-				if table.contains(self.resultcard, eq) and not table.contains(self.gotcard, eq) then
-					return p
-				end
-			end
-		end
+sgs.ai_skill_cardchosen.xuanlue = function(self, targets, flags, min_num, max_num, disable_list)
+	local ids = {}
+	local n = math.min(3, #self.resultcard)
+	for i = 1, n, 1 do
+		table.insert(ids, self.resultcard[i]:getEffectiveId())
 	end
-	for _, p in ipairs(targetlist) do
-		if table.contains(self.resulttargets, p) then
-			for _, eq in sgs.qlist(p:getEquips()) do
-				if table.contains(self.resultcard, eq) and not table.contains(self.gotcard, eq) then
-					return p
-				end
-			end
-		end
-	end
-end
-
-sgs.ai_skill_cardchosen.xuanlue = function(self, p)
-	for _, eq in sgs.qlist(p:getEquips()) do
-		if table.contains(self.resultcard, eq) and not table.contains(self.gotcard, eq) then
-			table.insert(self.gotcard, eq)
-			return eq:getEffectiveId()
-		end
-	end
+	return ids
 end
 
 sgs.ai_skill_use["@@xuanlue_equip!"] = function(self, prompt)
@@ -858,7 +837,7 @@ sgs.ai_skill_use["@@diaodu_equip"] = function(self, prompt)
 	end
 	for _, card in sgs.qlist(self.player:getCards("e")) do
 		for _, p in ipairs(self.friends_noself) do
-			if not self.player:isFriendWith(p) or not p:hasShownSkills(sgs.need_equip_skill .. "|" .. sgs.lose_equip_skill) then continue end
+			if not self.player:isFriendWith(p) or not self:hasSkill(sgs.need_equip_skill .. "|" .. sgs.lose_equip_skill, p) then continue end
 			if card:isKindOf("Armor") and not p:getArmor() and not(card:isKindOf("PeaceSpell") and self:isWeak()) then
 				return ("@DiaoduequipCard=" .. self.player:getArmor():getEffectiveId() .. "&diaoduequip->" .. p:objectName())
 			end
@@ -995,7 +974,7 @@ sgs.ai_skill_askforag.gongxin = function(self, card_ids)
 	end
 	valuable = peach or ex_nihilo or jink or nullification or slash or card_ids[1]
 	local card = sgs.Sanguosha:getCard(valuable)
-	if self:isEnemy(target) and target:hasSkill("tuntian") then
+	if self:isEnemy(target) and self:hasSkill("tuntian", target) then
 		local zhangjiao = self.room:findPlayerBySkillName("guidao")
 		if zhangjiao and self:isFriend(zhangjiao, target) and self:canRetrial(zhangjiao, target) and self:isValuableCard(card, zhangjiao) then
 			self.gongxinchoice = "discard"
@@ -1068,15 +1047,15 @@ sgs.ai_skill_askforag.gongxin = function(self, card_ids)
 		end
 	end
 
-	if self:isEnemy(nextAlive) and nextAlive:hasSkill("luoshen") and valuable then
+	if self:isEnemy(nextAlive) and self:hasSkill("luoshen", nextAlive) and valuable then
 		self.gongxinchoice = "put"
 		return valuable
 	end
-	if nextAlive:hasSkill("yinghun") and nextAlive:isWounded() then
+	if self:hasSkill("yinghun", nextAlive) and nextAlive:isWounded() then
 		self.gongxinchoice = self:isFriend(nextAlive) and "put" or "discard"
 		return valuable
 	end
-	if target:hasSkill("hongyan") and hasLightning and self:isEnemy(nextAlive) and not (nextAlive:hasSkill("qiaobian") and nextAlive:getHandcardNum() > 0) then
+	if self:hasSkill("hongyan", target) and hasLightning and self:isEnemy(nextAlive) and not (self:hasSkill("qiaobian", nextAlive) and nextAlive:getHandcardNum() > 0) then
 		for _, id in ipairs(card_ids) do
 			local card = sgs.Sanguosha:getEngineCard(id)
 			if card:getSuit() == sgs.Card_Spade and card:getNumber() >= 2 and card:getNumber() <= 9 then
@@ -1089,7 +1068,7 @@ sgs.ai_skill_askforag.gongxin = function(self, card_ids)
 		self.gongxinchoice = "put"
 		return valuable
 	end
-	if hasSupplyShortage and self:isEnemy(nextAlive) and not (nextAlive:hasSkill("qiaobian") and nextAlive:getHandcardNum() > 0) then
+	if hasSupplyShortage and self:isEnemy(nextAlive) and not (self:hasSkill("qiaobian", nextAlive) and nextAlive:getHandcardNum() > 0) then
 		local enemy_null = 0
 		for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
 			if self:isFriend(p) then enemy_null = enemy_null - getCardsNum("Nullification", p) end
@@ -1103,8 +1082,8 @@ sgs.ai_skill_askforag.gongxin = function(self, card_ids)
 	end
 
 	if self:isFriend(nextAlive) and not self:willSkipDrawPhase(nextAlive) and not self:willSkipPlayPhase(nextAlive)
-		and not nextAlive:hasSkill("luoshen")
-		and not nextAlive:hasSkill("tuxi") and not (nextAlive:hasSkill("qiaobian") and nextAlive:getHandcardNum() > 0) then
+		and not self:hasSkill("luoshen", nextAlive)
+		and not self:hasSkill("tuxi", nextAlive) and not (self:hasSkill("qiaobian", nextAlive) and nextAlive:getHandcardNum() > 0) then
 		if (peach and valuable == peach) or (ex_nihilo and valuable == ex_nihilo) then
 			self.gongxinchoice = "put"
 			return valuable
@@ -1266,7 +1245,7 @@ Luminouspearl_skill.getTurnUseCard = function(self)
 end
 
 sgs.ai_use_priority.Luminouspearl = 7
-sgs.ai_keep_value.Luminouspearl = 4
+sgs.ai_keep_value.Luminouspearl = 4.3
 
 --变更武将相关
 

@@ -525,7 +525,8 @@ void PlayerCardContainer::refresh()
         if (_m_faceTurnedIcon2)
             _m_faceTurnedIcon2->setVisible(false);
         if (_m_chainIcon)
-            _m_chainIcon->setVisible(false);
+            _m_chainIcon->hide();
+            //_m_chainIcon->setVisible(false);
         if (_m_duanchangMask)
             _m_duanchangMask->setVisible(false);
         if (_m_duanchangMask2)
@@ -539,8 +540,19 @@ void PlayerCardContainer::refresh()
             _m_faceTurnedIcon->setVisible(!m_player->faceUp());
         if (_m_faceTurnedIcon2)
             _m_faceTurnedIcon2->setVisible(!m_player->faceUp());
-        if (_m_chainIcon)
-            _m_chainIcon->setVisible(m_player->isChained());
+        if (_m_chainIcon) {
+            //_m_chainIcon->setVisible(m_player->isChained());
+            if (m_player->isChained()) {
+                if (_m_chainIcon->isFirstFrame()) {
+                    _m_chainIcon->reset();
+                    _m_chainIcon->preStart();
+                } else
+                    _m_chainIcon->show();
+            } else {
+                _m_chainIcon->hide();
+                _m_chainIcon->reset();
+            }
+        }
         if (_m_duanchangMask)
             _m_duanchangMask->setVisible(m_player->isDuanchang(true));
         if (_m_duanchangMask2)
@@ -581,8 +593,12 @@ void PlayerCardContainer::repaintAll()
     _paintPixmap(_m_faceTurnedIcon, _m_layout->m_avatarArea, QSanRoomSkin::S_SKIN_KEY_FACETURNEDMASK,
         _getAvatarParent());
     //paint faceTurnedIcon in secondaryAvatarArea only if inheriting Dashboard
-    _paintPixmap(_m_chainIcon, _m_layout->m_chainedIconRegion, QSanRoomSkin::S_SKIN_KEY_CHAIN,
-        _getAvatarParent());
+    //_paintPixmap(_m_chainIcon, _m_layout->m_chainedIconRegion, QSanRoomSkin::S_SKIN_KEY_CHAIN,
+    //    _getAvatarParent());
+    _m_chainIcon->setParentItem( _getAvatarParent());
+    _m_chainIcon->setSize(_m_layout->m_chainedIconRegion.size());
+    _m_chainIcon->setPos(_m_layout->m_chainedIconRegion.x(), _m_layout->m_chainedIconRegion.y());
+
     _paintPixmap(_m_duanchangMask, _m_layout->m_duanchangMaskRegion, QSanRoomSkin::S_SKIN_KEY_DUANCHANG,
         _getAvatarParent());
     _paintPixmap(_m_duanchangMask2, _m_layout->m_duanchangMaskRegion2, QSanRoomSkin::S_SKIN_KEY_DUANCHANG,
@@ -620,6 +636,21 @@ void PlayerCardContainer::repaintAll()
 void PlayerCardContainer::_createRoleComboBox()
 {
     _m_roleComboBox = new RoleComboBox(_getRoleComboBoxParent());
+}
+
+void PlayerCardContainer::_createChainAnimation()
+{
+    _m_chainIcon = new PixmapAnimation();
+    _m_chainIcon->setPath("image/system/chain/");
+    _m_chainIcon->setSize(_m_layout->m_chainedIconRegion.size());
+    if (!_m_chainIcon->valid()) {
+        delete _m_chainIcon;
+        _m_chainIcon = NULL;
+        return;
+    }
+    connect(_m_chainIcon, &PixmapAnimation::finished, _m_chainIcon, &PixmapAnimation::stop);
+    _m_chainIcon->setPos(_m_layout->m_chainedIconRegion.x(), _m_layout->m_chainedIconRegion.y());
+    _m_chainIcon->hide();
 }
 
 void PlayerCardContainer::setPlayer(ClientPlayer *player)
@@ -1286,4 +1317,3 @@ void PlayerCardContainer::stopHeroSkinChangingAnimation()
         _m_smallAvatarIcon->stopChangeHeroSkinAnimation();
     }
 }
-

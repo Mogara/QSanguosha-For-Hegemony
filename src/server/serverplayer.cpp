@@ -1956,7 +1956,7 @@ void ServerPlayer::summonFriends(const ArrayType type)
     case Siege: {
         if (isFriendWith(getNextAlive()) && isFriendWith(getLastAlive())) return;
         bool failed = true;
-        if (!isFriendWith(getNextAlive())) {
+        if (!isFriendWith(getNextAlive()) && getNextAlive()->hasShownOneGeneral()) {
             ServerPlayer *target = qobject_cast<ServerPlayer *>(getNextAlive(2));
             if (!target->hasShownOneGeneral()) {
                 QString prompt = target->willBeFriendWith(this) ? "SiegeSummon" : "SiegeSummon!";
@@ -1968,11 +1968,12 @@ void ServerPlayer::summonFriends(const ArrayType type)
                 room->sendLog(log);
                 if (success) {
                     target->askForGeneralShow();
+                    room->doAnimate(QSanProtocol::S_ANIMATE_BATTLEARRAY, objectName(), QString("%1+%2").arg(objectName()).arg(target->objectName()));       //player success animation
                     failed = false;
                 }
             }
         }
-        if (!isFriendWith(getLastAlive())) {
+        if (!isFriendWith(getLastAlive()) && getLastAlive()->hasShownOneGeneral()) {
             ServerPlayer *target = qobject_cast<ServerPlayer *>(getLastAlive(2));
             if (!target->hasShownOneGeneral()) {
                 QString prompt = target->willBeFriendWith(this) ? "SiegeSummon" : "SiegeSummon!";
@@ -1984,6 +1985,7 @@ void ServerPlayer::summonFriends(const ArrayType type)
                 room->sendLog(log);
                 if (success) {
                     target->askForGeneralShow();
+                    room->doAnimate(QSanProtocol::S_ANIMATE_BATTLEARRAY, objectName(), QString("%1+%2").arg(objectName()).arg(target->objectName()));       //player success animation
                     failed = false;
                 }
             }
@@ -2010,6 +2012,7 @@ void ServerPlayer::summonFriends(const ArrayType type)
 
                 if (success) {
                     target->askForGeneralShow();
+                    room->doBattleArrayAnimate(target);       //player success animation
                     failed = false;
                 } else {
                     asked = i;
@@ -2038,6 +2041,7 @@ void ServerPlayer::summonFriends(const ArrayType type)
 
                     if (success) {
                         target->askForGeneralShow();
+                        room->doBattleArrayAnimate(target);       //player success animation
                         failed = false;
                     }
                 }

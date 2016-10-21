@@ -63,10 +63,11 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
       --------------------
       --------------------
       */
+    double scale = G_ROOM_LAYOUT.scale;
     if (!fixed_role.isEmpty()) {
         QPixmap pix;
         pix.load(QString("image/system/roles/%1.png").arg(fixed_role));
-        painter->drawPixmap(0, 0, pix);
+        painter->drawPixmap(0, 0, (int)(pix.width() * scale),(int)(pix.height() * scale), pix);
         return;
     }
     QStringList kingdoms = Sanguosha->getKingdoms();
@@ -75,7 +76,7 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
         if (circle) {
             QPixmap pix;
             pix.load("image/system/roles/unknown.png");
-            painter->drawPixmap(1, 0, 28, 28, pix);
+            painter->drawPixmap(1, 0, (int)(28 * scale), (int)(28 * scale), pix);
         } else {
             QColor grey = G_COMMON_LAYOUT.m_roleDarkColor;
             QPen pen(Qt::black);
@@ -91,7 +92,7 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
         }
     } else {
         QPixmap pix = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_EXPANDING_ROLE_BOX);
-        painter->drawPixmap(0, 0, pix);
+        painter->drawPixmap(0, 0, (int)(pix.width() * scale),(int)(pix.height() * scale), pix);
 
         foreach (const QString &kingdom, kingdoms) {
             if (kingdoms_excluded.value(kingdom))
@@ -102,8 +103,9 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
 
 QRectF RoleComboBox::boundingRect() const
 {
+    double scale = G_ROOM_LAYOUT.scale;
     static QRect rect = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_EXPANDING_ROLE_BOX).rect();
-    return QRectF(rect.x(), rect.y(), rect.width(), rect.height());
+    return QRectF(rect.x(), rect.y(), (int)(rect.width() * scale), (int)(rect.height() * scale));
 }
 
 RoleComboBox::RoleComboBox(QGraphicsItem *photo, bool circle)

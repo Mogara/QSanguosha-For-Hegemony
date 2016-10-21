@@ -1032,11 +1032,11 @@ function sgs.getDefense(player)
 	if player:hasShownSkill("benghuai") and player:getHp() > 4 then hp = 4 end
 	local defense = math.min(hp * 2 + player:getHandcardNum(), hp * 3)
 	local hasEightDiagram = false
-	if player:hasArmorEffect("EightDiagram") then
-		hasEightDiagram = true
-	end
+	if player:getArmor() and player:getArmor():isKindOf("EightDiagram") then hasEightDiagram = true end
+	local skill = sgs.Sanguosha:ViewHas(player, "EightDiagram", "armor")
+	if skill and player:hasShownSkill(skill:objectName()) then hasEightDiagram = true end
 
-	if player:getArmor() and player:hasArmorEffect(player:getArmor():objectName()) then defense = defense + 2 end
+	if player:getArmor() and player:hasArmorEffect(player:getArmor():objectName()) or hasEightDiagram then defense = defense + 2 end
 	if player:getDefensiveHorse() then defense = defense + 0.5 end
 
 	if player:hasTreasure("JadeSeal") then defense = defense + 2 end
@@ -2323,13 +2323,13 @@ end
 function SmartAI:askForChoice(skill_name, choices, data)
 	local choice_table = {}
 	for _,section in pairs(choices:split("|")) do
-		table.insertTable(choice_table,section:split("+"))
+		table.insertTable(choice_table, section:split("+"))
 	end
 	local choice = sgs.ai_skill_choice[skill_name]
 	if type(choice) == "string" then
 		return choice
 	elseif type(choice) == "function" then
-		return choice(self, table.concat(choice_table,"+"), data)
+		return choice(self, table.concat(choice_table, "+"), data)
 	else
 		for index, achoice in ipairs(choice_table) do
 			if achoice == "benghuai" then table.remove(choice_table, index) break end
@@ -2546,7 +2546,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 	end
 
 	if positive then
-		if from and (trick:isKindOf("FireAttack") or trick:isKindOf("Duel")) and self:cantbeHurt(to, from) and to:isWeak() and self:isFriend(to) then
+		if from and (trick:isKindOf("FireAttack") or trick:isKindOf("Duel")) and self:cantbeHurt(to, from) and self:isWeak(to) and self:isFriend(to) then
 			return null_card
 		end
 
@@ -3608,7 +3608,7 @@ function SmartAI:askForPlayersChosen(targets, reason, max_num, min_num)
 			return {}
 		end
 	end
-	local copy = table.copyFrom(targets)
+	local copy = sgs.QList2Table(targets)
 	while (#returns < min_num) do
 		local r = math.random(1, #copy)
 		table.insert(returns,copy[r])
@@ -4591,17 +4591,36 @@ function SmartAI:getSuitNum(suit_strings, include_equip, player)
 	return n
 end
 
-function SmartAI:hasSkill(skill)
-	local skill_name = skill
-	if type(skill) == "table" then
-		skill_name = skill.name
-	end
-
-	local real_skill = sgs.Sanguosha:getSkill(skill_name)
-	if real_skill and real_skill:isLordSkill() then
-		return self.player:hasLordSkill(skill_name)
+function SmartAI:hasSkill(skill_name, who)
+	if not who then
+		local skill = skill_name
+		if type(skill_name) == "table" then
+			skill = skill_name.name
+		end
+		local real_skill = sgs.Sanguosha:getSkill(skill)
+		if real_skill and real_skill:isLordSkill() then
+			return self.player:hasLordSkill(skill)
+		else
+			return self.player:hasSkill(skill)
+		end
 	else
-		return self.player:hasSkill(skill_name)
+		local skills = skill_name:split("|")
+	    for _, sk in ipairs(skills) do
+			local checkpoint = true
+			for _, s in ipairs(sk:split("+")) do
+				if who:objectName() == self.player:objectName() then
+					checkpoint = self.player:hasSkill(s)
+				else
+					if not who:hasShownSkill(s) then checkpoint = false end
+					if self.player:getTag("KnownBoth_" .. who:objectName()):toString() ~= "" then
+						local names = self.player:getTag("KnownBoth_" .. who:objectName()):toString():split("+")
+						if not who:hasShownGeneral1() and who:canShowGeneral("h") and names[1] ~= "anjiang" and not who:isDuanchang(true) and sgs.Sanguosha:getGeneral(names[1]):hasSkill(s) then checkpoint = true end
+						if not who:hasShownGeneral2() and who:canShowGeneral("d") and names[2] ~= "anjiang" and not who:isDuanchang(false) and sgs.Sanguosha:getGeneral(names[2]):hasSkill(s) then checkpoint = true end
+					end
+				end
+			end
+			if checkpoint then return true end
+		end
 	end
 end
 
@@ -4997,7 +5016,7 @@ function SmartAI:hasTrickEffective(card, to, from)
 
 	if from then
 		if from:hasShownSkill("zhiman") and self:isFriend(to, from) and (card:isKindOf("Duel") or card:isKindOf("ArcheryAttack") or card:isKindOf("SavageAssault")) then return false end
-		if from:hasShownSkill("zhiman") and self:isFriend(to, from) and (card:isKindOf("FireAttack") or card:isKindOf("BurningCamps")) and not to:isGoodChainTarget(to, from, sgs.DamageStruct_Fire) then
+		if from:hasShownSkill("zhiman") and self:isFriend(to, from) and (card:isKindOf("FireAttack") or card:isKindOf("BurningCamps")) and not self:isGoodChainTarget(to, from, sgs.DamageStruct_Fire) then
 			return false
 		end
 		if card:isKindOf("SavageAssault") then
@@ -5052,7 +5071,13 @@ sgs.weapon_range = {}
 
 function SmartAI:hasEightDiagramEffect(player)
 	player = player or self.player
-	return player:hasArmorEffect("EightDiagram")
+	if self.player and player:objectName() == self.player:objectName() then
+		return player:hasArmorEffect("EightDiagram")
+	else
+		if player:getArmor() and player:getArmor():isKindOf("EightDiagram") then return true end
+		local skill = sgs.Sanguosha:ViewHas(player, "EightDiagram", "armor")
+		if skill and self:hasSkill(skill:objectName(), player) then return true end
+	end
 end
 
 function SmartAI:hasCrossbowEffect(player)
@@ -5412,7 +5437,7 @@ end
 function SmartAI:needToThrowArmor(player)
 	player = player or self.player
 	if not player:getArmor() or not player:hasArmorEffect(player:getArmor():objectName()) then return false end
-	if player:hasShownSkill("bazhen") and not player:getArmor():isKindOf("EightDiagram") then return true end
+	if player:hasShownSkill("bazhen") and not(player:getArmor():isKindOf("EightDiagram") or player:getArmor():isKindOf("RenwangShield") or player:getArmor():isKindOf("PeaceSpell")) then return true end
 	if self:evaluateArmor(player:getArmor(), player) <= -2 then return true end
 	if player:hasArmorEffect("SilverLion") and player:isWounded() then
 		if self:isFriend(player) then

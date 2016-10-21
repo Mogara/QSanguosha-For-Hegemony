@@ -1489,6 +1489,7 @@ public:
 
     inline void doAnimate(int type, const char *arg1 = NULL, const char *arg2 = NULL, QList<ServerPlayer *> players = QList<ServerPlayer *>());
 
+	void doBattleArrayAnimate(ServerPlayer *player, ServerPlayer *target = NULL);
     void preparePlayers();
     void changePlayerGeneral(ServerPlayer *player, const char *new_general);
     void changePlayerGeneral2(ServerPlayer *player, const char *new_general);
@@ -1526,7 +1527,7 @@ public:
     QVariant getTag(const char *key) const;
     void removeTag(const char *key);
 
-    void setEmotion(ServerPlayer *target, const char *emotion);
+    void setEmotion(ServerPlayer *target, const char *emotion, bool playback = false, int duration = 0);
 
     Player::Place getCardPlace(int card_id) const;
     QList<int> getCardIdsOnTable(const Card *) const;

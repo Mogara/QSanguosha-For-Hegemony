@@ -28,6 +28,7 @@
 #include "timedprogressbar.h"
 #include "magatamasitem.h"
 #include "rolecombobox.h"
+#include "pixmapanimation.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsItem>
@@ -250,7 +251,6 @@ protected:
     GraphicsPixmapHoverItem *_m_avatarIcon, *_m_smallAvatarIcon;
     QGraphicsPixmapItem *_m_circleItem;
     QGraphicsPixmapItem *_m_screenNameItem;
-    QGraphicsPixmapItem *_m_chainIcon, *_m_chainIcon2;
     QGraphicsPixmapItem *_m_duanchangMask, *_m_duanchangMask2;
     QGraphicsPixmapItem *_m_faceTurnedIcon, *_m_faceTurnedIcon2;
     QGraphicsPixmapItem *_m_handCardBg, *_m_handCardNumText;
@@ -315,6 +315,11 @@ protected:
     QAbstractAnimation *_m_huashenAnimation;
     QGraphicsItem *_m_huashenItem;
     QStringList _m_huashenGeneralNames;
+
+    PixmapAnimation *_m_chainIcon, *_m_chainIcon2;  //move here by weidouncle
+    void _createChainAnimation();
+    //QHash<QString, PixmapAnimation *> _m_muti_kills;
+    //void _createMutiKillsAnimation();
 
 protected slots:
     virtual void _onEquipSelectChanged();

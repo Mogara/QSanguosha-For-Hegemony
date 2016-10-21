@@ -63,6 +63,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QDesktopWidget>
+#include <QApplication>
 
 #if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
@@ -158,6 +160,9 @@ MainWindow::MainWindow(QWidget *parent)
     setMinimumWidth(800);
     setMinimumHeight(580);
 
+#ifdef Q_OS_ANDROID
+    setFixedSize(qApp->desktop()->width(), qApp->desktop()->height());
+#endif
     fetchUpdateInformation();
 
     connection_dialog = new ConnectionDialog(this);

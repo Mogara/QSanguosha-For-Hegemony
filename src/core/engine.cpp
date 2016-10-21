@@ -352,7 +352,6 @@ QStringList Engine::getConvertGenerals(const QString &name) const
 QString Engine::getMainGenerals(const QString &name) const
 {
     if (!getGeneral(name)) return QString();
-    if (!sp_convert_pairs.contains(name)) return name;
     foreach (const QString &key, sp_convert_pairs.keys()) {
         foreach (const QString &name1, sp_convert_pairs.values(key))
             if (name == name1 && getGeneral(key)) return key;

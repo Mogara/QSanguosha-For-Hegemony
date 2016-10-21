@@ -235,7 +235,7 @@ function SmartAI:useCardSupplyShortage(card, use)
 		if enemy:hasShownSkills(sgs.cardneed_skill .. "|tianxiang")
 			then value = value + 5
 		end
-		if enemy:hasShownSkills("yingzi_zhouyu|yingzi_sunce|duoshi|yingzi") then value = value + 1 end
+		if enemy:hasShownSkills("yingzi_zhouyu|yingzi_sunce|duoshi|yingziextra") then value = value + 1 end
 		if self:isWeak(enemy) then value = value + 5 end
 		if enemy:isLord() then value = value + 3 end
 
@@ -697,9 +697,6 @@ end
 sgs.ai_use_value.FireAttack = 4.8
 sgs.ai_keep_value.FireAttack = 3.28
 sgs.ai_use_priority.FireAttack = sgs.ai_use_priority.Dismantlement + 0.1
-
 sgs.dynamic_value.damage_card.FireAttack = true
-
 sgs.ai_card_intention.FireAttack = 80
-
 sgs.dynamic_value.damage_card.FireAttack = true

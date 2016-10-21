@@ -41,7 +41,6 @@
 #include <QMenu>
 #include <QFile>
 
-#include "pixmapanimation.h"
 
 using namespace QSanProtocol;
 
@@ -70,6 +69,8 @@ Photo::Photo() : PlayerCardContainer()
 
     emotion_item = new Sprite(_m_groupMain);
 
+    _createBattleArrayAnimations();
+    _createChainAnimation();
     _createControls();
 }
 
@@ -101,7 +102,6 @@ void Photo::refresh()
         if (!_m_onlineStatusItem->isVisible()) _m_onlineStatusItem->show();
     } else if (_m_onlineStatusItem != NULL && state_str == "online")
         _m_onlineStatusItem->hide();
-
 }
 
 
@@ -119,6 +119,21 @@ void Photo::repaintAll()
     setFrame(_m_frameType);
     hideSkillName(); // @todo: currently we don't adjust skillName's position for simplicity,
     // consider repainting it instead of hiding it in the future.
+
+    QStringList kingdoms = Sanguosha->getKingdoms();
+    kingdoms.removeAll("god");
+    foreach (const QString &kingdom, kingdoms) {
+        _m_frameBorders[kingdom]->setSize(QSize(G_PHOTO_LAYOUT.m_normalWidth * 1.2, G_PHOTO_LAYOUT.m_normalHeight * 1.2));
+        _m_frameBorders[kingdom]->setPos(- G_PHOTO_LAYOUT.m_normalWidth * 0.1, - G_PHOTO_LAYOUT.m_normalHeight * 0.1);
+        double scale = G_ROOM_LAYOUT.scale;
+        QPixmap pix;
+        pix.load("image/system/roles/careerist.png");
+        int w = pix.width() * scale;
+        int h = pix.height() * scale;
+        _m_roleBorders[kingdom]->setPos(G_PHOTO_LAYOUT.m_roleComboBoxPos
+                                    - QPoint((_m_roleBorders[kingdom]->boundingRect().width() - w) / 2, (_m_roleBorders[kingdom]->boundingRect().height() - h) / 2));
+    }
+
     PlayerCardContainer::repaintAll();
     refresh();
 }
@@ -132,7 +147,7 @@ void Photo::_adjustComponentZValues()
     _m_progressBarItem->setZValue(_m_groupMain->zValue() + 1);
 }
 
-void Photo::setEmotion(const QString &emotion, bool permanent)
+void Photo::setEmotion(const QString &emotion, bool permanent, bool playback, int duration)
 {
     if (emotion == ".") {
         hideEmotion();
@@ -160,7 +175,7 @@ void Photo::setEmotion(const QString &emotion, bool permanent)
         }
         appear->start(QAbstractAnimation::DeleteWhenStopped);
     } else {
-        PixmapAnimation::GetPixmapAnimation(this, emotion);
+        PixmapAnimation::GetPixmapAnimation(this, emotion, playback, duration);
     }
 }
 
@@ -361,3 +376,48 @@ QGraphicsItem *Photo::getMouseClickReceiver()
     return this;
 }
 
+void Photo::_createBattleArrayAnimations()
+{
+    QStringList kingdoms = Sanguosha->getKingdoms();
+    kingdoms.removeAll("god");
+    foreach (const QString &kingdom, kingdoms) {
+        _m_frameBorders[kingdom] = new PixmapAnimation();
+        _m_frameBorders[kingdom]->setZValue(30000);
+        _m_roleBorders[kingdom] = new PixmapAnimation();
+        _m_roleBorders[kingdom]->setZValue(30000);
+        _m_frameBorders[kingdom]->setParentItem(_getFocusFrameParent());
+        _m_roleBorders[kingdom]->setParentItem(_getRoleComboBoxParent());
+        _m_frameBorders[kingdom]->setSize(QSize(G_PHOTO_LAYOUT.m_normalWidth * 1.2, G_PHOTO_LAYOUT.m_normalHeight * 1.2));
+        _m_frameBorders[kingdom]->setPath(QString("image/kingdom/battlearray/small/%1/").arg(kingdom));
+        _m_roleBorders[kingdom]->setPath(QString("image/kingdom/battlearray/roles/%1/").arg(kingdom));
+        _m_frameBorders[kingdom]->setPlayTime(2000);
+        _m_roleBorders[kingdom]->setPlayTime(2000);
+        if (!_m_frameBorders[kingdom]->valid()) {
+            delete _m_frameBorders[kingdom];
+            delete _m_roleBorders[kingdom];
+            _m_frameBorders[kingdom] = NULL;
+            _m_roleBorders[kingdom] = NULL;
+            continue;
+        }
+        _m_frameBorders[kingdom]->setPos(- G_PHOTO_LAYOUT.m_normalWidth * 0.1, - G_PHOTO_LAYOUT.m_normalHeight * 0.1);
+        double scale = G_ROOM_LAYOUT.scale;
+        QPixmap pix;
+        pix.load("image/system/roles/careerist.png");
+        int w = pix.width() * scale;
+        int h = pix.height() * scale;
+        _m_roleBorders[kingdom]->setPos(G_PHOTO_LAYOUT.m_roleComboBoxPos
+                                    - QPoint((_m_roleBorders[kingdom]->boundingRect().width() - w) / 2, (_m_roleBorders[kingdom]->boundingRect().height() - h / 2) / 2));
+        _m_frameBorders[kingdom]->setHideonStop(true);
+        _m_roleBorders[kingdom]->setHideonStop(true);
+        _m_frameBorders[kingdom]->hide();
+        _m_roleBorders[kingdom]->hide();
+    }
+}
+
+void Photo::playBattleArrayAnimations()
+{
+    QString kingdom = getPlayer()->getKingdom();
+    _m_frameBorders[kingdom]->show();
+    _m_frameBorders[kingdom]->start(true, 30);
+    _m_roleBorders[kingdom]->preStart();
+}

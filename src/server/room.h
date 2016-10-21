@@ -281,6 +281,7 @@ public:
         doAnimate((QSanProtocol::AnimateType)type, arg1, arg2, players);
     }
 
+    void doBattleArrayAnimate(ServerPlayer *player, ServerPlayer *target = NULL);
     void preparePlayers();
     void changePlayerGeneral(ServerPlayer *player, const QString &new_general);
     void changePlayerGeneral2(ServerPlayer *player, const QString &new_general);
@@ -333,7 +334,7 @@ public:
     QVariant getTag(const QString &key) const;
     void removeTag(const QString &key);
 
-    void setEmotion(ServerPlayer *target, const QString &emotion);
+    void setEmotion(ServerPlayer *target, const QString &emotion, bool playback = false, int duration = 0);
 
     Player::Place getCardPlace(int card_id) const;
     QList<int> getCardIdsOnTable(const Card *) const;

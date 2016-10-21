@@ -44,7 +44,6 @@ public:
         const QList<int> &disabledIds = QList<int>(), const QList<int> &handcards = QList<int>());
     void globalchooseCard(const ClientPlayer *player, const QString &reason, const QString &flags, bool handcardVisible, const QList<int> &disabledIds, const QList<int> &handcards);
     void clear();
-    const ClientPlayer *player;
     void setfalse();
     void reset();
     QList<CardItem *> items;
@@ -61,6 +60,7 @@ private:
     void updateNumbers(const int &cardNumber);
     void arrangeCards(const CardList &cards, const QPoint &topLeft, bool is_globalchoose = false);
 
+    const ClientPlayer *player;
     QString flags;
     bool handcardVisible;
     Card::HandlingMethod method;

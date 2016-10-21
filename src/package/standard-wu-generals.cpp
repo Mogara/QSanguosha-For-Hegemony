@@ -798,7 +798,9 @@ public:
         Room *room = player->getRoom();
         int id = to_select->getEffectiveId();
         if (player->hasShownSkill(objectName()))
-            return to_select->getSuit() == Card::Spade && (room->getCardPlace(id) == Player::PlaceEquip || room->getCardPlace(id) == Player::PlaceHand);
+            return to_select->getSuit() == Card::Spade
+                    && (room->getCardPlace(id) == Player::PlaceEquip
+                        || room->getCardPlace(id) == Player::PlaceHand || room->getCardPlace(id) == Player::PlaceJudge);
 
         return false;
     }
@@ -1114,7 +1116,7 @@ public:
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *zhoutai, QVariant &, ServerPlayer* &) const
     {
         if (!TriggerSkill::triggerable(zhoutai)) return QStringList();
         if (zhoutai->getHp() < 1)

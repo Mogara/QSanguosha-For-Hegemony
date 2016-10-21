@@ -32,19 +32,24 @@ const int PixmapAnimation::S_DEFAULT_INTERVAL = 50;
 PixmapAnimation::PixmapAnimation()
     : QGraphicsItem(0)
 {
+    m_fix_rect = false;
+    hideonstop = false;
+    m_timer = 0;
 }
 
 void PixmapAnimation::advance(int phase)
 {
-    if (phase) current++;
-    if (current >= frames.size()) {
+    if (phase)
+        current++;
+
+    if (current >= frames.size())
         current = 0;
+    if (current == frames.size() - 1 && m_timer == 0)
         emit finished();
-    }
     update();
 }
 
-void PixmapAnimation::setPath(const QString &path)
+void PixmapAnimation::setPath(const QString &path, bool playback)
 {
     frames.clear();
     current = 0;
@@ -55,16 +60,46 @@ void PixmapAnimation::setPath(const QString &path)
         frames << G_ROOM_SKIN.getPixmapFromFileName(pic_path);
         pic_path = QString("%1%2%3").arg(path).arg(i++).arg(".png");
     } while (QFile::exists(pic_path));
+
+    if (playback) {
+        QList<QPixmap> frames_copy = frames;
+        for (int i = frames_copy.length() - 1; i = 0; i--)
+            frames << frames_copy[i - 1];
+    }
+}
+
+void PixmapAnimation::setSize(const QSize &size)
+{
+    m_fix_rect = true;
+    m_size = size;
+    update();
+}
+
+void PixmapAnimation::setHideonStop(bool hide)
+{
+    this->hideonstop = hide;
+}
+
+void PixmapAnimation::setPlayTime(int msecs)
+{
+    m_timer = msecs;
 }
 
 void PixmapAnimation::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    painter->drawPixmap(0, 0, frames.at(current));
+    if (m_fix_rect)
+        painter->drawPixmap(0, 0, m_size.width(), m_size.height(), frames.at(current));
+    else {
+        double scale = G_ROOM_LAYOUT.scale;
+        painter->drawPixmap(0, 0, (int)(frames.at(current).width() * scale), (int)(frames.at(current).height() * scale), frames.at(current));
+    }
 }
 
 QRectF PixmapAnimation::boundingRect() const
 {
-    return frames.at(current).rect();
+    if (m_fix_rect) return QRect(0, 0, m_size.width(), m_size.height());
+    double scale = G_ROOM_LAYOUT.scale;
+    return QRect(0, 0, (int)(frames.at(current).width() * scale), (int)(frames.at(current).height() * scale));
 }
 
 bool PixmapAnimation::valid()
@@ -82,23 +117,46 @@ void PixmapAnimation::start(bool permanent, int interval)
     _m_timerId = startTimer(interval);
     if (!permanent)
         connect(this, &PixmapAnimation::finished, this, &PixmapAnimation::deleteLater);
+    if (m_timer > 0)
+        QTimer::singleShot(m_timer, this, SLOT(end()));
 }
 
 void PixmapAnimation::stop()
 {
     killTimer(_m_timerId);
+    if (hideonstop) this->hide();
+}
+
+void PixmapAnimation::reset()
+{
+    current = 0;
+    update();
+}
+
+bool PixmapAnimation::isFirstFrame()
+{
+    return current == 0;
 }
 
 void PixmapAnimation::preStart()
 {
     this->show();
-    this->startTimer(S_DEFAULT_INTERVAL);
+    _m_timerId = startTimer(S_DEFAULT_INTERVAL);
+    if (m_timer > 0)
+        QTimer::singleShot(m_timer, this, SLOT(end()));
 }
 
-PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, const QString &emotion)
+void PixmapAnimation::end()
+{
+    stop();
+    emit finished();
+}
+
+PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, const QString &emotion, bool playback, int duration)
 {
     PixmapAnimation *pma = new PixmapAnimation();
-    pma->setPath(QString("image/system/emotion/%1/").arg(emotion));
+    pma->setPath(QString("image/system/emotion/%1/").arg(emotion), playback);
+    if (duration > 0) pma->setPlayTime(duration);
     if (pma->valid()) {
         if (emotion == "no-success") {
             pma->moveBy(pma->boundingRect().width() * 0.25,
@@ -124,7 +182,7 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->hide();
             QTimer::singleShot(600, pma, SLOT(preStart()));
         } else
-            pma->startTimer(S_DEFAULT_INTERVAL);
+            pma->preStart();
 
         connect(pma, &PixmapAnimation::finished, pma, &PixmapAnimation::deleteLater);
         return pma;

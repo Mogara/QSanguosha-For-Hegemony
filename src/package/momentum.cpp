@@ -1247,19 +1247,19 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *ask_who) const
     {
         if (ask_who != NULL && ask_who->hasShownSkill(this)) {
+            room->doBattleArrayAnimate(ask_who, skill_target);
             room->broadcastSkillInvoke(objectName(), ask_who);
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *ask_who) const
     {
         room->sendCompulsoryTriggerLog(ask_who, objectName(), true);
-        CardUseStruct use = data.value<CardUseStruct>();
         if (!room->askForCard(skill_target, ".|.|.|equipped!", "@fengshi-discard:" + ask_who->objectName())) {
             QList<const Card *> equips_candiscard;
             foreach (const Card *e, skill_target->getEquips()) {

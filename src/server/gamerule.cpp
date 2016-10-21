@@ -359,6 +359,11 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
     case EventPhaseEnd: {
         if (player->getPhase() == Player::Play)
             room->addPlayerHistory(player, ".");
+        if (player->getPhase() == Player::Finish) {
+            room->addPlayerHistory(player, "Analeptic", 0);     //clear Analeptic
+            foreach (ServerPlayer *p, room->getAllPlayers())
+                room->setPlayerMark(p, "multi_kill_count", 0);
+        }
         break;
     }
     case EventPhaseChanging: {
@@ -394,6 +399,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         } else if (change.to == Player::Play) {
             room->addPlayerHistory(player, ".");
         } else if (change.to == Player::Start) {
+            room->addPlayerHistory(player, "Analeptic", 0);         //clear Analeptic
             if (!player->hasShownGeneral1()
                 && Sanguosha->getGeneral(room->getTag(player->objectName()).toStringList().first())->isLord())
                 player->showGeneral();
@@ -760,8 +766,15 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             return false;
 
         ServerPlayer *killer = death.damage ? death.damage->from : NULL;
-        if (killer)
+        if (killer) {
+            room->setPlayerMark(killer, "multi_kill_count", killer->getMark("multi_kill_count") + 1);
+            int kill_count = killer->getMark("multi_kill_count");
+            if (kill_count > 1 && kill_count < 8)
+                room->setEmotion(killer, QString("multi_kill%1").arg(QString::number(kill_count)), false, 4000);
+            else if (kill_count > 7)
+                room->setEmotion(killer, "zylove", false, 4000);
             rewardAndPunish(killer, player);
+        }
 
         if (player->getGeneral()->isLord() && player == data.value<DeathStruct>().who) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player, true)) {

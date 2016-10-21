@@ -329,9 +329,9 @@ GeneralOverview::GeneralOverview(QWidget *parent)
     connect(ui->changeHeroSkinButton, &QPushButton::clicked, this, &GeneralOverview::showNextSkin);
 
     general_search = new GeneralSearch(this);
+    connect(ui->searchButton, &QPushButton::clicked, general_search, &GeneralSearch::show);
 #ifdef Q_OS_ANDROID
     ui->searchButton->hide();
-    connect(ui->searchButton, &QPushButton::clicked, general_search, &GeneralSearch::show);
 #endif
     ui->returnButton->hide();
     connect(ui->returnButton, &QPushButton::clicked, this, &GeneralOverview::fillAllGenerals);

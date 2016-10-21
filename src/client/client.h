@@ -375,7 +375,7 @@ signals:
     void card_moved_incardchoosebox(bool enable);
     void gongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
     void focus_moved(const QStringList &focus, QSanProtocol::Countdown countdown);
-    void emotion_set(const QString &target, const QString &emotion);
+    void emotion_set(const QString &target, const QString &emotion, bool playback, int duration);
     void skill_invoked(const QString &who, const QString &skill_name);
     void skill_acquired(const ClientPlayer *player, const QString &skill_name, const bool &head);
     void animated(int name, const QStringList &args);

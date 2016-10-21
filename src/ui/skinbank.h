@@ -156,6 +156,7 @@ public:
         QSize m_maximumSceneSize;
         QSize m_minimumSceneSize10Player;
         QSize m_maximumSceneSize10Player;
+        double scale;
     };
 
     struct PlayerCardContainerLayout

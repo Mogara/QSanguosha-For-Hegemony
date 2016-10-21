@@ -1431,6 +1431,7 @@ void Lightning::takeEffect(ServerPlayer *target) const
 #ifndef QT_NO_DEBUG
     if (!target->getAI() && target->askForSkillInvoke("userdefine:cancelLightning")) return;
 #endif
+    target->getRoom()->setEmotion(target, "lightning");
     target->getRoom()->damage(DamageStruct(this, NULL, target, 3, DamageStruct::Thunder));
 }
 

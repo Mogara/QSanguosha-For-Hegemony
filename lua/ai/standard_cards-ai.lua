@@ -1506,7 +1506,7 @@ sgs.ai_nullification.ArcheryAttack = function(self, card, from, to, positive, ke
 			if keep then
 				for _, p in sgs.qlist(targets) do
 					if self:isFriend(p) and self:aoeIsEffective(card, p, from)
-						and not p:hasArmorEffect("EightDiagram") and self:getDamagedEffects(p, from) and self:isWeak(p)
+						and not self:hasEightDiagramEffect(p) and self:getDamagedEffects(p, from) and self:isWeak(p)
 						and getKnownCard(p, self.player, "Jink", true, "he") == 0 then
 						keep = false
 					end
@@ -1528,7 +1528,7 @@ sgs.ai_nullification.ArcheryAttack = function(self, card, from, to, positive, ke
 				return
 			elseif to:objectName() == self.player:objectName() and self:canAvoidAOE(card) then
 				return
-			elseif (getKnownCard(to, self.player, "Jink", true, "he") >= 1 or to:hasArmorEffect("EightDiagram")) and to:getHp() > 1 then
+			elseif (getKnownCard(to, self.player, "Jink", true, "he") >= 1 or self:hasEightDiagramEffect(to)) and to:getHp() > 1 then
 				return
 			elseif not self:isFriendWith(to) and self:playerGetRound(to) < self:playerGetRound(self.player) and self:isWeak() then
 				return
@@ -1541,7 +1541,7 @@ sgs.ai_nullification.ArcheryAttack = function(self, card, from, to, positive, ke
 		if keep then
 			for _, p in sgs.qlist(targets) do
 				if self:isEnemy(p) and self:aoeIsEffective(card, p, from)
-					and not p:hasArmorEffect("EightDiagram") and self:getDamagedEffects(p, from) and self:isWeak(p)
+					and not self:hasEightDiagramEffect(p) and self:getDamagedEffects(p, from) and self:isWeak(p)
 					and getKnownCard(p, self.player, "Jink", true, "he") == 0 then
 					keep = false
 				end
@@ -3429,13 +3429,32 @@ sgs.ai_choicemade_filter.skillChoice.known_both = function(self, from, promptlis
 		for _, to in sgs.qlist(self.room:getOtherPlayers(from)) do
 			if to:hasFlag("KnownBothTarget") then
 				to:setMark(("KnownBoth_%s_%s"):format(from:objectName(), to:objectName()), 1)
+				local names = {}
+				if from:getTag("KnownBoth_" .. to:objectName()):toString() ~= "" then
+					names = from:getTag("KnownBoth_" .. to:objectName()):toString():split("+")
+				else
+					if to:hasShownGeneral1() then
+						table.insert(names, to:getActualGeneral1Name())
+					else
+						table.insert(names, "anjiang")
+					end
+					if to:hasShownGeneral2() then
+						table.insert(names, to:getActualGeneral2Name())
+					else
+						table.insert(names, "anjiang")
+					end
+				end
+				if choice == "head_general" then
+					names[1] = to:getActualGeneral1Name()
+				else
+					names[2] = to:getActualGeneral2Name()
+				end
+				from:setTag("KnownBoth_" .. to:objectName(), sgs.QVariant(table.concat(names, "+")))
 				break
 			end
 		end
 	end
 end
-
-
 
 sgs.ai_skill_use["@@Triblade"] = function(self, prompt)
 	local damage = self.room:getTag("CurrentDamageStruct"):toDamage()

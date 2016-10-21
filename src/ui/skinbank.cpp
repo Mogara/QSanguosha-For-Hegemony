@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "clientstruct.h"
 #include "settings.h"
+#include "mainwindow.h"
 
 #include <QGraphicsPixmapItem>
 #include <QTextItem>
@@ -528,6 +529,9 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, bool is
 
 QRect IQSanComponentSkin::AnchoredRect::getTranslatedRect(const QRect &parentRect, const QSize &size) const
 {
+    QSize new_size = size;
+    new_size.setHeight(size.height() * G_ROOM_LAYOUT.scale);
+    new_size.setWidth(size.width() * G_ROOM_LAYOUT.scale);
     QPoint parentAnchor;
     Qt::Alignment hAlign = m_anchorParent & Qt::AlignHorizontal_Mask;
     if (hAlign & Qt::AlignRight)
@@ -547,21 +551,21 @@ QRect IQSanComponentSkin::AnchoredRect::getTranslatedRect(const QRect &parentRec
     QPoint childAnchor;
     hAlign = m_anchorChild & Qt::AlignHorizontal_Mask;
     if (hAlign & Qt::AlignRight)
-        childAnchor.setX(size.width());
+        childAnchor.setX(new_size.width());
     else if (hAlign & Qt::AlignHCenter)
-        childAnchor.setX(size.width() / 2);
+        childAnchor.setX(new_size.width() / 2);
     else
         childAnchor.setX(0);
     vAlign = m_anchorChild & Qt::AlignVertical_Mask;
     if (vAlign & Qt::AlignBottom)
-        childAnchor.setY(size.height());
+        childAnchor.setY(new_size.height());
     else if (vAlign & Qt::AlignVCenter)
-        childAnchor.setY(size.height() / 2);
+        childAnchor.setY(new_size.height() / 2);
     else
         childAnchor.setY(0);
 
-    QPoint pos = parentAnchor - childAnchor + m_offset;
-    QRect rect(pos, size);
+    QPoint pos = parentAnchor - childAnchor + m_offset * G_ROOM_LAYOUT.scale;
+    QRect rect(pos, new_size);
     return rect;
 }
 
@@ -977,33 +981,6 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
     tryParse(config["tinyAvatarSize"], _m_commonLayout.m_tinyAvatarSize);
     _m_commonLayout.m_cardFootnoteFont.tryParse(config["cardFootnoteFont"]);
 
-#ifdef Q_OS_ANDROID
-    int screenHeight = qApp->desktop()->height();
-    int screenWidth = qApp->desktop()->height();
-    const int defaultHeight = 720;
-    const int defaultWidth = 1280;
-    double heightScale = 1.0 * screenHeight / defaultHeight;
-    double widthScale = 1.0 * screenWidth / defaultWidth;
-    double scale = (heightScale + widthScale) / 2;
-
-    _m_commonLayout.m_cardNormalHeight *= scale;
-    _m_commonLayout.m_cardNormalWidth *= scale;
-    _m_commonLayout.m_cardMainArea.setWidth(_m_commonLayout.m_cardMainArea.width() * scale);
-    _m_commonLayout.m_cardMainArea.setHeight(_m_commonLayout.m_cardMainArea.height() * scale);
-    _m_commonLayout.m_cardSuitArea.setWidth(_m_commonLayout.m_cardSuitArea.width() * scale);
-    _m_commonLayout.m_cardSuitArea.setHeight(_m_commonLayout.m_cardSuitArea.height() * scale);
-    _m_commonLayout.m_cardNumberArea.setWidth(_m_commonLayout.m_cardNumberArea.width() * scale);
-    _m_commonLayout.m_cardNumberArea.setHeight(_m_commonLayout.m_cardNumberArea.height() * scale);
-    _m_commonLayout.m_cardTransferableIconArea.setWidth(_m_commonLayout.m_cardTransferableIconArea.width() * scale);
-    _m_commonLayout.m_cardFrameArea.setWidth(_m_commonLayout.m_cardFrameArea.width() * scale);
-    _m_commonLayout.m_cardFrameArea.setHeight(_m_commonLayout.m_cardFrameArea.height() * scale);
-    _m_commonLayout.m_cardFootnoteArea.setWidth(_m_commonLayout.m_cardFootnoteArea.width() * scale);
-    _m_commonLayout.m_cardFootnoteArea.setHeight(_m_commonLayout.m_cardFootnoteArea.height() * scale);
-    _m_commonLayout.m_cardAvatarArea.setWidth(_m_commonLayout.m_cardAvatarArea.width() * scale);
-    _m_commonLayout.m_cardAvatarArea.setHeight(_m_commonLayout.m_cardAvatarArea.height() * scale);
-
-#endif
-
     JsonArray magatamaFont = config["magatamaFont"].value<JsonArray>();
     for (int i = 0; i < 6 && i < magatamaFont.size(); i++) {
         _m_commonLayout.m_hpFont[i].tryParse(magatamaFont[i]);
@@ -1030,14 +1007,6 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
 
     tryParse(config["generalButtonPositionIconRegion"], _m_commonLayout.generalButtonPositionIconRegion);
     tryParse(config["generalButtonNameRegion"], _m_commonLayout.generalButtonNameRegion);
-#ifdef Q_OS_ANDROID
-    _m_commonLayout.m_generalCardItemCompanionPromptRegion.setHeight(_m_commonLayout.m_generalCardItemCompanionPromptRegion.height() * scale);
-    _m_commonLayout.m_generalCardItemCompanionPromptRegion.setWidth(_m_commonLayout.m_generalCardItemCompanionPromptRegion.width() * scale);
-    _m_commonLayout.generalButtonPositionIconRegion.setHeight(_m_commonLayout.generalButtonPositionIconRegion.height() * scale);
-    _m_commonLayout.generalButtonPositionIconRegion.setWidth(_m_commonLayout.generalButtonPositionIconRegion.width() * scale);
-    _m_commonLayout.generalButtonNameRegion.setHeight(_m_commonLayout.generalButtonNameRegion.height() * scale);
-    _m_commonLayout.generalButtonNameRegion.setWidth(_m_commonLayout.generalButtonNameRegion.width() * scale);
-#endif
 
     _m_commonLayout.playerCardBoxPlaceNameText.tryParse(config["playerCardBoxPlaceNameText"]);
     _m_commonLayout.skinItemTitleText.tryParse(config["skinItemTitleText"]);
@@ -1060,6 +1029,9 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
     tryParse(config["roleBoxHeight"], _m_roomLayout.m_roleBoxHeight);
     tryParse(config["scenePadding"], _m_roomLayout.m_scenePadding);
 
+    _m_roomLayout.scale = 1;        //add for scale by weidouncle
+
+    int equipAreas_size;
     for (int i = 0; i < 2; i++) {
         JsonObject playerConfig;
         PlayerCardContainerLayout *layout;
@@ -1070,25 +1042,13 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
             layout = &_m_dashboardLayout;
             playerConfig = layoutConfig[S_SKIN_KEY_DASHBOARD].value<JsonObject>();
         }
-
         tryParse(playerConfig["normalHeight"], layout->m_normalHeight);
         tryParse(playerConfig["handCardNumIconArea"], layout->m_handCardArea);
-#ifdef Q_OS_ANDROID
-        layout->m_normalHeight *= scale;
-        layout->m_handCardArea.setWidth(layout->m_handCardArea.width() * scale);
-        layout->m_handCardArea.setHeight(layout->m_handCardArea.height() * scale);
-        if (i)
-            layout->m_handCardArea.moveTop(layout->m_normalHeight - 6 * scale - layout->m_handCardArea.height());
-#endif
 
         JsonArray equipAreas = playerConfig["equipAreas"].value<JsonArray>();
-        for (int j = 0; j < S_EQUIP_AREA_LENGTH && j < equipAreas.size(); j++) {
+        equipAreas_size = equipAreas.size();
+        for (int j = 0; j < S_EQUIP_AREA_LENGTH && j < equipAreas.size(); j++)
             tryParse(equipAreas[j], layout->m_equipAreas[j]);
-#ifdef Q_OS_ANDROID
-            layout->m_equipAreas[j].setWidth(layout->m_equipAreas[j].width() * scale);
-            layout->m_equipAreas[j].setHeight(layout->m_equipAreas[j].height() * scale);
-#endif
-        }
 
         tryParse(playerConfig["equipImageArea"], layout->m_equipImageArea);
         tryParse(playerConfig["equipSuitArea"], layout->m_equipSuitArea);
@@ -1103,28 +1063,8 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
 
         layout->m_markTextArea.tryParse(playerConfig["markTextArea"]);
         tryParse(playerConfig["roleComboBoxPos"], layout->m_roleComboBoxPos);
-#ifdef Q_OS_ANDROID
-        layout->m_equipImageArea.setWidth(layout->m_equipImageArea.width() * scale);
-        layout->m_equipImageArea.setHeight(layout->m_equipImageArea.height() * scale);
-        layout->m_equipSuitArea.setWidth(layout->m_equipSuitArea.width() * scale);
-        layout->m_equipSuitArea.setHeight(layout->m_equipSuitArea.height() * scale);
-        layout->m_equipPointArea.setHeight(layout->m_equipPointArea.height() * scale);
-        layout->m_equipPointArea.setWidth(layout->m_equipPointArea.width() * scale);
-        layout->m_horseImageArea.setHeight(layout->m_horseImageArea.height() * scale);
-        layout->m_horseImageArea.setWidth(layout->m_horseImageArea.width() * scale);
-        layout->m_horseSuitArea.setHeight(layout->m_horseSuitArea.height() * scale);
-        layout->m_horseSuitArea.setWidth(layout->m_horseSuitArea.width() * scale);
-        layout->m_horsePointArea.setHeight(layout->m_horsePointArea.height() * scale);
-        layout->m_horsePointArea.setWidth(layout->m_horsePointArea.width() * scale);
-        layout->m_delayedTrickFirstRegion.setWidth(layout->m_delayedTrickFirstRegion.width() * scale);
-        layout->m_delayedTrickFirstRegion.setHeight(layout->m_delayedTrickFirstRegion.height() * scale);
-#endif
         tryParse(playerConfig["secondaryAvatarArea"], layout->m_secondaryAvatarArea);
-#ifdef Q_OS_ANDROID
-        layout->m_secondaryAvatarArea.setWidth(layout->m_secondaryAvatarArea.width() * scale);
-        layout->m_secondaryAvatarArea.setHeight(layout->m_secondaryAvatarArea.height() * scale);
-        layout->m_secondaryAvatarArea.moveLeft(layout->m_secondaryAvatarArea.width() + 1);
-#endif
+
         if (!tryParse(playerConfig["avatarArea"], layout->m_avatarArea)) {
             if (i) {
                 QRect ava = layout->m_secondaryAvatarArea;
@@ -1132,12 +1072,6 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
                     ava.top(), ava.width(),
                     ava.height());
             }
-        } else {
-#ifdef Q_OS_ANDROID
-            layout->m_avatarArea.setWidth(layout->m_avatarArea.width() * scale);
-            layout->m_avatarArea.setHeight(layout->m_avatarArea.height() * scale);
-//            layout->m_avatarArea.moveLeft(layout->m_secondaryAvatarArea.left() - 1 - layout->m_avatarArea.width());
-#endif
         }
         tryParse(playerConfig["circleArea"], layout->m_circleArea);
         tryParse(playerConfig["avatarImageType"], layout->m_avatarSize);
@@ -1151,20 +1085,6 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
         tryParse(playerConfig["kingdomMaskArea"], layout->m_kingdomMaskArea);
         tryParse(playerConfig["kingdomMaskArea2"], layout->m_kingdomMaskArea2);
         tryParse(playerConfig["kingdomIconArea"], layout->m_kingdomIconArea);
-#ifdef Q_OS_ANDROID
-        layout->m_circleArea.setWidth(layout->m_circleArea.width() * scale);
-        layout->m_circleArea.setHeight(layout->m_circleArea.height() * scale);
-        layout->m_avatarNameArea.setHeight(layout->m_avatarNameArea.height() * scale);
-        layout->m_avatarNameArea.setWidth(layout->m_avatarNameArea.width() * scale);
-        layout->m_secondaryAvatarNameArea.setHeight(layout->m_secondaryAvatarNameArea.height() * scale);
-        layout->m_secondaryAvatarNameArea.setWidth(layout->m_secondaryAvatarNameArea.width() * scale);
-        layout->m_kingdomMaskArea.setWidth(layout->m_kingdomMaskArea.width() * scale);
-        layout->m_kingdomMaskArea.setHeight(layout->m_kingdomMaskArea.height() * scale);
-        layout->m_kingdomMaskArea2.setWidth(layout->m_kingdomMaskArea2.width() * scale);
-        layout->m_kingdomMaskArea2.setHeight(layout->m_kingdomMaskArea2.height() * scale);
-        layout->m_kingdomIconArea.setWidth(layout->m_kingdomIconArea.width() * scale);
-        layout->m_kingdomIconArea.setHeight(layout->m_kingdomIconArea.height() * scale);
-#endif
 
         layout->m_handCardFont.tryParse(playerConfig["handCardFont"]);
         tryParse(playerConfig["screenNameArea"], layout->m_screenNameArea);
@@ -1183,15 +1103,6 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
             if (JsonUtils::isString(magatamasAnchor[0]))
                 tryParse(magatamasAnchor[0], layout->m_magatamasAlign);
         }
-#ifdef Q_OS_ANDROID
-        layout->m_magatamaSize *= scale;
-        layout->m_magatamaImageArea.setHeight(layout->m_magatamaImageArea.height() * scale);
-        layout->m_magatamaImageArea.setWidth(layout->m_magatamaImageArea.width() * scale);
-        layout->m_magatamasAnchor.setY(layout->m_normalHeight - 4 * scale);
-        //@to_do:The relocation codes of magatamas only work when the alignment is bottomRight.
-        //If the alignment changes in the future, someone should modify these codes, or add codes working in other situations.
-#endif
-
         layout->m_phaseArea.tryParse(playerConfig["phaseArea"]);
         tryParse(playerConfig["privatePileStartPos"], layout->m_privatePileStartPos);
         tryParse(playerConfig["privatePileStep"], layout->m_privatePileStep);
@@ -1217,65 +1128,235 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
         tryParse(playerConfig["extraSkillTextArea"], layout->m_extraSkillTextArea);
         tryParse(playerConfig["leftDisableShowLockArea"], layout->leftDisableShowLockArea);
         tryParse(playerConfig["rightDisableShowLockArea"], layout->rightDisableShowLockArea);
-#ifdef Q_OS_ANDROID
-        layout->m_privatePileButtonSize.setHeight(layout->m_privatePileButtonSize.height() * scale);
-        layout->m_privatePileButtonSize.setWidth(layout->m_privatePileButtonSize.width() * scale);
-        layout->m_actionedIconRegion.setHeight(layout->m_actionedIconRegion.height() * scale);
-        layout->m_actionedIconRegion.setWidth(layout->m_actionedIconRegion.width() * scale);
-        layout->m_hiddenMarkRegion1.setHeight(layout->m_hiddenMarkRegion1.height() * scale);
-        layout->m_hiddenMarkRegion1.setWidth(layout->m_hiddenMarkRegion1.width() * scale);
-        layout->m_hiddenMarkRegion2.setHeight(layout->m_hiddenMarkRegion2.height() * scale);
-        layout->m_hiddenMarkRegion2.setWidth(layout->m_hiddenMarkRegion2.width() * scale);
-        layout->leftDisableShowLockArea.setHeight(layout->leftDisableShowLockArea.height() * scale);
-        layout->leftDisableShowLockArea.setWidth(layout->leftDisableShowLockArea.width() * scale);
-        layout->rightDisableShowLockArea.setHeight(layout->rightDisableShowLockArea.height() * scale);
-        layout->rightDisableShowLockArea.setWidth(layout->rightDisableShowLockArea.width() * scale);
-        layout->m_saveMeIconRegion.setHeight(layout->m_saveMeIconRegion.height() * scale);
-        layout->m_saveMeIconRegion.setWidth(layout->m_saveMeIconRegion.width() * scale);
-        layout->m_chainedIconRegion.setHeight(layout->m_chainedIconRegion.height() * scale);
-        layout->m_chainedIconRegion.setWidth(layout->m_chainedIconRegion.width() * scale);
-        layout->m_duanchangMaskRegion.setHeight(layout->m_duanchangMaskRegion.height() * scale);
-        layout->m_duanchangMaskRegion.setWidth(layout->m_duanchangMaskRegion.width() * scale);
-        layout->m_headIconRegion.setHeight(layout->m_headIconRegion.height() * scale);
-        layout->m_headIconRegion.setWidth(layout->m_headIconRegion.width() * scale);
-        layout->m_deputyIconRegion.setHeight(layout->m_deputyIconRegion.height() * scale);
-        layout->m_deputyIconRegion.setWidth(layout->m_deputyIconRegion.width() * scale);
-        layout->m_votesIconRegion.setHeight(layout->m_votesIconRegion.height() * scale);
-        layout->m_votesIconRegion.setWidth(layout->m_votesIconRegion.width() * scale);
-        layout->m_seatIconRegion.setHeight(layout->m_seatIconRegion.height() * scale);
-        layout->m_seatIconRegion.setWidth(layout->m_seatIconRegion.width() * scale);
-        if (i)
-            layout->m_seatIconRegion.moveTop(layout->m_normalHeight - 2 * scale - layout->m_seatIconRegion.height());
-        layout->m_extraSkillArea.setHeight(layout->m_extraSkillArea.height() * scale);
-        layout->m_extraSkillArea.setWidth(layout->m_extraSkillArea.width() * scale);
-        layout->m_extraSkillTextArea.setHeight(layout->m_extraSkillTextArea.height() * scale);
-        layout->m_extraSkillTextArea.setWidth(layout->m_extraSkillTextArea.width() * scale);
-#endif
     }
 
     config = layoutConfig[S_SKIN_KEY_PHOTO].value<JsonObject>();
-
     tryParse(config["normalWidth"], _m_photoLayout.m_normalWidth);
+
 #ifdef Q_OS_ANDROID
-    _m_photoLayout.m_normalWidth *= scale;
-    _m_photoLayout.m_magatamasAnchor.setX(_m_photoLayout.m_normalWidth - scale);
+    int screenWidth = qApp->desktop()->width() * (1 - _m_roomLayout.m_infoPlaneWidthPercentage);    //the avaible width in fact
+    int screenHeight = qApp->desktop()->height();
+/*#ifdef Q_OS_WIN
+    MainWindow *main_window = qApp->findChild<MainWindow *>();
+    int screenWidth, screenHeight;
+    if (main_window) {
+        screenWidth = main_window->width() * _m_roomLayout.m_infoPlaneWidthPercentage;
+        screenHeight = main_window->height();
+    } else {
+        screenWidth = Config.value("WindowSize").toSize().width() * _m_roomLayout.m_infoPlaneWidthPercentage;
+        screenHeight = Config.value("WindowSize").toSize().height();
+    }
 #endif
+*/
+    int base_widght = (_m_photoLayout.m_normalWidth + _m_roomLayout.m_photoHDistance) * 5;
+    int base_height = (_m_photoLayout.m_normalHeight + _m_roomLayout.m_photoVDistance) * 3 + _m_dashboardLayout.m_normalHeight;
+    double scale = qMin(1.0 * screenWidth / base_widght, 1.0 * screenHeight / base_height);
+    if (scale < 1) scale = 1;
+    _m_roomLayout.scale = scale;
+
+    QMessageBox::warning(NULL, QString::number(scale), "screen = " + QString::number(screenWidth) + "*" + QString::number(screenHeight) + ":"
+                         + QString::number(base_widght) + "*" + QString::number(base_height));
+
+    _m_commonLayout.m_cardNormalHeight *= scale;                                //card
+    _m_commonLayout.m_cardNormalWidth *= scale;
+
+    _m_commonLayout.m_cardMainArea.setRect(int(_m_commonLayout.m_cardMainArea.x() * scale), int(_m_commonLayout.m_cardMainArea.y() * scale),
+                                           int(_m_commonLayout.m_cardMainArea.width() * scale), int(_m_commonLayout.m_cardMainArea.height() * scale));
+
+    _m_commonLayout.m_cardSuitArea.setRect(int(_m_commonLayout.m_cardSuitArea.x() * scale), int(_m_commonLayout.m_cardSuitArea.y() * scale),
+                                           int(_m_commonLayout.m_cardSuitArea.width() * scale), int(_m_commonLayout.m_cardSuitArea.height() * scale));
+
+    _m_commonLayout.m_cardNumberArea.setRect(int(_m_commonLayout.m_cardNumberArea.x() * scale), int(_m_commonLayout.m_cardNumberArea.y() * scale),
+                                             int(_m_commonLayout.m_cardNumberArea.width() * scale), int(_m_commonLayout.m_cardNumberArea.height() * scale));
+
+    _m_commonLayout.m_cardTransferableIconArea.setRect(int(_m_commonLayout.m_cardTransferableIconArea.x() * scale), int(_m_commonLayout.m_cardTransferableIconArea.y() * scale),
+                                                       int(_m_commonLayout.m_cardTransferableIconArea.width() * scale), int(_m_commonLayout.m_cardTransferableIconArea.height() * scale));
+
+    _m_commonLayout.m_cardFrameArea.setRect(int(_m_commonLayout.m_cardFrameArea.x() * scale), int(_m_commonLayout.m_cardFrameArea.y() * scale),
+                                            int(_m_commonLayout.m_cardFrameArea.width() * scale), int(_m_commonLayout.m_cardFrameArea.height() * scale));
+
+    _m_commonLayout.m_cardFootnoteArea.setRect(int(_m_commonLayout.m_cardFootnoteArea.x() * scale), int(_m_commonLayout.m_cardFootnoteArea.y() * scale),
+                                               int(_m_commonLayout.m_cardFootnoteArea.width() * scale), int(_m_commonLayout.m_cardFootnoteArea.height() * scale));
+
+    _m_commonLayout.m_cardAvatarArea.setRect(int(_m_commonLayout.m_cardAvatarArea.x() * scale), int(_m_commonLayout.m_cardAvatarArea.y() * scale),
+                                             int(_m_commonLayout.m_cardAvatarArea.width() * scale), int(_m_commonLayout.m_cardAvatarArea.height() * scale));
+
+    _m_commonLayout.m_generalCardItemCompanionPromptRegion.setRect(int(_m_commonLayout.m_generalCardItemCompanionPromptRegion.x() * scale), int(_m_commonLayout.m_generalCardItemCompanionPromptRegion.y() * scale),
+                                             int(_m_commonLayout.m_generalCardItemCompanionPromptRegion.width() * scale), int(_m_commonLayout.m_generalCardItemCompanionPromptRegion.height() * scale));
+
+    _m_commonLayout.generalButtonPositionIconRegion.setRect(int(_m_commonLayout.generalButtonPositionIconRegion.x() * scale), int(_m_commonLayout.generalButtonPositionIconRegion.y() * scale),
+                                             int(_m_commonLayout.generalButtonPositionIconRegion.width() * scale), int(_m_commonLayout.generalButtonPositionIconRegion.height() * scale));
+
+    _m_commonLayout.generalButtonNameRegion.setRect(int(_m_commonLayout.generalButtonNameRegion.x() * scale), int(_m_commonLayout.generalButtonNameRegion.y() * scale),
+                                             int(_m_commonLayout.generalButtonNameRegion.width() * scale), int(_m_commonLayout.generalButtonNameRegion.height() * scale));
+
+    _m_commonLayout.m_roleNormalBgSize.setHeight(int(_m_commonLayout.m_roleNormalBgSize.height() * scale));
+    _m_commonLayout.m_roleNormalBgSize.setWidth(int(_m_commonLayout.m_roleNormalBgSize.width() * scale));
+
+    foreach (const QString &kingdom, kingdoms)
+        _m_commonLayout.m_rolesRect[kingdom].setRect(int(_m_commonLayout.m_rolesRect[kingdom].x() * scale), int(_m_commonLayout.m_rolesRect[kingdom].y() * scale),
+                                                     int(_m_commonLayout.m_rolesRect[kingdom].width() * scale), int(_m_commonLayout.m_rolesRect[kingdom].height() * scale));
+
+    _m_roomLayout.m_chatTextBoxHeight *= scale;
+    _m_roomLayout.m_discardPileMinWidth *= scale;
+    _m_roomLayout.m_discardPilePadding *= scale;
+    //_m_roomLayout.m_minimumSceneSize = _m_roomLayout.m_minimumSceneSize.scale(scale, Qt::KeepAspectRatioByExpanding);
+    //_m_roomLayout.m_maximumSceneSize = _m_roomLayout.m_maximumSceneSize.scale(scale, Qt::KeepAspectRatioByExpanding);
+    //_m_roomLayout.m_minimumSceneSize10Player = _m_roomLayout.m_minimumSceneSize10Player.scale(scale, Qt::KeepAspectRatioByExpanding);
+    //_m_roomLayout.m_maximumSceneSize10Player = _m_roomLayout.m_maximumSceneSize10Player.scale(scale, Qt::KeepAspectRatioByExpanding);
+    _m_roomLayout.m_photoHDistance *= scale;
+    _m_roomLayout.m_photoVDistance *= scale;
+    _m_roomLayout.m_photoDashboardPadding *= scale;
+    _m_roomLayout.m_photoRoomPadding *= scale;
+    _m_roomLayout.m_roleBoxHeight *= scale;
+    _m_roomLayout.m_scenePadding *= scale;
+
+    for (int i = 0; i < 2; i++) {
+        PlayerCardContainerLayout *layout;
+        if (i == 0) {
+            layout = &_m_photoLayout;
+        } else {
+            layout = &_m_dashboardLayout;
+        }
+
+        layout->m_normalHeight *= scale;
+
+        layout->m_handCardArea.setRect(int(layout->m_handCardArea.x() * scale), int(layout->m_handCardArea.y() * scale),
+                                       int(layout->m_handCardArea.width() * scale), int(layout->m_handCardArea.height() * scale));
+
+        for (int j = 0; j < S_EQUIP_AREA_LENGTH && j < equipAreas_size; j++)
+            layout->m_equipAreas[j].setRect(int(layout->m_equipAreas[j].x() * scale), int(layout->m_equipAreas[j].y() * scale),
+                                            int(layout->m_equipAreas[j].width() * scale), int(layout->m_equipAreas[j].height() * scale));
+
+        layout->m_equipImageArea.setRect(int(layout->m_equipImageArea.x() * scale), int(layout->m_equipImageArea.y() * scale),
+                                         int(layout->m_equipImageArea.width() * scale), int(layout->m_equipImageArea.height() * scale));
+
+        layout->m_equipSuitArea.setRect(int(layout->m_equipSuitArea.x() * scale), int(layout->m_equipSuitArea.y() * scale),
+                                        int(layout->m_equipSuitArea.width() * scale), int(layout->m_equipSuitArea.height() * scale));
+
+        layout->m_equipPointArea.setRect(int(layout->m_equipPointArea.x() * scale), int(layout->m_equipPointArea.y() * scale),
+                                         int(layout->m_equipPointArea.width() * scale), int(layout->m_equipPointArea.height() * scale));
+
+        layout->m_horseImageArea.setRect(int(layout->m_horseImageArea.x() * scale), int(layout->m_horseImageArea.y() * scale),
+                                         int(layout->m_horseImageArea.width() * scale), int(layout->m_horseImageArea.height() * scale));
+
+        layout->m_horseSuitArea.setRect(int(layout->m_horseSuitArea.x() * scale), int(layout->m_horseSuitArea.y() * scale),
+                                        int(layout->m_horseSuitArea.width() * scale), int(layout->m_horseSuitArea.height() * scale));
+
+        layout->m_horsePointArea.setRect(int(layout->m_horsePointArea.x() * scale), int(layout->m_horsePointArea.y() * scale),
+                                         int(layout->m_horsePointArea.width() * scale), int(layout->m_horsePointArea.height() * scale));
+
+        layout->m_delayedTrickFirstRegion.setRect(int(layout->m_delayedTrickFirstRegion.x() * scale), int(layout->m_delayedTrickFirstRegion.y() * scale),
+                                                  int(layout->m_delayedTrickFirstRegion.width() * scale), int(layout->m_delayedTrickFirstRegion.height() * scale));
+
+        layout->m_delayedTrickStep *= scale;
+
+        layout->m_roleComboBoxPos *= scale;
+
+        layout->m_secondaryAvatarArea.setRect(int(layout->m_secondaryAvatarArea.x() * scale), int(layout->m_secondaryAvatarArea.y() * scale),
+                                              int(layout->m_secondaryAvatarArea.width() * scale), int(layout->m_secondaryAvatarArea.height() * scale));
+
+        layout->m_avatarArea.setRect(int(layout->m_avatarArea.x() * scale), int(layout->m_avatarArea.y() * scale),
+                                     int(layout->m_avatarArea.width() * scale), int(layout->m_avatarArea.height() * scale));
+
+        layout->m_circleArea.setRect(int(layout->m_circleArea.x() * scale), int(layout->m_circleArea.y() * scale),
+                                     int(layout->m_circleArea.width() * scale), int(layout->m_circleArea.height() * scale));
+
+        layout->m_avatarNameArea.setRect(int(layout->m_avatarNameArea.x() * scale), int(layout->m_avatarNameArea.y() * scale),
+                                         int(layout->m_avatarNameArea.width() * scale), int(layout->m_avatarNameArea.height() * scale));
+
+        layout->m_secondaryAvatarNameArea.setRect(int(layout->m_secondaryAvatarNameArea.x() * scale), int(layout->m_secondaryAvatarNameArea.y() * scale),
+                                                  int(layout->m_secondaryAvatarNameArea.width() * scale), int(layout->m_secondaryAvatarNameArea.height() * scale));
+
+        layout->m_kingdomMaskArea.setRect(int(layout->m_kingdomMaskArea.x() * scale), int(layout->m_kingdomMaskArea.y() * scale),
+                                          int(layout->m_kingdomMaskArea.width() * scale), int(layout->m_kingdomMaskArea.height() * scale));
+
+        layout->m_kingdomMaskArea2.setRect(int(layout->m_kingdomMaskArea2.x() * scale), int(layout->m_kingdomMaskArea2.y() * scale),
+                                                 int(layout->m_kingdomMaskArea2.width() * scale), int(layout->m_kingdomMaskArea2.height() * scale));
+
+        layout->m_screenNameArea.setRect(int(layout->m_screenNameArea.x() * scale), int(layout->m_screenNameArea.y() * scale),
+                                                 int(layout->m_screenNameArea.width() * scale), int(layout->m_screenNameArea.height() * scale));
+
+        layout->m_kingdomIconArea.setRect(int(layout->m_kingdomIconArea.x() * scale), int(layout->m_kingdomIconArea.y() * scale),
+                                          int(layout->m_kingdomIconArea.width() * scale), int(layout->m_kingdomIconArea.height() * scale));
+
+        layout->m_magatamaSize *= scale;
+
+        layout->m_magatamaImageArea.setRect(int(layout->m_magatamaImageArea.x() * scale), int(layout->m_magatamaImageArea.y() * scale),
+                                            int(layout->m_magatamaImageArea.width() * scale), int(layout->m_magatamaImageArea.height() * scale));
+
+        layout->m_privatePileStartPos *= scale;
+        layout->m_privatePileStep *= scale;
+
+        layout->m_privatePileButtonSize.setHeight(layout->m_privatePileButtonSize.height() * scale);
+        layout->m_privatePileButtonSize.setWidth(layout->m_privatePileButtonSize.width() * scale);
+
+        layout->m_actionedIconRegion.setRect(int(layout->m_actionedIconRegion.x() * scale), int(layout->m_actionedIconRegion.y() * scale),
+                                             int(layout->m_actionedIconRegion.width() * scale), int(layout->m_actionedIconRegion.height() * scale));
+
+        layout->m_hiddenMarkRegion1.setRect(int(layout->m_hiddenMarkRegion1.x() * scale), int(layout->m_hiddenMarkRegion1.y() * scale),
+                                            int(layout->m_hiddenMarkRegion1.width() * scale), int(layout->m_hiddenMarkRegion1.height() * scale));
+
+        layout->m_hiddenMarkRegion2.setRect(int(layout->m_hiddenMarkRegion2.x() * scale), int(layout->m_hiddenMarkRegion2.y() * scale),
+                                            int(layout->m_hiddenMarkRegion2.width() * scale), int(layout->m_hiddenMarkRegion2.height() * scale));
+
+        layout->leftDisableShowLockArea.setRect(int(layout->leftDisableShowLockArea.x() * scale), int(layout->leftDisableShowLockArea.y() * scale),
+                                                int(layout->leftDisableShowLockArea.width() * scale), int(layout->leftDisableShowLockArea.height() * scale));
+
+        layout->rightDisableShowLockArea.setRect(int(layout->rightDisableShowLockArea.x() * scale), int(layout->rightDisableShowLockArea.y() * scale),
+                                                 int(layout->rightDisableShowLockArea.width() * scale), int(layout->rightDisableShowLockArea.height() * scale));
+
+        layout->m_saveMeIconRegion.setRect(int(layout->m_saveMeIconRegion.x() * scale), int(layout->m_saveMeIconRegion.y() * scale),
+                                           int(layout->m_saveMeIconRegion.width() * scale), int(layout->m_saveMeIconRegion.height() * scale));
+
+        layout->m_chainedIconRegion.setRect(int(layout->m_chainedIconRegion.x() * scale), int(layout->m_chainedIconRegion.y() * scale),
+                                            int(layout->m_chainedIconRegion.width() * scale), int(layout->m_chainedIconRegion.height() * scale));
+
+        layout->m_duanchangMaskRegion.setRect(int(layout->m_duanchangMaskRegion.x() * scale), int(layout->m_duanchangMaskRegion.y() * scale),
+                                              int(layout->m_duanchangMaskRegion.width() * scale), int(layout->m_duanchangMaskRegion.height() * scale));
+
+        layout->m_headIconRegion.setRect(int(layout->m_headIconRegion.x() * scale), int(layout->m_headIconRegion.y() * scale),
+                                         int(layout->m_headIconRegion.width() * scale), int(layout->m_headIconRegion.height() * scale));
+
+        layout->m_deputyIconRegion.setRect(int(layout->m_deputyIconRegion.x() * scale), int(layout->m_deputyIconRegion.y() * scale),
+                                           int(layout->m_deputyIconRegion.width() * scale), int(layout->m_deputyIconRegion.height() * scale));
+
+        layout->m_votesIconRegion.setRect(int(layout->m_votesIconRegion.x() * scale), int(layout->m_votesIconRegion.y() * scale),
+                                          int(layout->m_votesIconRegion.width() * scale), int(layout->m_votesIconRegion.height() * scale));
+
+        layout->m_seatIconRegion.setRect(int(layout->m_seatIconRegion.x() * scale), int(layout->m_seatIconRegion.y() * scale),
+                                         int(layout->m_seatIconRegion.width() * scale), int(layout->m_seatIconRegion.height() * scale));
+
+        layout->m_extraSkillArea.setRect(int(layout->m_extraSkillArea.x() * scale), int(layout->m_extraSkillArea.y() * scale),
+                                         int(layout->m_extraSkillArea.width() * scale), int(layout->m_extraSkillArea.height() * scale));
+
+        layout->m_extraSkillTextArea.setRect(int(layout->m_extraSkillTextArea.x() * scale), int(layout->m_extraSkillTextArea.y() * scale),
+                                             int(layout->m_extraSkillTextArea.width() * scale), int(layout->m_extraSkillTextArea.height() * scale));
+    }
+
+    _m_photoLayout.m_normalWidth *= scale;
+    _m_photoLayout.m_magatamasAnchor *= scale;
+
+#endif
+
     if (!tryParse(config["focusFrameArea"], _m_photoLayout.m_focusFrameArea)
         && JsonUtils::isNumber(config["borderWidth"])) {
         int borderWidth = 0;
         tryParse(config["borderWidth"], borderWidth);
+
 #ifdef Q_OS_ANDROID
         borderWidth *= scale;
 #endif
         _m_photoLayout.m_focusFrameArea = QRect(-borderWidth, -borderWidth,
             _m_photoLayout.m_normalWidth + 2 * borderWidth,
             _m_photoLayout.m_normalHeight + 2 * borderWidth);
-    } else {
-#ifdef Q_OS_ANDROID
-        _m_photoLayout.m_focusFrameArea.setWidth(_m_photoLayout.m_focusFrameArea.width() * scale);
-        _m_photoLayout.m_focusFrameArea.setHeight(_m_photoLayout.m_focusFrameArea.height() * scale);
-#endif
     }
+#ifdef Q_OS_ANDROID
+    else
+        _m_photoLayout.m_focusFrameArea.setRect(int(_m_photoLayout.m_focusFrameArea.x() * scale), int(_m_photoLayout.m_focusFrameArea.y() * scale),
+                                                int(_m_photoLayout.m_focusFrameArea.width() * scale), int(_m_photoLayout.m_focusFrameArea.height() * scale));
+#endif
+
     tryParse(config["mainFrameArea"], _m_photoLayout.m_mainFrameArea);
     tryParse(config["onlineStatusArea"], _m_photoLayout.m_onlineStatusArea);
     tryParse(config["onlineStatusBgColor"], _m_photoLayout.m_onlineStatusBgColor);
@@ -1285,14 +1366,17 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
     _m_photoLayout.m_skillNameFont.tryParse(config["skillNameFont"]);
     tryParse(config["canvasArea"], _m_photoLayout.m_boundingRect);
 #ifdef Q_OS_ANDROID
-    _m_photoLayout.m_mainFrameArea.setWidth(_m_photoLayout.m_mainFrameArea.width() * scale);
-    _m_photoLayout.m_mainFrameArea.setHeight(_m_photoLayout.m_mainFrameArea.height() * scale);
-    _m_photoLayout.m_onlineStatusArea.setWidth(_m_photoLayout.m_onlineStatusArea.width() * scale);
-    _m_photoLayout.m_onlineStatusArea.setHeight(_m_photoLayout.m_onlineStatusArea.height() * scale);
-    _m_photoLayout.m_skillNameArea.setWidth(_m_photoLayout.m_skillNameArea.width() * scale);
-    _m_photoLayout.m_skillNameArea.setHeight(_m_photoLayout.m_skillNameArea.height() * scale);
-    _m_photoLayout.m_boundingRect.setWidth(_m_photoLayout.m_boundingRect.width() * scale);
-    _m_photoLayout.m_boundingRect.setHeight(_m_photoLayout.m_boundingRect.height() * scale);
+    _m_photoLayout.m_mainFrameArea.setRect(int(_m_photoLayout.m_mainFrameArea.x() * scale), int(_m_photoLayout.m_mainFrameArea.y() * scale),
+                                           int(_m_photoLayout.m_mainFrameArea.width() * scale), int(_m_photoLayout.m_mainFrameArea.height() * scale));
+
+    _m_photoLayout.m_onlineStatusArea.setRect(int(_m_photoLayout.m_onlineStatusArea.x() * scale), int(_m_photoLayout.m_onlineStatusArea.y() * scale),
+                                              int(_m_photoLayout.m_onlineStatusArea.width() * scale), int(_m_photoLayout.m_onlineStatusArea.height() * scale));
+
+    _m_photoLayout.m_skillNameArea.setRect(int(_m_photoLayout.m_skillNameArea.x() * scale), int(_m_photoLayout.m_skillNameArea.y() * scale),
+                                           int(_m_photoLayout.m_skillNameArea.width() * scale), int(_m_photoLayout.m_skillNameArea.height() * scale));
+
+    _m_photoLayout.m_boundingRect.setRect(int(_m_photoLayout.m_boundingRect.x() * scale), int(_m_photoLayout.m_boundingRect.y() * scale),
+                                          int(_m_photoLayout.m_boundingRect.width() * scale), int(_m_photoLayout.m_boundingRect.height() * scale));
 #endif
 
     config = layoutConfig[S_SKIN_KEY_DASHBOARD].value<JsonObject>();
@@ -1316,22 +1400,43 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
         _m_dashboardLayout.m_changeHeadHeroSkinButtonPos);
     tryParse(config["changeDeputyHeroSkinBtnPos"],
         _m_dashboardLayout.m_changeDeputyHeroSkinButtonPos);
+
 #ifdef Q_OS_ANDROID
     _m_dashboardLayout.m_leftWidth *= scale;
     _m_dashboardLayout.m_rightWidth *= scale;
     _m_dashboardLayout.m_magatamasBaseWidth *= scale;
     _m_dashboardLayout.m_rswidth *= scale;
     _m_dashboardLayout.m_floatingAreaHeight *= scale;
-    _m_dashboardLayout.m_focusFrameArea.setWidth(_m_dashboardLayout.m_focusFrameArea.width() * scale);
-    _m_dashboardLayout.m_focusFrameArea.setHeight(_m_dashboardLayout.m_focusFrameArea.height() * scale);
-    _m_dashboardLayout.m_focusFrameArea2.setWidth(_m_dashboardLayout.m_focusFrameArea2.width() * scale);
-    _m_dashboardLayout.m_focusFrameArea2.setHeight(_m_dashboardLayout.m_focusFrameArea2.height() * scale);
+
+    _m_dashboardLayout.m_focusFrameArea.setRect(int(_m_dashboardLayout.m_focusFrameArea.x() * scale), int(_m_dashboardLayout.m_focusFrameArea.y() * scale),
+                                                int(_m_dashboardLayout.m_focusFrameArea.width() * scale), int(_m_dashboardLayout.m_focusFrameArea.height() * scale));
+
+    _m_dashboardLayout.m_focusFrameArea2.setRect(int(_m_dashboardLayout.m_focusFrameArea2.x() * scale), int(_m_dashboardLayout.m_focusFrameArea2.y() * scale),
+                                                 int(_m_dashboardLayout.m_focusFrameArea2.width() * scale), int(_m_dashboardLayout.m_focusFrameArea2.height() * scale));
+
     _m_dashboardLayout.m_buttonSetSize.setHeight(_m_dashboardLayout.m_buttonSetSize.height() * scale);
     _m_dashboardLayout.m_buttonSetSize.setWidth(_m_dashboardLayout.m_buttonSetSize.width() * scale);
-    _m_dashboardLayout.m_trustButtonArea.setWidth(_m_dashboardLayout.m_trustButtonArea.width() * scale);
-    _m_dashboardLayout.m_trustButtonArea.setHeight(_m_dashboardLayout.m_trustButtonArea.height() * scale);
-    _m_dashboardLayout.m_magatamasAnchor.setX(_m_dashboardLayout.m_rightWidth - scale);
-    _m_dashboardLayout.m_disperseWidth *= scale;    //Maybe useless?
+
+    _m_dashboardLayout.m_confirmButtonArea.setRect(int(_m_dashboardLayout.m_confirmButtonArea.x() * scale), int(_m_dashboardLayout.m_confirmButtonArea.y() * scale),
+                                                   int(_m_dashboardLayout.m_confirmButtonArea.width() * scale), int(_m_dashboardLayout.m_confirmButtonArea.height() * scale));
+
+    _m_dashboardLayout.m_cancelButtonArea.setRect(int(_m_dashboardLayout.m_cancelButtonArea.x() * scale),  int(_m_dashboardLayout.m_cancelButtonArea.y() * scale),
+                                                  int(_m_dashboardLayout.m_cancelButtonArea.width() * scale), int(_m_dashboardLayout.m_cancelButtonArea.height() * scale));
+
+    _m_dashboardLayout.m_discardButtonArea.setRect(int(_m_dashboardLayout.m_discardButtonArea.x() * scale), int(_m_dashboardLayout.m_discardButtonArea.y() * scale),
+                                                   int(_m_dashboardLayout.m_discardButtonArea.width() * scale), int(_m_dashboardLayout.m_discardButtonArea.height() * scale));
+
+    _m_dashboardLayout.m_trustButtonArea.setRect(int(_m_dashboardLayout.m_trustButtonArea.x() * scale), int(_m_dashboardLayout.m_trustButtonArea.y() * scale),
+                                                 int(_m_dashboardLayout.m_trustButtonArea.width() * scale), int(_m_dashboardLayout.m_trustButtonArea.height() * scale));
+
+    _m_dashboardLayout.m_equipBorderPos *= scale;
+    _m_dashboardLayout.m_equipSelectedOffset *= scale;
+    _m_dashboardLayout.m_disperseWidth *= scale;
+    _m_dashboardLayout.m_changeHeadHeroSkinButtonPos *= scale;
+    _m_dashboardLayout.m_changeDeputyHeroSkinButtonPos *= scale;
+
+    _m_dashboardLayout.m_magatamasAnchor.setX(int(_m_dashboardLayout.m_rightWidth - scale));
+    _m_dashboardLayout.m_magatamasAnchor.setY(int(_m_dashboardLayout.m_normalHeight - scale * 4));
 #endif
     config = layoutConfig["skillButton"].value<JsonObject>();
     JsonArray configWidth = config["width"].value<JsonArray>();
@@ -1356,15 +1461,15 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
         if (i < configTextArea.size()) {
             tryParse(configTextArea[i], _m_dashboardLayout.m_skillTextArea[i]);
 #ifdef Q_OS_ANDROID
-            _m_dashboardLayout.m_skillTextArea[i].setHeight(_m_dashboardLayout.m_skillTextArea[i].height() * scale);
-            _m_dashboardLayout.m_skillTextArea[i].setWidth(_m_dashboardLayout.m_skillTextArea[i].width() * scale);
+            _m_dashboardLayout.m_skillTextArea[i].setRect(int(_m_dashboardLayout.m_skillTextArea[i].x() * scale), int(_m_dashboardLayout.m_skillTextArea[i].y() * scale),
+                                                              int(_m_dashboardLayout.m_skillTextArea[i].width() * scale), int(_m_dashboardLayout.m_skillTextArea[i].height() * scale));
 #endif
         }
         if (i < configTextAreaDown.size()) {
             tryParse(configTextAreaDown[i], _m_dashboardLayout.m_skillTextAreaDown[i]);
 #ifdef Q_OS_ANDROID
-            _m_dashboardLayout.m_skillTextAreaDown[i].setWidth(_m_dashboardLayout.m_skillTextAreaDown[i].width() * scale);
-            _m_dashboardLayout.m_skillTextAreaDown[i].setHeight(_m_dashboardLayout.m_skillTextAreaDown[i].height() * scale);
+            _m_dashboardLayout.m_skillTextAreaDown[i].setRect(int(_m_dashboardLayout.m_skillTextAreaDown[i].x() * scale), int(_m_dashboardLayout.m_skillTextAreaDown[i].y() * scale),
+                                                              int(_m_dashboardLayout.m_skillTextAreaDown[i].width() * scale), int(_m_dashboardLayout.m_skillTextAreaDown[i].height() * scale));
 #endif
         }
         if (i < configTextFont.size())

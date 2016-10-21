@@ -888,89 +888,67 @@ void FightTogether::onUse(Room *room, const CardUseStruct &card_use) const
 {
     ServerPlayer *source = card_use.from;
     QStringList big_kingdoms = source->getBigKingdoms(objectName(), MaxCardsType::Normal);
-    if (big_kingdoms.isEmpty()) {
-        if (!source->isCardLimited(this, Card::MethodRecast)) {
-            CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
-            reason.m_skillName = getSkillName();
-            room->moveCardTo(this, card_use.from, NULL, Player::PlaceTable, reason, true);
-            card_use.from->broadcastSkillInvoke("@recast");
-
-            LogMessage log;
-            log.type = "#Card_Recast";
-            log.from = card_use.from;
-            log.card_str = card_use.card->toString();
-            room->sendLog(log);
-
-            QString skill_name = card_use.card->showSkill();
-            if (!skill_name.isNull() && card_use.from->ownSkill(skill_name) && !card_use.from->hasShownSkill(skill_name))
-                card_use.from->showGeneral(card_use.from->inHeadSkills(skill_name));
-
-            QList<int> table_cardids = room->getCardIdsOnTable(this);
-            if (!table_cardids.isEmpty()) {
-                DummyCard dummy(table_cardids);
-                room->moveCardTo(&dummy, card_use.from, NULL, Player::DiscardPile, reason, true);
-            }
-
-            card_use.from->drawCards(1);
-            return;
-        } else
-            room->setPlayerFlag(source, "Global_FightTogetherFailed");
-        return;
-    }
-    QList<ServerPlayer *> bigs, smalls;
-    foreach (ServerPlayer *p, room->getAllPlayers()) {
-        const Skill *skill = room->isProhibited(source, p, this);
-        if (skill) {
-            if (!skill->isVisible())
-                skill = Sanguosha->getMainSkill(skill->objectName());
-            if (skill->isVisible()) {
-                LogMessage log;
-                log.type = "#SkillAvoid";
-                log.from = p;
-                log.arg = skill->objectName();
-                log.arg2 = objectName();
-                room->sendLog(log);
-
-                room->broadcastSkillInvoke(skill->objectName());
-            }
-            continue;
-        }
-        QString kingdom = p->objectName();
-        if (big_kingdoms.length() == 1 && big_kingdoms.first().startsWith("sgs")) { // for JadeSeal
-            if (big_kingdoms.contains(kingdom))
-                bigs << p;
-            else
-                smalls << p;
-        } else {
-            if (!p->hasShownOneGeneral()) {
-                smalls << p;
-                continue;
-            }
-            if (p->getRole() == "careerist")
-                kingdom = "careerist";
-            else
-                kingdom = p->getKingdom();
-            if (big_kingdoms.contains(kingdom))
-                bigs << p;
-            else
-                smalls << p;
-        }
-    }
-    if (this->getSkillName(true) == "qice") {
-        if (!bigs.isEmpty() && bigs.length() > this->getSubcards().length())
-            bigs.clear();
-        if (!smalls.isEmpty() && smalls.length() > this->getSubcards().length())
-            smalls.clear();
-    }
+    bool can_use = !big_kingdoms.isEmpty() && !source->isCardLimited(this, handling_method);
     QStringList choices;
-    if (!bigs.isEmpty())
-        choices << "big";
-    if (!smalls.isEmpty())
-        choices << "small";
+    QList<ServerPlayer *> bigs, smalls, bigs_void, smalls_void;
+    if (can_use) {
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            QString kingdom = p->objectName();
+            if (big_kingdoms.length() == 1 && big_kingdoms.first().startsWith("sgs")) { // for JadeSeal
+                if (big_kingdoms.contains(kingdom)) {
+                    if (room->isProhibited(source, p, this))
+                        bigs_void << p;
+                    else
+                        bigs << p;
+                } else {
+                    if (room->isProhibited(source, p, this))
+                        smalls_void << p;
+                    else
+                        smalls << p;
+                }
+            } else {
+                if (!p->hasShownOneGeneral()) {
+                    if (room->isProhibited(source, p, this))
+                        smalls_void << p;
+                    else
+                        smalls << p;
+                    continue;
+                }
+                if (p->getRole() == "careerist")
+                    kingdom = "careerist";
+                else
+                    kingdom = p->getKingdom();
+                if (big_kingdoms.contains(kingdom)) {
+                    if (room->isProhibited(source, p, this))
+                        bigs_void << p;
+                    else
+                        bigs << p;
+                } else {
+                    if (room->isProhibited(source, p, this))
+                        smalls_void << p;
+                    else
+                        smalls << p;
+                }
+            }
+        }
+        if (this->getSkillName(true) == "qice") {
+            if (!bigs.isEmpty() && bigs.length() > this->getSubcards().length())
+                bigs.clear();
+            if (!smalls.isEmpty() && smalls.length() > this->getSubcards().length())
+                smalls.clear();
+        }
+        if (!bigs.isEmpty())
+            choices << "big";
+        if (!smalls.isEmpty())
+            choices << "small";
+    }
     if (!source->isCardLimited(this, Card::MethodRecast) && can_recast)
         choices << "recast";
 
-    Q_ASSERT(!choices.isEmpty());
+    if (choices.isEmpty()) {
+        room->setPlayerFlag(source, "Global_FightTogetherFailed");
+        return;
+    }
 
     QString choice = room->askForChoice(source, objectName(), choices.join("+"));
     if (choice == "recast") {
@@ -986,8 +964,8 @@ void FightTogether::onUse(Room *room, const CardUseStruct &card_use) const
         room->sendLog(log);
 
         QString skill_name = card_use.card->showSkill();
-        if (!skill_name.isNull() && card_use.from->ownSkill(skill_name) && !card_use.from->hasShownSkill(skill_name))
-            card_use.from->showGeneral(card_use.from->inHeadSkills(skill_name));
+        if (!skill_name.isNull())
+            card_use.from->showSkill(skill_name, card_use.card->getSkillPosition());
 
         QList<int> table_cardids = room->getCardIdsOnTable(this);
         if (!table_cardids.isEmpty()) {
@@ -1005,6 +983,23 @@ void FightTogether::onUse(Room *room, const CardUseStruct &card_use) const
     else if (choice == "small")
         use.to = smalls;
     Q_ASSERT(!use.to.isEmpty());
+
+    foreach (ServerPlayer *p, choice == "big" ? bigs_void : smalls_void) {
+        const Skill *skill = room->isProhibited(source, p, this);
+        if (!skill->isVisible())
+            skill = Sanguosha->getMainSkill(skill->objectName());
+        if (skill->isVisible()) {
+            LogMessage log;
+            log.type = "#SkillAvoid";
+            log.from = p;
+            log.arg = skill->objectName();
+            log.arg2 = objectName();
+            room->sendLog(log);
+
+            room->broadcastSkillInvoke(skill->objectName());
+        }
+    }
+
     TrickCard::onUse(room, use);
 }
 
@@ -1149,7 +1144,7 @@ void AllianceFeast::onEffect(const CardEffectStruct &effect) const
 
 bool AllianceFeast::isAvailable(const Player *player) const
 {
-    return player->hasShownOneGeneral() && !player->isProhibited(player, this);
+    return player->hasShownOneGeneral() && !player->isProhibited(player, this) && TrickCard::isAvailable(player);
 }
 
 ThreatenEmperor::ThreatenEmperor(Suit suit, int number)

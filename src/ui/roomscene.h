@@ -269,7 +269,7 @@ private:
     Button *add_robot, *fill_robots, *return_to_start_scene;
     QList<Photo *> photos;
     QList<const ClientPlayer *> global_targets;
-    QList<PlayerCardBox *> card_boxes;
+    QHash<const ClientPlayer *, PlayerCardBox *> card_boxes;
     QList<int> selected_ids;
     QHash<int, const ClientPlayer *> selected_targets_ids;
     QMap<QString, Photo *> name2photo;
@@ -404,7 +404,8 @@ private:
     void doAppearingAnimation(const QString &name, const QStringList &args);
     void doLightboxAnimation(const QString &name, const QStringList &args);
     void doIndicate(const QString &name, const QStringList &args);
-    void doHuashen(const QString &, const QStringList &args);
+    void doHuashen(const QString &name, const QStringList &args);
+    void doBattleArray(const QString &name, const QStringList &args);
     EffectAnimation *animations;
 
     // re-layout attempts
@@ -431,8 +432,8 @@ private slots:
     void changeHp(const QString &who, int delta, DamageStruct::Nature nature, bool losthp);
     void changeMaxHp(const QString &who, int delta);
     void moveFocus(const QStringList &who, QSanProtocol::Countdown);
-    void setEmotion(const QString &who, const QString &emotion);
-    void setEmotion(const QString &who, const QString &emotion, bool permanent);
+    void setEmotion(const QString &who, const QString &emotion, bool playback = false, int duration = 0);
+    void setEmotion(const QString &who, const QString &emotion, bool permanent, bool playback, int duration);
     void showSkillInvocation(const QString &who, const QString &skill_name);
     void doAnimation(int name, const QStringList &args);
     void showOwnerButtons(bool owner);

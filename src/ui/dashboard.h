@@ -164,6 +164,8 @@ public:
     void addTransferButton(TransferButton *button);
     QList<TransferButton *> getTransferButtons() const;
 
+    void playBattleArrayAnimations();
+
 public slots:
     void sortCards();
     void beginSorting();
@@ -314,6 +316,11 @@ protected:
     QSanButton *m_changeDeputyHeroSkinButton;
     HeroSkinContainer *m_headHeroSkinContainer;
     HeroSkinContainer *m_deputyHeroSkinContainer;
+
+    // for battle arry
+    QHash<QString, PixmapAnimation *> _m_frameBorders;
+    QHash<QString, PixmapAnimation *> _m_roleBorders;
+    void _createBattleArrayAnimations();
 
 private:
     static const int CARDITEM_Z_DATA_KEY = 0413;

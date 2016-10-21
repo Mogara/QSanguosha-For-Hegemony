@@ -24,6 +24,7 @@
 #include "qsanselectableitem.h"
 #include "player.h"
 #include "carditem.h"
+#include "pixmapanimation.h"
 
 #include "genericcardcontainerui.h"
 #include "sprite.h"
@@ -49,7 +50,7 @@ public:
     virtual void repaintAll();
     QList<CardItem *> removeCardItems(const QList<int> &card_id, Player::Place place);
 
-    void setEmotion(const QString &emotion, bool permanent = false);
+    void setEmotion(const QString &emotion, bool permanent = false, bool playback = false, int duration = 0);
     void tremble();
     void showSkillName(const QString &skill_name);
 
@@ -66,6 +67,8 @@ public:
     void setFrame(FrameType type);
     virtual QRectF boundingRect() const;
     QGraphicsItem *getMouseClickReceiver();
+
+    void playBattleArrayAnimations();
 
 public slots:
     void updatePhase();
@@ -138,6 +141,10 @@ protected:
     QGraphicsPixmapItem *_m_onlineStatusItem;
 
     QParallelAnimationGroup *_blurEffect;
+
+    QHash<QString, PixmapAnimation *> _m_frameBorders;
+    QHash<QString, PixmapAnimation *> _m_roleBorders;
+    void _createBattleArrayAnimations();
 };
 
 #endif

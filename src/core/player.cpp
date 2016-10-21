@@ -1211,9 +1211,12 @@ int Player::getSlashCount() const
 
 void Player::clearHistory(const QString &name)
 {
-    if (name.isEmpty())
-        history.clear();
-    else
+    if (name.isEmpty()) {                                   //analeptic must be deleted manually
+        QHash<QString, int> history_copy = history;
+        foreach(const QString &key, history_copy.keys())
+            if (key != "Analeptic")
+                history.remove(key);
+    } else
         history.remove(name);
 }
 

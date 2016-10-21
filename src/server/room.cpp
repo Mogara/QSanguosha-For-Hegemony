@@ -1987,7 +1987,7 @@ QList<int> Room::GlobalCardChosen(ServerPlayer *player, QList<ServerPlayer *> ta
     foreach (int id, result)
         if (disabled_ids_copy.contains(id))
             check = false;
-    if (result.length() < min || result.length() > max) check = false;
+    if (result.length() < min || (result.length() > max && max > 0)) check = false;
     if (!check) {
         if (type == OnebyOne)
             result = type0;
@@ -2221,16 +2221,13 @@ QString Room::askForTriggerOrder(ServerPlayer *player, const QString &reason, SP
             if (reply == "cancel") {
                 answer = reply;
             } else {
-                QString owner;
-                foreach (const QStringList &list, skills) {
-                    if (list.contains(reply))
-                        owner = skills.key(list)->objectName();
+                foreach (const QString &str, all_pairs) {
+                    if (str.contains(reply)) {
+                        answer = str;
+                        break;
+                    }
                 }
-
-                if (!owner.isEmpty())
-                    answer = QString("%1:%2").arg(owner).arg(reply);
             }
-
             thread->delay();
         } else {
             JsonArray args;
@@ -3633,7 +3630,7 @@ bool Room::_setPlayerGeneral(ServerPlayer *player, const QString &generalName, b
     const General *general = Sanguosha->getGeneral(generalName);
     if (general == NULL)
         return false;
-    else if (!Config.FreeChoose && !player->getSelected().contains(generalName))
+    else if (!Config.FreeChoose && !player->getSelected().contains(Sanguosha->getMainGenerals(generalName)))
         return false;
 
     if (isFirst) {
@@ -3858,7 +3855,7 @@ bool Room::useCard(const CardUseStruct &use, bool add_history)
 
     if (card_use.from->isCardLimited(card, card->getHandlingMethod())
         && (!card->canRecast() || card_use.from->isCardLimited(card, Card::MethodRecast)))
-        return true;
+        return false;
 
     QString key;
     if (card->inherits("LuaSkillCard"))
@@ -5268,6 +5265,22 @@ void Room::doAnimate(QSanProtocol::AnimateType type, const QString &arg1, const 
     doBroadcastNotify(players, S_COMMAND_ANIMATE, arg);
 }
 
+void Room::doBattleArrayAnimate(ServerPlayer *player, ServerPlayer *target)
+{
+    if  (getAlivePlayers().length() < 4) return;
+    if (!target) {
+        QStringList names;
+        foreach (const Player *p, player->getFormation())
+            names << p->objectName();
+        if (names.length() > 1)
+            doAnimate(QSanProtocol::S_ANIMATE_BATTLEARRAY, player->objectName(), names.join("+"));
+    } else {
+        foreach (ServerPlayer *p, getOtherPlayers(player))
+            if (p->inSiegeRelation(player, target))
+                doAnimate(QSanProtocol::S_ANIMATE_BATTLEARRAY, player->objectName(), QString("%1+%2").arg(p->objectName()).arg(player->objectName()));
+    }
+}
+
 void Room::preparePlayers()
 {
     foreach (ServerPlayer *player, m_players) {
@@ -5467,11 +5480,13 @@ void Room::removeTag(const QString &key)
     tag.remove(key);
 }
 
-void Room::setEmotion(ServerPlayer *target, const QString &emotion)
+void Room::setEmotion(ServerPlayer *target, const QString &emotion, bool playback, int duration)
 {
     JsonArray arg;
     arg << target->objectName();
     arg << (emotion.isEmpty() ? QString(".") : emotion);
+    arg << playback;
+    arg << duration;
     doBroadcastNotify(S_COMMAND_SET_EMOTION, arg);
 }
 
@@ -6729,7 +6744,7 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, c
         QStringList answer = clientResponse.toString().split("+");
         bool valid = true;
         foreach (const QString &name, answer) {
-            if (!generals.contains(name)) {
+            if (!generals.contains(Sanguosha->getMainGenerals(name))) {
                 valid = false;
                 break;
             }

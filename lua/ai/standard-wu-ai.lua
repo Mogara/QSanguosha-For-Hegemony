@@ -532,7 +532,7 @@ duoshi_skill.getTurnUseCard = function(self, inclusive)
 	if self.player:hasSkills("fenming|zhiheng|fenxun|keji") then
 		DuoTime = 1
 	end
-	if self.player:hasSkills("hongyan|yingzi_zhouyu|yingzi_sunce|yingzi") then
+	if self.player:hasSkills("hongyan|yingzi_zhouyu|yingzi_sunce|yingziextra") then
 		DuoTime = 3
 	end
 	if self.player:hasSkills("xiaoji|haoshi") then
@@ -2119,3 +2119,4 @@ sgs.ai_skill_invoke.keji = function(self, data)
 	end
 	return true
 end
+--
