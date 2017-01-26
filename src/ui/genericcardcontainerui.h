@@ -36,6 +36,7 @@
 #include <QParallelAnimationGroup>
 #include <QGraphicsEffect>
 #include <QLabel>
+#include <QTimer>
 
 class GraphicsPixmapHoverItem;
 
@@ -171,6 +172,9 @@ public slots:
     virtual void showPile();
     virtual void hidePile();
     virtual void refresh();
+#ifdef Q_OS_ANDROID
+    void longPressTimeOut();
+#endif
 
     QPixmap getHeadAvatarIcon(const QString &generalName);
     QPixmap getDeputyAvatarIcon(const QString &generalName);
@@ -329,7 +333,15 @@ private:
     void clearVotes();
     int _lastZ;
     bool _allZAdjusted;
+#ifdef Q_OS_ANDROID
+    QTimer timerCount;
+    QPointF pressPos;
+#endif
 signals:
+#ifdef Q_OS_ANDROID
+    void longPress(QPointF pressLocation);
+    void longPressRelease();
+#endif
     void selected_changed();
     void enable_changed();
     void global_selected_changed(const ClientPlayer *player, int id = -1);

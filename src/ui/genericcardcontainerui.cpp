@@ -32,6 +32,7 @@
 #include <QPushButton>
 #include <QTextDocument>
 #include <QMenu>
+#include <QToolTip>
 
 using namespace QSanProtocol;
 
@@ -962,6 +963,10 @@ PlayerCardContainer::PlayerCardContainer()
     _m_groupDeath->setFlag(ItemHasNoContents);
     _m_groupDeath->setPos(0, 0);
     _allZAdjusted = false;
+#ifdef Q_OS_ANDROID
+    timerCount.setInterval(1000);
+    connect(&timerCount, &QTimer::timeout, this, &PlayerCardContainer::longPressTimeOut);
+#endif
 }
 
 void PlayerCardContainer::hideAvatars()
@@ -1148,10 +1153,6 @@ void PlayerCardContainer::revivePlayer()
     refresh();
 }
 
-void PlayerCardContainer::mousePressEvent(QGraphicsSceneMouseEvent *)
-{
-}
-
 void PlayerCardContainer::updateVotes(bool need_select, bool display_1)
 {
     if ((need_select && !isSelected()) || _m_votesGot < 1 || (!display_1 && _m_votesGot == 1))
@@ -1243,8 +1244,22 @@ bool PlayerCardContainer::_isSelected(QGraphicsItem *item) const
         (flags() & QGraphicsItem::ItemIsSelectable);
 }
 
+void PlayerCardContainer::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+#ifdef Q_OS_ANDROID
+    pressPos = event->pos();
+    timerCount.start();
+#endif
+}
+
 void PlayerCardContainer::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+#ifdef Q_OS_ANDROID
+    bool timeOut = !timerCount.isActive();
+    timerCount.stop();
+    if (timeOut)
+        emit longPressRelease();
+#endif
     QGraphicsItem *item1 = getMouseClickReceiver();
     QGraphicsItem *item2 = getMouseClickReceiver2();
     if (_isSelected(item1) || _isSelected(item2)) {
@@ -1317,3 +1332,10 @@ void PlayerCardContainer::stopHeroSkinChangingAnimation()
         _m_smallAvatarIcon->stopChangeHeroSkinAnimation();
     }
 }
+
+#ifdef Q_OS_ANDROID
+void PlayerCardContainer::longPressTimeOut()
+{
+    emit longPress(pressPos);
+}
+#endif

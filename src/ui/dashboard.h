@@ -181,6 +181,10 @@ public slots:
     virtual void updateSmallAvatar();
     void updateLeftHiddenMark();
     void updateRightHiddenMark();
+#ifdef Q_OS_ANDROID
+    void showSkillDescription(QPointF pressPos);
+    void hideSkillDescription();
+#endif
 
 protected:
     void _createExtraButtons();

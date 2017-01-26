@@ -75,6 +75,10 @@ public slots:
     void hideEmotion();
     void hideSkillName();
     virtual void refresh();
+#ifdef Q_OS_ANDROID
+    void showSkillDescription(QPointF pressPos);
+    void hideSkillDescription();
+#endif
 
 protected:
     inline virtual QGraphicsItem *_getEquipParent()
