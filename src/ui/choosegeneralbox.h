@@ -45,6 +45,7 @@ protected:
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 #ifdef Q_OS_ANDROID
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 #endif
 
 private:
@@ -54,6 +55,8 @@ private:
 #ifdef Q_OS_ANDROID
     QTimer timerLongPress;
     QPointF pressPos;
+    qreal moveRange;
+    bool outOfRange;
 #endif
 
 public slots:

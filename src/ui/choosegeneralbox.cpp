@@ -46,6 +46,9 @@ GeneralCardItem::GeneralCardItem(const QString &generalName, const int skinId)
 
     setOuterGlowEffectEnabled(true);
     setOuterGlowColor(Sanguosha->getKingdomColor(general->getKingdom()));
+#ifdef Q_OS_ANDROID
+    moveRange = 1.0;
+#endif
 }
 
 void GeneralCardItem::changeGeneral(const QString &generalName)
@@ -101,8 +104,21 @@ void GeneralCardItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     pressPos = event->pos();
     timerLongPress.setInterval(1000);
     timerLongPress.setSingleShot(true);
+    outOfRange = false;
     timerLongPress.start();
 }
+
+void GeneralCardItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    qreal curX = event->pos().x(), curY = event->pos().y();
+    qreal pressX = pressPos.x(), pressY = pressPos.y();
+
+    if (curX < pressX - moveRange || curX > pressX + moveRange ||
+        curY < pressY - moveRange || curY > pressY + moveRange)
+        outOfRange = true;
+    CardItem::mouseMoveEvent(event);
+}
+
 #endif
 
 void GeneralCardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -110,9 +126,9 @@ void GeneralCardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 #ifdef Q_OS_ANDROID
     qreal releaseX = event->pos().x(), releaseY = event->pos().y();
     qreal pressX = pressPos.x(), pressY = pressPos.y();
-    qreal range = 1.0;
-    if (ServerInfo.FreeChoose && !timerLongPress.isActive() && releaseX >= pressX - range
-        && releaseX <= pressX + range && releaseY >= pressY - range && releaseY <= pressY + range) {
+
+    if (ServerInfo.FreeChoose && !outOfRange && !timerLongPress.isActive() && releaseX >= pressX - moveRange
+        && releaseX <= pressX + moveRange && releaseY >= pressY - moveRange && releaseY <= pressY + moveRange) {
 #else
     if (ServerInfo.FreeChoose && Qt::RightButton == event->button()) {
 #endif
