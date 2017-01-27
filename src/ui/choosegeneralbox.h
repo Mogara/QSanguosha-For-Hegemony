@@ -25,6 +25,7 @@
 #include "timedprogressbar.h"
 #include "graphicsbox.h"
 #include "protocol.h"
+#include <QTimer>
 
 class Button;
 class QGraphicsDropShadowEffect;
@@ -42,11 +43,18 @@ public:
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+#ifdef Q_OS_ANDROID
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+#endif
 
 private:
     GeneralCardItem(const QString &generalName, const int skinId);
 
     bool hasCompanion;
+#ifdef Q_OS_ANDROID
+    QTimer timerLongPress;
+    QPointF pressPos;
+#endif
 
 public slots:
     virtual void changeGeneral(const QString &generalName);

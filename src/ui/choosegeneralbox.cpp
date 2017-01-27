@@ -95,16 +95,33 @@ void GeneralCardItem::hideCompanion()
     update();
 }
 
+#ifdef Q_OS_ANDROID
+void GeneralCardItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    pressPos = event->pos();
+    timerLongPress.setInterval(1000);
+    timerLongPress.setSingleShot(true);
+    timerLongPress.start();
+}
+#endif
+
 void GeneralCardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+#ifdef Q_OS_ANDROID
+    qreal releaseX = event->pos().x(), releaseY = event->pos().y();
+    qreal pressX = pressPos.x(), pressY = pressPos.y();
+    qreal range = 1.0;
+    if (ServerInfo.FreeChoose && !timerLongPress.isActive() && releaseX >= pressX - range
+        && releaseX <= pressX + range && releaseY >= pressY - range && releaseY <= pressY + range) {
+#else
     if (ServerInfo.FreeChoose && Qt::RightButton == event->button()) {
+#endif
         FreeChooseDialog *general_changer = new FreeChooseDialog(QApplication::focusWidget());
         connect(general_changer, &FreeChooseDialog::general_chosen, this, &GeneralCardItem::changeGeneral);
         general_changer->exec();
         general_changer->deleteLater();
         return;
     }
-
     CardItem::mouseReleaseEvent(event);
 }
 
