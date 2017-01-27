@@ -40,6 +40,7 @@
 #include <QPushButton>
 #include <QMenu>
 #include <QFile>
+#include <QToolTip>
 
 
 using namespace QSanProtocol;
@@ -72,6 +73,10 @@ Photo::Photo() : PlayerCardContainer()
     _createBattleArrayAnimations();
     _createChainAnimation();
     _createControls();
+#ifdef Q_OS_ANDROID
+    connect(this, &Photo::longPress, this, &Photo::showSkillDescription);
+    connect(this, &Photo::longPressRelease, this, &Photo::hideSkillDescription);
+#endif
 }
 
 Photo::~Photo()
@@ -421,3 +426,20 @@ void Photo::playBattleArrayAnimations()
     _m_frameBorders[kingdom]->start(true, 30);
     _m_roleBorders[kingdom]->preStart();
 }
+
+#ifdef Q_OS_ANDROID
+void Photo::showSkillDescription(QPointF pressPos)
+{
+    if (_m_avatarArea->contains(pressPos) && _m_avatarArea->toolTip() != QStringLiteral(""))
+        QToolTip::showText(QPoint(pressPos.x(), pressPos.y()), _m_avatarArea->toolTip());
+    else if (_m_secondaryAvatarArea->contains(pressPos) && _m_secondaryAvatarArea->toolTip() != QStringLiteral(""))
+        QToolTip::showText(QPoint(pressPos.x(), pressPos.y()), _m_secondaryAvatarArea->toolTip());
+
+}
+
+void Photo::hideSkillDescription()
+{
+    QToolTip::hideText();
+}
+
+#endif
