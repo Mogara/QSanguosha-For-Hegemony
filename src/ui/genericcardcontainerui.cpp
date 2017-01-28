@@ -966,6 +966,8 @@ PlayerCardContainer::PlayerCardContainer()
 #ifdef Q_OS_ANDROID
     timerCount.setInterval(1000);
     connect(&timerCount, &QTimer::timeout, this, &PlayerCardContainer::longPressTimeOut);
+    connect(this, &PlayerCardContainer::longPress, this, &PlayerCardContainer::showSkillDescription);
+    connect(this, &PlayerCardContainer::longPressRelease, this, &PlayerCardContainer::hideSkillDescription);
 #endif
 }
 
@@ -1338,4 +1340,23 @@ void PlayerCardContainer::longPressTimeOut()
 {
     emit longPress(pressPos);
 }
+
+void PlayerCardContainer::showSkillDescription(QPointF pressPos)
+{
+    if (!_m_avatarArea->isUnderMouse() && !_m_secondaryAvatarArea->isUnderMouse())
+        return;
+    QString tips("");
+    if (!_m_avatarArea->toolTip().isEmpty())
+        tips += _m_avatarArea->toolTip();
+    if (!_m_secondaryAvatarArea->toolTip().isEmpty())
+        tips += _m_secondaryAvatarArea->toolTip();
+    if (!tips.isEmpty())
+        QToolTip::showText(QPoint(pressPos.x(), pressPos.y()), tips);
+}
+
+void PlayerCardContainer::hideSkillDescription()
+{
+    QToolTip::hideText();
+}
+
 #endif

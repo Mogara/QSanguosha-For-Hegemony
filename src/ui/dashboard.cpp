@@ -89,10 +89,6 @@ Dashboard::Dashboard(QGraphicsItem *widget)
     connect(_m_smallAvatarIcon, &GraphicsPixmapHoverItem::skin_changing_finished, this, &Dashboard::onSkinChangingFinished);
 
     _m_sort_menu = new QMenu(RoomSceneInstance->mainWindow());
-#ifdef Q_OS_ANDROID
-    connect(this, &Dashboard::longPress, this, &Dashboard::showSkillDescription);
-    connect(this, &Dashboard::longPressRelease, this, &Dashboard::hideSkillDescription);
-#endif
 }
 
 void Dashboard::refresh()
@@ -1902,18 +1898,3 @@ void Dashboard::updateSmallAvatar()
     _adjustComponentZValues();
 }
 
-#ifdef Q_OS_ANDROID
-void Dashboard::showSkillDescription(QPointF pressPos)
-{
-    if (_m_avatarArea->isUnderMouse() && _m_avatarArea->toolTip() != QStringLiteral(""))
-        QToolTip::showText(QPoint(pressPos.x(), pressPos.y()), _m_avatarArea->toolTip());
-    else if (_m_secondaryAvatarArea->isUnderMouse() && _m_secondaryAvatarArea->toolTip() != QStringLiteral(""))
-        QToolTip::showText(QPoint(pressPos.x(), pressPos.y()), _m_secondaryAvatarArea->toolTip());
-}
-
-void Dashboard::hideSkillDescription()
-{
-    QToolTip::hideText();
-}
-
-#endif
