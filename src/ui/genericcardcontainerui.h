@@ -174,6 +174,9 @@ public slots:
     virtual void refresh();
 #ifdef Q_OS_ANDROID
     void longPressTimeOut();
+    void showSkillDescription(QPointF pressPos);
+    void hideSkillDescription();
+
 #endif
 
     QPixmap getHeadAvatarIcon(const QString &generalName);
