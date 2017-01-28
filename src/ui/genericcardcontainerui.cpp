@@ -964,7 +964,7 @@ PlayerCardContainer::PlayerCardContainer()
     _m_groupDeath->setPos(0, 0);
     _allZAdjusted = false;
 #ifdef Q_OS_ANDROID
-    timerCount.setInterval(1000);
+    timerCount.setSingleShot(true);
     connect(&timerCount, &QTimer::timeout, this, &PlayerCardContainer::longPressTimeOut);
     connect(this, &PlayerCardContainer::longPress, this, &PlayerCardContainer::showSkillDescription);
     connect(this, &PlayerCardContainer::longPressRelease, this, &PlayerCardContainer::hideSkillDescription);
@@ -1250,7 +1250,7 @@ void PlayerCardContainer::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
 #ifdef Q_OS_ANDROID
     pressPos = event->pos();
-    timerCount.start();
+    timerCount.start(1000);
 #endif
 }
 
