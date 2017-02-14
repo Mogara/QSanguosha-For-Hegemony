@@ -858,7 +858,7 @@ QStringList Engine::getRoleList(const QString &mode) const
     QString roles = getRoles(mode);
 
     QStringList role_list;
-    for (int i = 0; roles[i] != '\0'; i++) {
+    for (int i = 0; roles[i].toLatin1() != '\0'; i++) {
         QString role;
         switch (roles[i].toLatin1()) {
             case 'Z': role = "lord"; break;

@@ -150,6 +150,7 @@
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
