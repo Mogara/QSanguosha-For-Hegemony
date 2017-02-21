@@ -5,7 +5,7 @@
 /*    Basic Type 1/Type 2 tables definitions and interface (specification  */
 /*    only).                                                               */
 /*                                                                         */
-/*  Copyright 1996-2004, 2006, 2008, 2009, 2011, 2014 by                   */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -17,8 +17,8 @@
 /***************************************************************************/
 
 
-#ifndef __T1TABLES_H__
-#define __T1TABLES_H__
+#ifndef T1TABLES_H_
+#define T1TABLES_H_
 
 
 #include <ft2build.h>
@@ -492,8 +492,9 @@ FT_BEGIN_HEADER
    *    FreeType error code.  0~means success.
    *
    * @note:
-   *    The string pointers within the font info structure are owned by
-   *    the face and don't need to be freed by the caller.
+   *    String pointers within the @PS_FontInfoRec structure are owned by
+   *    the face and don't need to be freed by the caller.  Missing entries
+   *    in the font's FontInfo dictionary are represented by NULL pointers.
    *
    *    If the font's format is not PostScript-based, this function will
    *    return the `FT_Err_Invalid_Argument' error code.
@@ -754,7 +755,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __T1TABLES_H__ */
+#endif /* T1TABLES_H_ */
 
 
 /* END */

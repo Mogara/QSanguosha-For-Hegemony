@@ -17,6 +17,7 @@
 
     Mogara
     *********************************************************************/
+#ifdef AUDIO_SUPPORT
 
 #include "audio.h"
 #include "settings.h"
@@ -160,3 +161,5 @@ QString Audio::getVersion()
         .arg((version & 0xFF), 2, 16, QChar('0'));
 }
 
+
+#endif

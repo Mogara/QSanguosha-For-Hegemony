@@ -5,7 +5,7 @@
 /*    FreeType glyph image formats and default raster interface            */
 /*    (specification).                                                     */
 /*                                                                         */
-/*  Copyright 1996-2010, 2013, 2014 by                                     */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -24,12 +24,12 @@
   /*************************************************************************/
 
 
-#ifndef __FTIMAGE_H__
-#define __FTIMAGE_H__
+#ifndef FTIMAGE_H_
+#define FTIMAGE_H_
 
 
-  /* _STANDALONE_ is from ftgrays.c */
-#ifndef _STANDALONE_
+  /* STANDALONE_ is from ftgrays.c */
+#ifndef STANDALONE_
 #include <ft2build.h>
 #endif
 
@@ -257,11 +257,6 @@ FT_BEGIN_HEADER
   /*    palette      :: A typeless pointer to the bitmap palette; this     */
   /*                    field is intended for paletted pixel modes.  Not   */
   /*                    used currently.                                    */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*   For now, the only pixel modes supported by FreeType are mono and    */
-  /*   grays.  However, drivers might be added in the future to support    */
-  /*   more `colorful' options.                                            */
   /*                                                                       */
   typedef struct  FT_Bitmap_
   {
@@ -752,7 +747,7 @@ FT_BEGIN_HEADER
   /*************************************************************************/
   /*                                                                       */
   /* A raster is a scan converter, in charge of rendering an outline into  */
-  /* a a bitmap.  This section contains the public API for rasters.        */
+  /* a bitmap.  This section contains the public API for rasters.          */
   /*                                                                       */
   /* Note that in FreeType 2, all rasters are now encapsulated within      */
   /* specific modules called `renderers'.  See `ftrender.h' for more       */
@@ -864,16 +859,6 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    This can be used to write anti-aliased outlines directly to a      */
   /*    given background bitmap, and even perform translucency.            */
-  /*                                                                       */
-  /*    Note that the `count' field cannot be greater than a fixed value   */
-  /*    defined by the `FT_MAX_GRAY_SPANS' configuration macro in          */
-  /*    `ftoption.h'.  By default, this value is set to~32, which means    */
-  /*    that if there are more than 32~spans on a given scanline, the      */
-  /*    callback is called several times with the same `y' parameter in    */
-  /*    order to draw all callbacks.                                       */
-  /*                                                                       */
-  /*    Otherwise, the callback is only called once per scan-line, and     */
-  /*    only for those scanlines that do have `gray' pixels on them.       */
   /*                                                                       */
   typedef void
   (*FT_SpanFunc)( int             y,
@@ -1078,10 +1063,10 @@ FT_BEGIN_HEADER
   /*    FT_Raster_ResetFunc                                                */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    FreeType provides an area of memory called the `render pool',      */
-  /*    available to all registered rasters.  This pool can be freely used */
-  /*    during a given scan-conversion but is shared by all rasters.  Its  */
-  /*    content is thus transient.                                         */
+  /*    FreeType used to provide an area of memory called the `render      */
+  /*    pool' available to all registered rasters.  This was not thread    */
+  /*    safe however and now FreeType never allocates this pool.  NULL     */
+  /*    is always passed in as pool_base.                                  */
   /*                                                                       */
   /*    This function is called each time the render pool changes, or just */
   /*    after a new raster object is created.                              */
@@ -1094,10 +1079,9 @@ FT_BEGIN_HEADER
   /*    pool_size :: The size in bytes of the render pool.                 */
   /*                                                                       */
   /* <Note>                                                                */
-  /*    Rasters can ignore the render pool and rely on dynamic memory      */
+  /*    Rasters should ignore the render pool and rely on dynamic or stack */
   /*    allocation if they want to (a handle to the memory allocator is    */
-  /*    passed to the raster constructor).  However, this is not           */
-  /*    recommended for efficiency purposes.                               */
+  /*    passed to the raster constructor).                                 */
   /*                                                                       */
   typedef void
   (*FT_Raster_ResetFunc)( FT_Raster       raster,
@@ -1196,6 +1180,7 @@ FT_BEGIN_HEADER
   typedef struct  FT_Raster_Funcs_
   {
     FT_Glyph_Format        glyph_format;
+
     FT_Raster_NewFunc      raster_new;
     FT_Raster_ResetFunc    raster_reset;
     FT_Raster_SetModeFunc  raster_set_mode;
@@ -1209,7 +1194,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTIMAGE_H__ */
+#endif /* FTIMAGE_H_ */
 
 
 /* END */

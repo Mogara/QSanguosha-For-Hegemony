@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Embedded resource forks accessor (specification).                    */
 /*                                                                         */
-/*  Copyright 2004, 2006, 2007, 2012, 2013 by                              */
+/*  Copyright 2004-2016 by                                                 */
 /*  Masatake YAMATO and Redhat K.K.                                        */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -21,8 +21,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTRFORK_H__
-#define __FTRFORK_H__
+#ifndef FTRFORK_H_
+#define FTRFORK_H_
 
 
 #include <ft2build.h>
@@ -43,10 +43,11 @@ FT_BEGIN_HEADER
 
   typedef struct  FT_RFork_Ref_
   {
-    FT_UShort  res_id;
-    FT_ULong   offset;
+    FT_Short  res_id;
+    FT_Long   offset;
 
   } FT_RFork_Ref;
+
 
 #ifdef FT_CONFIG_OPTION_GUESSING_EMBEDDED_RFORK
   typedef FT_Error
@@ -83,7 +84,7 @@ FT_BEGIN_HEADER
 
   /* this array is a storage in non-PIC mode, so ; is needed in END */
 #define CONST_FT_RFORK_RULE_ARRAY_BEGIN( name, type )  \
-          const type name[] = {
+          static const type name[] = {
 #define CONST_FT_RFORK_RULE_ARRAY_ENTRY( func_suffix, type_suffix )  \
           { raccess_guess_ ## func_suffix,                           \
             FT_RFork_Rule_ ## type_suffix },
@@ -227,7 +228,7 @@ FT_BEGIN_HEADER
   /*    sort_by_res_id ::                                                  */
   /*      A Boolean to sort the fragmented resource by their ids.          */
   /*      The fragmented resources for `POST' resource should be sorted    */
-  /*      to restore Type1 font properly.  For `snft' resources, sorting   */
+  /*      to restore Type1 font properly.  For `sfnt' resources, sorting   */
   /*      may induce a different order of the faces in comparison to that  */
   /*      by QuickDraw API.                                                */
   /*                                                                       */
@@ -260,7 +261,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTRFORK_H__ */
+#endif /* FTRFORK_H_ */
 
 
 /* END */
