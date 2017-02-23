@@ -1,0 +1,5 @@
+PA=$(find  $PWD | xargs ls -d | grep ".png")
+for p in $PA ;do
+pngcrush -ow -rem allb -reduce $p
+done
+
