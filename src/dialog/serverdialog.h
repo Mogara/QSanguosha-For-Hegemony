@@ -118,6 +118,7 @@ private:
     QCheckBox *random_seat_checkbox;
     QCheckBox *enable_cheat_checkbox;
     QCheckBox *free_choose_checkbox;
+    QCheckBox *free_kingdom_checkbox;
     QLabel *pile_swapping_label;
     QSpinBox *pile_swapping_spinbox;
     QCheckBox *forbid_same_ip_checkbox;

@@ -447,7 +447,7 @@ public:
                 foreach (ServerPlayer *p, use.to) {
                     if (p != player)
                         room->setPlayerFlag(player, objectName());
-                        break;
+                    break;
                 }
             }
         }
@@ -718,7 +718,7 @@ public:
             if (skill->isLordSkill())
                 continue;
 
-                skill_names << skill->objectName();
+            skill_names << skill->objectName();
         }
         foreach (const Skill *skill, general2->getVisibleSkillList(true, ishead)) {
             if (skill->isLordSkill())
@@ -1310,7 +1310,7 @@ void XuanlueCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
             QStringList targets = source->tag["xuanlue_target"].toStringList();
             QStringList cards_get = source->tag["xuanlue_get"].toStringList();
             QList<int> get = StringList2IntList(cards_get.last().split("+"));
-            ServerPlayer *target;
+            ServerPlayer *target = nullptr;
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->objectName() == targets.last())
                     target = p;

@@ -96,6 +96,7 @@ void Settings::init()
     RandomSeat = value("RandomSeat", true).toBool();
     EnableCheat = value("EnableCheat", false).toBool();
     FreeChoose = EnableCheat && value("FreeChoose", false).toBool();
+    FreeKingdom = EnableCheat && value("FreeKingdom", false).toBool();
     ForbidSIMC = value("ForbidSIMC", false).toBool();
     DisableChat = value("DisableChat", false).toBool();
     Address = value("Address", QString()).toString();
@@ -139,8 +140,8 @@ void Settings::init()
     EnableEffects = value("EnableEffects", true).toBool();
     EnableLastWord = value("EnableLastWord", true).toBool();
     EnableBgMusic = value("EnableBgMusic", true).toBool();
-    BGMVolume = value("BGMVolume", 1.0f).toFloat();
-    EffectVolume = value("EffectVolume", 1.0f).toFloat();
+    BGMVolume = value("BGMVolume", 100).toInt();
+    EffectVolume = value("EffectVolume", 100).toInt();
 
     BackgroundImage = value("BackgroundImage", "image/backdrop/bg.jpg").toString();
     TableBgImage = value("TableBgImage", "image/backdrop/table.jpg").toString();

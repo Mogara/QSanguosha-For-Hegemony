@@ -234,7 +234,7 @@ void FanjianCard::onEffect(const CardEffectStruct &effect) const
     Card::Suit suit = room->askForSuit(target, "fanjian");
 
     const Card *card;
-    int card_id;
+    int card_id = 0;
     if (zhouyu->getHandcards().length() == 1)
         card = zhouyu->getHandcards().first();
     else {

@@ -882,7 +882,7 @@ bool ArmorSkill::cost(Room *room, ServerPlayer *target, QVariant &data) const
     } else {
         name = skill_names.first();
         QString skill_name = name.split("?").last();
-        invoke = target->hasShownSkill(skill_name) && getFrequency() == Skill::Compulsory
+        invoke = (target->hasShownSkill(skill_name) && getFrequency() == Skill::Compulsory)
                 || target->askForSkillInvoke(target->hasShownSkill(skill_name) ? objectName() : skill_name, data);
     }
     if (!invoke) return false;

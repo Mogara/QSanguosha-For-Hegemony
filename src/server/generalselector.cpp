@@ -85,7 +85,7 @@ QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringL
 void GeneralSelector::loadGeneralTable()
 {
     QRegExp rx("(\\w+)\\s+(\\d+)");
-    QFile file("ai-selector/general-value.txt");
+    QFile file(":/ai-selector/general-value.txt");
     if (file.open(QIODevice::ReadOnly)) {
         QTextStream stream(&file);
         while (!stream.atEnd()) {
@@ -128,7 +128,7 @@ void GeneralSelector::loadGeneralTable()
 void GeneralSelector::loadPairTable()
 {
     QRegExp rx("(\\w+)\\s+(\\w+)\\s+(\\d+)\\s+(\\d+)");
-    QFile file("ai-selector/pair-value.txt");
+    QFile file(":/ai-selector/pair-value.txt");
     if (file.open(QIODevice::ReadOnly)) {
         QTextStream stream(&file);
         while (!stream.atEnd()) {

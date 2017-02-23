@@ -27,7 +27,7 @@
 #include "client.h"
 #include "clientplayer.h"
 #include "cardcontainer.h"
-
+#include "settings.h"
 #include <QApplication>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsProxyWidget>
@@ -484,8 +484,9 @@ void ChooseGeneralBox::adjustItems()
     if (selected.length() == 2) {
         foreach(GeneralCardItem *card, items)
             card->setFrozen(true);
-        confirm->setEnabled(Sanguosha->getGeneral(selected.first()->objectName())->getKingdom()
-            == Sanguosha->getGeneral(selected.last()->objectName())->getKingdom());
+        confirm->setEnabled((Sanguosha->getGeneral(selected.first()->objectName())->getKingdom()
+            == Sanguosha->getGeneral(selected.last()->objectName())->getKingdom()) ||
+                            ServerInfo.FreeKingdom);
     } else if (selected.length() == 1) {
         selected.first()->hideCompanion();
         const General *seleted_general = Sanguosha->getGeneral(selected.first()->objectName());
@@ -493,8 +494,7 @@ void ChooseGeneralBox::adjustItems()
             const General *general = Sanguosha->getGeneral(card->objectName());
             if (BanPair::isBanned(seleted_general->objectName(), general->objectName())
                 || (general->getKingdom() != seleted_general->getKingdom() || general->isLord())) {
-                if (!card->isFrozen())
-                    card->setFrozen(true);
+                card->setFrozen(true && !ServerInfo.FreeKingdom);
                 card->hideCompanion();
             } else {
                 if (card->isFrozen())
@@ -544,12 +544,10 @@ void ChooseGeneralBox::_initializeItems()
             }
         }
         GeneralCardItem *item = items.at(index);
-        if ((party < 2 || (selected.isEmpty() && has_lord && party == 2))) {
-            if (!item->isFrozen())
-                item->setFrozen(true);
-        } else if (item->isFrozen()) {
+        if ((party < 2 || (selected.isEmpty() && has_lord && party == 2)))
+            item->setFrozen(true && !ServerInfo.FreeKingdom);
+        else
             item->setFrozen(false);
-        }
 
         if (Self->isDead() && item->isFrozen())
             item->setFrozen(false);

@@ -1971,9 +1971,9 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
                     card->showAvatar(reason.m_eventName == target->getActualGeneral1Name() ? target->getActualGeneral1() : target->getActualGeneral2(), reason.m_skillName);
                 else if (target->hasSkill(reason.m_skillName) && !target->getSkillList().contains(Sanguosha->getSkill(reason.m_skillName)))
                     card->showAvatar(target->hasShownGeneral1() ? target->getGeneral() : target->getGeneral2(), reason.m_skillName);
-                else if (target->inHeadSkills(reason.m_skillName) || (target->getActualGeneral1() ? target->getActualGeneral1()->hasSkill(reason.m_skillName) : NULL))
+                else if (target->inHeadSkills(reason.m_skillName) || (target->getActualGeneral1() ? target->getActualGeneral1()->hasSkill(reason.m_skillName) : false))
                     card->showAvatar(target->getActualGeneral1(), reason.m_skillName);
-                else if (target->inDeputySkills(reason.m_skillName) || (target->getActualGeneral2() ? target->getActualGeneral2()->hasSkill(reason.m_skillName) : NULL))
+                else if (target->inDeputySkills(reason.m_skillName) || (target->getActualGeneral2() ? target->getActualGeneral2()->hasSkill(reason.m_skillName) : false))
                     card->showAvatar(target->getActualGeneral2(), reason.m_skillName);
             }
 

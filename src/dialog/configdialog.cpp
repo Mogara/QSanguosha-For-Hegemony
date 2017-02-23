@@ -93,10 +93,10 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     ui->noIndicatorCheckBox->setChecked(Config.value("NoIndicator", false).toBool());
     ui->noEquipAnimCheckBox->setChecked(Config.value("NoEquipAnim", false).toBool());
 
-    ui->bgmVolumeSlider->setValue(100 * Config.BGMVolume);
+    ui->bgmVolumeSlider->setValue(Config.BGMVolume);
     connect(ui->bgmVolumeSlider, &QSlider::valueChanged, this, &ConfigDialog::onBGMVolumeChanged);
 
-    ui->effectVolumeSlider->setValue(100 * Config.EffectVolume);
+    ui->effectVolumeSlider->setValue(Config.EffectVolume);
     connect(ui->effectVolumeSlider, &QSlider::valueChanged, this, &ConfigDialog::onEffectVolumeChanged);
 
     // tab 3
@@ -275,7 +275,7 @@ void ConfigDialog::setBGMEnabled(const QVariant &enabled)
 
 void ConfigDialog::setBGMVolume(const QVariant &volume)
 {
-    float vol = volume.toInt() / 100.0;
+    int vol = volume.toInt();
 #ifdef AUDIO_SUPPORT
     Audio::setBGMVolume(vol);
 #endif // AUDIO_SUPPORT
@@ -286,7 +286,7 @@ void ConfigDialog::setBGMVolume(const QVariant &volume)
 
 void ConfigDialog::setEffectVolume(const QVariant &volume)
 {
-    float vol = volume.toInt() / 100.0;
+    int vol = volume.toInt();
     Config.EffectVolume = vol;
     ui->effectVolumeSlider->setValue(volume.toInt());
 }

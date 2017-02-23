@@ -94,6 +94,7 @@ void RecAnalysis::initialize(const QString &dir)
                 if (flags.contains("R")) m_recordServerOptions << tr("RandomSeats");
                 if (flags.contains("C")) m_recordServerOptions << tr("EnableCheat");
                 if (flags.contains("F")) m_recordServerOptions << tr("FreeChoose");
+                if (flags.contains("K")) m_recordServerOptions << tr("FreeKingdom");
                 if (flags.contains("S")) m_recordServerOptions << tr("Enable2ndGeneral");
                 if (flags.contains("T")) m_recordServerOptions << tr("EnableSame");
                 if (flags.contains("N")) m_recordServerOptions << tr("EnableScene");

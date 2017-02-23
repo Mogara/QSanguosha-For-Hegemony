@@ -123,8 +123,7 @@ void PindianBox::doPindianAnimation(const QString &who)
 {
     _m_mutex_pindian.lock();
     downItems.first()->setCard(Sanguosha->getCard(card_id));
-    int i = 0;
-    for (i; i < targets.length(); i++) {
+    for (int i = 0; i < targets.length(); i++) {
         if (who == targets.at(i)) {
             upItems.at(i)->setCard(Sanguosha->getCard(card_ids.at(i)));
             break;

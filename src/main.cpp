@@ -71,6 +71,8 @@ static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINT
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
     bool noGui = argc > 1 && strcmp(argv[1], "-server") == 0;
 
     if (noGui)

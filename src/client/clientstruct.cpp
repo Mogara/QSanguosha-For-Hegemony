@@ -52,7 +52,7 @@ time_t ServerInfoStruct::getCommandTimeout(QSanProtocol::CommandType command, QS
 
 bool ServerInfoStruct::parse(const QString &str)
 {
-    QRegExp rx("(.*):(@?\\w+):(\\d+):(\\d+):([\\w-]+(?:\\+[\\w-]+)*)?:([RCFAMS]*)");
+    QRegExp rx("(.*):(@?\\w+):(\\d+):(\\d+):([\\w-]+(?:\\+[\\w-]+)*)?:([RKCFAMS]*)");
     if (!rx.exactMatch(str)) {
         // older version, just take the player count
         int count = str.split(":").at(1).toInt();
@@ -88,6 +88,7 @@ bool ServerInfoStruct::parse(const QString &str)
         RandomSeat = flags.contains("R");
         EnableCheat = flags.contains("C");
         FreeChoose = EnableCheat && flags.contains("F");
+        FreeKingdom = EnableCheat && flags.contains("K");
         ForbidAddingRobot = flags.contains("A");
         DisableChat = flags.contains("M");
         FirstShowingReward = flags.contains("S");
@@ -106,6 +107,7 @@ ServerInfoWidget::ServerInfoWidget(bool show_lack)
     random_seat_label = new QLabel;
     enable_cheat_label = new QLabel;
     free_choose_label = new QLabel;
+    free_kingdom_label = new QLabel;
     forbid_adding_robot_label = new QLabel;
     fisrt_showing_reward_label = new QLabel;
     time_limit_label = new QLabel;
@@ -121,12 +123,14 @@ ServerInfoWidget::ServerInfoWidget(bool show_lack)
     layout->addRow(tr("Game mode"), game_mode_label);
     layout->addRow(tr("Player count"), player_count_label);
     layout->addRow(tr("Random seat"), random_seat_label);
+    layout->addRow(tr("Free Kingdom"),free_kingdom_label);
     layout->addRow(tr("Enable cheat"), enable_cheat_label);
     layout->addRow(tr("Free choose"), free_choose_label);
     layout->addRow(tr("Forbid adding robot"), forbid_adding_robot_label);
     layout->addRow(tr("Enable First Showing Reward"), fisrt_showing_reward_label);
     layout->addRow(tr("Operation time"), time_limit_label);
     layout->addRow(tr("Extension packages"), list_widget);
+    layout->addRow(tr("Free Kingdom"),free_kingdom_label);
 
     if (show_lack) {
         lack_label = new QLabel;
@@ -149,6 +153,7 @@ void ServerInfoWidget::fill(const ServerInfoStruct &info, const QString &address
     random_seat_label->setText(info.RandomSeat ? tr("Enabled") : tr("Disabled"));
     enable_cheat_label->setText(info.EnableCheat ? tr("Enabled") : tr("Disabled"));
     free_choose_label->setText(info.FreeChoose ? tr("Enabled") : tr("Disabled"));
+    free_kingdom_label->setText(info.FreeKingdom ? tr("Enabled") : tr("Disabled"));
     forbid_adding_robot_label->setText(info.ForbidAddingRobot ? tr("Enabled") : tr("Disabled"));
     fisrt_showing_reward_label->setText(info.FirstShowingReward ? tr("Enabled") : tr("Disabled"));
 
@@ -194,6 +199,7 @@ void ServerInfoWidget::clear()
     random_seat_label->clear();
     enable_cheat_label->clear();
     free_choose_label->clear();
+    free_kingdom_label->clear();
     forbid_adding_robot_label->clear();
     fisrt_showing_reward_label->clear();
     time_limit_label->clear();

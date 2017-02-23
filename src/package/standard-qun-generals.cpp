@@ -1260,7 +1260,7 @@ public:
             QStringList targets = player->tag["lirang_target"].toStringList();
             QStringList cards_get = player->tag["lirang_get"].toStringList();
             QList<int> get = StringList2IntList(cards_get.last().split("+"));
-            ServerPlayer *target;
+            ServerPlayer *target = nullptr;
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->objectName() == targets.last())
                     target = p;

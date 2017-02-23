@@ -23,25 +23,26 @@
 
 #ifdef AUDIO_SUPPORT
 
-#include <QString>
-
+class QString;
+class QMediaPlayer;
+template<typename T, typename K>
+class QCache;
 class Audio
 {
+    static QMediaPlayer *BGMPlayer;
+    static QCache<QString, QMediaPlayer> *SoundCache;
 public:
     static void init();
     static void quit();
 
-    static void play(const QString &filename);
+    static void play(const QString &filename, const bool doubleVolume = false);
     static void playAudioOfMoxuan();
     static void stop();
 
     static void playBGM(const QString &filename);
-    static void setBGMVolume(float volume);
+    static void setBGMVolume(int volume);
     static void stopBGM();
-
-    static QString getVersion();
 };
-
 #endif
 
 #endif

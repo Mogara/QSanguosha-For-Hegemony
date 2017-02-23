@@ -20,143 +20,81 @@
 
 #include "audio.h"
 #include "settings.h"
-
+#include <QString>
 #include <QCache>
-#include <fmod.hpp>
-
-class Sound;
-
-static FMOD_SYSTEM *System;
-static QCache<QString, Sound> SoundCache;
-static FMOD_SOUND *BGM;
-static FMOD_CHANNEL *BGMChannel;
-
-class Sound
-{
-public:
-    Sound(const QString &filename) : sound(NULL), channel(NULL)
-    {
-        FMOD_System_CreateSound(System, filename.toLatin1(), FMOD_DEFAULT, NULL, &sound);
-    }
-
-    ~Sound()
-    {
-        if (sound) FMOD_Sound_Release(sound);
-    }
-
-    void play(const bool doubleVolume = false)
-    {
-        if (sound) {
-            FMOD_RESULT result = FMOD_System_PlaySound(System, FMOD_CHANNEL_FREE, sound, false, &channel);
-
-            if (result == FMOD_OK) {
-                FMOD_Channel_SetVolume(channel, (doubleVolume ? 2 : 1) * Config.EffectVolume);
-                FMOD_System_Update(System);
-            }
-        }
-    }
-
-    bool isPlaying() const
-    {
-        if (channel == NULL) return false;
-
-        FMOD_BOOL is_playing = false;
-        FMOD_Channel_IsPlaying(channel, &is_playing);
-        return is_playing;
-    }
-
-private:
-    FMOD_SOUND *sound;
-    FMOD_CHANNEL *channel;
-};
+#include <QMediaPlayer>
+#include <QMediaPlaylist>
+QMediaPlayer *Audio::BGMPlayer = nullptr;
+QCache<QString, QMediaPlayer> *Audio::SoundCache = nullptr;
 
 void Audio::init()
 {
-    FMOD_RESULT result = FMOD_System_Create(&System);
-    if (result == FMOD_OK) FMOD_System_Init(System, 100, 0, NULL);
+    SoundCache = new QCache<QString,QMediaPlayer>(20);
 }
 
 void Audio::quit()
 {
-    if (System) {
-        SoundCache.clear();
-        FMOD_System_Release(System);
-
-        System = NULL;
+    if(BGMPlayer)
+        delete BGMPlayer;
+    if(SoundCache)
+    {
+        SoundCache->clear();
+        delete SoundCache;
     }
 }
 
-void Audio::play(const QString &filename)
+void Audio::play(const QString &filename, const bool doubleVolume)
 {
-    Sound *sound = SoundCache[filename];
-    if (sound == NULL) {
-        sound = new Sound(filename);
-        SoundCache.insert(filename, sound);
-    } else if (sound->isPlaying()) {
+    QMediaPlayer *sound = SoundCache->object(filename);
+    if (sound == nullptr)
+    {
+        sound = new QMediaPlayer;
+        sound->setMedia(QUrl(filename));
+        SoundCache->insert(filename, sound);
+    }
+    else if (sound->state() == QMediaPlayer::PlayingState)
+    {
         return;
     }
-
+    sound->setVolume((doubleVolume ? 2 : 1) * Config.EffectVolume);
     sound->play();
 }
 
 void Audio::playAudioOfMoxuan()
 {
-    Sound *sound = new Sound("audio/system/moxuan.ogg");
-    sound->play(true);
+    play("audio/system/moxuan.ogg", true);
 }
 
 void Audio::stop()
 {
-    if (System == NULL) return;
-
-    int n;
-    FMOD_System_GetChannelsPlaying(System, &n);
-
-    QList<FMOD_CHANNEL *> channels;
-    for (int i = 0; i < n; i++) {
-        FMOD_CHANNEL *channel;
-        FMOD_RESULT result = FMOD_System_GetChannel(System, i, &channel);
-        if (result == FMOD_OK) channels << channel;
-    }
-
-    foreach (FMOD_CHANNEL * const &channel, channels)
-        FMOD_Channel_Stop(channel);
-
+    if (!SoundCache)
+        return;
+    SoundCache->clear();
     stopBGM();
-
-    FMOD_System_Update(System);
 }
 
 void Audio::playBGM(const QString &filename)
 {
-    FMOD_RESULT result = FMOD_System_CreateStream(System, filename.toLocal8Bit(), FMOD_LOOP_NORMAL, NULL, &BGM);
+    if(!BGMPlayer)
+        BGMPlayer = new QMediaPlayer;
+    QMediaPlaylist *BGMList = new QMediaPlaylist(BGMPlayer);
+    BGMList->addMedia(QUrl(filename));
+    BGMList->setPlaybackMode(QMediaPlaylist::Loop);
 
-    if (result == FMOD_OK) {
-        FMOD_Sound_SetLoopCount(BGM, -1);
-        FMOD_System_PlaySound(System, FMOD_CHANNEL_FREE, BGM, false, &BGMChannel);
-
-        FMOD_Channel_SetVolume(BGMChannel, Config.BGMVolume);
-        FMOD_System_Update(System);
-    }
+    BGMPlayer->setPlaylist(BGMList);
+    BGMPlayer->setVolume(Config.BGMVolume);
+    BGMPlayer->play();
 }
 
-void Audio::setBGMVolume(float volume)
+void Audio::setBGMVolume(int volume)
 {
-    if (BGMChannel) FMOD_Channel_SetVolume(BGMChannel, volume);
+    if(BGMPlayer)
+        BGMPlayer->setVolume(volume);
 }
 
 void Audio::stopBGM()
 {
-    if (BGMChannel) FMOD_Channel_Stop(BGMChannel);
-}
-
-QString Audio::getVersion()
-{
-    unsigned int version = 0;
-    FMOD_System_GetVersion(System, &version);
-    // convert it to QString
-    return QString("%1.%2.%3").arg((version & 0xFFFF0000) >> 16, 0, 16)
-        .arg((version & 0xFF00) >> 8, 2, 16, QChar('0'))
-        .arg((version & 0xFF), 2, 16, QChar('0'));
+    if(BGMPlayer)
+        BGMPlayer->stop();
 }
 

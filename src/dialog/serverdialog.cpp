@@ -254,7 +254,13 @@ QWidget *ServerDialog::createAdvancedTab()
     free_choose_checkbox->setChecked(Config.FreeChoose);
     free_choose_checkbox->setVisible(Config.EnableCheat);
 
+    free_kingdom_checkbox = new QCheckBox(tr("Choose kingdom freely"));
+    free_kingdom_checkbox->setChecked(Config.FreeKingdom);
+    free_kingdom_checkbox->setVisible(Config.EnableCheat);
+
     connect(enable_cheat_checkbox, &QCheckBox::toggled, free_choose_checkbox, &QCheckBox::setVisible);
+    connect(enable_cheat_checkbox, &QCheckBox::toggled, free_kingdom_checkbox, &QCheckBox::setVisible);
+
 #if !defined(Q_OS_IOS)
     pile_swapping_label = new QLabel(tr("Pile-swapping limitation"));
     pile_swapping_label->setToolTip(tr("<font color=%1>-1 means no limitations</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
@@ -288,6 +294,7 @@ QWidget *ServerDialog::createAdvancedTab()
     layout->addWidget(random_seat_checkbox);
     layout->addWidget(enable_cheat_checkbox);
     layout->addWidget(free_choose_checkbox);
+    layout->addWidget(free_kingdom_checkbox);
 #if !defined(Q_OS_IOS)
     layout->addLayout(HLay(pile_swapping_label, pile_swapping_spinbox));
     layout->addLayout(HLay(hegemony_maxchoice_label, hegemony_maxchoice_spinbox));
@@ -623,6 +630,7 @@ bool ServerDialog::config()
     Config.RandomSeat = random_seat_checkbox->isChecked();
     Config.EnableCheat = enable_cheat_checkbox->isChecked();
     Config.FreeChoose = Config.EnableCheat && free_choose_checkbox->isChecked();
+    Config.FreeKingdom = Config.EnableCheat && free_kingdom_checkbox->isChecked();
     Config.ForbidSIMC = forbid_same_ip_checkbox->isChecked();
     Config.DisableChat = disable_chat_checkbox->isChecked();
     Config.Address = address_edit->text();
@@ -657,6 +665,7 @@ bool ServerDialog::config()
     Config.setValue("RandomSeat", Config.RandomSeat);
     Config.setValue("EnableCheat", Config.EnableCheat);
     Config.setValue("FreeChoose", Config.FreeChoose);
+    Config.setValue("FreeKingdom", Config.FreeKingdom);
     Config.setValue("PileSwappingLimitation", pile_swapping_spinbox->value());
     Config.setValue("ForbidSIMC", Config.ForbidSIMC);
     Config.setValue("DisableChat", Config.DisableChat);

@@ -859,23 +859,27 @@ bool Player::canDiscard(const Player *to, const QString &flags) const
         equip = false;
 
     if (flags.contains(handcard_flag))
+    {
         if (hand)
             return true;
         else if (((flags.contains(judging_flag) && judge) || (flags.contains(equip_flag) && equip)))
             return true;
+    }
 
     if (flags.contains(judging_flag))
+    {
         if (judge)
             return true;
         else if (((flags.contains(handcard_flag) && hand) || (flags.contains(equip_flag) && equip)))
             return true;
-
+    }
     if (flags.contains(equip_flag))
+    {
         if (equip)
             return true;
         else if (((flags.contains(judging_flag) && judge) || (flags.contains(handcard_flag) && hand)))
             return true;
-
+    }
     return false;
 }
 
@@ -940,22 +944,28 @@ bool Player::canGetCard(const Player *to, const QString &flags) const
         equip = false;
 
     if (flags.contains(handcard_flag))
+    {
         if (hand)
             return true;
         else if (((flags.contains(judging_flag) && judge) || (flags.contains(equip_flag) && equip)))
             return true;
+    }
 
     if (flags.contains(judging_flag))
+    {
         if (judge)
             return true;
         else if (((flags.contains(handcard_flag) && hand) || (flags.contains(equip_flag) && equip)))
             return true;
+    }
 
     if (flags.contains(equip_flag))
+    {
         if (equip)
             return true;
         else if (((flags.contains(judging_flag) && judge) || (flags.contains(handcard_flag) && hand)))
             return true;
+    }
 
     return false;
 }

@@ -293,6 +293,9 @@ void StartScene::printServerInfo()
     if (Config.EnableCheat)
         serverLog->append(Config.FreeChoose ? tr("Free choose is enabled") : tr("Free choose is disabled"));
 
+    if (Config.EnableCheat)
+        serverLog->append(Config.FreeChoose ? tr("Free Kingdom is enabled") : tr("Free Kingdom is disabled"));
+
     if (Config.RewardTheFirstShowingPlayer)
         serverLog->append(tr("The reward of showing general first is enabled"));
 

@@ -63,7 +63,7 @@ void PixmapAnimation::setPath(const QString &path, bool playback)
 
     if (playback) {
         QList<QPixmap> frames_copy = frames;
-        for (int i = frames_copy.length() - 1; i = 0; i--)
+        for (int i = frames_copy.length() - 1; i >= 0; i--)
             frames << frames_copy[i - 1];
     }
 }

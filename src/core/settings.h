@@ -72,6 +72,7 @@ public:
     bool RandomSeat;
     bool EnableCheat;
     bool FreeChoose;
+    bool FreeKingdom;
     bool ForbidSIMC;
     bool DisableChat;
     QString Address;
@@ -112,8 +113,8 @@ public:
     bool EnableEffects;
     bool EnableLastWord;
     bool EnableBgMusic;
-    float BGMVolume;
-    float EffectVolume;
+    int BGMVolume;
+    int EffectVolume;
 
     QString BackgroundImage;
     QString TableBgImage;

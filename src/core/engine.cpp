@@ -773,6 +773,8 @@ QString Engine::getSetupString() const
         flags.append("C");
     if (Config.EnableCheat && Config.FreeChoose)
         flags.append("F");
+    if (Config.EnableCheat && Config.FreeKingdom)
+        flags.append("K");
     if (Config.ForbidAddingRobot)
         flags.append("A");
     if (Config.DisableChat)
