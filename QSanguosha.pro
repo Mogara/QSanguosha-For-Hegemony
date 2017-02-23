@@ -3,7 +3,6 @@
 # -------------------------------------------------
 TARGET = QSanguosha
 QT += network widgets
-!winrt:QT += declarative
 TEMPLATE = app
 CONFIG += audio
 
@@ -280,6 +279,7 @@ INCLUDEPATH += src/scenario
 INCLUDEPATH += src/server
 INCLUDEPATH += src/ui
 INCLUDEPATH += src/util
+INCLUDEPATH += ../../../../mingw64/include/freetype2
 
 win32{
     RC_FILE += resource/icon.rc
@@ -327,6 +327,10 @@ win32-g++{
     DEFINES += WIN32
     LIBS += -L"$$_PRO_FILE_PWD_/lib/win/MinGW"
     DEFINES += GPP
+    CONFIG(!static) {
+        CONFIG += link_pkgconfig
+        PKGCONFIG += freetype2
+    }
 }
 winrt{
     DEFINES += _CRT_SECURE_NO_WARNINGS
@@ -373,17 +377,18 @@ linux{
 
 CONFIG(audio){
     DEFINES += AUDIO_SUPPORT
-    INCLUDEPATH += include/fmod
-    CONFIG(debug, debug|release): LIBS += -lfmodexL
-    else:LIBS += -lfmodex
+    QT += multimedia
+#    INCLUDEPATH += include/fmod
+#    CONFIG(debug, debug|release): LIBS += -lfmodL
+#    else:LIBS += -lfmod64
     SOURCES += src/core/audio.cpp
 
-    android{
-        CONFIG(debug, debug|release):ANDROID_EXTRA_LIBS += $$ANDROID_LIBPATH/libfmodexL.so
-        else:ANDROID_EXTRA_LIBS += $$ANDROID_LIBPATH/libfmodex.so
-    }
+#    android{
+#        CONFIG(debug, debug|release):ANDROID_EXTRA_LIBS += $$ANDROID_LIBPATH/libfmodexL.so
+#        else:ANDROID_EXTRA_LIBS += $$ANDROID_LIBPATH/libfmodex.so
+#    }
 
-    ios: QMAKE_LFLAGS += -framework AudioToolBox
+#    ios: QMAKE_LFLAGS += -framework AudioToolBox
 }
 
 
@@ -543,10 +548,7 @@ OTHER_FILES += \
     resource/android/AndroidManifest.xml \
     builds/sanguosha.ts
 
-CONFIG(debug, debug|release): LIBS += -lfreetype_D
-else:LIBS += -lfreetype
-
-INCLUDEPATH += $$_PRO_FILE_PWD_/include/freetype
-DEPENDPATH += $$_PRO_FILE_PWD_/include/freetype
 
 ANDROID_PACKAGE_SOURCE_DIR = $$_PRO_FILE_PWD_/resource/android
+
+RESOURCES +=
