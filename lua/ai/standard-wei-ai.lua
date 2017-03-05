@@ -386,7 +386,7 @@ sgs.ai_skill_invoke.luoyi = function(self,data)
 		if card:isKindOf("Slash") or (self.player:hasWeapon("Spear") and self.player:getCards("h"):length() > 0) then
 			for _,enemy in ipairs(self.enemies) do
 				if self.player:canSlash(enemy, card, true) and self:slashIsEffective(card, enemy) and self:objectiveLevel(enemy) > 3 and sgs.isGoodTarget(enemy, self.enemies, self) then
-					if (not enemy:hasArmorEffect("SilverLion") or self.player:hasWeapon("QinggangSword")) and (getCardsNum("Jink", enemy) < 1
+					if (not self:hasArmorEffect(enemy, "SilverLion") or self.player:hasWeapon("QinggangSword")) and (getCardsNum("Jink", enemy) < 1
 					or (self.player:hasWeapon("Axe") and self.player:getCards("he"):length() > 3))
 					or (self:getOverflow() > 1)
 					then
@@ -398,7 +398,7 @@ sgs.ai_skill_invoke.luoyi = function(self,data)
 		if card:isKindOf("Duel") then
 			for _, enemy in ipairs(self.enemies) do
 				if self:getCardsNum("Slash") >= getCardsNum("Slash", enemy, self.player) and sgs.isGoodTarget(enemy, self.enemies, self)
-				and not enemy:hasArmorEffect("SilverLion")
+				and not self:hasArmorEffect(enemy, "SilverLion")
 				and self:objectiveLevel(enemy) > 3 and self:damageIsEffective(enemy) then
 					dueltarget = dueltarget + 1
 				end
@@ -717,7 +717,7 @@ sgs.ai_skill_use["@@shensu2"] = function(self, prompt, method)
 		local eff = self:slashIsEffective(slash, enemy) and sgs.isGoodTarget(enemy, self.enemies, self)
 
 		if not self.player:canSlash(enemy, slash, false) then
-		elseif throw_weapon and enemy:hasArmorEffect("Vine") then
+		elseif throw_weapon and self:hasArmorEffect(enemy, "Vine") then
 		elseif self:slashProhibit(nil, enemy) then
 		elseif eff then
 			if enemy:getHp() == 1 and getCardsNum("Jink", enemy, self.player) == 0 then

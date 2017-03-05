@@ -94,7 +94,7 @@ public:
     void selectOnlyCard(bool need_only = false);
     void useSelected();
     const Card *getSelected() const;
-    void unselectAll(const CardItem *except = NULL);
+    void unselectAll(const CardItem *except = NULL, bool update_pending = true);
     void hideAvatar();
 
     void disableAllCards();
@@ -116,6 +116,8 @@ public:
     const ViewAsSkill *currentSkill() const;
     const Card *getPendingCard() const;
 
+    //void expandGuhuoPile(const QString &pile_name, const ViewAsSkill *skill);
+    void removeAllVirtualCard();
     void expandPileCards(const QString &pile_name);
     void retractPileCards(const QString &pile_name);
     void retractAllSkillPileCards();
@@ -244,6 +246,7 @@ protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void _addHandCard(CardItem *card_item, bool prepend = false, const QString &footnote = QString());
+    void _addGuhuoCard(CardItem *card_item, const QString &footnote = QString());
     void _adjustCards();
     void _adjustCards(const QList<CardItem *> &list, int y);
 
@@ -265,6 +268,7 @@ protected:
 
     CardItem *selected;
     QList<CardItem *> m_handCards;
+    QList<CardItem *> m_guhuoCards;
 
     QGraphicsRectItem *trusting_item;
     QGraphicsSimpleTextItem *trusting_text;
@@ -320,12 +324,12 @@ protected:
     // for battle arry
     QHash<QString, PixmapAnimation *> _m_frameBorders;
     QHash<QString, PixmapAnimation *> _m_roleBorders;
-    void _createBattleArrayAnimations();
+    void _createBattleArrayAnimations(QString &kingdom);
 
 private:
     static const int CARDITEM_Z_DATA_KEY = 0413;
 
-    void showHeroSkinListHelper(const General *general, HeroSkinContainer * &heroSkinContainer);
+    void showHeroSkinListHelper(const General *general, HeroSkinContainer * &heroSkinContainer, const QString position);
 
     QPointF getHeroSkinContainerPosition() const;
 
@@ -366,6 +370,7 @@ signals:
     void card_selected(const Card *card);
     void card_to_use();
     void progressBarTimedOut();
+    void card_unselect();
 };
 
 #endif

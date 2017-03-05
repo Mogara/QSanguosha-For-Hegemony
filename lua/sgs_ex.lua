@@ -87,9 +87,6 @@ function sgs.CreateTriggerSkill(spec)
 	if spec.on_turn_broken then
 		skill.on_turn_broken = spec.on_turn_broken
 	end
-	if spec.check_guhuo then
-		skill.check_guhuo = spec.check_guhuo
-	end
 	if spec.dynamic_priority and type(spec.dynamic_priority) == "table" then
 		for e,v in pairs(spec.dynamic_priority)do
 			skill:insertPriority(e,v)
@@ -130,6 +127,22 @@ function sgs.CreateViewHasSkill(spec)
 	assert(type(spec.is_viewhas) == "function")
 
 	local skill = sgs.LuaViewHasSkill(spec.name)
+
+	if type(spec.viewhas_skills) == "string" then
+		skill:addViewhasSkill(spec.viewhas_skills)
+	elseif type(spec.viewhas_skills) == "table" then
+		for _, skill_name in ipairs(spec.viewhas_skills) do
+			skill:addViewhasSkill(skill_name)
+		end
+	end
+
+	if type(spec.viewhas_armors) == "string" then
+		skill:addViewhasArmor(spec.viewhas_armors)
+	elseif type(spec.viewhas_armors) == "table" then
+		for _, skill_name in ipairs(spec.viewhas_armors) do
+			skill:addViewhasArmor(skill_name)
+		end
+	end
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
@@ -244,9 +257,9 @@ function sgs.CreateMasochismSkill(spec)
 
 	spec.events = sgs.Damaged
 
-	function spec.on_effect(skill, event, room, player, data)
+	function spec.on_effect(skill, event, room, player, data, who, info)
 		local damage = data:toDamage()
-		spec.on_damaged(skill, player, damage)
+		spec.on_damaged(skill, player, damage, info)
 		return false
 	end
 
@@ -258,8 +271,8 @@ function sgs.CreatePhaseChangeSkill(spec)
 
 	spec.events = sgs.EventPhaseStart
 
-	function spec.on_effect(skill, event, room, player, data)
-		return spec.on_phasechange(skill, player)
+	function spec.on_effect(skill, event, room, player, data, who, info)
+		return spec.on_phasechange(skill, player, info)
 	end
 
 	return sgs.CreateTriggerSkill(spec)
@@ -270,7 +283,7 @@ function sgs.CreateDrawCardsSkill(spec)
 
 	spec.events = sgs.DrawNCards
 
-	function spec.on_effect(skill, event, room, player, data)
+	function spec.on_effect(skill, event, room, player, data, who, info)
 		local n = data:toInt()
 		local nn = spec.draw_num_func(skill, player, n)
 		data:setValue(nn)
@@ -285,8 +298,8 @@ function sgs.CreateGameStartSkill(spec)
 
 	spec.events = sgs.GameStart
 
-	function spec.on_effect(skill, event, room, player, data)
-		spec.on_gamestart(skill, player)
+	function spec.on_effect(skill, event, room, player, data, who, info)
+		spec.on_gamestart(skill, player, info)
 		return false
 	end
 
@@ -616,8 +629,8 @@ function sgs.CreateViewAsSkill(spec)
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
 	skill.in_pile = spec.in_pile
-	if spec.check_guhuo then
-		skill.check_guhuo = spec.check_guhuo
+	if spec.get_guhuo then
+		skill.get_guhuo = spec.get_guhuo
 	end
 	return skill
 end
@@ -666,8 +679,8 @@ function sgs.CreateOneCardViewAsSkill(spec)
 	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
 		skill:setGuhuoType(spec.guhuo_type)
 	end
-	if spec.check_guhuo then
-		skill.check_guhuo = spec.check_guhuo
+	if spec.get_guhuo then
+		skill.get_guhuo = spec.get_guhuo
 	end
 	return skill
 end
@@ -702,8 +715,8 @@ function sgs.CreateZeroCardViewAsSkill(spec)
 	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
 		skill:setGuhuoType(spec.guhuo_type)
 	end
-	if spec.check_guhuo then
-		skill.check_guhuo = spec.check_guhuo
+	if spec.get_guhuo then
+		skill.get_guhuo = spec.get_guhuo
 	end
 	return skill
 end

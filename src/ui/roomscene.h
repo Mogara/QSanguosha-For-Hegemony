@@ -166,7 +166,7 @@ public:
     bool game_started;
 
     void addHeroSkinContainer(HeroSkinContainer *heroSkinContainer);
-    HeroSkinContainer *findHeroSkinContainer(const QString &generalName) const;
+    HeroSkinContainer *findHeroSkinContainer(const QString &position) const;
 
     Dashboard *getDasboard() const;
 
@@ -179,10 +179,11 @@ public slots:
     void removePlayer(const QString &player_name);
     void loseCards(int moveId, QList<CardsMoveStruct> moves);
     void getCards(int moveId, QList<CardsMoveStruct> moves);
+    void useVirtualCard(QString &card_string, CardsMoveStruct movement);
     void keepLoseCardLog(const CardsMoveStruct &move);
     void keepGetCardLog(const CardsMoveStruct &move);
     // choice dialog
-    void chooseGeneral(const QStringList &generals, const bool single_result, const bool can_convert);
+    void chooseGeneral(const QStringList &generals, const bool single_result, const bool can_convert, const bool assign_kingdom);
     void chooseSuit(const QStringList &suits);
     void chooseCard(const ClientPlayer *playerName, const QString &flags, const QString &reason,
         bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids, QList<int> handcards);
@@ -192,11 +193,13 @@ public slots:
     //void chooseRole(const QString &scheme, const QStringList &roles);
     //void chooseDirection();
     void chooseTriggerOrder(const QString &reason, const QStringList &options, const bool optional);
+    void chooseTriggerOrder_new(const QString &reason, QList<TriggerStruct> skills, const bool optional);
 
     void bringToFront(QGraphicsItem *item);
     void arrangeSeats(const QList<const ClientPlayer *> &seats);
     void toggleDiscards();
     void enableTargets(const Card *card);
+    void cleanTips();
     void useSelectedCard();
     void updateStatus(Client::Status oldStatus, Client::Status newStatus);
     void cardMovedinCardchooseBox(const bool enable);
@@ -238,6 +241,8 @@ public slots:
     void onTransferButtonActivated();
     void onSkillDeactivated();
     void trust();
+
+    void message(QString a, QString b); //debug
 
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -288,9 +293,7 @@ private:
     QGraphicsSimpleTextItem *pausing_text;
 
     QList<QGraphicsPixmapItem *> role_items;
-    CardContainer *m_cardContainer;
-    CardContainer *pileContainer;
-
+    CardContainer *m_cardContainer, *m_cardContainer2, *pileContainer;
     QList<QSanSkillButton *> m_skillButtons;
 
     ResponseSkill *response_skill;
@@ -300,7 +303,7 @@ private:
     ChoosePlayerSkill *choose_skill;
     ExchangeSkill *exchange_skill;
 
-    QList<const Player *> selected_targets;
+    QList<const Player *> selected_targets, previous_targets;
 
     GuanxingBox *m_guanxingBox;
 
@@ -348,6 +351,8 @@ private:
     Button *arrange_button;
     QPointF m_tableCenterPos;
     ReplayerControlBar *m_replayControl;
+
+    bool status_changing;                       //to prevent auto reply before changing complete
 
     struct _MoveCardsClassifier
     {

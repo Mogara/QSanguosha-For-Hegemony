@@ -37,11 +37,11 @@ public:
         return 10;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &) const{
-        return (target != NULL) ? QStringList(objectName()) : QStringList();
+    virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer *) const{
+        return (target != NULL) ? TriggerStruct(objectName(), target) : TriggerStruct();
     }
 
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *, const TriggerStruct &) const{
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p->hasFlag("Global_InTempMoving"))
                 return true;
@@ -51,6 +51,11 @@ public:
     }
 
 };
+
+ShowMashu::ShowMashu()
+    : ShowDistanceCard()
+{
+}
 
 StandardPackage::StandardPackage()
     : Package("standard")
@@ -87,6 +92,8 @@ StandardPackage::StandardPackage()
     patterns["peach"] = new  ExpPattern("Peach");
     patterns["nullification"] = new ExpPattern("Nullification");
     patterns["peach+analeptic"] = new ExpPattern("Peach,Analeptic");
+
+    addMetaObject<ShowMashu>();
 }
 
 ADD_PACKAGE(Standard)

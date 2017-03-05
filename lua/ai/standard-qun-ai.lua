@@ -326,7 +326,7 @@ table.insert(sgs.ai_skills, luanji_skill)
 luanji_skill.getTurnUseCard = function(self)
 	local willShow = false
 	for _, enemy in ipairs(self.enemies) do
-		if enemy:getHp() == 1 and not enemy:hasArmorEffect("Vine") then
+		if enemy:getHp() == 1 and not self:hasArmorEffect(enemy, "Vine") then
 			willShow = true
 			break
 		end
@@ -344,7 +344,7 @@ luanji_skill.getTurnUseCard = function(self)
 		self:sortByKeepValue(cards)
 		local useAll = false
 		for _, enemy in ipairs(self.enemies) do
-			if enemy:getHp() == 1 and not enemy:hasArmorEffect("Vine") and not self:hasEightDiagramEffect(enemy) and self:damageIsEffective(enemy, nil, self.player, true)
+			if enemy:getHp() == 1 and not self:hasArmorEffect(enemy, "Vine") and not self:hasEightDiagramEffect(enemy) and self:damageIsEffective(enemy, nil, self.player, true)
 				and self:isWeak(enemy) and getCardsNum("Jink", enemy, self.player) + getCardsNum("Peach", enemy, self.player) + getCardsNum("Analeptic", enemy, self.player) == 0 then
 				useAll = true
 			end
@@ -702,7 +702,7 @@ function SmartAI:findLeijiTarget(player, leiji_value, slasher)
 		if self:cantbeHurt(enemy, player, 2) or self:objectiveLevel(enemy) < 3
 			or (enemy:isChained() and not self:isGoodChainTarget_(damage)) then return 100 end
 		if not sgs.isGoodTarget(enemy, self.enemies, self) then value = value + 50 end
-		if enemy:hasArmorEffect("SilverLion") then value = value + 20 end
+		if self:hasArmorEffect(enemy, "SilverLion") then value = value + 20 end
 		if enemy:hasShownSkills(sgs.exclusive_skill) then value = value + 10 end
 		if enemy:hasShownSkills(sgs.masochism_skill) then value = value + 5 end
 		if enemy:isChained() and self:isGoodChainTarget_(damage) and #(self:getChainedEnemies(player)) > 1 then value = value - 25 end
@@ -738,7 +738,7 @@ sgs.ai_skill_playerchosen.leiji = function(self, targets)
 		if self:cantbeHurt(enemy, player, 2) or self:objectiveLevel(enemy) < 3
 			or (enemy:isChained() and not self:isGoodChainTarget_(damage)) then return 100 end
 		if not sgs.isGoodTarget(enemy, self.enemies, self) then value = value + 50 end
-		if enemy:hasArmorEffect("SilverLion") then value = value + 20 end
+		if self:hasArmorEffect(enemy, "SilverLion") then value = value + 20 end
 		if enemy:hasShownSkills(sgs.exclusive_skill) then value = value + 10 end
 		if enemy:hasShownSkills(sgs.masochism_skill) then value = value + 5 end
 		if enemy:isChained() and self:isGoodChainTarget_(damage) and #(self:getChainedEnemies(player)) > 1 then value = value - 25 end
@@ -996,7 +996,7 @@ sgs.ai_skill_cardchosen.kuangfu = function(self, who, flags)
 			elseif card:isKindOf("Treasure") and who:getTreasure() then return who:getTreasure():getEffectiveId()
 			end
 		end
-		if who:getArmor() and who:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(who) then return who:getArmor():getEffectiveId() end
+		if who:getArmor() and who:hasArmorEffect("EightDiagram", false) and not self:needToThrowArmor(who) then return who:getArmor():getEffectiveId() end
 		if who:hasShownSkills("jijiu|beige|weimu|qingcheng") and not self:doNotDiscard(who, "e", false, 1, reason) then
 			if who:getPile("wooden_ox"):length() > 1 or who:hasTreasure("JadeSeal") then return who:getTreasure():getEffectiveId() end
 			if who:getDefensiveHorse() then return who:getDefensiveHorse():getEffectiveId() end
@@ -1076,7 +1076,7 @@ sgs.ai_skill_use_func.QingchengCard = function(card, use, self)
 	end
 
 	local liguo = room:findPlayerBySkillName("xichou")
-	if liguo and liguo:hasShownAllGenerals() and self:isFriend(liguo) then
+	if liguo and self.player:objectName() ~= liguo:objectName() and liguo:hasShownAllGenerals() and self:isFriend(liguo) then
 		use.card = card
 		if not use.isDummy and use.to then
 			sgs.qingcheng = "liguo"

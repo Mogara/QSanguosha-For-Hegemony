@@ -565,6 +565,24 @@ const Card *Engine::getEngineCard(int cardId) const
     }
 }
 
+Player::Place Engine::getCardPlace(int cardId)
+{
+    Player::Place place = Player::PlaceUnknown;
+    if (cardId < 0 || cardId >= cards.length())
+        return place;
+    QObject *room = currentRoomObject();
+    Q_ASSERT(room);
+    Room *serverRoom = qobject_cast<Room *>(room);
+    if (serverRoom != NULL) {
+        place = serverRoom->getCardPlace(cardId);
+    } else {
+        Client *clientRoom = qobject_cast<Client *>(room);
+        Q_ASSERT(clientRoom != NULL);
+        place = clientRoom->getCardPlace(cardId);
+    }
+    return place;
+}
+
 Card *Engine::cloneCard(const Card *card) const
 {
     Q_ASSERT(card->metaObject() != NULL);
@@ -575,6 +593,7 @@ Card *Engine::cloneCard(const Card *card) const
     result->setId(card->getEffectiveId());
     result->setSkillName(card->getSkillName(false));
     result->setObjectName(card->objectName());
+    result->setSkillPosition(card->getSkillPosition());
     return result;
 }
 
@@ -660,7 +679,7 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const
 #ifndef USE_BUILDBOT
 QSanVersionNumber Engine::getVersionNumber() const
 {
-    return QSanVersionNumber(2, 0, 0);
+    return QSanVersionNumber(2, 2, 0);
 }
 #endif
 
@@ -1061,16 +1080,31 @@ const FixCardSkill *Engine::isCardFixed(const Player *from, const Player *to, co
 }
 
 
-const ViewHasSkill *Engine::ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
+QList<const ViewHasSkill *> Engine::ViewHas(const Player *player, const QString &skill_name, const QString &flag) const
 {
+    QList<const ViewHasSkill *> skills;
     foreach (const ViewHasSkill *skill, viewhas_skills) {
-        if (skill->ViewHas(player, skill_name, flag))
-            return skill;
+        if (flag == "armor" && skill->getViewHasArmors().contains(skill_name) && skill->ViewHas(player, skill_name))
+            skills << skill;
+        else if (flag == "skill" && skill->getViewHasSkills().contains(skill_name) && skill->ViewHas(player, skill_name))
+            skills << skill;
     }
 
-    return NULL;
+    return skills;
 }
 
+QList<const ViewHasSkill *> Engine::ViewHasArmorEffect(const Player *player) const
+{
+    QList<const ViewHasSkill *> skills;
+    foreach (const ViewHasSkill *skill, viewhas_skills) {
+        foreach (QString armor, skill->getViewHasArmors()) {
+            if (skill->ViewHas(player, armor))
+                skills << skill;
+        }
+    }
+
+    return skills;
+}
 
 int Engine::correctDistance(const Player *from, const Player *to) const
 {
@@ -1112,27 +1146,28 @@ int Engine::correctCardTarget(const TargetModSkill::ModType type, const Player *
                 x += residue;
             }
         }
-    } else if (type == TargetModSkill::DistanceLimit) {
-        foreach (const TargetModSkill *skill, targetmod_skills) {
-            ExpPattern p(skill->getPattern());
-            if (p.match(from, card)) {
-                int distance_limit = skill->getDistanceLimit(from, card);
-                if (distance_limit >= 998) return distance_limit;
-                x += distance_limit;
-            }
-        }
     } else if (type == TargetModSkill::ExtraTarget) {
         foreach (const TargetModSkill *skill, targetmod_skills) {
             ExpPattern p(skill->getPattern());
-            if (p.match(from, card)) {
+            if (p.match(from, card))
                 x += skill->getExtraTargetNum(from, card);
-            }
         }
     }
 
     return x;
 }
 
+bool Engine::correctCardTarget(const Player *from, const Player *to, const Card *card) const
+{
+    foreach (const TargetModSkill *skill, targetmod_skills) {
+        ExpPattern p(skill->getPattern());
+        if (p.match(from, card)) {
+            int distance_limit = skill->getDistanceLimit(from, to, card);
+            if (distance_limit) return true;
+        }
+    }
+    return false;
+}
 
 int Engine::correctAttackRange(const Player *target, bool include_weapon, bool fixed) const
 {
@@ -1151,7 +1186,11 @@ int Engine::correctAttackRange(const Player *target, bool include_weapon, bool f
     return extra;
 }
 
-QList<Card *> Engine::getCards() const
+QList<const Card *> Engine::getCards() const
 {
-    return cards;
+    QList <const Card *> cards_copy;
+    foreach (Card *card, cards)
+        cards_copy << card;
+
+    return cards_copy;
 }

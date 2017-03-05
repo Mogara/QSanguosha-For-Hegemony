@@ -95,6 +95,8 @@ protected:
     QString m_currentCardUsePattern;
     CardUseStruct::CardUseReason m_currentCardUseReason;
     QString m_currentCardResponsePrompt;
+    bool m_guhuo_expanded;
+    QList<const Card *> m_guhuo_cards;
 };
 
 #endif

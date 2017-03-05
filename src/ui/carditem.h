@@ -99,7 +99,8 @@ public:
     void showFrame(const QString &frame);
     void hideFrame();
     void showAvatar(const General *general, const QString card_name = QString());
-    void hideAvatar();
+    void hideAvatar(); 
+    void setVirtualCard(QString &card_string);
     void setAutoBack(bool auto_back);
     void setFootnote(const QString &desc);
 
@@ -177,7 +178,7 @@ protected:
 
 private:
     int m_cardId;
-    const Card *Vcard = NULL;
+    QString Vcard;
     QString _m_frameType, _m_avatarName;
     QPointF home_pos;
     bool outerGlowEffectEnabled;

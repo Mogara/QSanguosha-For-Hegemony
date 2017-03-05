@@ -25,7 +25,7 @@ table.insert(sgs.ai_skills, qice_skill)
 qice_skill.getTurnUseCard = function(self,room,player,data)
 	if self.player:hasUsed("ViewAsSkill_qiceCard") or self.player:isKongcheng() then return end
 	local handcardnum = self.player:getHandcardNum()
-	local caocao = self.room:findPlayerBySkillName("jianxiong")
+	local caocao = self.room:findPlayer("jianxiong")
 	local preventdamaget = false
 	if not (caocao and self:isFriend(caocao)
 		and caocao:getHp() > 1 
@@ -182,7 +182,7 @@ sgs.ai_skill_use["@@wanwei"] = function(self, prompt)
 	if not self:willShowForDefence() then return "." end
 	local num = self.player:getMark("wanwei")
 	local names = prompt:split(":")
-	local target = self.room:findPlayerbyobjectName(names[#names])
+	local target = self.room:findPlayer(names[#names])
 	local cards = {}
 	local result = {}
 	for _, card in sgs.qlist(self.player:getCards("he")) do
@@ -413,7 +413,7 @@ sgs.ai_skill_invoke.zhiman = function(self, data)
 	local target = damage.to
 	local promo = self:findPlayerToDiscard("ej", false, sgs.Card_MethodGet, nil, true)
 	if self:isFriend(damage.to) and (table.contains(promo, target) or not self:needToLoseHp(target, self.player)) then return true end
-	if not self:isFriend(damage.to) and damage.damage > 1 and not target:hasArmorEffect("SilverLion") then return false end
+	if not self:isFriend(damage.to) and damage.damage > 1 and not self:hasArmorEffect(target, "SilverLion") then return false end
 	if table.contains(promo, target) then return true end
 	if self:hasSkill(sgs.masochism_skill, target) and self.player:canGetCard(target, "e") then self.player:speak("因为防止卖血") return true end
 	return false
@@ -823,9 +823,13 @@ sgs.ai_skill_use["@@diaodu_equip"] = function(self, prompt)
 			end
 		end
 	end
+	local cards = self.player:getCards("h")
+	for _, id in sgs.qlist(self.player:getHandPile()) do
+		cards:append(sgs.Sanguosha:getCard(id))
+	end
 	for _, p in ipairs(self.friends_noself) do
 		if not self.player:isFriendWith(p) then continue end
-		for _, card in sgs.qlist(self.player:getCards("h")) do
+		for _, card in sgs.qlist(cards) do
 			if card:isKindOf("Weapon") and self.player:getWeapon() then
 				return "@DiaoduequipCard=" .. self.player:getWeapon():getEffectiveId() .. "&diaoduequip->" .. p:objectName()
 			end
@@ -886,7 +890,7 @@ sgs.ai_skill_use["@@diaodu_equip"] = function(self, prompt)
 		end
 	end
 
-	for _, card in sgs.qlist(self.player:getCards("h")) do
+	for _, card in sgs.qlist(cards) do
 		if card:isKindOf("EquipCard") then
 			local dummy_use = {isDummy = true}
 			self:useEquipCard(card, dummy_use)

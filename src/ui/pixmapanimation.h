@@ -37,6 +37,7 @@ public:
     void timerEvent(QTimerEvent *e);
 
     void setPath(const QString &path, bool playback = false);
+    void setAvatarAnimation(const QString &name, int size, int skin_id, const QRect &rect);
     void setSize(const QSize &size);
     void setHideonStop(bool hide);
     void setPlayTime(int msecs);
@@ -63,9 +64,11 @@ public slots:
 
 private:
     int _m_timerId;
+    int m_timeout, m_timer, m_interval;
     QString path;
-    QList<QPixmap> frames;
-    int current, off_x, off_y, m_timer;
+    QHash<QString, QPixmap> frames;
+    QStringList frame_list;
+    int current, off_x, off_y;
     bool m_fix_rect, hideonstop;
     QSize m_size;
 };

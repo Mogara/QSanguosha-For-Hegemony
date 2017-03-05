@@ -71,7 +71,7 @@ QVariant CardsMoveStruct::toVariant() const
 bool CardMoveReason::tryParse(const QVariant &arg)
 {
     JsonArray args = arg.value<JsonArray>();
-    if (args.size() != 5 || !args[0].canConvert<int>() || !JsonUtils::isStringArray(args, 1, 4))
+    if (args.size() != 7 || !args[0].canConvert<int>() || !JsonUtils::isStringArray(args, 1, 6))
         return false;
 
     m_reason = args[0].toInt();
@@ -79,6 +79,8 @@ bool CardMoveReason::tryParse(const QVariant &arg)
     m_skillName = args[2].toString();
     m_eventName = args[3].toString();
     m_targetId = args[4].toString();
+    m_position = args[5].toString();
+    m_cardString = args[6].toString();
 
     return true;
 }
@@ -91,6 +93,8 @@ QVariant CardMoveReason::toVariant() const
     result << m_skillName;
     result << m_eventName;
     result << m_targetId;
+    result << m_position;
+    result << m_cardString;
     return result;
 }
 
@@ -345,4 +349,103 @@ AskForMoveCardsStruct::AskForMoveCardsStruct()
     is_success = false;
     top.clear();
     bottom.clear();
+}
+
+TriggerStruct::TriggerStruct()
+    : skill_name(QString()), invoker(QString()), skill_owner(QString()),targets(QStringList()), skill_position(QString()),times(1), result_target(QString())
+{
+}
+
+TriggerStruct::TriggerStruct(const QString &skill_name)
+    : invoker(QString()), skill_owner(QString()),targets(QStringList()), skill_position(QString()),times(1), result_target(QString())
+{
+    this->skill_name = skill_name;
+}
+
+TriggerStruct::TriggerStruct(const QString &skill_name, ServerPlayer *invoker)
+    : skill_owner(QString()),targets(QStringList()), skill_position(QString()),times(1), result_target(QString())
+{
+    this->skill_name = skill_name;
+    this->invoker = invoker->objectName();
+}
+
+TriggerStruct::TriggerStruct(const QString &skill_name, ServerPlayer *invoker, ServerPlayer *skill_owner)
+    : targets(QStringList()), skill_position(QString()),times(1), result_target(QString())
+{
+    this->skill_name = skill_name;
+    this->invoker = invoker->objectName();
+    this->skill_owner = skill_owner->objectName();
+}
+
+TriggerStruct::TriggerStruct(const QString &skill_name, ServerPlayer *invoker, QList<ServerPlayer *> targets)
+    : skill_owner(QString()),targets(QStringList()), skill_position(QString()),times(1), result_target(QString())
+{
+    this->skill_name = skill_name;
+    this->invoker = invoker->objectName();
+    foreach (ServerPlayer *p, targets)
+        this->targets << p->objectName();
+}
+
+bool TriggerStruct::tryParse(const QVariant &trigger)
+{
+    JsonArray trigger_struct = trigger.value<JsonArray>();
+    if (trigger_struct.size() != 7 || !JsonUtils::isStringArray(trigger_struct, 0, 6))
+        return false;
+
+    skill_name = trigger_struct[0].toString();
+    invoker = trigger_struct[1].toString();
+    skill_owner = trigger_struct[2].toString();
+
+    if (trigger_struct[3].toString().isEmpty())
+        targets = QStringList();
+    else {
+        foreach (QString name, trigger_struct[3].toString().split("+"))
+            targets << name;
+    }
+
+    skill_position = trigger_struct[4].toString();
+    result_target = trigger_struct[5].toString();
+    times = trigger_struct[6].toInt();
+    return true;
+}
+
+QVariant TriggerStruct::toVariant() const
+{
+    QStringList log;
+    log << skill_name << invoker << skill_owner << (targets.isEmpty() ? QString() : targets.join("+")) << skill_position  << result_target << QString::number(times);
+    return JsonUtils::toJsonArray(log);
+}
+
+PromoteStruct::PromoteStruct()
+    : skill_name(QString()), pattern(QString()), reason(CardUseStruct::CARD_USE_REASON_UNKNOWN), skill_position(QString())
+{
+}
+
+PromoteStruct::PromoteStruct(const QString &skill_name, const QString &pattern, CardUseStruct::CardUseReason reason, const QString &skill_position)
+{
+    this->skill_name = skill_name;
+    this->pattern = pattern;
+    this->reason = reason;
+    this->skill_position = skill_position;
+}
+
+bool PromoteStruct::tryParse(const QVariant &ask_str)
+{
+    JsonArray promote = ask_str.value<JsonArray>();
+    if (promote.size() != 4 || !JsonUtils::isString(promote[0]) || !JsonUtils::isString(promote[1])
+            || !JsonUtils::isNumber(promote[2]) || !JsonUtils::isString(promote[3]))
+        return false;
+
+    skill_name = promote[0].toString();
+    pattern = promote[1].toString();
+    reason = static_cast<CardUseStruct::CardUseReason>(promote[2].toInt());
+    skill_position = promote[3].toString();
+    return true;
+}
+
+QVariant PromoteStruct::toVariant() const
+{
+    JsonArray arg;
+    arg << skill_name << pattern << (int)reason << skill_position;
+    return arg;
 }

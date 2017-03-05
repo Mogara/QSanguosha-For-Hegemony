@@ -97,12 +97,15 @@ Client::Client(QObject *parent, const QString &filename)
     callbacks[S_COMMAND_SET_PROPERTY] = &Client::updateProperty;
     callbacks[S_COMMAND_RESET_PILE] = &Client::resetPiles;
     callbacks[S_COMMAND_UPDATE_PILE] = &Client::setPileNumber;
+    callbacks[S_COMMAND_UPDATE_PRIVATE_PILE] = &Client::updatePrivatePile;
     callbacks[S_COMMAND_CARD_FLAG] = &Client::setCardFlag;
     callbacks[S_COMMAND_UPDATE_HANDCARD_NUM] = &Client::setHandcardNum;
     callbacks[S_COMMAND_MIRROR_GUANXING_STEP] = &Client::mirrorGuanxingStep;
     callbacks[S_COMMAND_MIRROR_MOVECARDS_STEP] = &Client::mirrorMoveCardsStep;
     callbacks[S_COMMAND_SET_ACTULGENERAL] = &Client::setActualGeneral;
     callbacks[S_COMMAND_PINDIAN] = &Client::askForPindian;
+    callbacks[S_COMMAND_CARD_MAPPING] = &Client::setCardMapping;
+    callbacks[S_COMMAND_SET_PROMOTE_SKILL] = &Client::setPromoteSkill;
 
     // interactive methods
     interactions[S_COMMAND_CHOOSE_GENERAL] = &Client::askForGeneral;
@@ -131,6 +134,7 @@ Client::Client(QObject *parent, const QString &filename)
     interactions[S_COMMAND_SURRENDER] = &Client::askForSurrender;
     interactions[S_COMMAND_LUCK_CARD] = &Client::askForLuckCard;
     interactions[S_COMMAND_TRIGGER_ORDER] = &Client::askForTriggerOrder;
+    interactions[S_COMMAND_CHOOSE_EXTRA_TARGET] = &Client::askForExtraTargets;
 
     callbacks[S_COMMAND_FILL_AMAZING_GRACE] = &Client::fillAG;
     callbacks[S_COMMAND_TAKE_AMAZING_GRACE] = &Client::takeAG;
@@ -526,8 +530,8 @@ bool Client::_loseSingleCard(int card_id, CardsMoveStruct move)
         // @todo: synchronize discard pile when "marshal"
         if (move.from_place == Player::DiscardPile)
             discarded_list.removeOne(card);
-        else if (move.from_place == Player::DrawPile && !Self->hasFlag("marshalling"))
-            pile_num--;
+        //else if (move.from_place == Player::DrawPile && !Self->hasFlag("marshalling"))
+        //  pile_num--;
     }
     return true;
 }
@@ -538,10 +542,11 @@ bool Client::_getSingleCard(int card_id, CardsMoveStruct move)
     if (move.to)
         move.to->addCard(card, move.to_place);
     else {
-        if (move.to_place == Player::DrawPile || move.to_place == Player::DrawPileBottom)
-            pile_num++;
+        //if (move.to_place == Player::DrawPile || move.to_place == Player::DrawPileBottom)
+        //    pile_num++;
         // @todo: synchronize discard pile when "marshal"
-        else if (move.to_place == Player::DiscardPile)
+        //else if (move.to_place == Player::DiscardPile)
+        if (move.to_place == Player::DiscardPile)
             discarded_list.prepend(card);
     }
     return true;
@@ -551,27 +556,35 @@ void Client::getCards(const QVariant &arg)
 {
     JsonArray args = arg.value<JsonArray>();
     Q_ASSERT(args.size() >= 1);
-    int moveId = args[0].toInt();
-    QList<CardsMoveStruct> moves;
-    for (int i = 1; i < args.size(); i++) {
-        CardsMoveStruct move;
-        if (!move.tryParse(args[i])) return;
-        move.from = getPlayer(move.from_player_name);
-        move.to = getPlayer(move.to_player_name);
-        Player::Place dstPlace = move.to_place;
+    CardsMoveStruct move1;
+    if (args.size() == 2 && move1.tryParse(args[0]) && JsonUtils::isString(args[1])) {
+        QString card_string = args[1].toString();
+        move1.from = getPlayer(move1.from_player_name);
+        move1.to = getPlayer(move1.to_player_name);
+        emit move_virtual_cards(card_string, move1);
+    } else {
+        int moveId = args[0].toInt();
+        QList<CardsMoveStruct> moves;
+        for (int i = 1; i < args.size(); i++) {
+            CardsMoveStruct move;
+            if (!move.tryParse(args[i])) return;
+            move.from = getPlayer(move.from_player_name);
+            move.to = getPlayer(move.to_player_name);
+            Player::Place dstPlace = move.to_place;
 
-        if (dstPlace == Player::PlaceSpecial) {
-            ClientPlayer *to = qobject_cast<ClientPlayer *>(move.to);
-            if (to != NULL)
-                to->changePile(move.to_pile_name, true, move.card_ids);
-        } else {
-            foreach(int card_id, move.card_ids)
-                _getSingleCard(card_id, move); // DDHEJ->DDHEJ, DDH/EJ->EJ
+            if (dstPlace == Player::PlaceSpecial) {
+                ClientPlayer *to = qobject_cast<ClientPlayer *>(move.to);
+                if (to != NULL)
+                    to->changePile(move.to_pile_name, true, move.card_ids);
+            } else {
+                foreach(int card_id, move.card_ids)
+                    _getSingleCard(card_id, move); // DDHEJ->DDHEJ, DDH/EJ->EJ
+            }
+            moves.append(move);
         }
-        moves.append(move);
+        updatePileNum();
+        emit move_cards_got(moveId, moves);
     }
-    updatePileNum();
-    emit move_cards_got(moveId, moves);
 }
 
 void Client::loseCards(const QVariant &arg)
@@ -589,7 +602,7 @@ void Client::loseCards(const QVariant &arg)
 
         if (srcPlace == Player::PlaceSpecial) {
             ClientPlayer *from = qobject_cast<ClientPlayer *>(move.from);
-            if (from != NULL)
+            if (from != NULL && !move.card_ids.isEmpty())
                 from->changePile(move.from_pile_name, false, move.card_ids);
         } else {
             foreach(int card_id, move.card_ids)
@@ -687,16 +700,18 @@ void Client::onPlayerResponseCard(const Card *card, const QList<const Player *> 
         }
 
         QString card_str = card->toString();            //add the position info to card. by weidouncle
-        if (!Self->tag[card->getSkillName(true) + "_position"].toString().isEmpty())
-            card_str = QString("%1?%2").arg(card_str).arg(Self->tag[card->getSkillName(true) + "_position"].toString());
+
+        if (!skill_position.isEmpty())
+            card_str = QString("%1?%2").arg(card_str).arg(skill_position);
         replyToServer(S_COMMAND_RESPONSE_CARD, JsonArray() << card_str << QVariant::fromValue(targetNames));
-        if (_m_roomState.getCurrentCardResponsePrompt() == "pindian" && card != NULL) {
+
+        if (_m_roomState.getCurrentCardResponsePrompt() == "pindian") {
             _m_roomState.setCurrentCardResponsePrompt(QString());
             notifyServer(S_COMMAND_PINDIAN, JsonArray() << S_GUANXING_MOVE << QVariant::fromValue(Self->objectName()) << card->getEffectiveId());
         }
 
         if (card->isVirtualCard() && !card->parent())
-            delete card;
+			delete card;
     }
 
     if (Self->hasFlag("Client_PreventPeach")) {
@@ -996,6 +1011,11 @@ QString Client::getSkillToHighLight() const
     return skill_position;
 }
 
+void Client::setSkillPosition(QString &positon)
+{
+    skill_position = positon;
+}
+
 void Client::onPlayerInvokeSkill(bool invoke)
 {
     if (skill_name == "surrender")
@@ -1264,9 +1284,25 @@ void Client::onPlayerChoosePlayer(const QList<const Player *> &players)
     setStatus(NotActive);
 }
 
+void Client::onPlayerChooseExtraTargets(const QList<const Player *> &players)
+{
+    QStringList names;
+    foreach (const Player *p, players)
+        names << p->objectName();
+
+    replyToServer(S_COMMAND_CHOOSE_EXTRA_TARGET, (names.isEmpty()) ? QVariant() : names.join("+"));
+    setStatus(NotActive);
+}
+
 void Client::onPlayerChooseTriggerOrder(const QString &choice)
 {
     replyToServer(S_COMMAND_TRIGGER_ORDER, choice);
+    setStatus(NotActive);
+}
+
+void Client::onPlayerChooseTriggerOrder2(const QVariant &skill)
+{
+    replyToServer(S_COMMAND_TRIGGER_ORDER, skill);
     setStatus(NotActive);
 }
 
@@ -1399,6 +1435,16 @@ void Client::setPileNumber(const QVariant &pile_str)
     if (!pile_str.canConvert<int>()) return;
     pile_num = pile_str.toInt();
     updatePileNum();
+}
+
+void Client::updatePrivatePile(const QVariant &pile_str)
+{
+    JsonArray piles = pile_str.value<JsonArray>();
+    QList<int> ids;
+    if (piles.size() != 3 || !JsonUtils::isString(piles[0]) || !JsonUtils::isBool(piles[1]) || !JsonUtils::tryParse(piles[2], ids)) return;
+    QString pile_name = piles[0].toString();
+    bool add = piles[1].toBool();
+    Self->changePile(pile_name, add, ids);
 }
 
 void Client::setHandcardNum(const QVariant &nums)
@@ -1654,7 +1700,8 @@ void Client::askForGeneral(const QVariant &arg)
     if (!JsonUtils::tryParse(args[0], generals)) return;
     bool single_result = args[1].toBool();
     bool can_convert = args[2].toBool();
-    emit generals_got(generals, single_result, can_convert);
+    bool assign_kingdom = args[3].toBool();
+    emit generals_got(generals, single_result, can_convert, assign_kingdom);
     setStatus(AskForGeneralChosen);
 }
 
@@ -1726,19 +1773,32 @@ void Client::askForDirection(const QVariant &)
 void Client::askForTriggerOrder(const QVariant &ask_str)
 {
     JsonArray ask = ask_str.value<JsonArray>();
-    if (ask.size() != 3
-        || !JsonUtils::isString(ask[0]) || !ask[1].canConvert<JsonArray>()
-        || !JsonUtils::isBool(ask[2])) return;
+    if (ask.size() == 3 && JsonUtils::isString(ask[0]) && JsonUtils::isBool(ask[1]) && ask[2].canConvert<JsonArray>() && !TriggerStruct().tryParse(ask[2])) {
+        QString reason = ask[0].toString();
+        bool optional = ask[1].toBool();
+        QStringList choices;
+        JsonUtils::tryParse(ask[2], choices);
 
-    QString reason = ask[0].toString();
+        emit triggers_got(reason, choices, optional);
+        setStatus(AskForTriggerOrder);
+    } else if (JsonUtils::isString(ask[0]) && JsonUtils::isBool(ask[1])) {
+        QString reason = ask[0].toString();
+        bool optional = ask[1].toBool();
 
-    QStringList choices;
-    JsonUtils::tryParse(ask[1], choices);
-
-    bool optional = ask[2].toBool();
-
-    emit triggers_got(reason, choices, optional);
-    setStatus(AskForTriggerOrder);
+        bool check = false;
+        QList<TriggerStruct> skills;
+        for (int i = 2; i < ask.size(); i++) {
+            TriggerStruct skill;
+            if (skill.tryParse(ask[i])) {
+                check = true;
+                skills << skill;
+            }
+        }
+        if (check) {
+            emit trigger_skills_got(reason, skills, optional);
+            setStatus(AskForTriggerOrder);
+        }
+    }
 }
 
 void Client::setMark(const QVariant &mark_var)
@@ -1920,11 +1980,14 @@ void Client::showCard(const QVariant &show_str)
 
 void Client::attachSkill(const QVariant &skill)
 {
-    if (!JsonUtils::isString(skill)) return;
+    JsonArray skills = skill.value<JsonArray>();
+    if (skills.size() != 2 || !JsonUtils::isStringArray(skills, 0, 1)) return;
 
-    QString skill_name = skill.toString();
-    Self->acquireSkill(skill_name);
-    emit skill_attached(skill_name, true);
+    QString who = skills[0].toString();
+    QString skill_name = skills[1].toString();
+    getPlayer(who)->acquireSkill(skill_name);
+    if (who == Self->objectName())
+        emit skill_attached(skill_name, true);
 }
 
 void Client::askForGuanxing(const QVariant &arg)
@@ -1960,22 +2023,21 @@ void Client::askForMoveCards(const QVariant &arg)
     JsonArray down = args[1].value<JsonArray>();
     QString reason = args[2].toString();
     QString func = args[3].toString();
-    QString skillName = args[4].toString();
-    bool moverestricted = args[5].toBool();
-    int min_num = args[6].toInt();
-    int max_num = args[7].toInt();
-    bool can_refuse = args[8].toBool();
+    bool moverestricted = args[4].toBool();
+    int min_num = args[5].toInt();
+    int max_num = args[6].toInt();
+    bool can_refuse = args[7].toBool();
 
     skill_position.clear();
-    if (args.size() >= 10 && JsonUtils::isString(args[9]))
-        skill_position = args[9].toString();
+    if (args.size() >= 9 && JsonUtils::isString(args[8]))
+        skill_position = args[8].toString();
+    skill_name = reason;
 
     QList<int> upcard_ids, downcard_ids;
     JsonUtils::tryParse(up, upcard_ids);
     JsonUtils::tryParse(down, downcard_ids);
     m_isDiscardActionRefusable = (func == "") ? (down.length() >= min_num) : false;
     m_canDiscardEquip = (min_num > 0) ? false : can_refuse;
-    skill_name = skillName;
 
     emit cardchoose(upcard_ids, downcard_ids, reason, func, moverestricted, min_num, max_num);
     setStatus(AskForMoveCards);
@@ -2176,6 +2238,42 @@ void Client::askForPlayerChosen(const QVariant &players)
     prompt_doc->setHtml(text);
 
     setStatus(AskForPlayerChoose);
+}
+
+void Client::askForExtraTargets(const QVariant &players)
+{
+    JsonArray args = players.value<JsonArray>();
+    if (args.size() < 4) return;
+    if (!JsonUtils::isString(args[1]) || !args[0].canConvert<JsonArray>() || !JsonUtils::isString(args[2]) || !JsonUtils::isString(args[3])) return;
+    JsonArray choices = args[0].value<JsonArray>();
+    if (choices.size() == 0) return;
+    skill_name = args[1].toString();
+    skill_to_invoke = args[2].toString();
+    players_to_choose.clear();
+    for (int i = 0; i < choices.size(); i++)
+        players_to_choose.push_back(choices[i].toString());
+    m_isDiscardActionRefusable = true;
+
+    skill_position.clear();
+    if (args.size() >= 5 && JsonUtils::isString(args[4]))
+        skill_position = args[4].toString();
+
+    QString text;
+    QString description = Sanguosha->translate(ClientInstance->skill_to_invoke);
+    QString prompt = args[3].toString();
+    if (!prompt.isEmpty()) {
+        QStringList texts = prompt.split(":");
+        text = setPromptList(texts);
+        if (prompt.startsWith("@") && !description.isEmpty() && description != skill_to_invoke)
+            text.append(tr("<br/> <b>Source</b>: %1<br/>").arg(description));
+    } else {
+        text = tr("Please choose a player");
+        if (!description.isEmpty() && description != skill_to_invoke)
+            text.append(tr("<br/> <b>Source</b>: %1<br/>").arg(description));
+    }
+    prompt_doc->setHtml(text);
+
+    setStatus(AskForExtraTargets);
 }
 
 void Client::globalCardChosen(const QVariant &ask_str)
@@ -2526,4 +2624,37 @@ void Client::setAvailableCards(const QVariant &pile)
     QList<int> drawPile;
     if (JsonUtils::tryParse(pile, drawPile))
         available_cards = drawPile;
+}
+
+void Client::setCardMapping(const QVariant &ask_str)
+{
+    JsonArray ask = ask_str.value<JsonArray>();
+    if (ask.size() == 2) {
+        int card_id = ask[0].toInt();
+        Player::Place place = static_cast<Player::Place>(ask.at(1).toInt());
+        place_map.insert(card_id, place == Player::DrawPileBottom ? Player::DrawPile : place);
+    }
+}
+
+Player::Place Client::getCardPlace(int card_id) const
+{
+    if (card_id < 0) return Player::PlaceUnknown;
+    return place_map.value(card_id);
+}
+
+void Client::setPromoteSkill(const QVariant &ask_str)
+{
+    PromoteStruct promote = PromoteStruct();
+    if (promote.tryParse(ask_str))
+        promote_skill = promote;
+}
+
+void Client::clearPromoteSkill()
+{
+    promote_skill = PromoteStruct();
+}
+
+PromoteStruct Client::getPromoteSkill() const
+{
+    return promote_skill;
 }

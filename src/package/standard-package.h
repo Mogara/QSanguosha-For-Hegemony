@@ -22,6 +22,7 @@
 #define _STANDARD_PACKAGE_H
 
 #include "package.h"
+#include "card.h"
 
 class StandardPackage : public Package {
     Q_OBJECT
@@ -51,6 +52,14 @@ public:
     QList<Card *> equipCards();
     void addEquipSkills();
     QList<Card *> trickCards();
+};
+
+class ShowMashu : public ShowDistanceCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ShowMashu();
 };
 
 #endif

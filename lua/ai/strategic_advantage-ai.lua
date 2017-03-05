@@ -140,8 +140,8 @@ function SmartAI:useCardDrowning(card, use)
 		if card:targetFilter(players, enemy, self.player) and not players:contains(enemy) and enemy:hasEquip()
 			and self:hasTrickEffective(card, enemy) and self:damageIsEffective(enemy, sgs.DamageStruct_Thunder, self.player, true) and self:canAttack(enemy)
 			and not self:getDamagedEffects(enemy, self.player) and not self:needToLoseHp(enemy, self.player) and not self:needToThrowArmor(enemy)
-			and not (enemy:hasArmorEffect("PeaceSpell") and (enemy:getHp() > 1 or self:needToLoseHp(enemy, self.player)))
-			and not (enemy:hasArmorEffect("Breastplate") and enemy:getHp() == 1) then
+			and not (self:hasArmorEffect(enemy, "PeaceSpell") and (enemy:getHp() > 1 or self:needToLoseHp(enemy, self.player)))
+			and not (enemy:hasArmorEffect("Breastplate", false) and enemy:getHp() == 1) then
 			local dangerous
 			local chained = {}
 			if enemy:isChained() then
@@ -201,7 +201,7 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 	if not self:damageIsEffective(self.player, sgs.DamageStruct_Thunder, effect.from) then return "damage" end
 	if (self:needToLoseHp(self.player, effect.from) or self:getDamagedEffects(self.player, effect.from)) and not dangerous then return "damage" end
 
-	if self.player:getHp() == 1 and not self.player:hasArmorEffect("Breastplate") then return "throw" end
+	if self.player:getHp() == 1 and not self.player:hasArmorEffect("Breastplate", false) then return "throw" end
 
 	if dangerous then return "throw" end
 
@@ -327,7 +327,7 @@ sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, kee
 			for _, p in sgs.qlist(targets) do
 				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
 					table.insert(friends, p)
-					if self:isWeak(p) or p:hasArmorEffect("Vine") then dangerous = true end
+					if self:isWeak(p) or self:hasArmorEffect(p, "Vine") then dangerous = true end
 				end
 			end
 		end
@@ -352,21 +352,21 @@ sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, kee
 				end
 			end
 		end
-		if to:hasArmorEffect("Vine") and #chained > 0 then dangerous = true end
-		if to:hasArmorEffect("Vine") and #enemies > 0 then good = true end
+		if self:hasArmorEffect(to, "Vine") and #chained > 0 then dangerous = true end
+		if self:hasArmorEffect(to, "Vine") and #enemies > 0 then good = true end
 		local friends = {}
 		if self:isFriend(to) then
 			for _, p in sgs.qlist(targets) do
 				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
 					table.insert(friends, p)
-					if self:isWeak(p) or p:hasArmorEffect("Vine") then dangerous = true end
+					if self:isWeak(p) or self:hasArmorEffect(p, "Vine") then dangerous = true end
 				end
 			end
 		end
 		if self:isEnemy(to) then
 			for _, p in sgs.qlist(targets) do
 				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
-					if self:isWeak(p) or p:hasArmorEffect("Vine") then good = true end
+					if self:isWeak(p) or self:hasArmorEffect(p, "Vine") then good = true end
 				end
 			end
 		end
@@ -611,14 +611,14 @@ function SmartAI:useCardFightTogether(card, use)
 					table.insert(bigs, p)
 					if p:objectName() == self.player:objectName() then isBig = true end
 				else
-					if not(p:hasArmorEffect("IronArmor") and not p:isChained()) then
+					if not(self:hasArmorEffect(p, "IronArmor") and not p:isChained()) then
 						table.insert(smalls, p)
 						if p:objectName() == self.player:objectName() then isSmall = true end
 					end
 				end
 			else
 				local kingdom
-				if not p:hasShownOneGeneral() and not(p:hasArmorEffect("IronArmor") and not p:isChained()) then
+				if not p:hasShownOneGeneral() and not(self:hasArmorEffect(p, "IronArmor") and not p:isChained()) then
 					if p:objectName() == self.player:objectName() then isSmall = true end
 					table.insert(smalls, p)
 					continue
@@ -631,7 +631,7 @@ function SmartAI:useCardFightTogether(card, use)
 					if p:objectName() == self.player:objectName() then isBig = true end
 					table.insert(bigs, p)
 				else
-					if not(p:hasArmorEffect("IronArmor") and not p:isChained()) then
+					if not(self:hasArmorEffect(p, "IronArmor") and not p:isChained()) then
 						if p:objectName() == self.player:objectName() then isSmall = true end
 						table.insert(smalls, p)
 					end
@@ -729,7 +729,7 @@ sgs.ai_nullification.FightTogether = function(self, card, from, to, positive, ke
 				return true, single
 			end
 		else
-			if self:isFriendWith(to) and to:hasArmorEffect("Vine") then
+			if self:isFriendWith(to) and self:hasArmorEffect(to, "Vine") then
 				for _, p in sgs.qlist(targets) do
 					if p:isChained() then ed = ed + 1 else no = no + 1 end
 				end

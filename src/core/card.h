@@ -149,8 +149,7 @@ public:
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     // @todo: the following two functions should be merged into one.
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self,
-        int &maxVotes) const;
+    virtual bool extratargetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool isAvailable(const Player *player) const;
 
     inline virtual const Card *getRealCard() const
@@ -208,6 +207,9 @@ public:
     virtual bool isTransferable() const;
     virtual void setTransferable(const bool transferbale);
 
+    virtual bool isVotes() const;
+    virtual void setVotes(const bool votes);
+
     virtual void setSkillPosition(const QString &position);
     virtual QString getSkillPosition() const;
 
@@ -219,6 +221,7 @@ protected:
     bool has_preact;
     bool can_recast;
     bool transferable;
+    bool votes;
     Suit m_suit;
     int m_number;
     int m_id;

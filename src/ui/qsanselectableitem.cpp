@@ -140,11 +140,9 @@ bool QSanSelectableItem::isMarkable() const
 
 void QSanSelectableItem::mark(bool marked)
 {
-    if (markable) {
-        if (this->marked != marked) {
-            this->marked = marked;
-            emit mark_changed();
-        }
+    if ((!marked && this->marked) || (markable && marked && !this->marked)) {
+        this->marked = marked;
+        emit mark_changed();
     }
 }
 

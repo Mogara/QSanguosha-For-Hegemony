@@ -181,6 +181,8 @@ void ClientPlayer::changePile(const QString &name, bool add, QList<int> card_ids
             qSort(piles["buqu"].begin(), piles["buqu"].end(), compareByNumber);
         }
     } else {
+        if (card_ids.isEmpty())
+            piles[name].clear();
         foreach (int card_id, card_ids) {
             if (piles[name].isEmpty()) break;
             if (piles[name].contains(Card::S_UNKNOWN_CARD_ID) && !piles[name].contains(card_id))

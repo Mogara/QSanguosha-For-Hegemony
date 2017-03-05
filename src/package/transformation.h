@@ -85,6 +85,15 @@ public:
     virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
+class WanweiCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE WanweiCard();
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
+};
+
 class SanyaoCard : public SkillCard
 {
     Q_OBJECT

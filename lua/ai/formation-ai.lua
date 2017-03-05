@@ -493,7 +493,6 @@ local function will_discard_zhendu(self)
 		if need_damage then return 3 end
 	elseif self:isEnemy(current) then
 		if current:getHp() == 1 and (not self:hasSkill("niepan", current) or current:getMark("@nirvana") < 1) then return 1 end
-		if current:getHp() == 1 then return 1 end
 		if need_damage or current:getHandcardNum() >= 2 then return -1 end
 		if getKnownCard(current, self.player, "Slash") == 0 and getCardsNum("Slash", current, self.player) < 0.5 then return 3.5 end
 	end
@@ -522,7 +521,7 @@ sgs.ai_use_priority.DragonPhoenix = 2.400
 function sgs.ai_weapon_value.DragonPhoenix(self, enemy, player)
 	local lordliubei = nil
 	for _, p in sgs.qlist(self.room:getAlivePlayers()) do
-		if p:hasShownSkill("zhangwu") then
+		if self:hasSkill("zhangwu", p) then
 			lordliubei = p
 			break
 		end

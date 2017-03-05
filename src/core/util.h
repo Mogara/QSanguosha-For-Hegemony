@@ -24,6 +24,8 @@
 struct lua_State;
 class QVariant;
 
+#include "structs.h"
+
 #include <QList>
 #include <QStringList>
 #include <QVariant>
@@ -48,6 +50,7 @@ QStringList IntList2StringList(const QList<int> &intlist);
 QList<int> StringList2IntList(const QStringList &stringlist);
 QVariantList IntList2VariantList(const QList<int> &intlist);
 QList<int> VariantList2IntList(const QVariantList &variantlist);
+QList<TriggerStruct> VariantList2TriggerStructList(const QVariantList &variantlist);
 
 bool isNormalGameMode(const QString &mode);
 

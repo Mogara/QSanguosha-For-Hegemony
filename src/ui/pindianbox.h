@@ -31,6 +31,7 @@ public:
     virtual QRectF boundingRect() const;
     virtual void doPindianAnimation(const QString &who);
     void playSuccess(int type, int index);
+    void alterPindian(const QString &who, int number, int card_id);
     inline QString getRequestor()
     {
         return zhuge;

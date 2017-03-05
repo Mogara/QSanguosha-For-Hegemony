@@ -40,7 +40,6 @@
 #include <QPushButton>
 #include <QMenu>
 #include <QFile>
-#include <QToolTip>
 
 
 using namespace QSanProtocol;
@@ -69,10 +68,13 @@ Photo::Photo() : PlayerCardContainer()
     _m_skillNameItem = new QGraphicsPixmapItem(_m_groupMain);
 
     emotion_item = new Sprite(_m_groupMain);
-
-    _createBattleArrayAnimations();
+#ifndef Q_OS_ANDROID
     _createChainAnimation();
+#endif
     _createControls();
+
+    connect(_m_avatarIcon, &GraphicsPixmapHoverItem::skin_changing_finished, this, &Photo::onSkinChangingFinished);
+    connect(_m_smallAvatarIcon, &GraphicsPixmapHoverItem::skin_changing_finished, this, &Photo::onSkinChangingFinished);
 }
 
 Photo::~Photo()
@@ -124,6 +126,7 @@ void Photo::repaintAll()
     QStringList kingdoms = Sanguosha->getKingdoms();
     kingdoms.removeAll("god");
     foreach (const QString &kingdom, kingdoms) {
+        if (!_m_frameBorders[kingdom]) continue;
         _m_frameBorders[kingdom]->setSize(QSize(G_PHOTO_LAYOUT.m_normalWidth * 1.2, G_PHOTO_LAYOUT.m_normalHeight * 1.2));
         _m_frameBorders[kingdom]->setPos(- G_PHOTO_LAYOUT.m_normalWidth * 0.1, - G_PHOTO_LAYOUT.m_normalHeight * 0.1);
         double scale = G_ROOM_LAYOUT.scale;
@@ -250,6 +253,9 @@ void Photo::updateSmallAvatar()
             QString(QSanRoomSkin::S_SKIN_KEY_GENERAL_CIRCLE_IMAGE).arg(_m_layout->m_circleImageSize),
             _getAvatarParent());
         _m_secondaryAvatarArea->setToolTip(m_player->getDeputySkillDescription());
+
+        _createAvatarAnimations(general->objectName(), false, _m_layout->m_secondaryAvatarArea);
+
         QString name = Sanguosha->translate("&" + general->objectName());
         if (name.startsWith("&"))
             name = Sanguosha->translate(general->objectName());
@@ -377,48 +383,60 @@ QGraphicsItem *Photo::getMouseClickReceiver()
     return this;
 }
 
-void Photo::_createBattleArrayAnimations()
+void Photo::_createBattleArrayAnimations(QString &kingdom)
 {
-    QStringList kingdoms = Sanguosha->getKingdoms();
-    kingdoms.removeAll("god");
-    foreach (const QString &kingdom, kingdoms) {
-        _m_frameBorders[kingdom] = new PixmapAnimation();
-        _m_frameBorders[kingdom]->setZValue(30000);
-        _m_roleBorders[kingdom] = new PixmapAnimation();
-        _m_roleBorders[kingdom]->setZValue(30000);
-        _m_frameBorders[kingdom]->setParentItem(_getFocusFrameParent());
-        _m_roleBorders[kingdom]->setParentItem(_getRoleComboBoxParent());
-        _m_frameBorders[kingdom]->setSize(QSize(G_PHOTO_LAYOUT.m_normalWidth * 1.2, G_PHOTO_LAYOUT.m_normalHeight * 1.2));
-        _m_frameBorders[kingdom]->setPath(QString("image/kingdom/battlearray/small/%1/").arg(kingdom));
-        _m_roleBorders[kingdom]->setPath(QString("image/kingdom/battlearray/roles/%1/").arg(kingdom));
-        _m_frameBorders[kingdom]->setPlayTime(2000);
-        _m_roleBorders[kingdom]->setPlayTime(2000);
-        if (!_m_frameBorders[kingdom]->valid()) {
-            delete _m_frameBorders[kingdom];
-            delete _m_roleBorders[kingdom];
-            _m_frameBorders[kingdom] = NULL;
-            _m_roleBorders[kingdom] = NULL;
-            continue;
-        }
-        _m_frameBorders[kingdom]->setPos(- G_PHOTO_LAYOUT.m_normalWidth * 0.1, - G_PHOTO_LAYOUT.m_normalHeight * 0.1);
-        double scale = G_ROOM_LAYOUT.scale;
-        QPixmap pix;
-        pix.load("image/system/roles/careerist.png");
-        int w = pix.width() * scale;
-        int h = pix.height() * scale;
-        _m_roleBorders[kingdom]->setPos(G_PHOTO_LAYOUT.m_roleComboBoxPos
-                                    - QPoint((_m_roleBorders[kingdom]->boundingRect().width() - w) / 2, (_m_roleBorders[kingdom]->boundingRect().height() - h / 2) / 2));
-        _m_frameBorders[kingdom]->setHideonStop(true);
-        _m_roleBorders[kingdom]->setHideonStop(true);
-        _m_frameBorders[kingdom]->hide();
-        _m_roleBorders[kingdom]->hide();
+    if (_m_frameBorders[kingdom] && _m_roleBorders[kingdom]) return;
+    _m_frameBorders[kingdom] = new PixmapAnimation();
+    _m_frameBorders[kingdom]->setZValue(30000);
+    _m_roleBorders[kingdom] = new PixmapAnimation();
+    _m_roleBorders[kingdom]->setZValue(30000);
+    _m_frameBorders[kingdom]->setParentItem(_getFocusFrameParent());
+    _m_roleBorders[kingdom]->setParentItem(_getRoleComboBoxParent());
+    _m_frameBorders[kingdom]->setSize(QSize(G_PHOTO_LAYOUT.m_normalWidth * 1.2, G_PHOTO_LAYOUT.m_normalHeight * 1.2));
+    _m_frameBorders[kingdom]->setPath(QString("image/kingdom/battlearray/small/%1/").arg(kingdom));
+    _m_roleBorders[kingdom]->setPath(QString("image/kingdom/battlearray/roles/%1/").arg(kingdom));
+    _m_frameBorders[kingdom]->setPlayTime(2000);
+    _m_roleBorders[kingdom]->setPlayTime(2000);
+    if (!_m_frameBorders[kingdom]->valid() || !_m_roleBorders[kingdom]->valid()) {
+        delete _m_frameBorders[kingdom];
+        delete _m_roleBorders[kingdom];
+        _m_frameBorders[kingdom] = NULL;
+        _m_roleBorders[kingdom] = NULL;
+        return;
     }
+    _m_frameBorders[kingdom]->setPos(- G_PHOTO_LAYOUT.m_normalWidth * 0.1, - G_PHOTO_LAYOUT.m_normalHeight * 0.1);
+    double scale = G_ROOM_LAYOUT.scale;
+    QPixmap pix;
+    pix.load("image/system/roles/careerist.png");
+    int w = pix.width() * scale;
+    int h = pix.height() * scale;
+    _m_roleBorders[kingdom]->setPos(G_PHOTO_LAYOUT.m_roleComboBoxPos
+                                - QPoint((_m_roleBorders[kingdom]->boundingRect().width() - w) / 2, (_m_roleBorders[kingdom]->boundingRect().height() - h / 2) / 2));
+    _m_frameBorders[kingdom]->setHideonStop(true);
+    _m_roleBorders[kingdom]->setHideonStop(true);
+    _m_frameBorders[kingdom]->hide();
+    _m_roleBorders[kingdom]->hide();
+
 }
 
 void Photo::playBattleArrayAnimations()
 {
+
     QString kingdom = getPlayer()->getKingdom();
+    _createBattleArrayAnimations(kingdom);
     _m_frameBorders[kingdom]->show();
     _m_frameBorders[kingdom]->start(true, 30);
     _m_roleBorders[kingdom]->preStart();
+}
+
+void Photo::onSkinChangingFinished()
+{
+    QString generalName;
+    if (sender() == _m_avatarIcon) {
+        generalName = m_player->getGeneralName();
+        _createAvatarAnimations(generalName, true, _m_layout->m_avatarArea);
+    } else {
+        generalName = m_player->getGeneral2Name();
+        _createAvatarAnimations(generalName, false, _m_layout->m_secondaryAvatarArea);
+    }
 }

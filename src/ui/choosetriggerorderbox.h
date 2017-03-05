@@ -23,6 +23,7 @@
 
 #include <QGraphicsObject>
 
+#include "structs.h"
 #include "graphicsbox.h"
 
 class Button;
@@ -54,9 +55,12 @@ protected:
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
     static QString displayedTextOf(const QString &str);
+    static QString displayedTextOf(const QString &skillName, const QString &target, int time);
 
 private:
-    TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skillStr, const int width);
+    //TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skillStr, const int width);
+    TriggerOptionButton(QGraphicsObject *parent, const QString &skill_owner, const QString &skill_name, int index,
+                        const QString &target, const QString &position, int time, const int width);
     bool isPreferentialSkillOf(const TriggerOptionButton *other) const;
 
     int getSkinId(const QString &playerName, const QString &generalName) const;
@@ -66,6 +70,7 @@ private:
     QString m_text;
     QString playerName;
     QString position;
+    int index;
     int width;
 };
 
@@ -101,6 +106,7 @@ public:
 
     virtual QRectF boundingRect() const;
     void chooseOption(const QString &reason, const QStringList &options, const bool optional);
+    void chooseOption(const QString &reason, QList<TriggerStruct> skills, const bool optional);
     void clear();
 
 public slots:
@@ -115,6 +121,7 @@ private:
     static const int interval;
     static const int m_leftBlankWidth;
 
+    QList<TriggerStruct> skills;
     QStringList options;
     bool optional;
     int m_minimumWidth;

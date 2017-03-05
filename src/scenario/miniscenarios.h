@@ -38,7 +38,7 @@ public:
     virtual int getPlayerCount() const;
     QStringList existedGenerals() const;
 
-    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who, const TriggerStruct &info) const;
 
     void addNPC(QString feature);
     void setOptions(QStringList option);

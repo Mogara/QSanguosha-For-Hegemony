@@ -138,6 +138,7 @@ public:
     // @todo: consider making this const Card *
     Card *getCard(int cardId);
     WrappedCard *getWrappedCard(int cardId);
+    Player::Place getCardPlace(int cardId);
 
     //************************************
     // Method:    getRandomGenerals
@@ -196,10 +197,12 @@ public:
 
     const ProhibitSkill *isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
     const FixCardSkill *isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const;
-    const ViewHasSkill *ViewHas(const Player *player, const QString &skill_name, const QString &flag) const;
+    QList<const ViewHasSkill *> ViewHas(const Player *player, const QString &skill_name, const QString &flag) const;
+    QList<const ViewHasSkill *> ViewHasArmorEffect(const Player *player) const;
     int correctDistance(const Player *from, const Player *to) const;
     int correctMaxCards(const ServerPlayer *target, bool fixed = false, MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     int correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Card *card) const;
+    bool correctCardTarget(const Player *from, const Player *to, const Card *card) const;
     int correctAttackRange(const Player *target, bool include_weapon = true, bool fixed = false) const;
 
     void registerRoom(QObject *room);
@@ -214,7 +217,7 @@ public:
     bool isGeneralHidden(const QString &general_name) const;
 
     TransferSkill *getTransfer() const;
-    QList<Card *> getCards() const;
+    QList<const Card *> getCards() const;
 
 private:
     void _loadMiniScenarios();

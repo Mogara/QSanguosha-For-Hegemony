@@ -17,11 +17,10 @@ const int GuhuoBox::interval = 5;
 
 const int GuhuoBox::titleWidth = 22;
 
-GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
+GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag)
 {
     this->skill_name = skillname;
     this->flags = flag;
-    this->play_only = playonly;
     title = QString("%1 %2").arg(Sanguosha->translate(skill_name)).arg(tr("Please choose:"));
     cardButtonSize = QSize(G_COMMON_LAYOUT.m_cardNormalWidth, G_COMMON_LAYOUT.m_cardNormalHeight);
 }
@@ -40,27 +39,18 @@ QRectF GuhuoBox::boundingRect() const
     return QRectF(0, 0, width, height);
 }
 
-bool GuhuoBox::isButtonEnable(const QString &card) const
-{
-    QString allowed_list = Self->property("guhuo_box_allowed_elemet").toString();
-    if (!allowed_list.isEmpty() && !allowed_list.split("+").contains(card))
-        return false;
-
-    Card *ca = Sanguosha->cloneCard(card);
-    ca->setCanRecast(false);
-    ca->deleteLater();
-    return ca->isAvailable(Self);
-
-}
-
 void GuhuoBox::popup()
 {
-    if (RoomSceneInstance->current_guhuo_box != NULL) {
+    if (RoomSceneInstance->current_guhuo_box != NULL)
         RoomSceneInstance->current_guhuo_box->clear();
-    }
+
     RoomSceneInstance->getDasboard()->unselectAll();
     RoomSceneInstance->getDasboard()->stopPending();
-    if (play_only && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
+    if (flags.startsWith("!") && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+        emit onButtonClick();
+        return;
+    }
+    if (!flags.startsWith("!") && !flags.endsWith("!") && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
         emit onButtonClick();
         return;
     }
@@ -72,13 +62,12 @@ void GuhuoBox::popup()
     maxrow = 0;
     scale = 7;
     titles.clear();
-    QStringList names1, names2, names3, names4;
+    QStringList names1, names2, names3, names4, all;
 
-    QList<Card *> cards = Sanguosha->getCards();
+    QList<const Card *> cards = Sanguosha->getCards();
     if (flags.contains("b")) {
         foreach (const Card *card, cards) {
-            if (card->isKindOf("BasicCard") && !names1.contains(card->objectName()) && isButtonEnable(card->objectName())
-                && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
+            if (card->isKindOf("BasicCard") && !names1.contains(card->objectName()) && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
                 names1 << card->objectName();
             }
         }
@@ -90,10 +79,12 @@ void GuhuoBox::popup()
             ++maxrow;
         }
     }
+    all = names1;
+
     if (flags.contains("t")) {
         foreach (const Card *card, cards) {
             if (card->isNDTrick() && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
-                if (names2.contains(card->objectName()) || names3.contains(card->objectName()) || !isButtonEnable(card->objectName()))
+                if (names2.contains(card->objectName()) || names3.contains(card->objectName()))
                     continue;
 
                 if (card->inherits("SingleTargetTrick"))
@@ -118,10 +109,12 @@ void GuhuoBox::popup()
             ++maxrow;
         }
     }
+    all << names2;
+    all << names3;
+
     if (flags.contains("d")) {
         foreach (const Card *card, cards) {
-            if (!card->isNDTrick() && card->isKindOf("TrickCard") && !names4.contains(card->objectName()) && isButtonEnable(card->objectName())
-                && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
+            if (!card->isNDTrick() && card->isKindOf("TrickCard") && !names4.contains(card->objectName()) && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
                 names4 << card->objectName();
             }
         }
@@ -133,10 +126,16 @@ void GuhuoBox::popup()
             ++maxrow;
         }
     }
+    all << names4;
 
     if (maxcardcount == 0) {
         emit onButtonClick();
         return;
+    }
+    if (all.length() == 1 && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
+        Self->tag.remove(skill_name);
+        Self->tag[skill_name] = all.first();
+        emit onButtonClick();
     }
 
     for (int i = 12; i > 7; i--) {

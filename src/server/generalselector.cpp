@@ -45,16 +45,33 @@ GeneralSelector::GeneralSelector()
     loadPairTable();
 }
 
-QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringList &candidates)
+QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringList &candidates, bool assign_kingdom)
 {
     QStringList generals = candidates;
+    QString kingdom;
+    if (assign_kingdom) {
+        foreach (QString name, candidates) {
+            if (kingdom.isEmpty())
+                kingdom = Sanguosha->getGeneral(name)->getKingdom();
+            else if (kingdom != Sanguosha->getGeneral(name)->getKingdom()) {
+                kingdom = QString();
+                break;
+            }
+        }
+    }
+
     foreach (QString name, candidates) {
         QStringList subs = Sanguosha->getConvertGenerals(name);
         if (!subs.isEmpty()) {
             generals.removeOne(name);
             subs << name;
             qShuffle(subs);
-            generals << subs.first();
+            foreach (QString name, subs) {
+                if (kingdom.isEmpty() || Sanguosha->getGeneral(name)->getKingdom() == kingdom) {
+                    generals << name;
+                    break;
+                }
+            }
         }
     }
     if (m_privatePairValueTable[player].isEmpty())

@@ -140,6 +140,17 @@ QList<int> VariantList2IntList(const QVariantList &variantlist)
     return intlist;
 }
 
+QList<TriggerStruct> VariantList2TriggerStructList(const QVariantList &variantlist)
+{
+    QList<TriggerStruct> list;
+    foreach (QVariant n, variantlist) {
+        TriggerStruct skill;
+        if (skill.tryParse(n))
+            list << skill;
+    }
+    return list;
+}
+
 bool isNormalGameMode(const QString &mode)
 {
     return mode.endsWith("p") || mode.endsWith("pd") || mode.endsWith("pz");

@@ -29,7 +29,7 @@ class SceneRule : public GameRule
 public:
     SceneRule(QObject *parent);
     virtual int getPriority() const;
-    virtual bool effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual bool effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who, const TriggerStruct &info) const;
 };
 
 #endif // SCENERULE_H

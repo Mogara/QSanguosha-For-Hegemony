@@ -129,6 +129,8 @@ public:
     // judgement!!! It will not accurately reflect the real reason.
     QString m_skillName; // skill that triggers movement of the cards, such as "longdang", "dimeng"
     QString m_eventName; // additional arg such as "lebusishu" on top of "S_REASON_JUDGE"
+    QString m_position; // additional arg such as "head" or "deputy"
+    QString m_cardString; // if the card moved by using/responding, then it has this
     inline CardMoveReason()
     {
         m_reason = S_REASON_UNKNOWN;
@@ -154,6 +156,16 @@ public:
         m_targetId = targetId;
         m_skillName = skillName;
         m_eventName = eventName;
+    }
+
+    inline CardMoveReason(int moveReason, QString playerId, QString targetId, QString skillName, QString eventName, QString position)
+    {
+        m_reason = moveReason;
+        m_playerId = playerId;
+        m_targetId = targetId;
+        m_skillName = skillName;
+        m_eventName = eventName;
+        m_position = position;
     }
 
     bool tryParse(const QVariant &);
@@ -204,6 +216,7 @@ public:
     static const int S_REASON_JUDGE = 0x28;             // show a card from drawpile for judge
     static const int S_REASON_PREVIEW = 0x38;           // Not done yet, plan for view some cards for self only(guanxing yiji miji)
     static const int S_REASON_DEMONSTRATE = 0x48;       // show a card which copy one to move to table
+    static const int S_REASON_DELAYTRICK_EFFECT = 0x58;    //delay trick move to table and start judge
 
     //subcategory of transfer
     static const int S_REASON_SWAP = 0x19;              // exchange card for two players
@@ -530,6 +543,7 @@ enum TriggerEvent
 
     DrawNCards,
     AfterDrawNCards,
+    DrawPileChanged,
 
     PreHpRecover,
     HpRecover,
@@ -609,6 +623,7 @@ enum TriggerEvent
 
     GeneralShown, // For Official Hegemony mode
     GeneralHidden, // For Official Hegemony mode
+    GeneralStartRemove, // For Official Hegemony mode
     GeneralRemoved, // For Official Hegemony mode
 
     DFDebut, // for Dragon Phoenix Debut
@@ -640,6 +655,40 @@ struct AskForMoveCardsStruct
     bool is_success;
 };
 
+struct TriggerStruct
+{
+    TriggerStruct();
+    TriggerStruct(const QString &skill_name);
+    TriggerStruct(const QString &skill_name, ServerPlayer *invoker);
+    TriggerStruct(const QString &skill_name, ServerPlayer *invoker, ServerPlayer *skill_owner);
+    TriggerStruct(const QString &skill_name, ServerPlayer *invoker, QList<ServerPlayer *> targets);
+
+    QVariant toVariant() const;
+    bool tryParse(const QVariant &trigger);
+
+    QString skill_name;
+    QString invoker;
+    QStringList targets;
+    QString skill_owner;
+    QString skill_position;
+    int times;
+    QString result_target;
+};
+
+struct PromoteStruct
+{
+    PromoteStruct();
+    PromoteStruct(const QString &skill_name, const QString &pattern, CardUseStruct::CardUseReason reason, const QString &skill_position);
+
+    QVariant toVariant() const;
+    bool tryParse(const QVariant &ask_str);
+
+    QString skill_name;
+    QString pattern;
+    CardUseStruct::CardUseReason reason;
+    QString skill_position;
+};
+
 Q_DECLARE_METATYPE(DamageStruct)
 Q_DECLARE_METATYPE(CardEffectStruct)
 Q_DECLARE_METATYPE(SlashEffectStruct)
@@ -657,5 +706,7 @@ Q_DECLARE_METATYPE(ServerPlayer *)
 Q_DECLARE_METATYPE(JudgeStruct *)
 Q_DECLARE_METATYPE(PindianStruct *)
 Q_DECLARE_METATYPE(AskForMoveCardsStruct)
+Q_DECLARE_METATYPE(TriggerStruct)
+Q_DECLARE_METATYPE(PromoteStruct)
 #endif
 

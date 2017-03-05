@@ -22,8 +22,8 @@ function SmartAI:canAttack(enemy, attacker, nature)
 	attacker = attacker or self.player
 	nature = nature or sgs.DamageStruct_Normal
 	local damage = 1
-	if nature == sgs.DamageStruct_Fire and not enemy:hasArmorEffect("SilverLion") then
-		if enemy:hasArmorEffect("Vine") then damage = damage + 1 end
+	if nature == sgs.DamageStruct_Fire and not self:hasArmorEffect(enemy, "SilverLion") then
+		if self:hasArmorEffect(enemy, "Vine") then damage = damage + 1 end
 		if enemy:getMark("@gale") > 0 then damage = damage + 1 end
 	end
 	if #self.enemies == 1 then return true end
@@ -211,7 +211,7 @@ function sgs.getDefenseSlash(player, self)
 		end
 	end
 
-	if player:hasArmorEffect("Vine") and not IgnoreArmor(attacker, player) and has_fire_slash then
+	if self:hasArmorEffect(player, "Vine") and not IgnoreArmor(attacker, player) and has_fire_slash then
 		defense = defense - 0.6
 	end
 
@@ -278,7 +278,7 @@ function SmartAI:slashProhibit(card, enemy, from)
 	end
 
 	if self:isFriend(enemy, from) then
-		if (card:isKindOf("FireSlash") or from:hasWeapon("Fan")) and enemy:hasArmorEffect("Vine")
+		if (card:isKindOf("FireSlash") or from:hasWeapon("Fan")) and self:hasArmorEffect(enemy, "Vine")
 			and not (enemy:isChained() and self:isGoodChainTarget(enemy, from, nil, nil, card)) then return true end
 		if enemy:isChained() and card:isKindOf("NatureSlash") and self:slashIsEffective(card, enemy, from)
 			and not self:isGoodChainTarget(enemy, from, nature, nil, card) then return true end
@@ -345,7 +345,7 @@ function SmartAI:slashIsEffective(slash, to, from, ignore_armor)
 		end
 	end
 	if from:hasWeapon("IceSword") and not to:isNude() then damageIsEffective = true end
-	if to:hasArmorEffect("PeaceSpell") and nature ~= sgs.DamageStruct_Normal and not ignore_armor then
+	if self:hasArmorEffect(to, "PeaceSpell") and nature ~= sgs.DamageStruct_Normal and not ignore_armor then
 		if not self:isFriend(from, to) and from:hasWeapon("IceSword") then
 			damageIsEffective = true
 		else
@@ -361,10 +361,10 @@ function SmartAI:slashIsEffective(slash, to, from, ignore_armor)
 	end
 	if not damageIsEffective then return false end
 	
-	if not ignore_armor and  to:hasArmorEffect("IronArmor") and slash:isKindOf("FireSlash") then return false end
+	if not ignore_armor and  self:hasArmorEffect(to, "IronArmor") and slash:isKindOf("FireSlash") then return false end
 
 	if not (ignore_armor or IgnoreArmor(from, to)) then
-		if to:hasArmorEffect("RenwangShield") and slash:isBlack() then
+		if self:hasArmorEffect(to, "RenwangShield") and slash:isBlack() then
 			if (from:hasWeapon("DragonPhoenix") or from:hasWeapon("DoubleSword") and (from:isMale() and to:isFemale() or from:isFemale() or to:isMale()))
 				and (to:getCardCount(true) == 1 or #self:getEnemies(from) == 1) then
 			else
@@ -372,7 +372,7 @@ function SmartAI:slashIsEffective(slash, to, from, ignore_armor)
 			end
 		end
 
-		if to:hasArmorEffect("Vine") and not slash:isKindOf("NatureSlash") then
+		if self:hasArmorEffect(to, "Vine") and not slash:isKindOf("NatureSlash") then
 			if (from:hasWeapon("DragonPhoenix") or from:hasWeapon("DoubleSword") and (from:isMale() and to:isFemale() or from:isFemale() or to:isMale()))
 				and (to:getCardCount(true) == 1 or #self:getEnemies(from) == 1) then
 			else
@@ -968,7 +968,7 @@ function SmartAI:useCardPeach(card, use)
 	if self.player:hasSkill("rende") and self:findFriendsByType(sgs.Friend_Draw) then return end
 
 	if not use.isDummy then
-		if self.player:hasArmorEffect("SilverLion") then
+		if self.player:hasArmorEffect("SilverLion", false) then
 		for _, card in sgs.qlist(self.player:getHandcards()) do
 			if card:isKindOf("Armor") and self:evaluateArmor(card) > 0 then
 				use.card = card
@@ -1163,13 +1163,12 @@ sgs.ai_skill_cardask["double-sword-card"] = function(self, data, pattern, target
 end
 
 function sgs.ai_weapon_value.QinggangSword(self, enemy)
-	if enemy and enemy:getArmor() and enemy:hasArmorEffect(enemy:getArmor():objectName()) then return 3 end
+	if enemy and enemy:hasShownArmorEffect() then return 3 end
 end
 
 function sgs.ai_slash_weaponfilter.QinggangSword(self, enemy, player)
 	if player:distanceTo(enemy) > math.max(sgs.weapon_range.QinggangSword, player:getAttackRange()) then return end
-	if enemy:getArmor() and enemy:hasArmorEffect(enemy:getArmor():objectName())
-		and (sgs.card_lack[enemy:objectName()] == 1 or getCardsNum("Jink", enemy, self.player) < 1) then
+	if enemy:hasShownArmorEffect() and (sgs.card_lack[enemy:objectName()] == 1 or getCardsNum("Jink", enemy, self.player) < 1) then
 		return true
 	end
 end
@@ -1184,11 +1183,11 @@ sgs.ai_skill_invoke.IceSword = function(self, data)
 		elseif target:getLostHp() < 1 then return false end
 		return true
 	else
-		if target:hasArmorEffect("PeaceSpell") and damage.nature ~= sgs.DamageStruct_Normal then return true end
+		if self:hasArmorEffect(target, "PeaceSpell") and damage.nature ~= sgs.DamageStruct_Normal then return true end
 		if self:isWeak(target) then return false end
 		if damage.damage > 1 or self:hasHeavySlashDamage(self.player, damage.card, target) then return false end
 		if target:hasShownSkill("lirang") and #self:getFriendsNoself(target) > 0 then return false end
-		if target:getArmor() and self:evaluateArmor(target:getArmor(), target) > 3 and not (target:hasArmorEffect("SilverLion") and target:isWounded()) then return true end
+		if target:getArmor() and self:evaluateArmor(target:getArmor(), target) > 3 and not (target:hasArmorEffect("SilverLion", false) and target:isWounded()) then return true end
 		local num = target:getHandcardNum()
 		if self.player:hasSkill("tieqi") or self:canLiegong(target, self.player) then return false end
 		if target:hasShownSkill("tuntian") and target:getPhase() == sgs.Player_NotActive then return false end
@@ -1199,13 +1198,13 @@ sgs.ai_skill_invoke.IceSword = function(self, data)
 end
 
 function sgs.ai_slash_weaponfilter.GudingBlade(self, to)
-	return to:isKongcheng() and not to:hasArmorEffect("SilverLion")
+	return to:isKongcheng() and not self:hasArmorEffect(to, "SilverLion")
 end
 
 function sgs.ai_weapon_value.GudingBlade(self, enemy)
 	if not enemy then return end
 	local value = 2
-	if enemy:getHandcardNum() < 1 and not enemy:hasArmorEffect("SilverLion") then value = 4 end
+	if enemy:getHandcardNum() < 1 and not self:hasArmorEffect(enemy, "SilverLion") then value = 4 end
 	return value
 end
 
@@ -1478,7 +1477,7 @@ end
 
 function sgs.ai_slash_weaponfilter.Fan(self, to, player)
 	return player:distanceTo(to) <= math.max(sgs.weapon_range.Fan, player:getAttackRange())
-		and to:hasArmorEffect("Vine")
+		and self:hasArmorEffect(to, "Vine")
 end
 
 sgs.ai_skill_invoke.KylinBow = function(self, data)
@@ -1542,7 +1541,7 @@ function sgs.ai_armor_value.SilverLion(player, self)
 		end
 	end
 	if self.player:isWounded() and not self.player:getArmor() then return 9 end
-	if self.player:isWounded() and self:getCardsNum("Armor", "h") >= 2 and not self.player:hasArmorEffect("SilverLion") then return 8 end
+	if self.player:isWounded() and self:getCardsNum("Armor", "h") >= 2 and not self.player:hasArmorEffect("SilverLion", false) then return 8 end
 	return 1
 end
 
@@ -3140,7 +3139,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 		if lightning and canRetrial then return silverlion end
 		if self.player:isChained() then
 			for _, friend in ipairs(self.friends) do
-				if friend:hasArmorEffect("Vine") and friend:isChained() then
+				if self:hasArmorEffect(friend, "Vine") and friend:isChained() then
 					return silverlion
 				end
 			end
@@ -3260,7 +3259,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 			local range_fix = current_range - 3
 			local FFFslash = self:getCard("FireSlash")
 			for _, enemy in ipairs(self.enemies) do
-				if (enemy:hasArmorEffect("Vine") or enemy:getMark("@gale") > 0) and FFFslash and self:slashIsEffective(FFFslash, enemy) and
+				if (self:hasArmorEffect(enemy, "Vine") or enemy:getMark("@gale") > 0) and FFFslash and self:slashIsEffective(FFFslash, enemy) and
 					self.player:getCardCount(true) >= 3 and self.player:canSlash(enemy, FFFslash, true, range_fix) then
 					return axe
 				elseif self:getCardsNum("Analeptic") > 0 and self.player:getCardCount(true) >= 4 and

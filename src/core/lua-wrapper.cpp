@@ -22,10 +22,7 @@
 #include "util.h"
 
 LuaTriggerSkill::LuaTriggerSkill(const char *name, Frequency frequency, const char *limit_mark)
-    : TriggerSkill(name), can_trigger(0), on_cost(0),
-    on_effect(0), priority(3),
-    on_turn_broken(0), on_record(0)
-
+    : TriggerSkill(name), can_trigger(0), on_cost(0), on_effect(0), priority(3), on_turn_broken(0), on_record(0)
 {
     this->frequency = frequency;
     this->limit_mark = limit_mark;
@@ -71,7 +68,7 @@ LuaFixCardSkill::LuaFixCardSkill(const char *name)
 
 LuaViewAsSkill::LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile, const char *limit_mark)
     : ViewAsSkill(name), view_filter(0), view_as(0),
-    enabled_at_play(0), enabled_at_response(0), enabled_at_nullification(0), in_pile(0)
+    enabled_at_play(0), enabled_at_response(0), enabled_at_nullification(0), in_pile(0), get_guhuo(0)
 {
     this->response_pattern = response_pattern;
     this->response_or_use = response_or_use;
@@ -108,7 +105,7 @@ LuaMaxCardsSkill::LuaMaxCardsSkill(const char *name)
 }
 
 LuaTargetModSkill::LuaTargetModSkill(const char *name, const char *pattern)
-    : TargetModSkill(name), residue_func(0), distance_limit_func(0), extra_target_func(0)
+    : TargetModSkill(name), residue_func(0), distance_limit_func(0), extra_target_func(0), check_extra_func(0), audio_index_func(0)
 {
     this->pattern = pattern;
 }
@@ -159,6 +156,7 @@ LuaSkillCard *LuaSkillCard::clone() const
     new_card->extra_cost = extra_cost;
 
     new_card->mute = mute;
+    new_card->votes = votes;
 
     return new_card;
 }
@@ -393,7 +391,7 @@ LuaSceneRule::LuaSceneRule(LuaScenario *parent, TriggerSkill *t)
     events.append(origin->getTriggerEvents());
 }
 
-bool LuaSceneRule::effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+bool LuaSceneRule::effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who, const TriggerStruct &info) const
 {
-    return origin->effect(event, room, player, data, ask_who);
+    return origin->effect(event, room, player, data, ask_who, info);
 }

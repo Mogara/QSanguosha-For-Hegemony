@@ -1405,10 +1405,12 @@ function sgs.getDefense(player)
 	local defense = math.min(hp * 2 + player:getHandcardNum(), hp * 3)
 	local hasEightDiagram = false
 	if player:getArmor() and player:getArmor():isKindOf("EightDiagram") then hasEightDiagram = true end
-	local skill = sgs.Sanguosha:ViewHas(player, "EightDiagram", "armor")
-	if skill and player:hasShownSkill(skill:objectName()) then hasEightDiagram = true end
+	local skills = sgs.Sanguosha:ViewHas(player, "EightDiagram", "armor")
+	for _, skill in sgs.qlist(skills) do
+		if player:hasShownSkill(skill) then hasEightDiagram = true end
+	end
 
-	if player:getArmor() and player:hasArmorEffect(player:getArmor():objectName()) or hasEightDiagram then defense = defense + 2 end
+	if player:hasShownArmorEffect() then defense = defense + 2 end
 	if player:getDefensiveHorse() then defense = defense + 0.5 end
 
 	if player:hasTreasure("JadeSeal") then defense = defense + 2 end
@@ -1844,7 +1846,7 @@ function SmartAI:adjustUsePriority(card, v)
 				v = v + 0.05
 				if card:isKindOf("FireSlash") then
 					for _, enemy in ipairs(self.enemies) do
-						if enemy:hasArmorEffect("Vine") or enemy:getMark("@gale") > 0 then v = v + 0.07 break end
+						if self:hasArmorEffect(enemy, "Vine") or enemy:getMark("@gale") > 0 then v = v + 0.07 break end
 					end
 				elseif card:isKindOf("ThunderSlash") then
 					for _, enemy in ipairs(self.enemies) do
@@ -2347,7 +2349,7 @@ function getTrickIntention(trick_class, target)
 		if trick_class == "Snatch" or trick_class == "Dismantlement" then
 			local judgelist = target:getCards("j")
 			if not judgelist or judgelist:isEmpty() then
-				if not target:hasArmorEffect("SilverLion") or not target:isWounded() then
+				if not target:hasArmorEffect("SilverLion", false) or not target:isWounded() then
 					return 80
 				end
 			end
@@ -2587,7 +2589,7 @@ function SmartAI:filterEvent(event, player, data)
 						sgs.ai_NeedPeach[p:objectName()] = damage.damage + 1 - p:getHp()
 					elseif p:objectName() ~= damage.to:objectName() and p:isChained() and self:damageIsEffective(p, damage.nature, damage.from) then
 						if damage.nature == sgs.DamageStruct_Fire then
-							added = p:hasArmorEffect("Vine") and added + 1 or added
+							added = self:hasArmorEffect(p, "Vine") and added + 1 or added
 							sgs.ai_NeedPeach[p:objectName()] = damage.damage + 1 + added - p:getHp()
 						elseif damage.nature == sgs.DamageStruct_Thunder then
 							sgs.ai_NeedPeach[p:objectName()] = damage.damage + 1 + added - p:getHp()
@@ -2978,7 +2980,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 			if isEnemyFrom and self:isFriend(to) then
 				local invoke
 				for _, p in sgs.qlist(self.room:getAlivePlayers()) do
-					if p:hasArmorEffect("Vine") and (p:isChained() or targets:contains(p)) then
+					if self:hasArmorEffect(p, "Vine") and (p:isChained() or targets:contains(p)) then
 						invoke = true
 					end
 					if p:containsTrick("lightning") then
@@ -3027,7 +3029,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 				end
 			end
 			if isEnemyFrom and self:isFriend(to) then
-				if from:getHandcardNum() > 2 or self:isWeak(to) or to:hasArmorEffect("Vine") or to:getMark("@gale") > 0 then
+				if from:getHandcardNum() > 2 or self:isWeak(to) or self:hasArmorEffect(to, "Vine") or to:getMark("@gale") > 0 then
 					return null_card
 				end
 			end
@@ -3159,7 +3161,7 @@ function SmartAI:getCardRandomly(who, flags, disable_list)
 	if cards:isEmpty() then return end
 	local r = math.random(0, cards:length() - 1)
 	local card = cards:at(r)
-	if who:hasArmorEffect("SilverLion") and cards:contains(who:getArmor()) then
+	if self:hasArmorEffect(who, "SilverLion") and cards:contains(who:getArmor()) then
 		if self:isEnemy(who) and who:isWounded() and card == who:getArmor() then
 			if r ~= (cards:length() - 1) then
 				card = cards:at(r + 1)
@@ -3564,7 +3566,7 @@ function SmartAI:hasHeavySlashDamage(from, slash, to, getValue)
 	end
 	to = to or self.player
 	if not from or not to then self.room:writeToConsole(debug.traceback()) return false end
-	if to:hasArmorEffect("SilverLion") and not IgnoreArmor(from, to) then
+	if self:hasArmorEffect(to, "SilverLion") and not IgnoreArmor(from, to) then
 		if getValue then return 1
 		else return false end
 	end
@@ -3584,7 +3586,7 @@ function SmartAI:hasHeavySlashDamage(from, slash, to, getValue)
 	if jiaren_zidan and jiaren_zidan:isFriendWith(to) then
 		dmg = 1
 	end
-	if to:hasArmorEffect("Vine") and not IgnoreArmor(from, to) and fireSlash then
+	if self:hasArmorEffect(to, "Vine") and not IgnoreArmor(from, to) and fireSlash then
 		dmg = dmg + 1
 	end
 
@@ -4189,9 +4191,9 @@ function SmartAI:needRetrial(judge)
 	if reason == "lightning" then
 		if who:hasShownSkill("hongyan") then return false end
 
-		if who:hasArmorEffect("SilverLion") and who:getHp() > 1 then return false end
+		if self:hasArmorEffect(who, "SilverLion") and who:getHp() > 1 then return false end
 
-		if who:hasArmorEffect("PeaceSpell") then return false end
+		if self:hasArmorEffect(who, "PeaceSpell") then return false end
 
 		if self:isFriend(who) then
 			if who:isChained() and self:isGoodChainTarget(who, self.player, sgs.DamageStruct_Thunder, 3) then return false end
@@ -4359,8 +4361,8 @@ function SmartAI:damageIsEffective_(damageStruct, effect)
 		if damage < 1 then return false end
 	end
 
-	if to:hasArmorEffect("PeaceSpell") and nature ~= sgs.DamageStruct_Normal then return false end
-	if not effect and to:hasArmorEffect("Breastplate") and (damage > to:getHp() or (to:getHp() > 1 and damage == to:getHp())) then return false end
+	if self:hasArmorEffect(to, "PeaceSpell") and nature ~= sgs.DamageStruct_Normal then return false end
+	if not effect and self:hasArmorEffect(to, "Breastplate") and (damage > to:getHp() or (to:getHp() > 1 and damage == to:getHp())) then return false end
 
 	for _, callback in pairs(sgs.ai_damage_effect) do
 		if type(callback) == "function" then
@@ -5073,7 +5075,7 @@ function SmartAI:aoeIsEffective(card, to, source)
 	players = sgs.QList2Table(players)
 	source = source or self.room:getCurrent()
 
-	if to:hasArmorEffect("Vine") then
+	if self:hasArmorEffect(to, "Vine") then
 		return false
 	end
 
@@ -5440,7 +5442,7 @@ function SmartAI:hasTrickEffective(card, to, from)
 	if (card:isKindOf("Duel") or card:isKindOf("FireAttack") or card:isKindOf("ArcheryAttack") or card:isKindOf("SavageAssault"))
 		and not self:damageIsEffective(to, nature, from, true) then return false end
 
-	if to:hasArmorEffect("IronArmor") and (card:isKindOf("FireAttack") or card:isKindOf("BurningCamps")) then return false end
+	if self:hasArmorEffect(to, "IronArmor") and (card:isKindOf("FireAttack") or card:isKindOf("BurningCamps")) then return false end
 
 	for _, callback in pairs(sgs.ai_trick_prohibit) do
 		if type(callback) == "function" then
@@ -5460,13 +5462,25 @@ end
 sgs.weapon_range = {}
 
 function SmartAI:hasEightDiagramEffect(player)
+	return self:hasArmorEffect(player, "EightDiagram")
+end
+
+function SmartAI:hasArmorEffect(player, armor)
 	player = player or self.player
 	if self.player and player:objectName() == self.player:objectName() then
 		return player:hasArmorEffect("EightDiagram")
+		return player:hasArmorEffect(armor)
 	else
 		if player:getArmor() and player:getArmor():isKindOf("EightDiagram") then return true end
 		local skill = sgs.Sanguosha:ViewHas(player, "EightDiagram", "armor")
 		if skill and self:hasSkill(skill:objectName(), player) then return true end
+		if player:hasArmorEffect(armor, false) then return true end
+		if player:hasArmorEffect(armor) then
+			local skills = sgs.Sanguosha:ViewHas(player, armor, "armor")
+			for _, skill in sgs.qlist(skills) do
+				if self:hasSkill(skill:objectName(), player) then return true end
+			end
+		end
 	end
 end
 
@@ -5678,7 +5692,7 @@ function SmartAI:useEquipCard(card, use)
 		end
 	elseif card:isKindOf("Armor") then
 		local lion = self:getCard("SilverLion")
-		if lion and self.player:isWounded() and not self.player:hasArmorEffect("SilverLion") and not card:isKindOf("SilverLion")
+		if lion and self.player:isWounded() and not self.player:hasArmorEffect("SilverLion", false) and not card:isKindOf("SilverLion")
 			and not (self.player:hasSkills("bazhen|jgyizhong") and not self.player:getArmor()) then
 			use.card = lion
 			return
@@ -5817,10 +5831,8 @@ end
 
 function IgnoreArmor(from, to)
 	if not from or not to then global_room:writeToConsole(debug.traceback()) return end
-	if not to:getArmor() then return true end
-	if not to:hasArmorEffect(to:getArmor():objectName()) or from:hasWeapon("QinggangSword") then
-		return true
-	end
+	if from:hasWeapon("QinggangSword") then	return true end
+	if not to:hasShownArmorEffect() then return true end
 	return
 end
 
@@ -5829,7 +5841,7 @@ function SmartAI:needToThrowArmor(player)
 	if not player:getArmor() or not player:hasArmorEffect(player:getArmor():objectName()) then return false end
 	if player:hasShownSkill("bazhen") and not(player:getArmor():isKindOf("EightDiagram") or player:getArmor():isKindOf("RenwangShield") or player:getArmor():isKindOf("PeaceSpell")) then return true end
 	if self:evaluateArmor(player:getArmor(), player) <= -2 then return true end
-	if player:hasArmorEffect("SilverLion") and player:isWounded() then
+	if player:hasArmorEffect("SilverLion", false) and player:isWounded() then
 		if self:isFriend(player) then
 			if player:objectName() == self.player:objectName() then
 				return true
@@ -5842,7 +5854,7 @@ function SmartAI:needToThrowArmor(player)
 	end
 	local damage = self.room:getTag("CurrentDamageStruct")
 	if damage.damage and not damage.chain and not damage.prevented and damage.nature == sgs.DamageStruct_Fire
-		and damage.to:isChained() and player:isChained() and player:hasArmorEffect("Vine") then
+		and damage.to:isChained() and player:isChained() and player:hasArmorEffect("Vine", false) then
 		return true
 	end
 	return false

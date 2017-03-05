@@ -13,7 +13,7 @@ public:
         events << GameStart;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *, const TriggerStruct &) const
     {
         if (player == NULL)
             foreach(ServerPlayer *p, room->getPlayers())
@@ -94,7 +94,7 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
     }
 
     QList<ServerPlayer *> humans = human_map.keys();
-    room->chooseGenerals(humans, true, true);
+    room->chooseGenerals(humans, true, true, true);
 
     for (int i = 0; i < 8; i++) {
         if (human_map.contains(players[i])) {

@@ -63,7 +63,8 @@ public:
         AskForCardChosen = 0x010011,
         AskForSuit = 0x010012,
         AskForMoveCards = 0x000013,
-        GlobalCardChosen = 0x000014,
+        AskForExtraTargets = 0x000014,
+        GlobalCardChosen = 0x000015,
 
         RespondingUse = 0x000101,
         RespondingForDiscard = 0x000201,
@@ -118,6 +119,7 @@ public:
     QString getPlayerName(const QString &str);
     QString getSkillNameToInvoke() const;
     QString getSkillToHighLight() const;
+    void setSkillPosition(QString &positon);
 
     QTextDocument *getLinesDoc() const;
     QTextDocument *getPromptDoc() const;
@@ -137,6 +139,7 @@ public:
     void maxhpChange(const QVariant &change_str);
     void resetPiles(const QVariant &);
     void setPileNumber(const QVariant &pile_str);
+    void updatePrivatePile(const QVariant &pile_str);
     void setHandcardNum(const QVariant &num_array);
     void gameOver(const QVariant &);
     void loseCards(const QVariant &);
@@ -192,6 +195,7 @@ public:
     void askForCardChosen(const QVariant &ask_str);
     void globalCardChosen(const QVariant &ask_str);
     void askForPlayerChosen(const QVariant &players);
+    void askForExtraTargets(const QVariant &players);
     void askForGeneral(const QVariant &);
     void askForYiji(const QVariant &);
     void askForGuanxing(const QVariant &);
@@ -215,6 +219,15 @@ public:
     void revealGeneral(const QVariant &reveal);
 
     void attachSkill(const QVariant &skill);
+
+    //handle client card mapping
+    void setCardMapping(const QVariant &ask_str);
+    Player::Place getCardPlace(int card_id) const;
+
+    //a trick for client active promote skill
+    void setPromoteSkill(const QVariant &ask_str);
+    void clearPromoteSkill();
+    PromoteStruct getPromoteSkill() const;
 
     inline virtual RoomState *getRoomState()
     {
@@ -286,7 +299,9 @@ public slots:
     void onPlayerChooseCards(const QList<int> &ids = QList<int>());
     void onPlayerChooseAG(int card_id);
     void onPlayerChoosePlayer(const QList<const Player *> &players);
+    void onPlayerChooseExtraTargets(const QList<const Player *> &players);
     void onPlayerChooseTriggerOrder(const QString &choice);
+    void onPlayerChooseTriggerOrder2(const QVariant &skill);
     void onPlayerChangeSkin(int skin_id, bool is_head = true);
     void onPlayerChooseSuit(const QString &suit);
     void onPlayerChooseKingdom();
@@ -307,6 +322,8 @@ protected:
     int alive_count;
     int swap_pile;
     RoomState _m_roomState;
+    QMap<int, Player::Place> place_map;
+    PromoteStruct promote_skill;
 
 private:
     ClientSocket *socket;
@@ -348,7 +365,7 @@ signals:
     void player_added(ClientPlayer *new_player);
     void player_removed(const QString &player_name);
     // choice signal
-    void generals_got(const QStringList &generals, const bool single_result, const bool can_convert);
+    void generals_got(const QStringList &generals, const bool single_result, const bool can_convert, const bool assign_kingdom);
     void kingdoms_got(const QStringList &kingdoms);
     void suits_got(const QStringList &suits);
     void options_got(const QString &skillName, const QStringList &options);
@@ -358,6 +375,7 @@ signals:
     void directions_got();
     void orders_got(QSanProtocol::Game3v3ChooseOrderCommand reason);
     void triggers_got(const QString &reason, const QStringList &options, const bool optional);
+    void trigger_skills_got(const QString &reason, QList<TriggerStruct> skills, const bool optional);
 
     void seats_arranged(const QList<const ClientPlayer *> &seats);
     void hp_changed(const QString &who, int delta, DamageStruct::Nature nature, bool losthp);
@@ -392,6 +410,7 @@ signals:
 
     void move_cards_lost(int moveId, QList<CardsMoveStruct> moves);
     void move_cards_got(int moveId, QList<CardsMoveStruct> moves);
+    void move_virtual_cards(QString &card_string, CardsMoveStruct moves);
 
     void skill_attached(const QString &skill_name, bool from_left);
     void skill_detached(const QString &skill_name, bool head = true);

@@ -32,7 +32,7 @@ class GuhuoBox : public GraphicsBox
     Q_OBJECT
 
 public:
-    GuhuoBox(const QString& skill_name, const QString& flags, bool playonly = true);
+    GuhuoBox(const QString& skill_name, const QString& flags);
     QString getSkillName()const
     {
         return skill_name;
@@ -49,11 +49,8 @@ public slots:
 protected:
     virtual QRectF boundingRect() const;
 
-    bool isButtonEnable(const QString &card) const;
-
     QString translate(const QString &option) const;
 
-    bool play_only;
     QString flags;
     QString skill_name;
 

@@ -258,6 +258,11 @@ bool Skill::relateToPlace(bool head) const
     return false;
 }
 
+bool Skill::chooseFilter(const QList<const Card *> &, const Card *) const
+{
+    return false;
+}
+
 ViewAsSkill::ViewAsSkill(const QString &name)
     : Skill(name), response_pattern(QString()), response_or_use(false), expand_pile(QString())
 {
@@ -330,6 +335,51 @@ const ViewAsSkill *ViewAsSkill::parseViewAsSkill(const Skill *skill)
 QString ViewAsSkill::getExpandPile() const
 {
     return expand_pile;
+}
+
+QList<const Card *> ViewAsSkill::getGuhuoCards(const QList<const Card *> &) const
+{
+    return QList<const Card *>();
+}
+
+QStringList ViewAsSkill::getGuhuoCards(const QString &type) const
+{
+    QStringList all;
+    QList<const Card *> cards = Sanguosha->getCards();
+    if (type.contains("b")) {
+        foreach (const Card *card, cards) {
+            if (card->isKindOf("BasicCard") && !all.contains(card->objectName())
+                && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
+                all << card->objectName();
+            }
+        }
+    }
+
+    if (type.contains("t")) {
+        foreach (const Card *card, cards) {
+            if (card->isNDTrick() && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
+                if (all.contains(card->objectName()))
+                    continue;
+
+                if (card->inherits("SingleTargetTrick"))
+                    all << card->objectName();
+                else
+                    all << card->objectName();
+
+            }
+        }
+    }
+
+    if (type.contains("d")) {
+        foreach (const Card *card, cards) {
+            if (!card->isNDTrick() && card->isKindOf("TrickCard") && !all.contains(card->objectName())
+                && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
+                all << card->objectName();
+            }
+        }
+    }
+
+    return all;
 }
 
 ZeroCardViewAsSkill::ZeroCardViewAsSkill(const QString &name)
@@ -441,7 +491,17 @@ double TriggerSkill::getDynamicPriority(TriggerEvent e) const
         return this->getPriority();
 }
 
-/*!
+void TriggerSkill::insertPriority(TriggerEvent e, double value)
+{
+    priority.insert(e, value);
+}
+
+void TriggerSkill::record(TriggerEvent, Room *, ServerPlayer *, QVariant &) const
+{
+
+}
+
+/*
     You are expected to return a QMap<ServerPlayer *, QStringList> in TriggerSkill::triggerable.
     And the QStringList of QMap is expected to include some items as the examples below:
     \list 1
@@ -452,7 +512,6 @@ double TriggerSkill::getDynamicPriority(TriggerEvent e) const
     If you use this kind of type, it means the skill's trigger order of targets should be according to the order you write, such as: "tieqi->sgs4+sgs8+sgs1+sgs2"
     \note must use a "->" to concatenate skill name to targets and "+" to concatenate targets' object names
     \endlist
-    */
 
 TriggerList TriggerSkill::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
 {
@@ -465,21 +524,6 @@ TriggerList TriggerSkill::triggerable(TriggerEvent triggerEvent, Room *room, Ser
     return skill_lists;
 }
 
-bool TriggerSkill::triggerable(const ServerPlayer *target) const
-{
-    return target != NULL && target->isAlive() && target->hasSkill(objectName());
-}
-
-void TriggerSkill::insertPriority(TriggerEvent e, double value)
-{
-    priority.insert(e, value);
-}
-
-void TriggerSkill::record(TriggerEvent, Room *, ServerPlayer *, QVariant &) const
-{
-
-}
-
 QStringList TriggerSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer* &) const
 {
     if (triggerable(target))
@@ -487,12 +531,52 @@ QStringList TriggerSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target
     return QStringList();
 }
 
-bool TriggerSkill::cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const
+bool TriggerSkill::cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *, const QString &) const
 {
     return true;
 }
 
-bool TriggerSkill::effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const
+bool TriggerSkill::effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *, const QString &) const
+{
+    return false;
+}
+*/
+
+bool TriggerSkill::triggerable(const ServerPlayer *target) const
+{
+    return target != NULL && target->isAlive() && target->hasSkill(objectName());
+}
+
+QList<TriggerStruct> TriggerSkill::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+{
+    QList<TriggerStruct> skill_lists;
+    if (objectName() == "game_rule") return skill_lists;
+
+    TriggerStruct skill_list = triggerable(triggerEvent, room, player, data, NULL);
+    if (!skill_list.skill_name.isEmpty()) {
+        for (int i = 0; i < skill_list.times; i++) {
+            TriggerStruct skill = skill_list;
+            skill.times = 1;
+            skill_lists << skill;
+        }
+    }
+
+    return skill_lists;
+}
+
+TriggerStruct TriggerSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer *) const
+{
+    if (triggerable(target))
+        return TriggerStruct(objectName(), target);
+    return TriggerStruct();
+}
+
+TriggerStruct TriggerSkill::cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *, const TriggerStruct &info) const
+{
+    return info;
+}
+
+bool TriggerSkill::effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *, const TriggerStruct &) const
 {
     return false;
 }
@@ -526,15 +610,15 @@ MasochismSkill::MasochismSkill(const QString &name)
     events << Damaged;
 }
 
-bool MasochismSkill::cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+TriggerStruct MasochismSkill::cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who, const TriggerStruct &info) const
 {
-    return TriggerSkill::cost(triggerEvent, room, player, data, ask_who);
+    return TriggerSkill::cost(triggerEvent, room, player, data, ask_who, info);
 }
 
-bool MasochismSkill::effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+bool MasochismSkill::effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *, const TriggerStruct &info) const
 {
     DamageStruct damage = data.value<DamageStruct>();
-    onDamaged(player, damage);
+    onDamaged(player, damage, info);
 
     return false;
 }
@@ -545,9 +629,9 @@ PhaseChangeSkill::PhaseChangeSkill(const QString &name)
     events << EventPhaseStart;
 }
 
-bool PhaseChangeSkill::effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+bool PhaseChangeSkill::effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *, const TriggerStruct &info) const
 {
-    return onPhaseChange(player);
+    return onPhaseChange(player, info);
 }
 
 DrawCardsSkill::DrawCardsSkill(const QString &name)
@@ -556,7 +640,7 @@ DrawCardsSkill::DrawCardsSkill(const QString &name)
     events << DrawNCards;
 }
 
-bool DrawCardsSkill::effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+bool DrawCardsSkill::effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *, const TriggerStruct &) const
 {
     int n = data.toInt();
     data = getDrawNum(player, n);
@@ -569,9 +653,9 @@ GameStartSkill::GameStartSkill(const QString &name)
     events << GameStart;
 }
 
-bool GameStartSkill::effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+bool GameStartSkill::effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *, const TriggerStruct &info) const
 {
-    onGameStart(player);
+    onGameStart(player, info);
     return false;
 }
 
@@ -614,6 +698,7 @@ bool ArraySummonSkill::isEnabledAtPlay(const Player *player) const
     if (player->getAliveSiblings().length() < 3) return false;
     if (player->hasFlag("Global_SummonFailed")) return false;
     if (!player->canShowGeneral(player->inHeadSkills(objectName()) ? "h" : "d")) return false;
+    if (!player->hasShownOneGeneral() && player->willbeRole() == "careerist") return false;
     const BattleArraySkill *skill = qobject_cast<const BattleArraySkill *>(Sanguosha->getTriggerSkill(objectName()));
     if (skill) {
         ArrayType type = skill->getArrayType();
@@ -726,14 +811,24 @@ int TargetModSkill::getResidueNum(const Player *, const Card *) const
     return 0;
 }
 
-int TargetModSkill::getDistanceLimit(const Player *, const Card *) const
+int TargetModSkill::getExtraTargetNum(const Player *, const Card *) const
 {
     return 0;
 }
 
-int TargetModSkill::getExtraTargetNum(const Player *, const Card *) const
+bool TargetModSkill::getDistanceLimit(const Player *, const Player *, const Card *) const
 {
-    return 0;
+    return false;
+}
+
+bool TargetModSkill::checkExtraTargets(const Player *, const Player *, const Card *, const QList<const Player *> &, const QList<const Player *> &) const
+{
+    return false;
+}
+
+int TargetModSkill::getEffectIndex(const ServerPlayer *, const Card *, const TargetModSkill::ModType) const
+{
+    return -1;
 }
 
 SlashNoDistanceLimitSkill::SlashNoDistanceLimitSkill(const QString &skill_name)
@@ -775,12 +870,12 @@ int FakeMoveSkill::getPriority() const
     return 10;
 }
 
-QStringList FakeMoveSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &) const
+TriggerStruct FakeMoveSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer *) const
 {
-    return (target != NULL) ? QStringList(objectName()) : QStringList();
+	return (target != NULL) ? TriggerStruct(objectName(), target) : TriggerStruct();
 }
 
-bool FakeMoveSkill::effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
+bool FakeMoveSkill::effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *, const TriggerStruct &) const
 {
     QString flag = QString("%1_InTempMoving").arg(name);
 
@@ -796,14 +891,14 @@ DetachEffectSkill::DetachEffectSkill(const QString &skillname, const QString &pi
     events << EventLoseSkill;
 }
 
-QStringList DetachEffectSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &data, ServerPlayer * &) const
+TriggerStruct DetachEffectSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &data, ServerPlayer *) const
 {
     if (target && data.toString().split(":").first() == name)
-        return QStringList(objectName());
-    return QStringList();
+		return TriggerStruct(objectName(), target);
+	return TriggerStruct();
 }
 
-bool DetachEffectSkill::effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+bool DetachEffectSkill::effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *, const TriggerStruct &) const
 {
     if (!pile_name.isEmpty())
         player->clearOnePrivatePile(pile_name);
@@ -850,65 +945,47 @@ bool ArmorSkill::triggerable(const ServerPlayer *target) const
     return target->hasArmorEffect(objectName());
 }
 
-bool ArmorSkill::cost(Room *room, ServerPlayer *target, QVariant &data) const
+TriggerStruct ArmorSkill::cost(Room *room, QVariant &data, const TriggerStruct &info) const
 {
-    if (target->getArmor() && target->getArmor()->objectName() == objectName())
-        return getFrequency() == Skill::Compulsory || target->askForSkillInvoke(objectName(), data);
+    ServerPlayer *target = room->findPlayer(info.invoker, true);
+    if (target->hasArmorEffect(objectName(), false) &&
+        (getFrequency() == Skill::Compulsory || target->askForSkillInvoke(objectName(), data)))
+        return info;
 
-    QStringList skill_names;
+    QStringList all;
     bool show = false;
-    foreach (QString name, Sanguosha->getSkillNames()) {
-        if (Sanguosha->getSkill(name)->inherits("ViewHasSkill")) {
-            const ViewHasSkill *skill = qobject_cast<const ViewHasSkill *>(Sanguosha->getSkill(name));
-            if (skill->ViewHas(target, objectName(), "armor")) {
-                if (target->hasShownSkill(skill)) show = true;
-                if (target->getHeadActivedSkills().contains(skill))
-                    skill_names << "left?" + name;
-                if (target->getDeputyActivedSkills().contains(skill))
-                    skill_names << "right?" + name;
-            }
+    bool protect = true;
+    foreach(const ViewHasSkill *vhskill, Sanguosha->ViewHas(target, objectName(), "armor")) {
+        const Skill *mskill = Sanguosha->getMainSkill(vhskill->objectName());
+        if (getFrequency() == Skill::Compulsory && target->hasShownSkill(mskill)) show = true;
+        if (target->hasShownSkill(mskill)) protect = false;
+        all << mskill->objectName();
+    }
+    if (protect) target->setFlags("Global_askForSkillCost");
+
+    TriggerStruct skill;
+    skill.invoker = info.invoker;
+    skill.result_target = info.result_target;
+
+    if (!all.isEmpty()) {
+        SPlayerDataMap map;
+        map[target] = all;
+        QString result = room->askForTriggerOrder(target, "armorskill", map, !show, data);
+        if (result == "cancel")
+            return TriggerStruct();
+        else {
+            skill.skill_name = result.split(":").last();
+            skill.skill_position = result.contains("?") ? result.split(":").first().split("?").last() : QString();
+            const TriggerSkill *result_skill = Sanguosha->getTriggerSkill(skill.skill_name);
+            if (result_skill) {
+                if (show || all.length() > 1 || target->askForSkillInvoke(result_skill->objectName(), data, skill.skill_position)) {
+                    return skill;
+                }
+            } else if (show || all.length() > 1 || target->askForSkillInvoke(result_skill->objectName(), data, skill.skill_position))
+                return info;
         }
     }
-    if (skill_names.isEmpty()) return false;
-    QString name;
-    bool invoke = false;
-    if (skill_names.length() > 1){
-        SPlayerDataMap map;
-        map.insert(target, skill_names);
-        bool option = show && getFrequency() == Skill::Compulsory;
-        QString answer = room->askForTriggerOrder(target, "armorskill", map, !option, data);
-        if (answer != "cancel") invoke = true;
-        name = answer.split(":").first().split("?").last() + "?" + answer.split(":").last();
-    } else {
-        name = skill_names.first();
-        QString skill_name = name.split("?").last();
-        invoke = target->hasShownSkill(skill_name) && getFrequency() == Skill::Compulsory
-                || target->askForSkillInvoke(target->hasShownSkill(skill_name) ? objectName() : skill_name, data);
-    }
-    if (!invoke) return false;
-
-    QStringList names = room->getTag(objectName() + target->objectName()).toStringList();   //add for player audio
-    names.append(name);
-    room->setTag(objectName() + target->objectName(), names);
-
-    LogMessage log;
-    log.type = "#InvokeSkill";
-    log.from = target;
-    log.arg = objectName();
-    room->sendLog(log);
-
-    target->showSkill(name.split("?").last(), name.split("?").first());
-    return true;
-}
-
-void ArmorSkill::playAudio(const ServerPlayer *target) const
-{
-    Room *room = target->getRoom();
-    QStringList names = room->getTag(objectName() + target->objectName()).toStringList();
-    if (names.isEmpty()) return;
-    room->broadcastSkillInvoke(names.last().split("?").last(), "male", -1, target, names.last().split("?").first());
-    names.removeLast();
-    room->setTag(objectName() + target->objectName(), names);
+    return TriggerStruct();
 }
 
 TreasureSkill::TreasureSkill(const QString &name)
@@ -934,6 +1011,6 @@ FixCardSkill::FixCardSkill(const QString &name)
 }
 
 ViewHasSkill::ViewHasSkill(const QString &name)
-    : Skill(name, Skill::Compulsory), global(false)
+    : Skill(name, Skill::Compulsory), global(false), viewhas_skills(QStringList()), viewhas_armors(QStringList())
 {
 }

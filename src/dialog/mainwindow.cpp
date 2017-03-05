@@ -82,8 +82,6 @@ public:
         setSceneRect(Config.Rect);
         setRenderHints(QPainter::TextAntialiasing | QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
-        setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-
 #if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
         if (QGLFormat::hasOpenGL()) {
             QGLWidget *widget = new QGLWidget(QGLFormat(QGL::SampleBuffers));

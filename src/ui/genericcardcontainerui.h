@@ -134,6 +134,12 @@ public:
     bool canBeSelected();
 
     void stopHeroSkinChangingAnimation();
+    void stopHeroSkinChangingAnimation(bool head);
+    void stopHeadAnimation();
+    void stopDeputyAnimation();
+#ifndef Q_OS_ANDROID
+    void playChainAnimation();
+#endif
 
 public slots:
     virtual void updateAvatar();
@@ -166,18 +172,17 @@ public slots:
     void showDistance();
     void hideDistance();
     void showLiegong();
-    void hideLiegong();
+    void hideTips();
+    void showLijian(bool first);
     void onRemovedChanged();
     virtual void showSeat();
     virtual void showPile();
     virtual void hidePile();
     virtual void refresh();
-#ifdef Q_OS_ANDROID
-    void longPressTimeOut();
-    void showSkillDescription(QPointF pressPos);
-    void hideSkillDescription();
 
-#endif
+//#ifdef Q_OS_ANDROID
+    void showSkillDescription();
+//#endif
 
     QPixmap getHeadAvatarIcon(const QString &generalName);
     QPixmap getDeputyAvatarIcon(const QString &generalName);
@@ -315,18 +320,28 @@ protected:
     // The following stuffs for showing seat
     QGraphicsPixmapItem *_m_seatItem;
 
-    // The following stuffs for showing liegong
-    QGraphicsPixmapItem *_m_liegongItem;
+    // The following stuffs for showing tips
+    QGraphicsPixmapItem *_m_tipItem;
 
     // animations
     QAbstractAnimation *_m_huashenAnimation;
     QGraphicsItem *_m_huashenItem;
     QStringList _m_huashenGeneralNames;
 
+#ifdef Q_OS_ANDROID
+    QGraphicsPixmapItem *_m_chainIcon;
+#else
     PixmapAnimation *_m_chainIcon, *_m_chainIcon2;  //move here by weidouncle
     void _createChainAnimation();
-    //QHash<QString, PixmapAnimation *> _m_muti_kills;
-    //void _createMutiKillsAnimation();
+#endif
+
+    PixmapAnimation *m_head_animation;
+    PixmapAnimation *m_deputy_animation;
+    void _createAvatarAnimations(const QString name, bool head, const QRect &area);
+
+//#ifdef Q_OS_ANDROID
+    void hideSkillDescription();
+//#endif
 
 protected slots:
     virtual void _onEquipSelectChanged();
@@ -336,15 +351,12 @@ private:
     void clearVotes();
     int _lastZ;
     bool _allZAdjusted;
-#ifdef Q_OS_ANDROID
+//#ifdef Q_OS_ANDROID
     QTimer timerCount;
     QPointF pressPos;
-#endif
+//#endif
+
 signals:
-#ifdef Q_OS_ANDROID
-    void longPress(QPointF pressLocation);
-    void longPressRelease();
-#endif
     void selected_changed();
     void enable_changed();
     void global_selected_changed(const ClientPlayer *player, int id = -1);

@@ -135,7 +135,6 @@ sgs.ai_skill_use_func.RendeCard = function(card, use, self)
 			self:useTrickCard(card, dummy_use)
 			if dummy_use.card then continue end
 		end
-
 		use.card = sgs.Card_Parse("@RendeCard=" .. card:getId() .. "&rende")
 		if use.to then use.to:append(friend) return end
 	end
@@ -173,7 +172,7 @@ wusheng_skill.getTurnUseCard = function(self, inclusive)
 	self:sort(self.enemies, "defense")
 	local useAll = false
 	for _, enemy in ipairs(self.enemies) do
-		if enemy:getHp() == 1 and not enemy:hasArmorEffect("EightDiagram") and self.player:distanceTo(enemy) <= self.player:getAttackRange() and self:isWeak(enemy)
+		if enemy:getHp() == 1 and not self:hasArmorEffect(enemy, "EightDiagram") and self.player:distanceTo(enemy) <= self.player:getAttackRange() and self:isWeak(enemy)
 			and getCardsNum("Jink", enemy, self.player) + getCardsNum("Peach", enemy, self.player) + getCardsNum("Analeptic", enemy, self.player) == 0 then
 			useAll = true
 			break
@@ -247,7 +246,6 @@ sgs.paoxiao_keep_value = {
 }
 
 sgs.ai_skill_choice["paoxiaoVsCrossbow"] = "Crossbow"
-
 
 local longdan_skill = {}
 longdan_skill.name = "longdan"
@@ -511,7 +509,7 @@ sgs.ai_skill_invoke.bazhen = function(self, data)
 	if ((not self:willShowForDefence() and self:getCardsNum("Jink") > 1)
 	or (not self:willShowForMasochism() and self:getCardsNum("Jink") == 0))
 	then
-			return false
+		return false
 	end
 	return sgs.ai_skill_invoke.EightDiagram(self, data)
 end

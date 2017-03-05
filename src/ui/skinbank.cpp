@@ -82,6 +82,7 @@ const char *QSanRoomSkin::S_SKIN_KEY_HAND_CARD_SUIT = "handCardSuit-%1";
 const char *QSanRoomSkin::S_SKIN_KEY_JUDGE_CARD_ICON = "judgeCardIcon-%1";
 const char *QSanRoomSkin::S_SKIN_KEY_HAND_CARD_FRAME = "handCardFrame-%1";
 const char *QSanRoomSkin::S_SKIN_KEY_HAND_CARD_MAIN_PHOTO = "handCardMainPhoto-%1";
+const char *QSanRoomSkin::S_SKIN_KEY_HAND_CARD_ALTER_PHOTO = "handCardAlterPhoto-%1";
 const char *QSanRoomSkin::S_SKIN_KEY_HAND_CARD_NUMBER_BLACK = "handCardNumber-black-%1";
 const char *QSanRoomSkin::S_SKIN_KEY_HAND_CARD_NUMBER_RED = "handCardNumber-red-%1";
 const char *QSanRoomSkin::S_SKIN_KEY_GENERAL_CARD = "generalCard-%2-%1";
@@ -384,6 +385,11 @@ QPixmap QSanRoomSkin::getCardMainPixmap(const QString &cardName) const
     return getPixmap(S_SKIN_KEY_HAND_CARD_MAIN_PHOTO, name);
 }
 
+QPixmap QSanRoomSkin::getCardAlterPixmap(const QString &cardName) const
+{
+    return getPixmap(S_SKIN_KEY_HAND_CARD_ALTER_PHOTO, cardName);
+}
+
 QPixmap QSanRoomSkin::getGeneralCardPixmap(const QString generalName, const int skinId) const
 {
     const QString id = QString::number(skinId);
@@ -444,6 +450,29 @@ QPixmap QSanRoomSkin::getGeneralPixmap(const QString &generalName, GeneralIconSi
     return getPixmap(key, name, id, true);
 }
 
+QPixmap QSanRoomSkin::getAvatAnimPixmapPath(const QString &name, GeneralIconSize size, int skinId, int pixId) const
+{
+    QString id = QString::number(skinId);
+    QString key = QString(S_SKIN_KEY_PLAYER_GENERAL_ICON)
+        .arg(size).arg(id).arg(name);
+    if (isImageKeyDefined(key)) //exactly match
+        return getAnimPixmap(key, QString(), QString(), false, pixId);
+
+    key = QString(S_SKIN_KEY_PLAYER_GENERAL_ICON)
+        .arg(size).replace("%3", name);
+    if (isImageKeyDefined(key.arg(S_SKIN_KEY_DEFAULT))) //try matching name and size
+        return getAnimPixmap(key, id, QString(), false, pixId);
+
+    key = QString(S_SKIN_KEY_PLAYER_GENERAL_ICON)
+        .arg(size).arg(id);
+    if (isImageKeyDefined(key.arg(S_SKIN_KEY_DEFAULT))) //try matching size and id
+        return getAnimPixmap(key, name, QString(), false, pixId);
+
+    key = QString(S_SKIN_KEY_PLAYER_GENERAL_ICON) //try the default match
+        .arg(size);
+    return getAnimPixmap(key, name, id, true, pixId);
+}
+
 QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index, const Player *player, const QString &postion) const
 {
     QString fileName;
@@ -471,7 +500,7 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
         int skinId = 0;
         if (player != NULL) {
             if (!postion.isEmpty()) {
-                bool head = postion == "left";
+                bool head = postion == "head";
                 general = head ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
                 skinId = head ? player->getHeadSkinId() : player->getDeputySkinId();
             } else if ((player->inHeadSkills(eventName) || player->getActualGeneral1()->hasSkill(eventName)) && player->canShowGeneral("h")) {
@@ -890,6 +919,75 @@ QPixmap IQSanComponentSkin::getPixmap(const QString &key, const QString &arg, co
     return S_IMAGE_KEY2PIXMAP[cacheKey];
 }
 
+QPixmap IQSanComponentSkin::getAnimPixmap(const QString &key, const QString &arg, const QString &arg2, bool addDefaultArg, int pix_id) const
+{
+    // the order of attempts are:
+    // 1. if no arg, then just use key to find fileName.
+    // 2. try key.arg(arg), if exists, then return the pixmap
+    // 3. try key.arg(default), get fileName, and try fileName.arg(arg).arg(arg2) or fileName.arg(arg) if no arg2
+    QString totalKey;
+    QString groupKey;
+    QString fileName;
+    QRect clipRegion;
+    QSize scaleRegion;
+    bool clipping = false;
+    bool scaled = false;
+
+    QString initialKey = key;
+    QString cacheKey;
+
+    if (addDefaultArg)
+        initialKey = initialKey.arg(S_SKIN_KEY_DEFAULT);
+
+    // case 1 and 2
+    if (arg.isNull())
+        totalKey = initialKey;
+    else
+        totalKey = initialKey.arg(arg);
+
+    cacheKey = totalKey;
+    if (addDefaultArg && !arg2.isNull())
+        cacheKey = key.arg(arg).arg(arg2);
+
+        Q_ASSERT(!arg.isNull());
+        groupKey = initialKey.arg(S_SKIN_KEY_DEFAULT);
+        QString fileNameToResolve = _readImageConfig(groupKey, clipRegion, clipping, scaleRegion, scaled);
+        fileName = fileNameToResolve.arg(arg);
+        if (!QFile::exists(fileName)) {
+            if (!arg2.isNull() && fileName.contains("%2"))
+                fileName = fileName.arg(arg2);
+            if (!QFile::exists(fileName)) {
+                groupKey = initialKey.arg(S_SKIN_KEY_DEFAULT_SECOND);
+                QString fileNameToResolve = _readImageConfig(groupKey, clipRegion, clipping, scaleRegion, scaled);
+                fileName = fileNameToResolve.arg(arg);
+                if (!QFile::exists(fileName) && !arg2.isNull() && fileName.contains("%2"))
+                    fileName = fileName.arg(arg2);
+            }
+        }
+
+    fileName = fileName.remove(".png") + "/" + QString::number(pix_id) + ".png";
+    QPixmap pixmap = QSanPixmapCache::getPixmap(fileName);
+    if (pixmap.isNull()) return QPixmap();
+
+
+    QRect actualClip = clipRegion;
+    if (actualClip.right() > pixmap.width())
+        actualClip.setRight(pixmap.width());
+    if (actualClip.bottom() > pixmap.height())
+        actualClip.setBottom(pixmap.height());
+
+    QPixmap clipped = QPixmap(clipRegion.size());
+    clipped.fill(Qt::transparent);
+    QPainter painter(&clipped);
+    painter.drawPixmap(0, 0, pixmap.copy(actualClip));
+
+    if (scaled)
+        clipped = clipped.scaled(scaleRegion, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    pixmap = clipped;
+
+    return pixmap;
+}
+
 QPixmap IQSanComponentSkin::getPixmapFileName(const QString &key) const
 {
     return _readConfig(_m_imageConfig, key);
@@ -966,6 +1064,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
     tryParse(config["cardNormalWidth"], _m_commonLayout.m_cardNormalWidth);
     tryParse(config["hpExtraSpaceHolder"], _m_commonLayout.m_hpExtraSpaceHolder);
     tryParse(config["cardMainArea"], _m_commonLayout.m_cardMainArea);
+    tryParse(config["cardAlterArea"], _m_commonLayout.m_cardAlterArea);
     tryParse(config["cardSuitArea"], _m_commonLayout.m_cardSuitArea);
     tryParse(config["cardNumberArea"], _m_commonLayout.m_cardNumberArea);
     tryParse(config["cardTransferableIconArea"], _m_commonLayout.m_cardTransferableIconArea);
@@ -1162,6 +1261,9 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
 
     _m_commonLayout.m_cardMainArea.setRect(int(_m_commonLayout.m_cardMainArea.x() * scale), int(_m_commonLayout.m_cardMainArea.y() * scale),
                                            int(_m_commonLayout.m_cardMainArea.width() * scale), int(_m_commonLayout.m_cardMainArea.height() * scale));
+
+    _m_commonLayout.m_cardAlterArea.setRect(int(_m_commonLayout.m_cardAlterArea.x() * scale), int(_m_commonLayout.m_cardAlterArea.y() * scale),
+                                           int(_m_commonLayout.m_cardAlterArea.width() * scale), int(_m_commonLayout.m_cardAlterArea.height() * scale));
 
     _m_commonLayout.m_cardSuitArea.setRect(int(_m_commonLayout.m_cardSuitArea.x() * scale), int(_m_commonLayout.m_cardSuitArea.y() * scale),
                                            int(_m_commonLayout.m_cardSuitArea.width() * scale), int(_m_commonLayout.m_cardSuitArea.height() * scale));
@@ -1460,17 +1562,21 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
 #endif
         if (i < configTextArea.size()) {
             tryParse(configTextArea[i], _m_dashboardLayout.m_skillTextArea[i]);
+/*
 #ifdef Q_OS_ANDROID
             _m_dashboardLayout.m_skillTextArea[i].setRect(int(_m_dashboardLayout.m_skillTextArea[i].x() * scale), int(_m_dashboardLayout.m_skillTextArea[i].y() * scale),
                                                               int(_m_dashboardLayout.m_skillTextArea[i].width() * scale), int(_m_dashboardLayout.m_skillTextArea[i].height() * scale));
 #endif
+*/
         }
         if (i < configTextAreaDown.size()) {
             tryParse(configTextAreaDown[i], _m_dashboardLayout.m_skillTextAreaDown[i]);
+/*
 #ifdef Q_OS_ANDROID
             _m_dashboardLayout.m_skillTextAreaDown[i].setRect(int(_m_dashboardLayout.m_skillTextAreaDown[i].x() * scale), int(_m_dashboardLayout.m_skillTextAreaDown[i].y() * scale),
                                                               int(_m_dashboardLayout.m_skillTextAreaDown[i].width() * scale), int(_m_dashboardLayout.m_skillTextAreaDown[i].height() * scale));
 #endif
+*/
         }
         if (i < configTextFont.size())
             _m_dashboardLayout.m_skillTextFonts[i].tryParse(configTextFont[i]);

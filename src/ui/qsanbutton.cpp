@@ -257,7 +257,7 @@ void QSanSkillButton::onMouseClick()
 {
     if (_m_skill == NULL) return;
 
-    bool head = objectName() == "left";
+    bool head = objectName() == "head";
     if (!Self->hasPreshowedSkill(_m_skill, head) && _m_state == QSanButton::S_STATE_CANPRESHOW) {
         setState(S_STATE_DISABLED);
         ClientInstance->preshow(_m_skill->objectName(), true, head);
@@ -327,9 +327,16 @@ void QSanSkillButton::setSkill(const Skill *skill)
     } else if (freq == Skill::Compulsory) {
         setState(QSanButton::S_STATE_DISABLED);
         setStyle(QSanButton::S_STYLE_PUSH);
-        _setSkillType(QSanInvokeSkillButton::S_SKILL_COMPULSORY);
-        _m_emitActivateSignal = false;
-        _m_emitDeactivateSignal = false;
+        if (skill->isAttachedLordSkill() && _m_viewAsSkill != NULL) {
+            _setSkillType(QSanInvokeSkillButton::S_SKILL_ATTACHEDLORD);
+            setStyle(QSanButton::S_STYLE_TOGGLE);
+            _m_emitActivateSignal = true;
+            _m_emitDeactivateSignal = true;
+        } else {
+            _setSkillType(QSanInvokeSkillButton::S_SKILL_COMPULSORY);
+            _m_emitActivateSignal = false;
+            _m_emitDeactivateSignal = false;
+        }
     } else return;
     QString desc = skill->getDescription(true, true);
     desc = desc.simplified();
@@ -365,7 +372,7 @@ void QSanSkillButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void QSanSkillButton::setEnabled(bool enabled)
 {
-    bool head = objectName() == "left";
+    bool head = objectName() == "head";
     if (!enabled && _m_skill->canPreshow()
         && (!Self->hasShownSkill(_m_skill) || Self->hasFlag("hiding"))) {
         setState(Self->hasPreshowedSkill(_m_skill, head) ? S_STATE_DISABLED : S_STATE_CANPRESHOW);

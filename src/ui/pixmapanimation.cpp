@@ -30,41 +30,85 @@
 const int PixmapAnimation::S_DEFAULT_INTERVAL = 50;
 
 PixmapAnimation::PixmapAnimation()
-    : QGraphicsItem(0)
+    : QGraphicsItem(0), m_fix_rect(false), hideonstop(false), _m_timerId(0), m_timer(0), m_timeout(0)
 {
-    m_fix_rect = false;
-    hideonstop = false;
-    m_timer = 0;
 }
 
 void PixmapAnimation::advance(int phase)
 {
-    if (phase)
+    if (phase) {
         current++;
+        m_timeout = m_timeout + m_interval;
+    }
 
-    if (current >= frames.size())
+    if (current >= frame_list.size())
         current = 0;
-    if (current == frames.size() - 1 && m_timer == 0)
+    if (current == frame_list.size() - 1 && m_timer == 0)
         emit finished();
-    update();
+    if (m_timer > 0 && m_timeout >= m_timer)
+        end();
+    if (current == 0 || frame_list.at(current) != frame_list.at(current - 1))
+        update();
 }
 
 void PixmapAnimation::setPath(const QString &path, bool playback)
 {
     frames.clear();
+    frame_list.clear();
+    current = 0;
+
+    QString config = QString("%1%2").arg(path).arg("config.txt");
+    QFile file(config);
+    if (QFile::exists(config) && file.open(QIODevice::ReadOnly)) {
+        QRegExp rx("(\\w+)\\s+(\\d+)");
+        QTextStream stream(&file);
+        while (!stream.atEnd()) {
+            QString line = stream.readLine();
+            if (!rx.exactMatch(line))
+                continue;
+
+            QStringList texts = rx.capturedTexts();
+            QString pic_name = texts.at(1);
+            int count = texts.at(2).toInt();
+
+            QString pic_path = QString("%1%2%3").arg(path).arg(pic_name).arg(".png");
+            if (QFile::exists(pic_path)) {
+                if (frames[pic_name].isNull()) frames[pic_name] = G_ROOM_SKIN.getPixmapFromFileName(pic_path);
+                for (int i = 1; i <= count; i++)
+                    frame_list << pic_name;
+            }
+        }
+        file.close();
+    } else {
+        int i = 0;
+        QString pic_path = QString("%1%2%3").arg(path).arg(i++).arg(".png");
+        do {
+            frames[QString::number(i)] = G_ROOM_SKIN.getPixmapFromFileName(pic_path);
+            frame_list << QString::number(i);
+            pic_path = QString("%1%2%3").arg(path).arg(i++).arg(".png");
+        } while (QFile::exists(pic_path));
+    }
+
+    if (playback) {
+        QStringList frames_copy = frame_list;
+        for (int i = frames_copy.length() - 1; i >= 0; i--)
+            frame_list << frames_copy[i];
+    }
+}
+
+void PixmapAnimation::setAvatarAnimation(const QString &name, int size, int skin_id, const QRect &rect)
+{
+    frames.clear();
     current = 0;
 
     int i = 0;
-    QString pic_path = QString("%1%2%3").arg(path).arg(i++).arg(".png");
-    do {
-        frames << G_ROOM_SKIN.getPixmapFromFileName(pic_path);
-        pic_path = QString("%1%2%3").arg(path).arg(i++).arg(".png");
-    } while (QFile::exists(pic_path));
-
-    if (playback) {
-        QList<QPixmap> frames_copy = frames;
-        for (int i = frames_copy.length() - 1; i = 0; i--)
-            frames << frames_copy[i - 1];
+    QPixmap pix = G_ROOM_SKIN.getAvatAnimPixmapPath(name, (QSanRoomSkin::GeneralIconSize)size, skin_id, i);
+    while (!pix.isNull()) {
+        pix = pix.scaled(rect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        frames[QString::number(i)] = pix;
+        frame_list << QString::number(i);
+        i++;
+        pix = G_ROOM_SKIN.getAvatAnimPixmapPath(name, (QSanRoomSkin::GeneralIconSize)size, skin_id, i);
     }
 }
 
@@ -87,11 +131,13 @@ void PixmapAnimation::setPlayTime(int msecs)
 
 void PixmapAnimation::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
+    QString pix_name = frame_list.at(current);
+    QPixmap pic = frames[pix_name];
     if (m_fix_rect)
-        painter->drawPixmap(0, 0, m_size.width(), m_size.height(), frames.at(current));
+        painter->drawPixmap(0, 0, m_size.width(), m_size.height(), pic);
     else {
         double scale = G_ROOM_LAYOUT.scale;
-        painter->drawPixmap(0, 0, (int)(frames.at(current).width() * scale), (int)(frames.at(current).height() * scale), frames.at(current));
+        painter->drawPixmap(0, 0, (int)(pic.width() * scale), (int)(pic.height() * scale), pic);
     }
 }
 
@@ -99,7 +145,7 @@ QRectF PixmapAnimation::boundingRect() const
 {
     if (m_fix_rect) return QRect(0, 0, m_size.width(), m_size.height());
     double scale = G_ROOM_LAYOUT.scale;
-    return QRect(0, 0, (int)(frames.at(current).width() * scale), (int)(frames.at(current).height() * scale));
+    return QRect(0, 0, (int)(frames[frame_list.at(current)].width() * scale), (int)(frames[frame_list.at(current)].height() * scale));
 }
 
 bool PixmapAnimation::valid()
@@ -114,16 +160,21 @@ void PixmapAnimation::timerEvent(QTimerEvent *)
 
 void PixmapAnimation::start(bool permanent, int interval)
 {
+    if (_m_timerId > 0) {
+        if (m_timer > 0)
+            m_timeout = 0;
+        return;
+    }
+    m_interval = interval;
     _m_timerId = startTimer(interval);
     if (!permanent)
         connect(this, &PixmapAnimation::finished, this, &PixmapAnimation::deleteLater);
-    if (m_timer > 0)
-        QTimer::singleShot(m_timer, this, SLOT(end()));
 }
 
 void PixmapAnimation::stop()
 {
     killTimer(_m_timerId);
+    _m_timerId = 0;
     if (hideonstop) this->hide();
 }
 
@@ -140,10 +191,14 @@ bool PixmapAnimation::isFirstFrame()
 
 void PixmapAnimation::preStart()
 {
+    if (_m_timerId > 0) {
+        if (m_timer > 0)
+            m_timeout = 0;
+        return;
+    }
     this->show();
+	m_interval = S_DEFAULT_INTERVAL;
     _m_timerId = startTimer(S_DEFAULT_INTERVAL);
-    if (m_timer > 0)
-        QTimer::singleShot(m_timer, this, SLOT(end()));
 }
 
 void PixmapAnimation::end()

@@ -74,6 +74,13 @@ public:
         m_card->setSkillName(skillName);
     }
 
+    inline virtual void setSkillPosition(const QString &position)
+    {
+        m_skill_position = position;
+        Q_ASSERT(m_card != NULL);
+        m_card->setSkillPosition(position);
+    }
+
     // Set the internal card to be the new card, update everything related
     // to CardEffect including objectName.
     void takeOver(Card *card);
@@ -123,6 +130,12 @@ public:
     {
         Q_ASSERT(m_card != NULL);
         return m_card->canRecast();
+    }
+
+    inline virtual bool isVotes() const
+    {
+        Q_ASSERT(m_card != NULL);
+        return m_card->isVotes();
     }
 
     inline virtual Card::HandlingMethod getHandlingMethod() const
@@ -221,11 +234,10 @@ public:
         return m_card->targetFilter(targets, to_select, Self);
     }
 
-    inline virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select,
-        const Player *Self, int &maxVotes) const
+    inline virtual bool extratargetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
     {
         Q_ASSERT(m_card != NULL);
-        return m_card->targetFilter(targets, to_select, Self, maxVotes);
+        return m_card->extratargetFilter(targets, to_select, Self);
     }
 
     inline virtual bool isAvailable(const Player *player) const

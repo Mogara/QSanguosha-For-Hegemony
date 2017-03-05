@@ -41,7 +41,7 @@ const Card::Suit Card::AllSuits[4] = {
 
 Card::Card(Suit suit, int number, bool target_fixed)
     :target_fixed(target_fixed), mute(false),
-    will_throw(true), has_preact(false), can_recast(false), transferable(false),
+    will_throw(true), has_preact(false), can_recast(false), transferable(false), votes(false),
     m_suit(suit), m_number(number), m_id(-1)
 {
     handling_method = will_throw ? Card::MethodDiscard : Card::MethodUse;
@@ -100,7 +100,7 @@ int Card::getNumber() const
 {
     if (m_number > 0) return m_number;
     if (isVirtualCard()) {
-        if (subcardsLength() == 0)
+        if (subcardsLength() != 1)
             return 0;
         else {
             int num = 0;
@@ -416,11 +416,15 @@ QString Card::toString(bool hidden) const
     Q_UNUSED(hidden);
     if (!isVirtualCard())
         return QString::number(m_id);
-    else
-        return QString("%1:%2[%3:%4]=%5&%6")
+    else {
+        QString str = QString("%1:%2[%3:%4]=%5&%6")
         .arg(objectName()).arg(m_skillName)
         .arg(getSuitString()).arg(getNumberString()).arg(subcardString())
         .arg(show_skill);
+        if (!m_skill_position.isEmpty())
+            str = QString("%1?%2").arg(str).arg(m_skill_position);
+        return str;
+    }
 }
 
 QString Card::getEffectName() const
@@ -446,6 +450,16 @@ bool Card::isTransferable() const
 void Card::setTransferable(const bool transferbale)
 {
     this->transferable = transferbale;
+}
+
+bool Card::isVotes() const
+{
+    return votes;
+}
+
+void Card::setVotes(const bool votes)
+{
+    this->votes = votes;
 }
 
 QString Card::subcardString() const
@@ -552,7 +566,7 @@ const Card *Card::Parse(const QString &card_str)
         if (!card_suit.isEmpty())
             card->setSuit(suit_map.value(card_suit, Card::NoSuit));
 
-        if (!card_number.isEmpty()) {
+        if (!card_number.isEmpty() && subcard_ids.length() == 1) {
             int number = 0;
             if (card_number == "A")
                 number = 1;
@@ -710,11 +724,9 @@ bool Card::targetFilter(const QList<const Player *> &targets, const Player *to_s
     return targets.isEmpty() && to_select != Self;
 }
 
-bool Card::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self, int &maxVotes) const
+bool Card::extratargetFilter(const QList<const Player *> &, const Player *to_select, const Player *Self) const
 {
-    bool canSelect = targetFilter(targets, to_select, Self);
-    maxVotes = canSelect ? 1 : 0;
-    return canSelect;
+    return targetFilter(QList<const Player *>(), to_select, Self);
 }
 
 void Card::doPreAction(Room *, const CardUseStruct &) const
@@ -725,12 +737,6 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
 {
     CardUseStruct card_use = use;
     ServerPlayer *player = card_use.from;
-
-    if (!card_use.card->getSkillPosition().isEmpty()) {                //for serveral purpose. by weidouncle
-        QStringList skill_positions = room->getTag(card_use.card->getSkillName(true) + player->objectName()).toStringList();
-        skill_positions.append(card_use.card->getSkillPosition());
-        room->setTag(card_use.card->getSkillName(true) + player->objectName(), skill_positions);
-    }
     room->sortByActionOrder(card_use.to);
 
     bool hidden = (card_use.card->getTypeId() == TypeSkill && !card_use.card->willThrow());
@@ -768,17 +774,22 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
     card_use = data.value<CardUseStruct>();
 
     if (card_use.card->getTypeId() != TypeSkill) {
-        QString general;
+        CardMoveReason reason(CardMoveReason::S_REASON_USE, player->objectName(), QString(), card_use.card->getSkillName(), QString());
+        reason.m_cardString = card_use.card->toString();
         if (!card_use.card->getSkillPosition().isEmpty())
-            general = card_use.card->getSkillPosition() == "left" ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
-        CardMoveReason reason(CardMoveReason::S_REASON_USE, player->objectName(), QString(), card_use.card->getSkillName(), general);
+            reason.m_position = card_use.card->getSkillPosition();
         if (card_use.to.size() == 1)
             reason.m_targetId = card_use.to.first()->objectName();
+
         foreach (int id, used_cards) {
             CardsMoveStruct move(id, NULL, Player::PlaceTable, reason);
             moves.append(move);
         }
         room->moveCardsAtomic(moves, true);
+        if (used_cards.isEmpty()) {                                                                                 //show virtual card on table
+            CardsMoveStruct move(-1, NULL, Player::PlaceTable, reason);
+            room->notifyUsingVirtualCard(card_use.card->toString(), move);
+        }
         // show general
         player->showSkill(card_use.card->showSkill(), card_use.card->getSkillPosition());                           //new function by weidouncle
     } else {
@@ -794,6 +805,9 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
             if (!table_cardids.isEmpty()) {
                 DummyCard dummy(table_cardids);
                 CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName(), QString(), card_use.card->getSkillName(), QString());
+                reason.m_cardString = card_use.card->toString();
+                if (!card_use.card->getSkillPosition().isEmpty())
+                    reason.m_position = card_use.card->getSkillPosition();
                 room->moveCardTo(&dummy, player, NULL, Player::DiscardPile, reason, true);
             }
         }
@@ -801,13 +815,6 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
 
     thread->trigger(CardUsed, room, player, data);
     thread->trigger(CardFinished, room, player, data);
-    if (!card_use.card->getSkillPosition().isEmpty()) {
-        QStringList skill_positions = room->getTag(card_use.card->getSkillName(true) + player->objectName()).toStringList();        //remove this record when finish
-        if (!skill_positions.isEmpty()) {
-            skill_positions.removeLast();
-            room->setTag(card_use.card->getSkillName(true) + player->objectName(), skill_positions);
-        }
-    }
 }
 
 void Card::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
@@ -838,6 +845,7 @@ void Card::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets)
     if (!table_cardids.isEmpty()) {
         DummyCard dummy(table_cardids);
         CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName(), QString(), this->getSkillName(), QString());
+        reason.m_cardString = this->toString();
         if (targets.size() == 1) reason.m_targetId = targets.first()->objectName();
         room->moveCardTo(&dummy, source, NULL, Player::DiscardPile, reason, true);
     }
@@ -1011,10 +1019,10 @@ QString SkillCard::toString(bool hidden) const
 void SkillCard::extraCost(Room *room, const CardUseStruct &card_use) const
 {
     if (card_use.card->willThrow()) {
-        QString general;
+        CardMoveReason reason(CardMoveReason::S_REASON_THROW, card_use.from->objectName(), QString(), card_use.card->getSkillName(), QString());
+        reason.m_cardString = card_use.card->toString();
         if (!card_use.card->getSkillPosition().isEmpty())
-            general = card_use.card->getSkillPosition() == "left" ? card_use.from->getActualGeneral1Name() : card_use.from->getActualGeneral2Name();
-        CardMoveReason reason(CardMoveReason::S_REASON_THROW, card_use.from->objectName(), QString(), card_use.card->getSkillName(), general);
+            reason.m_position = card_use.card->getSkillPosition();
         room->moveCardTo(this, card_use.from, NULL, Player::PlaceTable, reason, true);
     }
 }

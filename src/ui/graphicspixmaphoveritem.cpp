@@ -185,8 +185,10 @@ void GraphicsPixmapHoverItem::startChangeHeroSkinAnimation(const QString &genera
     if (NULL != m_playerCardContainer) {
         if (isPrimaryAvartarItem()) {
             m_heroSkinPixmap = m_playerCardContainer->getHeadAvatarIcon(generalName);
+            m_playerCardContainer->stopHeadAnimation();
         } else {
             m_heroSkinPixmap = m_playerCardContainer->getDeputyAvatarIcon(generalName);
+            m_playerCardContainer->stopDeputyAnimation();
         }
 
         QSize itemSize = boundingRect().size().toSize();

@@ -39,6 +39,7 @@ public:
     friend class ChooseGeneralBox;
     void showCompanion();
     void hideCompanion();
+    void setConvert(bool convert);
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -52,6 +53,7 @@ private:
     GeneralCardItem(const QString &generalName, const int skinId);
 
     bool hasCompanion;
+    bool can_convert;
 #ifdef Q_OS_ANDROID
     QTimer timerLongPress;
     QPointF pressPos;
@@ -75,7 +77,8 @@ public:
     void clear();
 
 public slots:
-    void chooseGeneral(const QStringList &generals, bool m_viewOnly = false, bool single_result = false, const QString &reason = QString(), const Player *player = NULL, const bool can_convert = false);
+    void chooseGeneral(const QStringList &generals, bool m_viewOnly = false, bool single_result = false,
+                       const QString &reason = QString(), const Player *player = NULL, const bool can_convert = false, const bool assign_kingdom = false);
     void reply();
     void adjustItems();
 
@@ -83,6 +86,7 @@ private:
     int general_number;
     bool single_result;
     bool m_viewOnly;
+    QString assign_kingdom;
     QList<GeneralCardItem *> items, selected;
     static const int top_dark_bar = 27;
     static const int top_blank_width = 42;

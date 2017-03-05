@@ -74,7 +74,7 @@ void MiniSceneRule::assign(QStringList &generals, QStringList &generals2, QStrin
     }
 }
 
-bool MiniSceneRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+bool MiniSceneRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *, const TriggerStruct &) const
 {
     if (triggerEvent == EventPhaseStart) {
         /*
@@ -141,12 +141,14 @@ bool MiniSceneRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *
         while (players.first()->getState() == "robot")
             players.append(players.takeFirst());
 
-        QList<int> &drawPile = room->getDrawPile();
+        const QList<int> &drawPile = room->getDrawPile();
 
         foreach (int id, m_fixedDrawCards) {
             if (drawPile.contains(id)) {
-                drawPile.removeOne(id);
-                drawPile.prepend(id);
+                room->removeFromDrawPile(id);
+                room->returnToDrawPile(QList<int>() << id, false);
+                //drawPile.removeOne(id);
+                //drawPile.prepend(id);
             } else {
                 room->moveCardTo(Sanguosha->getCard(id), NULL, Player::DrawPile, true);
             }

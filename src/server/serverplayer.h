@@ -82,8 +82,8 @@ public:
     void clearPrivatePiles();
     int getMaxCards(MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     void drawCards(int n, const QString &reason = QString());
-    bool askForSkillInvoke(const QString &skill_name, const QVariant &data = QVariant());
-    bool askForSkillInvoke(const Skill *skill, const QVariant &data = QVariant());
+    bool askForSkillInvoke(const QString &skill_name, const QVariant &data = QVariant(), const QString &position = QString());
+    bool askForSkillInvoke(const Skill *skill, const QVariant &data = QVariant(), const QString &position = QString());
     QList<int> forceToDiscard(int discard_num, bool include_equip, bool is_discard = true);
     QList<int> forceToDiscard(int discard_num, const QString &pattern, const QString &expand_pile , bool is_discard);
     QList<int> handCards() const;
@@ -199,10 +199,8 @@ public:
     {
         return _m_clientResponse;
     }
-    inline void setClientReply(const QVariant &val)
-    {
-        _m_clientResponse = val;
-    }
+
+    void setClientReply(const QVariant &val);
     unsigned int m_expectedReplySerial; // Suggest the acceptable serial number of an expected response.
     bool m_isClientResponseReady; //Suggest whether a valid player's reponse has been received.
     bool m_isWaitingReply; // Suggest if the server player is waiting for client's response.

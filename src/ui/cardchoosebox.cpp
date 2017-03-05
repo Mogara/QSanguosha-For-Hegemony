@@ -432,19 +432,27 @@ bool CardChooseBox::check(const QList<int> &selected, int to_select)
 {
     lua_State *l = Sanguosha->getLuaState();
     QString pattern = func;
+    bool returns;
+    if (Sanguosha->getSkill(reason) && pattern == "c++") {
+        const Skill *skill = Sanguosha->getSkill(reason);
+        QList<const Card *> selected_card;
+        foreach (int id, selected)
+            selected_card << Sanguosha->getCard(id);
 
-    lua_getglobal(l, pattern.toLatin1().data());
-    pushQIntList(l, selected);
-    lua_pushinteger(l, to_select);
-    int result = lua_pcall(l, 2, 1, 0);
-    if (result) {
-        QMessageBox::warning(NULL, "lua_error", lua_tostring(l, -1));
+        return skill->chooseFilter(selected_card, Sanguosha->getCard(to_select));
+    } else {
+        lua_getglobal(l, pattern.toLatin1().data());
+        pushQIntList(l, selected);
+        lua_pushinteger(l, to_select);
+        int result = lua_pcall(l, 2, 1, 0);
+        if (result) {
+            QMessageBox::warning(NULL, "lua_error", lua_tostring(l, -1));
+            lua_pop(l, 1);
+            return false;
+        }
+        returns = lua_toboolean(l, -1);
         lua_pop(l, 1);
-        return false;
     }
-    bool returns = lua_toboolean(l, -1);
-    lua_pop(l, 1);
-
     return returns;
 }
 

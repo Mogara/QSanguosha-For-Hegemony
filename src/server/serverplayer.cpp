@@ -157,8 +157,10 @@ void ServerPlayer::throwAllMarks(bool visible_only)
 
 void ServerPlayer::clearOnePrivatePile(const QString &pile_name)
 {
+
     if (!piles.contains(pile_name))
         return;
+
     QList<int> &pile = piles[pile_name];
 
     DummyCard dummy(pile);
@@ -178,6 +180,7 @@ void ServerPlayer::bury()
 {
     clearFlags();
     clearHistory();
+    clearHistory("Analeptic");
     throwAllCards();
     throwAllMarks();
     clearPrivatePiles();
@@ -217,15 +220,15 @@ void ServerPlayer::drawCards(int n, const QString &reason)
     room->drawCards(this, n, reason);
 }
 
-bool ServerPlayer::askForSkillInvoke(const QString &skill_name, const QVariant &data)
+bool ServerPlayer::askForSkillInvoke(const QString &skill_name, const QVariant &data, const QString &position)
 {
-    return room->askForSkillInvoke(this, skill_name, data);
+    return room->askForSkillInvoke(this, skill_name, data, position);
 }
 
-bool ServerPlayer::askForSkillInvoke(const Skill *skill, const QVariant &data)
+bool ServerPlayer::askForSkillInvoke(const Skill *skill, const QVariant &data, const QString &position)
 {
     Q_ASSERT(skill != NULL);
-    return room->askForSkillInvoke(this, skill->objectName(), data);
+    return room->askForSkillInvoke(this, skill->objectName(), data, position);
 }
 
 QList<int> ServerPlayer::forceToDiscard(int discard_num, bool include_equip, bool is_discard)
@@ -461,6 +464,11 @@ void ServerPlayer::notify(CommandType type, const QVariant &arg)
     Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, type);
     packet.setMessageBody(arg);
     unicast(packet.toJson());
+}
+
+void ServerPlayer::setClientReply(const QVariant &val)
+{
+    _m_clientResponse = val;
 }
 
 QString ServerPlayer::reportHeader() const
@@ -720,6 +728,7 @@ bool ServerPlayer::pindian(PindianStruct *pd, int index)
     room->tryPause();
 
     ServerPlayer *target = pd->tos.at(index - 1);
+    int old_card_id = pd->from_card->getEffectiveId();
     const Card *to_card = pd->to_cards.at(index - 1);
     int to_number = pd->to_numbers.at(index - 1);
     int old_number = pd->from_number;
@@ -745,6 +754,24 @@ bool ServerPlayer::pindian(PindianStruct *pd, int index)
     pindian_struct.success = (new_star->from_number > new_star->to_number);
 
     thread->delay();
+
+    if (old_number != new_star->from_number || old_card_id != new_star->from_card->getEffectiveId()) {
+        arg.clear();
+        arg << (int)S_GAME_EVENT_ALTER_PINDIAN;
+        arg << this->objectName();
+        arg << new_star->from_number;
+        arg << new_star->from_card->getEffectiveId();
+        room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
+    }
+    if (to_number != new_star->to_number || to_card->getEffectiveId() != new_star->to_card->getEffectiveId()) {
+        arg.clear();
+        arg << (int)S_GAME_EVENT_ALTER_PINDIAN;
+        arg << target->objectName();
+        arg << new_star->to_number;
+        arg << new_star->to_card->getEffectiveId();
+        room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
+    }
+
     thread->delay();
 
     arg.clear();
@@ -769,7 +796,7 @@ bool ServerPlayer::pindian(PindianStruct *pd, int index)
     data = QVariant::fromValue(pindian_star);
     thread->trigger(Pindian, room, this, data);
 
-    pindian_struct.from_number = old_number;    //return the old for the next pd
+    pindian_struct.from_number = pindian_star->from_card->getNumber();    //return the old for the next pd
 
     QList<CardsMoveStruct> pd_move;
 
@@ -1450,61 +1477,51 @@ bool ServerPlayer::showSkill(const QString &skill_name, const QString &skill_pos
 {
     if (skill_name.isEmpty()) return false;
     bool result = false;
-    if (skill_name == "showforviewhas") {           //this is for some skills that player doesnt own but need to show, such as hongfa-slash. by weirdouncle
-        if (!hasShownOneGeneral()) {
-            QStringList q;
-            if (canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
-            if (canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
-            SPlayerDataMap map;
-            map.insert(this, q);
-            QString name;
-            if (q.length() > 1) {
-                name = room->askForTriggerOrder(this, "GameRule:ShowGeneral", map, false);
-                name.remove(objectName() + ":");
-            } else
-                 name = q.first();
-            showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
-            result = true;
+    int type = 0;
+    if (skill_name == "showforviewhas" && !hasShownOneGeneral())            //this is for some skills that player doesnt own but need to show, such as hongfa-slash. by weirdouncle
+        type = 1;
+
+    if (type == 0) {
+        const Skill *skill = Sanguosha->getSkill(skill_name);
+        if (skill == NULL) return false;
+        QList<const Skill *> heads = getHeadActivedSkills(false);
+        QList<const Skill *> deputys = getDeputyActivedSkills(false);
+        if (heads.contains(skill) || deputys.contains(skill)) {
+            bool head = getHeadActivedSkills(false).contains(skill);
+            if (!skill_position.isEmpty())
+                head = skill_position == "head" ? true : false;
+            if (head && !hasShownGeneral1()) {
+                showGeneral(true);
+                result = true;
+            }
+            if (!head && !hasShownGeneral2()) {
+                showGeneral(false);
+                result = true;
+            }
+        } else if (!hasShownSkill(skill)) {
+            const QList<const ViewHasSkill *> vhskills = Sanguosha->ViewHas(this, skill->objectName(), "skill");
+            foreach (const ViewHasSkill *vhskill, vhskills) {
+                if (vhskill && !vhskill->isGlobal()) {
+                    type = 1;
+                    break;
+                }
+            }
         }
-        return result;
     }
-
-    const Skill *skill = Sanguosha->getSkill(skill_name);
-    if (skill == NULL) return false;
-    QString actived_skill = skill->objectName();
-
-    if (ownSkill(actived_skill)) {                                          //acquired skills no need to show
-        bool head = inHeadSkills(actived_skill) && canShowGeneral("h");
-        if (!skill_position.isEmpty())
-            head = skill_position == "left" ? true : false;
-        if (head && !hasShownGeneral1()) {
-            showGeneral(true);
-            result = true;
-        }
-        if (!head && !hasShownGeneral2()) {
-            showGeneral(false);
-            result = true;
-        }
-    } else if (!hasShownSkill(actived_skill)) {                             //for show viewhasSkills, not consider duplicate yet. by weidouncle
-        const ViewHasSkill *vhskill = Sanguosha->ViewHas(this, actived_skill, "skill");
-        if (vhskill && ownSkill(vhskill)) {
-            showGeneral(inHeadSkills(vhskill->objectName()));
-            result = true;
-        } else if (vhskill && !vhskill->isGlobal()) {
-            QStringList q;
-            if (canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
-            if (canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
-            SPlayerDataMap map;
-            map.insert(this, q);
-            QString name;
-            if (q.length() > 1) {
-                name = room->askForTriggerOrder(this, "GameRule:ShowGeneral", map, false);
-                name.remove(objectName() + ":");
-            } else
-                name = q.first();
-            showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
-            result = true;
-        }
+    if (type == 1) {
+        QStringList q;
+        if (canShowGeneral("h")) q << "GameRule_AskForGeneralShowHead";
+        if (canShowGeneral("d")) q << "GameRule_AskForGeneralShowDeputy";
+        SPlayerDataMap map;
+        map.insert(this, q);
+        QString name;
+        if (q.length() > 1) {
+            name = room->askForTriggerOrder(this, "GameRule:ShowGeneral", map, false);
+            name.remove(objectName() + ":");
+        } else
+            name = q.first();
+        showGeneral(name == "GameRule_AskForGeneralShowHead" ? true : false, true, true, false);
+        result = true;
     }
     return result;
 }
@@ -1557,26 +1574,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
             QString kingdom = getKingdom() != getGeneral()->getKingdom() ? getKingdom() : getGeneral()->getKingdom();
             room->setPlayerProperty(this, "kingdom", kingdom);
 
-            QString role = HegemonyMode::GetMappedRole(kingdom);
-            int i = 1;
-            bool has_lord = isAlive() && getGeneral()->isLord();
-            if (!has_lord) {
-                foreach (ServerPlayer *p, room->getOtherPlayers(this, true)) {
-                    if (p->getKingdom() == kingdom) {
-                        if (p->getGeneral()->isLord()) {
-                            has_lord = true;
-                            break;
-                        }
-                        if (p->hasShownOneGeneral() && p->getRole() != "careerist")
-                            ++i;
-                    }
-                }
-            }
-
-            if ((!has_lord && i > (room->getPlayers().length() / 2)) || (has_lord && getLord(true)->isDead()))
-                role = "careerist";
-
-            room->setPlayerProperty(this, "role", role);
+            room->setPlayerProperty(this, "role", willbeRole());
         }
 
         if (isLord()) {
@@ -1626,26 +1624,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
             QString kingdom = getKingdom() != getGeneral()->getKingdom() ? getKingdom() : getGeneral()->getKingdom();
             room->setPlayerProperty(this, "kingdom", kingdom);
 
-            QString role = HegemonyMode::GetMappedRole(kingdom);
-            int i = 1;
-            bool has_lord = isAlive() && getGeneral()->isLord();
-            if (!has_lord) {
-                foreach (ServerPlayer *p, room->getOtherPlayers(this, true)) {
-                    if (p->getKingdom() == kingdom) {
-                        if (p->getGeneral()->isLord()) {
-                            has_lord = true;
-                            break;
-                        }
-                        if (p->hasShownOneGeneral() && p->getRole() != "careerist")
-                            ++i;
-                    }
-                }
-            }
-
-            if ((!has_lord && i > (room->getPlayers().length() / 2)) || (has_lord && getLord(true)->isDead()))
-                role = "careerist";
-
-            room->setPlayerProperty(this, "role", role);
+            room->setPlayerProperty(this, "role", willbeRole());
         }
     }
 
@@ -1769,15 +1748,18 @@ void ServerPlayer::removeGeneral(bool head_general)
 
     room->setEmotion(this, "remove");
 
+    QVariant _head = head_general;
     if (head_general) {
         if (!hasShownGeneral1())
-            showGeneral();   //zoushi?
+            showGeneral(true, false, false);   //zoushi?
 
         from_general = getActualGeneral1Name();
         if (from_general.contains("sujiang")) return;
+        room->getThread()->trigger(GeneralStartRemove, room, this, _head);
         General::Gender gender = getActualGeneral1()->getGender();
         general_name = gender == General::Male ? "sujiang" : "sujiangf";
 
+        setActualGeneral1Name(general_name);
         room->setPlayerProperty(this, "actual_general1", general_name);
         room->setPlayerProperty(this, "general1_showed", true);
 
@@ -1788,6 +1770,9 @@ void ServerPlayer::removeGeneral(bool head_general)
         arg << false;
         arg << false;
         room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
+        setHeadSkinId(0);
+        foreach(ServerPlayer *p, room->getAllPlayers(true))
+            room->notifyProperty(p, this, "head_skin_id");
         room->changePlayerGeneral(this, general_name);
 
         setSkillsPreshowed("h", false);
@@ -1799,13 +1784,15 @@ void ServerPlayer::removeGeneral(bool head_general)
         }
     } else {
         if (!hasShownGeneral2())
-            showGeneral(false); //zoushi?
+            showGeneral(false, false, false); //zoushi?
 
         from_general = getActualGeneral2Name();
         if (from_general.contains("sujiang")) return;
+        room->getThread()->trigger(GeneralStartRemove, room, this, _head);
         General::Gender gender = getActualGeneral2()->getGender();
         general_name = gender == General::Male ? "sujiang" : "sujiangf";
 
+        setActualGeneral2Name(general_name);
         room->setPlayerProperty(this, "actual_general2", general_name);
         room->setPlayerProperty(this, "general2_showed", true);
 
@@ -1816,6 +1803,9 @@ void ServerPlayer::removeGeneral(bool head_general)
         arg << true;
         arg << false;
         room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
+        setDeputySkinId(0);
+        foreach(ServerPlayer *p, room->getAllPlayers(true))
+            room->notifyProperty(p, this, "deputy_skin_id");
         room->changePlayerGeneral2(this, general_name);
 
         setSkillsPreshowed("d", false);
@@ -1834,6 +1824,7 @@ void ServerPlayer::removeGeneral(bool head_general)
     log.arg2 = from_general;
     room->sendLog(log);
 
+    from_general = from_general + (head_general ? ":head" : ":deputy");
     Q_ASSERT(room->getThread() != NULL);
     QVariant _from = from_general;
     room->getThread()->trigger(GeneralRemoved, room, this, _from);

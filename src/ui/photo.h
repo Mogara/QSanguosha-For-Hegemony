@@ -144,7 +144,8 @@ protected:
 
     QHash<QString, PixmapAnimation *> _m_frameBorders;
     QHash<QString, PixmapAnimation *> _m_roleBorders;
-    void _createBattleArrayAnimations();
+    void _createBattleArrayAnimations(QString &kingdom);
+    void onSkinChangingFinished();
 };
 
 #endif

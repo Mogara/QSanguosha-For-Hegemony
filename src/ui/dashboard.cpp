@@ -35,7 +35,6 @@
 #include <QMenu>
 #include <QPixmapCache>
 #include <QParallelAnimationGroup>
-#include <QToolTip>
 
 using namespace QSanProtocol;
 
@@ -120,6 +119,7 @@ void Dashboard::repaintAll()
     QStringList kingdoms = Sanguosha->getKingdoms();
     kingdoms.removeAll("god");
     foreach (const QString &kingdom, kingdoms) {
+        if (!_m_frameBorders[kingdom]) continue;
         _m_frameBorders[kingdom]->setSize(QSize(layout->m_avatarArea.width() * 2 * 1.1, layout->m_normalHeight * 1.2));
         _m_frameBorders[kingdom]->setPos(- layout->m_avatarArea.width() * 0.1, - layout->m_normalHeight * 0.1);
         double scale = G_ROOM_LAYOUT.scale;
@@ -292,8 +292,8 @@ void Dashboard::_createRight()
         G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height() / 1.3);
     m_rightSkillDock->setWidth(avatar2.width());
 #endif
-    m_leftSkillDock->setObjectName("left");
-    m_rightSkillDock->setObjectName("right");
+    m_leftSkillDock->setObjectName("head");
+    m_rightSkillDock->setObjectName("deputy");
 
     _m_shadow_layer1 = new QGraphicsRectItem(rightFrame);
     _m_shadow_layer1->setRect(G_DASHBOARD_LAYOUT.m_avatarArea);
@@ -324,8 +324,9 @@ void Dashboard::_createRight()
     connect(m_changeDeputyHeroSkinButton, &QSanButton::clicked, this, &Dashboard::showHeroSkinList);
     connect(m_changeDeputyHeroSkinButton, &QSanButton::clicked_outside, this, &Dashboard::heroSkinButtonMouseOutsideClicked);
 
-    _createBattleArrayAnimations();
+#ifndef Q_OS_ANDROID
     _createChainAnimation();
+#endif
 }
 
 void Dashboard::_updateFrames()
@@ -363,6 +364,8 @@ void Dashboard::killPlayer()
     if (_m_distanceItem) _m_distanceItem->hide();
 
     _m_deathIcon->show();
+    stopHeadAnimation();
+    if (m_player->getGeneral2()) stopDeputyAnimation();
 }
 
 void Dashboard::revivePlayer()
@@ -459,6 +462,30 @@ void Dashboard::_addHandCard(CardItem *card_item, bool prepend, const QString &f
     }
 
     if (m_handCards.size() > maxCardsNumInFirstLine() && m_progressBarPositon != Up)
+        moveProgressBarUp();
+}
+
+void Dashboard::_addGuhuoCard(CardItem *card_item, const QString &footnote)
+{
+    card_item->setHomeOpacity(1.0);
+    card_item->setRotation(0.0);
+    card_item->setFlag(ItemIsFocusable);
+    card_item->setZValue(0.1);
+    if (!footnote.isEmpty()) {
+        card_item->setFootnote(footnote);
+        card_item->showFootnote();
+    }
+    m_guhuoCards.append(card_item);
+
+    connect(card_item, &CardItem::clicked, this, &Dashboard::onCardItemClicked);
+    connect(card_item, &CardItem::double_clicked, this, &Dashboard::onCardItemDoubleClicked);
+    connect(card_item, &CardItem::thrown, this, &Dashboard::onCardItemThrown);
+    connect(card_item, &CardItem::enter_hover, this, &Dashboard::bringSenderToTop);
+    connect(card_item, &CardItem::leave_hover, this, &Dashboard::resetSenderZValue);
+
+    card_item->setOuterGlowEffectEnabled(true);
+
+    if (m_handCards.size() > 0 && m_progressBarPositon != Up)
         moveProgressBarUp();
 }
 
@@ -569,14 +596,23 @@ void Dashboard::selectCard(CardItem *item, bool isSelected)
     QPointF newPos = oldPos;
     newPos.setY(newPos.y() + (isSelected ? 1 : -1) * S_PENDING_OFFSET_Y);
     item->setHomePos(newPos);
-    selected = item;
+    if (isSelected)
+        selected = item;
+    else
+        selected = NULL;
 
     m_mutex.unlock();
 }
 
-void Dashboard::unselectAll(const CardItem *except)
+void Dashboard::unselectAll(const CardItem *except, bool update_pending)
 {
     selected = NULL;
+    emit card_unselect();
+
+    foreach (CardItem *card_item, m_guhuoCards) {
+        if (card_item != except)
+            selectCard(card_item, false);
+    }
 
     foreach (CardItem *card_item, m_handCards) {
         if (card_item != except)
@@ -590,7 +626,8 @@ void Dashboard::unselectAll(const CardItem *except)
     }
     if (viewAsSkill) {
         pendings.clear();
-        updatePending();
+        if (update_pending)
+            updatePending();
     }
 }
 
@@ -761,6 +798,9 @@ void Dashboard::clearPendings()
     selected = NULL;
     foreach(CardItem *item, m_handCards)
         selectCard(item, false);
+
+    foreach(CardItem *item, m_guhuoCards)
+        selectCard(item, false);
     pendings.clear();
 }
 
@@ -772,10 +812,6 @@ QList<TransferButton *> Dashboard::getTransferButtons() const
 void Dashboard::skillButtonActivated()
 {
     QSanSkillButton *button = qobject_cast<QSanSkillButton *>(sender());
-    if (!button->objectName().isEmpty()) {                          //for record which button is pressed. by weidouncle
-        QString position = button->objectName();
-        Self->tag[button->getSkill()->objectName() + "_position"] = position;
-    }
     QList<QSanInvokeSkillButton *> buttons = m_leftSkillDock->getAllSkillButtons()
         + m_rightSkillDock->getAllSkillButtons();
     foreach (QSanSkillButton *btn, buttons) {
@@ -826,7 +862,7 @@ void Dashboard::selectAll()
 void Dashboard::selectCards(const QString &pattern)
 {
     if (viewAsSkill) {
-        unselectAll();
+        unselectAll(0, false);
         foreach (CardItem *card_item, m_handCards) {
             if (!Sanguosha->matchExpPattern(pattern, Self, card_item->getCard())) continue;
             selectCard(card_item, true);
@@ -947,48 +983,46 @@ void Dashboard::_setEquipBorderAnimation(int index, bool turnOn)
     _mutexEquipAnim.unlock();
 }
 
-void Dashboard::_createBattleArrayAnimations()
+void Dashboard::_createBattleArrayAnimations(QString &kingdom)
 {
-    QStringList kingdoms = Sanguosha->getKingdoms();
-    kingdoms.removeAll("god");
-    foreach (const QString &kingdom, kingdoms) {
-        _m_frameBorders[kingdom] = new PixmapAnimation();
-        _m_frameBorders[kingdom]->setZValue(30000);
-        _m_roleBorders[kingdom] = new PixmapAnimation();
-        _m_roleBorders[kingdom]->setZValue(30000);
-        _m_frameBorders[kingdom]->setParentItem(_getFocusFrameParent());
-        _m_roleBorders[kingdom]->setParentItem(rightFrame);
-        _m_frameBorders[kingdom]->setSize(QSize(layout->m_avatarArea.width() * 2 * 1.1, layout->m_normalHeight * 1.2));
-        _m_frameBorders[kingdom]->setPath(QString("image/kingdom/battlearray/big/%1/").arg(kingdom));
-        _m_roleBorders[kingdom]->setPath(QString("image/kingdom/battlearray/roles/%1/").arg(kingdom));
-        _m_frameBorders[kingdom]->setPlayTime(2000);
-        _m_roleBorders[kingdom]->setPlayTime(2000);
-        if (!_m_frameBorders[kingdom]->valid()) {
-            delete _m_frameBorders[kingdom];
-            delete _m_roleBorders[kingdom];
-            _m_frameBorders[kingdom] = NULL;
-            _m_roleBorders[kingdom] = NULL;
-            continue;
-        }
-        _m_frameBorders[kingdom]->setPos(- layout->m_avatarArea.width() * 0.1, - layout->m_normalHeight * 0.1);
-
-        double scale = G_ROOM_LAYOUT.scale;
-        QPixmap pix;
-        pix.load("image/system/roles/careerist.png");
-        int w = pix.width() * scale;
-        //int h = pix.height() * scale;
-        _m_roleBorders[kingdom]->setPos(G_DASHBOARD_LAYOUT.m_roleComboBoxPos
-                                    - QPoint((_m_roleBorders[kingdom]->boundingRect().width() - w) / 2, (_m_roleBorders[kingdom]->boundingRect().height()) / 2));
-        _m_frameBorders[kingdom]->setHideonStop(true);
-        _m_roleBorders[kingdom]->setHideonStop(true);
-        _m_frameBorders[kingdom]->hide();
-        _m_roleBorders[kingdom]->hide();
+    if (_m_frameBorders[kingdom] && _m_roleBorders[kingdom]) return;
+    _m_frameBorders[kingdom] = new PixmapAnimation();
+    _m_frameBorders[kingdom]->setZValue(30000);
+    _m_roleBorders[kingdom] = new PixmapAnimation();
+    _m_roleBorders[kingdom]->setZValue(30000);
+    _m_frameBorders[kingdom]->setParentItem(_getFocusFrameParent());
+    _m_roleBorders[kingdom]->setParentItem(rightFrame);
+    _m_frameBorders[kingdom]->setSize(QSize(layout->m_avatarArea.width() * 2 * 1.1, layout->m_normalHeight * 1.2));
+    _m_frameBorders[kingdom]->setPath(QString("image/kingdom/battlearray/big/%1/").arg(kingdom));
+    _m_roleBorders[kingdom]->setPath(QString("image/kingdom/battlearray/roles/%1/").arg(kingdom));
+    _m_frameBorders[kingdom]->setPlayTime(2000);
+    _m_roleBorders[kingdom]->setPlayTime(2000);
+    if (!_m_frameBorders[kingdom]->valid()) {
+        delete _m_frameBorders[kingdom];
+        delete _m_roleBorders[kingdom];
+        _m_frameBorders[kingdom] = NULL;
+        _m_roleBorders[kingdom] = NULL;
+        return;
     }
+    _m_frameBorders[kingdom]->setPos(- layout->m_avatarArea.width() * 0.1, - layout->m_normalHeight * 0.1);
+
+    double scale = G_ROOM_LAYOUT.scale;
+    QPixmap pix;
+    pix.load("image/system/roles/careerist.png");
+    int w = pix.width() * scale;
+    //int h = pix.height() * scale;
+    _m_roleBorders[kingdom]->setPos(G_DASHBOARD_LAYOUT.m_roleComboBoxPos
+                        - QPoint((_m_roleBorders[kingdom]->boundingRect().width() - w) / 2, (_m_roleBorders[kingdom]->boundingRect().height()) / 2));
+    _m_frameBorders[kingdom]->setHideonStop(true);
+    _m_roleBorders[kingdom]->setHideonStop(true);
+    _m_frameBorders[kingdom]->hide();
+    _m_roleBorders[kingdom]->hide();
 }
 
 void Dashboard::playBattleArrayAnimations()
 {
     QString kingdom = getPlayer()->getKingdom();
+    _createBattleArrayAnimations(kingdom);
     _m_frameBorders[kingdom]->show();
     _m_frameBorders[kingdom]->start(true, 30);
     _m_roleBorders[kingdom]->preStart();
@@ -1004,7 +1038,7 @@ void Dashboard::_initializeRemovedEffect()
 }
 
 void Dashboard::showHeroSkinListHelper(const General *general,
-    HeroSkinContainer * &heroSkinContainer)
+    HeroSkinContainer * &heroSkinContainer, const QString position)
 {
     if (NULL == general) {
         return;
@@ -1012,10 +1046,10 @@ void Dashboard::showHeroSkinListHelper(const General *general,
 
     QString generalName = general->objectName();
     if (NULL == heroSkinContainer) {
-        heroSkinContainer = RoomSceneInstance->findHeroSkinContainer(generalName);
+        heroSkinContainer = RoomSceneInstance->findHeroSkinContainer(position);
 
         if (NULL == heroSkinContainer) {
-            heroSkinContainer = new HeroSkinContainer(generalName, general->getKingdom());
+            heroSkinContainer = new HeroSkinContainer(generalName, general->getKingdom(), position);
 
             RoomSceneInstance->addHeroSkinContainer(heroSkinContainer);
             RoomSceneInstance->addItem(heroSkinContainer);
@@ -1075,38 +1109,69 @@ int Dashboard::maxCardsNumInFirstLine() const
 void Dashboard::adjustCards(bool playAnimation)
 {
     _adjustCards();
+
+    foreach(CardItem *card, m_guhuoCards)
+        card->goBack(playAnimation);
+
     foreach(CardItem *card, m_handCards)
         card->goBack(playAnimation);
 }
 
 void Dashboard::_adjustCards()
 {
-    int maxCards = maxCardsNumInFirstLine();
     QList<CardItem *> row;
     QSanRoomSkin::DashboardLayout *layout = (QSanRoomSkin::DashboardLayout *)_m_layout;
     int leftWidth = layout->m_leftWidth;
     int cardHeight = G_COMMON_LAYOUT.m_cardNormalHeight;
     int middleWidth = width - layout->m_leftWidth - layout->m_rightWidth - this->getButtonWidgetWidth();
     QRect rowRect = QRect(leftWidth, layout->m_normalHeight - cardHeight - 3, middleWidth, cardHeight);
-    for (int i = 0; i < maxCards; i++)
-        row.push_back(m_handCards[i]);
-
-    int n = m_handCards.size();
+    int n = m_handCards.size() + m_guhuoCards.size();
     if (n == 0)
         return;
 
-    _m_highestZ = n;
-    _disperseCards(row, rowRect, Qt::AlignLeft, true, true);
+    if (!m_guhuoCards.isEmpty()) {
+        for (int i = 0; i < m_guhuoCards.length(); i++)
+            row.push_back(m_guhuoCards[i]);
 
-    row.clear();
-    rowRect.translate(0, 1.5 * S_PENDING_OFFSET_Y);
-    for (int i = maxCards; i < n; i++)
-        row.push_back(m_handCards[i]);
+        _m_highestZ = n;
+        _disperseCards(row, rowRect, Qt::AlignLeft, true, true);
 
-    _m_highestZ = 0;
-    _disperseCards(row, rowRect, Qt::AlignLeft, true, true);
+        row.clear();
+        rowRect.translate(0, 1.5 * S_PENDING_OFFSET_Y);
+        for (int i = 0; i < m_handCards.length(); i++)
+            row.push_back(m_handCards[i]);
 
-    for (int i = 0; i < n; i++) {
+        _m_highestZ = 0;
+        _disperseCards(row, rowRect, Qt::AlignLeft, true, true);
+
+
+    } else {
+        int maxCards = maxCardsNumInFirstLine();
+        for (int i = 0; i < maxCards; i++)
+            row.push_back(m_handCards[i]);
+
+        _m_highestZ = n;
+        _disperseCards(row, rowRect, Qt::AlignLeft, true, true);
+
+        row.clear();
+        rowRect.translate(0, 1.5 * S_PENDING_OFFSET_Y);
+        for (int i = maxCards; i < n; i++)
+            row.push_back(m_handCards[i]);
+
+        _m_highestZ = 0;
+        _disperseCards(row, rowRect, Qt::AlignLeft, true, true);
+    }
+
+    for (int i = 0; i < m_guhuoCards.length(); i++) {
+        CardItem *card = m_guhuoCards[i];
+        if (card->isSelected()) {
+            QPointF newPos = card->homePos();
+            newPos.setY(newPos.y() + S_PENDING_OFFSET_Y);
+            card->setHomePos(newPos);
+        }
+    }
+
+    for (int i = 0; i < m_handCards.length(); i++) {
         CardItem *card = m_handCards[i];
         if (card->isSelected()) {
             QPointF newPos = card->homePos();
@@ -1147,7 +1212,11 @@ QList<CardItem *> Dashboard::removeHandCards(const QList<int> &card_ids)
     CardItem *card_item;
     foreach (int card_id, card_ids) {
         card_item = CardItem::FindItem(m_handCards, card_id);
-        if (card_item == selected) selected = NULL;
+        if (card_item == selected) {
+            if (RoomSceneInstance->isOkButtonEnabled())
+                RoomSceneInstance->resetButton();
+            selected = NULL;
+        }
         Q_ASSERT(card_item);
         if (card_item) {
             m_handCards.removeOne(card_item);
@@ -1177,6 +1246,7 @@ QList<CardItem *> Dashboard::removeHandCards(const QList<int> &card_ids)
 QList<CardItem *> Dashboard::removeCardItems(const QList<int> &card_ids, Player::Place place)
 {
     CardItem *card_item = NULL;
+    bool pileNeedAdjust = false;
     QList<CardItem *> result;
     if (place == Player::PlaceHand)
         result = removeHandCards(card_ids);
@@ -1189,6 +1259,21 @@ QList<CardItem *> Dashboard::removeCardItems(const QList<int> &card_ids, Player:
             card_item = _createCard(card_id);
             card_item->setOpacity(0.0);
             result.push_back(card_item);
+
+            CardItem *card_item = CardItem::FindItem(m_handCards, card_id);
+            if (card_item == selected) {
+                if (RoomSceneInstance->isOkButtonEnabled())
+                    RoomSceneInstance->resetButton();
+                selected = NULL;
+            }
+            Q_ASSERT(card_item);
+            if (card_item) {
+                pileNeedAdjust = true;
+                m_handCards.removeOne(card_item);
+                card_item->disconnect(this);
+                delete card_item;
+                card_item = NULL;
+            }
         }
     } else {
         Q_ASSERT(false);
@@ -1210,6 +1295,8 @@ QList<CardItem *> Dashboard::removeCardItems(const QList<int> &card_ids, Player:
             Q_ASSERT(false);
         rect.moveCenter(center.toPoint());
         _disperseCards(result, rect, Qt::AlignCenter, false, false);
+        if (place == Player::PlaceSpecial && pileNeedAdjust)
+            adjustCards();
     }
     update();
     return result;
@@ -1347,7 +1434,7 @@ void Dashboard::startPending(const ViewAsSkill *skill)
     m_mutexEnableCards.lock();
     viewAsSkill = skill;
     pendings.clear();
-    unselectAll();
+    unselectAll(0, false);
 
     bool expand = (skill && skill->isResponseOrUse());
     if (!expand && skill && skill->inherits("ResponseSkill")) {
@@ -1356,12 +1443,15 @@ void Dashboard::startPending(const ViewAsSkill *skill)
             expand = true;
     }
 
+    removeAllVirtualCard();
     retractAllSkillPileCards();
+    adjustCards();
+
     if (expand) {
         foreach (const QString &pile, Self->getHandPileList(false))
             expandPileCards(pile);
     } else {
-       foreach (const QString &pile, Self->getHandPileList(false))
+        foreach (const QString &pile, Self->getHandPileList(false))
             retractPileCards(pile);
         if (skill && !skill->getExpandPile().isEmpty()) {
             foreach(const QString &pile_name, skill->getExpandPile().split(","))
@@ -1382,6 +1472,7 @@ void Dashboard::stopPending()
 {
     m_mutexEnableCards.lock();
 
+    removeAllVirtualCard();
     if (viewAsSkill && !viewAsSkill->getExpandPile().isEmpty()) {
         foreach(const QString &pile_name, viewAsSkill->getExpandPile().split(","))
             retractPileCards(pile_name);
@@ -1407,9 +1498,102 @@ void Dashboard::stopPending()
             disconnect(equip, &CardItem::mark_changed, this, &Dashboard::onMarkChanged);
         }
     }
+
     pendings.clear();
     adjustCards(true);
     m_mutexEnableCards.unlock();
+}
+/*
+void Dashboard::expandGuhuoPile(const QString &pile_name, const ViewAsSkill *skill)
+{
+    if (_m_pile_expanded.contains(pile_name) || !pile_name.startsWith("guhuo_")) return;
+    QString guhuo_type = pile_name.mid(6);
+
+    if (guhuo_type.startsWith("!") && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
+        return;
+    if (!guhuo_type.startsWith("!") && !guhuo_type.endsWith("!") && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
+        return;
+
+    _m_pile_expanded << pile_name;
+    QStringList all;
+
+    QList<const Card *> cards = Sanguosha->getCards();
+    if (guhuo_type.contains("b")) {
+        foreach (const Card *card, cards) {
+            if (card->isKindOf("BasicCard") && !all.contains(card->objectName())
+                && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
+                all << card->objectName();
+            }
+        }
+    }
+
+    if (guhuo_type.contains("t")) {
+        foreach (const Card *card, cards) {
+            if (card->isNDTrick() && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
+                if (all.contains(card->objectName()))
+                    continue;
+
+                if (card->inherits("SingleTargetTrick"))
+                    all << card->objectName();
+                else
+                    all << card->objectName();
+
+            }
+        }
+    }
+
+    if (guhuo_type.contains("d")) {
+        foreach (const Card *card, cards) {
+            if (!card->isNDTrick() && card->isKindOf("TrickCard") && !all.contains(card->objectName())
+                && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
+                all << card->objectName();
+            }
+        }
+    }
+
+    QList<CardItem *> card_items;
+    if (!all.isEmpty()) {
+        foreach (QString name, all) {
+            Card *card = Sanguosha->cloneCard(name);
+
+            if (skill->objectName() == "qice") card->addSubcards(Self->getHandcards());     //special for qice
+
+            card->setCanRecast(false);
+            card->deleteLater();
+            if (Sanguosha->getSkill(skill->objectName())->checkGuhuo(card)) {
+                CardItem *item = new CardItem(card);
+                item->setOpacity(0.0);
+                item->setParentItem(this);
+                card_items << item;
+            }
+        }
+    } else
+        return;
+
+    foreach (CardItem *card_item, card_items) {
+        card_item->setPos(mapFromScene(card_item->scenePos()));
+        card_item->setParentItem(this);
+    }
+
+    foreach(CardItem *card_item, card_items)
+        _addHandCard(card_item, true, Sanguosha->translate(skill->objectName()));
+
+    adjustCards();
+    _playMoveCardsAnimation(card_items, false);
+    update();
+}
+*/
+
+void Dashboard::removeAllVirtualCard()
+{
+    foreach (CardItem *card_item, m_guhuoCards) {
+        Q_ASSERT(card_item);
+        if (card_item == selected) selected = NULL;
+        card_item->disconnect(this);
+        delete card_item;
+        card_item = NULL;
+    }
+    m_guhuoCards.clear();
 }
 
 void Dashboard::expandPileCards(const QString &pile_name)
@@ -1432,9 +1616,9 @@ void Dashboard::expandPileCards(const QString &pile_name)
         card_item->setParentItem(this);
     }
     bool prepend = true;
-    if (new_name.startsWith("#")) {
+    if (new_name.startsWith("#"))
         prepend = false;
-    }
+
     foreach(CardItem *card_item, card_items)
         _addHandCard(card_item, prepend, Sanguosha->translate(new_name));
 
@@ -1447,6 +1631,7 @@ void Dashboard::retractPileCards(const QString &pile_name)
 {
     if (!_m_pile_expanded.contains(pile_name)) return;
     _m_pile_expanded.removeOne(pile_name);
+
     QString new_name = pile_name;
     QList<int> pile;
     if (new_name.startsWith("%")) {
@@ -1469,6 +1654,7 @@ void Dashboard::retractPileCards(const QString &pile_name)
             card_item = NULL;
         }
     }
+
     adjustCards();
     update();
 }
@@ -1493,8 +1679,14 @@ void Dashboard::onCardItemClicked()
             if (viewAsSkill->inherits("TransferSkill"))
                 RoomSceneInstance->doCancelButton();
         } else {
-            if (viewAsSkill->inherits("OneCardViewAsSkill"))
-                unselectAll();
+            if (m_guhuoCards.contains(card_item)) {
+                pendings.clear();
+                foreach (CardItem *card_item, m_guhuoCards)
+                    selectCard(card_item, false);
+                adjustCards(true);
+            } else if (viewAsSkill->inherits("OneCardViewAsSkill"))
+                unselectAll(0, false);
+
             selectCard(card_item, true);
             pendings << card_item;
         }
@@ -1513,10 +1705,11 @@ void Dashboard::onCardItemClicked()
         }
     }
 }
-
+/*
 void Dashboard::updatePending()
 {
     if (!viewAsSkill) return;
+
     QList<const Card *> cards;
     foreach(CardItem *item, pendings)
         cards.append(item->getCard());
@@ -1526,7 +1719,11 @@ void Dashboard::updatePending()
         pended = cards;
 
     foreach (CardItem *item, m_handCards) {
-        if (!item->isSelected() || pendings.isEmpty()) {
+        if (item->getId() == Card::S_UNKNOWN_CARD_ID) {                         //virtual cards should always be free
+            item->setFrozen(false, false);
+            if (Config.EnableSuperDrag)
+                item->setFlag(ItemIsMovable);
+        } else if (!item->isSelected() || pendings.isEmpty()) {
             const bool frozen = !viewAsSkill->viewFilter(pended, item->getCard());
             item->setFrozen(frozen, false);
             if (!frozen && Config.EnableSuperDrag)
@@ -1556,6 +1753,99 @@ void Dashboard::updatePending()
         pendingCard = new_pending_card;
         emit card_selected(pendingCard);
     }
+}
+*/
+void Dashboard::updatePending()
+{
+    if (!viewAsSkill) return;
+
+    QList<const Card *> cards;
+    foreach(CardItem *item, pendings)
+        cards.append(item->getCard());
+
+    if (m_guhuoCards.isEmpty()) {
+        QList<const Card *> pended;
+        if (!viewAsSkill->inherits("OneCardViewAsSkill"))
+            pended = cards;
+
+        foreach (CardItem *item, m_handCards) {
+            if (!item->isSelected() || pendings.isEmpty()) {
+                const bool frozen = !viewAsSkill->viewFilter(pended, item->getCard());
+                item->setFrozen(frozen, false);
+                if (!frozen && Config.EnableSuperDrag)
+                    item->setFlag(ItemIsMovable);
+            }
+        }
+
+        for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
+            CardItem *equip = _m_equipCards[i];
+            if (equip && !equip->isMarked())
+                equip->setMarkable(viewAsSkill->viewFilter(pended, equip->getCard()));
+            if (equip) {
+                if (!equip->isMarkable() && (!_m_equipSkillBtns[i] || !_m_equipSkillBtns[i]->isEnabled()))
+                    _m_equipRegions[i]->setOpacity(0.7);
+                else
+                    _m_equipRegions[i]->setOpacity(1.0);
+            }
+        }
+
+        QList<const Card *> guhuo_cards = viewAsSkill->getGuhuoCards(cards);
+
+        if (!guhuo_cards.isEmpty()) {
+            QList<CardItem *> card_items;
+            foreach (const Card *card, guhuo_cards) {
+                CardItem *item = new CardItem(card);
+                item->setOpacity(0.0);
+                item->setParentItem(this);
+                card_items << item;
+            }
+            foreach (CardItem *card_item, card_items) {
+                card_item->setPos(mapFromScene(card_item->scenePos()));
+                card_item->setParentItem(this);
+            }
+
+            foreach(CardItem *card_item, card_items)
+                _addGuhuoCard(card_item, Sanguosha->translate(viewAsSkill->objectName()));
+
+            adjustCards();
+            _playMoveCardsAnimation(card_items, false);
+            update();
+
+            pendings.clear();
+
+            foreach (CardItem *item, m_guhuoCards) {
+                item->setFrozen(false, false);
+                if (Config.EnableSuperDrag)
+                    item->setFlag(ItemIsMovable);
+            }
+
+            foreach (CardItem *item, m_handCards)
+                    item->setFrozen(true, true);
+
+            for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
+                CardItem *equip = _m_equipCards[i];
+                if (equip) {
+                    //equip->mark(false);
+                    equip->setMarkable(false);
+                    _m_equipRegions[i]->setOpacity(0.7);
+                    equip->setEnabled(false);
+                }
+            }
+
+            return;
+        }
+    }
+
+    const Card *new_pending_card = viewAsSkill->viewAs(cards);
+    if (pendingCard != new_pending_card) {
+        if (pendingCard && !pendingCard->parent() && pendingCard->isVirtualCard()) {
+            delete pendingCard;
+            pendingCard = NULL;
+        }
+    }
+
+    pendingCard = new_pending_card;
+    emit card_selected(pendingCard);
 }
 
 void Dashboard::onCardItemDoubleClicked()
@@ -1587,7 +1877,7 @@ void Dashboard::onMarkChanged()
         if (card_item->isMarked()) {
             if (!pendings.contains(card_item)) {
                 if (viewAsSkill && viewAsSkill->inherits("OneCardViewAsSkill"))
-                    unselectAll(card_item);
+                    unselectAll(card_item, false);
                 pendings.append(card_item);
             }
         } else
@@ -1663,10 +1953,10 @@ void Dashboard::showHeroSkinList()
     if (NULL != m_player) {
         if (sender() == m_changeHeadHeroSkinButton) {
             showHeroSkinListHelper(m_player->getGeneral(),
-                m_headHeroSkinContainer);
+                m_headHeroSkinContainer, "head");
         } else {
             showHeroSkinListHelper(m_player->getGeneral2(),
-                m_deputyHeroSkinContainer);
+                m_deputyHeroSkinContainer, "deputy");
         }
     }
 }
@@ -1769,13 +2059,18 @@ void Dashboard::onSkinChangingFinished()
         heroSKinBtn = m_changeHeadHeroSkinButton;
         generalName = m_player->getGeneralName();
         skillDock = m_rightSkillDock;
+        QRect area = _m_layout->m_avatarArea;
+        area = QRect(area.left() + 2, area.top() + 1, area.width() - 2, area.height() - 3);
+        _createAvatarAnimations(generalName, true, area);
     } else {
         avatarItem = _m_smallAvatarIcon;
         heroSKinBtn = m_changeDeputyHeroSkinButton;
         generalName = m_player->getGeneral2Name();
         skillDock = m_leftSkillDock;
+        QRect area = _m_layout->m_secondaryAvatarArea;
+        area = QRect(area.left() + 2, area.top() + 1, area.width() - 2, area.height() - 3);
+        _createAvatarAnimations(generalName, false, area);
     }
-
     if (avatarItem->isUnderMouse() && !skillDock->isUnderMouse())
         heroSKinBtn->show();
 }
@@ -1823,6 +2118,9 @@ void Dashboard::updateAvatar()
         area = QRect(area.left() + 2, area.top() + 1, area.width() - 2, area.height() - 3);
         _paintPixmap(avatarIconTmp, area, avatarIcon, _getAvatarParent());
         // this is just avatar general, perhaps game has not started yet.
+
+        _createAvatarAnimations(name, true, area);
+
         if (m_player->getGeneral() != NULL) {
             QString kingdom = m_player->getKingdom();
             _paintPixmap(_m_kingdomColorMaskIcon, _m_layout->m_kingdomMaskArea,
@@ -1869,10 +2167,13 @@ void Dashboard::updateSmallAvatar()
     if (general != NULL) {
         _m_secondaryAvatarArea->setToolTip(m_player->getDeputySkillDescription());
         QString name = general->objectName();
-        QPixmap avatarIcon = getHeadAvatarIcon(name);
+        QPixmap avatarIcon = getDeputyAvatarIcon(name);
         QRect area = _m_layout->m_secondaryAvatarArea;
         area = QRect(area.left() + 2, area.top() + 1, area.width() - 2, area.height() - 3);
         _paintPixmap(smallAvatarIconTmp, area, avatarIcon, _getAvatarParent());
+
+        _createAvatarAnimations(name, false, area);
+
         QString kingdom = m_player->getKingdom();
         _paintPixmap(_m_kingdomColorMaskIcon2, _m_layout->m_kingdomMaskArea2,
             G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK, kingdom), this->_getAvatarParent());
@@ -1883,7 +2184,7 @@ void Dashboard::updateSmallAvatar()
             _m_layout->m_secondaryAvatarNameArea,
             Qt::AlignLeft | Qt::AlignJustify, show_name);
     } else if (m_player->getAvatarGeneral() && m_player->getAvatarGeneral()->getKingdom() != "god") {
-        QPixmap avatarIcon = getHeadAvatarIcon("deputy-" + m_player->getAvatarGeneral()->getKingdom());
+        QPixmap avatarIcon = getDeputyAvatarIcon("deputy-" + m_player->getAvatarGeneral()->getKingdom());
         QRect area = _m_layout->m_secondaryAvatarArea;
         area = QRect(area.left() + 2, area.top() + 1, area.width() - 2, area.height() - 3);
         _paintPixmap(smallAvatarIconTmp, area, avatarIcon, _getAvatarParent());
@@ -1897,4 +2198,3 @@ void Dashboard::updateSmallAvatar()
     _m_smallAvatarIcon->show();
     _adjustComponentZValues();
 }
-

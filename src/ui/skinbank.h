@@ -107,6 +107,7 @@ public:
     bool load(const QString &layoutConfigFileName, const QString &imageConfigFileName,
         const QString &audioConfigFileName, const QString &animationConfigFileName);
     QPixmap getPixmap(const QString &key, const QString &arg = QString(), const QString &arg2 = QString(), bool addDefaultArg = false) const;
+    QPixmap getAnimPixmap(const QString &key, const QString &arg = QString(), const QString &arg2 = QString(), bool addDefaultArg = false, int pix_id = 0) const;
     QPixmap getPixmapFileName(const QString &key) const;
     QPixmap getPixmapFromFileName(const QString &fileName) const;
     QStringList getAudioFileNames(const QString &key) const;
@@ -289,6 +290,7 @@ public:
         int m_cardNormalWidth;
         int m_cardNormalHeight;
         QRect m_cardMainArea;
+        QRect m_cardAlterArea;
         QRect m_cardSuitArea;
         QRect m_cardNumberArea;
         QRect m_cardTransferableIconArea;
@@ -368,6 +370,7 @@ public:
         QSanInvokeSkillButton::SkillType type,
         QSanInvokeSkillButton::SkillButtonWidth width) const;
     QPixmap getCardMainPixmap(const QString &cardName) const;
+    QPixmap getCardAlterPixmap(const QString &cardName) const;
     QPixmap getGeneralCardPixmap(const QString generalName, const int skinId = 0) const;
     QPixmap getCardSuitPixmap(Card::Suit suit) const;
     QPixmap getCardNumberPixmap(int point, bool isBlack) const;
@@ -375,6 +378,7 @@ public:
     QPixmap getCardFramePixmap(const QString &frameType) const;
     QPixmap getCardAvatarPixmap(const QString &generalName) const;
     QPixmap getGeneralPixmap(const QString &generalName, GeneralIconSize size, const int skinId = 0) const;
+    QPixmap getAvatAnimPixmapPath(const QString &name, GeneralIconSize size, int skinId, int pixId = 0) const;
     QString getPlayerAudioEffectPath(const QString &eventName, bool isMale, int index = -1) const;
     QString getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index = -1, const Player *player = NULL, const QString &postion = QString()) const;
     QPixmap getProgressBarPixmap(int percentile) const;
@@ -436,6 +440,7 @@ public:
     static const char *S_SKIN_KEY_HAND_CARD_SUIT;
     static const char *S_SKIN_KEY_JUDGE_CARD_ICON;
     static const char *S_SKIN_KEY_HAND_CARD_MAIN_PHOTO;
+    static const char *S_SKIN_KEY_HAND_CARD_ALTER_PHOTO;
     static const char *S_SKIN_KEY_HAND_CARD_NUMBER_BLACK;
     static const char *S_SKIN_KEY_HAND_CARD_NUMBER_RED;
     static const char *S_SKIN_KEY_HAND_CARD_FRAME;

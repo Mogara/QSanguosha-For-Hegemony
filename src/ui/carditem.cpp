@@ -82,7 +82,7 @@ void CardItem::setCard(const Card *card)
     if (card != NULL) {
         if (card->isVirtualCard()) {
             m_cardId = Card::S_UNKNOWN_CARD_ID;
-            Vcard = card;
+            Vcard = card->toString();
             setObjectName(card->objectName());
             for (int i = 0; i <= Sanguosha->getCardCount() - 1; i++) {
                 if (Sanguosha->getEngineCard(i)->objectName() == card->objectName()) {
@@ -140,6 +140,10 @@ void CardItem::onTransferEnabledChanged()
 
 const Card *CardItem::getCard() const
 {
+    if (m_cardId == Card::S_UNKNOWN_CARD_ID && objectName() != "unknown") {
+        const Card *card = Card::Parse(Vcard);
+        if (card) return card;
+    }
     return Sanguosha->getCard(m_cardId);
 }
 
@@ -236,6 +240,11 @@ void CardItem::showAvatar(const General *general, const QString card_name)
 void CardItem::hideAvatar()
 {
     _m_avatarName = QString();
+}
+
+void CardItem::setVirtualCard(QString &card_string)
+{
+    Vcard = card_string;
 }
 
 void CardItem::setAutoBack(bool auto_back)
@@ -421,6 +430,7 @@ void CardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
             painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea,
                 G_ROOM_SKIN.getCardMainPixmap(objectName()));
         }
+        //else if (card || objectName() == "unknown" || (!Vcard.isEmpty() && Vcard.contains(QChar('=')))) {
         else if (card || objectName() == "unknown") {
             painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea,
                 G_ROOM_SKIN.getCardMainPixmap(objectName()));
@@ -439,19 +449,31 @@ void CardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
             painter->drawPixmap(G_COMMON_LAYOUT.m_cardTransferableIconArea,
             G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CARD_TRANSFERABLE_ICON));
 
-        QRect rect = G_COMMON_LAYOUT.m_cardFootnoteArea;
+        QRegExp pattern("(\\w+):(\\w*)\\[(\\w+):(.+)\\]=(.+)&(.*)");
+        if (!Vcard.isEmpty() && pattern.exactMatch(Vcard)) {
+            QStringList texts = pattern.capturedTexts();
+            QString card_name = texts.at(1);
+            painter->drawPixmap(G_COMMON_LAYOUT.m_cardAlterArea, G_ROOM_SKIN.getCardAlterPixmap(card_name));
+        }
+
         // Deal with stupid QT...
-        if (_m_showFootnote)
-            painter->drawImage(rect, _m_footnoteImage);
-    } else if (Vcard != NULL && Vcard->isVirtualCard()) {
-        painter->drawPixmap(G_COMMON_LAYOUT.m_cardSuitArea, G_ROOM_SKIN.getCardSuitPixmap(Vcard->getSuit()));
+    } else if (!Vcard.isEmpty() && (Vcard.contains(QChar('=')))) {
+        const Card *card = Card::Parse(Vcard);
+        if (card) {
+            painter->drawPixmap(G_COMMON_LAYOUT.m_cardSuitArea, G_ROOM_SKIN.getCardSuitPixmap(card->getSuit()));
 
-        if (Vcard->getNumber() > 0)
-            painter->drawPixmap(G_COMMON_LAYOUT.m_cardNumberArea, G_ROOM_SKIN.getCardNumberPixmap(Vcard->getNumber(), !Vcard->isRed()));
+            if (card->getNumber() > 0)
+                painter->drawPixmap(G_COMMON_LAYOUT.m_cardNumberArea, G_ROOM_SKIN.getCardNumberPixmap(card->getNumber(), !card->isRed()));
 
-        if (Vcard->isTransferable())
-            painter->drawPixmap(G_COMMON_LAYOUT.m_cardTransferableIconArea,
-            G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CARD_TRANSFERABLE_ICON));
+            if (card->isTransferable())
+                painter->drawPixmap(G_COMMON_LAYOUT.m_cardTransferableIconArea,
+                G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CARD_TRANSFERABLE_ICON));
+        }
+    }
+
+    if (_m_showFootnote) {
+        QRect rect = G_COMMON_LAYOUT.m_cardFootnoteArea;
+        painter->drawImage(rect, _m_footnoteImage);
     }
 
     if (!_m_avatarName.isEmpty()) {

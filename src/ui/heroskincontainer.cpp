@@ -44,13 +44,14 @@ static const int SKIN_ITEM_HEIGHT = SKIN_ITEM_AREA.height();
 HeroSkinContainer *HeroSkinContainer::m_currentTopMostContainer = NULL;
 
 HeroSkinContainer::HeroSkinContainer(const QString &generalName,
-    const QString &kingdom, QGraphicsItem *parent/* = 0*/)
+    const QString &kingdom, const QString &position, QGraphicsItem *parent/* = 0*/)
     : QGraphicsObject(parent), m_generalName(generalName),
     m_backgroundPixmap("image/system/heroskin/container.png"),
     m_vScrollBar(NULL), m_oldScrollValue(0)
 {
     setFlag(ItemIsMovable);
     setCursor(Qt::ArrowCursor);
+    setObjectName(position);
 
     QSanButton *closeButton = new QSanButton("heroskin", "close", this);
     closeButton->setPos(387, 5);
@@ -216,7 +217,7 @@ void HeroSkinContainer::swapWithSkinItemUsed(int skinIndex)
 
 int HeroSkinContainer::getCurrentSkinId() const
 {
-    if (Self->getActualGeneral1Name() == m_generalName)
+    if (objectName() == "head")
         return Self->getHeadSkinId();
     else
         return Self->getDeputySkinId();
@@ -224,7 +225,7 @@ int HeroSkinContainer::getCurrentSkinId() const
 
 void HeroSkinContainer::setCurrentSkinId(const int skinId)
 {
-    if (Self->getActualGeneral1Name() == m_generalName)
+    if (objectName() == "head")
         Self->setHeadSkinId(skinId);
     else
         Self->setDeputySkinId(skinId);

@@ -474,18 +474,6 @@ void Room::sendJudgeResult(const JudgeStruct *judge)
     doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 }
 
-QList<int> Room::getNCards(int n, bool update_pile_number)
-{
-    QList<int> card_ids;
-    for (int i = 0; i < n; i++)
-        card_ids << drawCard();
-
-    if (update_pile_number)
-        doBroadcastNotify(S_COMMAND_UPDATE_PILE, m_drawPile->length());
-
-    return card_ids;
-}
-
 QStringList Room::aliveRoles(ServerPlayer *except) const
 {
     QStringList roles;
@@ -592,7 +580,7 @@ void Room::slashResult(const SlashEffectStruct &effect, const Card *jink)
 void Room::attachSkillToPlayer(ServerPlayer *player, const QString &skill_name)
 {
     player->acquireSkill(skill_name);
-    doNotify(player, S_COMMAND_ATTACH_SKILL, skill_name);
+    doBroadcastNotify(S_COMMAND_ATTACH_SKILL, JsonArray() << player->objectName() << skill_name);
 }
 
 void Room::detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name, bool is_equip, bool acquire_only, bool head)
@@ -739,7 +727,6 @@ bool Room::doRequest(ServerPlayer *player, QSanProtocol::CommandType command, co
         player->m_expectedReplyCommand = m_requestResponsePair[command];
     else
         player->m_expectedReplyCommand = command;
-
     player->unicast(&packet);
     player->releaseLock(ServerPlayer::SEMA_MUTEX);
     if (wait) return getResult(player, timeOut);
@@ -797,7 +784,7 @@ ServerPlayer *Room::doBroadcastRaceRequest(QList<ServerPlayer *> &players, QSanP
         int AIraceRespondTime = 800 + qrand() % time;
         timer->start(AIraceRespondTime);
     }
-    connect(timer, &QTimer::timeout, this, &Room::endaskfornull, Qt::DirectConnection);
+    connect(timer, &QTimer::timeout, this, &Room::endaskForNull, Qt::DirectConnection);
     timer->moveToThread(thread);
 
     ServerPlayer *winner = getRaceResult(players, command, timeOut, validateFunc, funcArg);
@@ -869,7 +856,7 @@ ServerPlayer *Room::getRaceResult(QList<ServerPlayer *> &players, QSanProtocol::
     return _m_raceWinner;
 }
 
-void Room::endaskfornull()
+void Room::endaskForNull()
 {
     if (_m_raceWinner == NULL && _m_AIraceWinner != NULL && _m_raceStarted) {
         _m_raceStarted = false;
@@ -1047,7 +1034,7 @@ bool Room::notifyMoveFocus(const QList<ServerPlayer *> &focuses, const Countdown
     return doBroadcastNotify(S_COMMAND_MOVE_FOCUS, arg, except);
 }
 
-bool Room::askForSkillInvoke(ServerPlayer *player, const QString &skill_name, const QVariant &data)
+bool Room::askForSkillInvoke(ServerPlayer *player, const QString &skill_name, const QVariant &data, const QString &position)
 {
     tryPause();
     if (data.type() == QVariant::String && data.toString() == "GameStart") {
@@ -1082,11 +1069,9 @@ bool Room::askForSkillInvoke(ServerPlayer *player, const QString &skill_name, co
                 data_str = "playerdata:" + player->objectName();
             skillCommand << skill_name << data_str;
         }
-        if (player != NULL) {
-            const Skill *mainskill = Sanguosha->getMainSkill(skill_name);
-            if (mainskill && !getTag(mainskill->objectName() + player->objectName()).toStringList().isEmpty())
-                skillCommand << getTag(mainskill->objectName() + player->objectName()).toStringList().last();
-        }
+        if (player != NULL && !position.isEmpty())
+            skillCommand << position;
+
         if (!doRequest(player, S_COMMAND_INVOKE_SKILL, skillCommand, true) || skill_name.endsWith("!"))
             invoked = false;
         else {
@@ -1104,7 +1089,8 @@ bool Room::askForSkillInvoke(ServerPlayer *player, const QString &skill_name, co
                 JsonArray msg;
                 msg << skill_name;
                 msg << player->objectName();
-                doBroadcastNotify(S_COMMAND_INVOKE_SKILL, msg);
+                if  (player->hasSkill(skill_name) || player->hasEquipSkill(skill_name))
+                    doBroadcastNotify(S_COMMAND_INVOKE_SKILL, msg);
                 notifySkillInvoked(player, skill_name);
             }
         }
@@ -1162,22 +1148,22 @@ QString Room::askForChoice(ServerPlayer *player, const QString &skill_name, cons
     return answer;
 }
 
-void Room::obtainCard(ServerPlayer *target, const Card *card, const CardMoveReason &reason, bool unhide)
+QList<int> Room::obtainCard(ServerPlayer *target, const Card *card, const CardMoveReason &reason, bool unhide)
 {
-    if (card == NULL) return;
-    moveCardTo(card, NULL, target, Player::PlaceHand, reason, unhide);
+    if (card == NULL) return QList<int>();
+    return moveCardTo(card, NULL, target, Player::PlaceHand, reason, unhide);
 }
 
-void Room::obtainCard(ServerPlayer *target, const Card *card, bool unhide)
+QList<int> Room::obtainCard(ServerPlayer *target, const Card *card, bool unhide)
 {
-    if (card == NULL) return;
+    if (card == NULL) return QList<int>();
     CardMoveReason reason(CardMoveReason::S_REASON_GOTBACK, target->objectName());
-    obtainCard(target, card, reason, unhide);
+    return obtainCard(target, card, reason, unhide);
 }
 
-void Room::obtainCard(ServerPlayer *target, int card_id, bool unhide)
+QList<int> Room::obtainCard(ServerPlayer *target, int card_id, bool unhide)
 {
-    obtainCard(target, Sanguosha->getCard(card_id), unhide);
+    return obtainCard(target, Sanguosha->getCard(card_id), unhide);
 }
 
 bool Room::isCanceled(const CardEffectStruct &effect)
@@ -1598,8 +1584,9 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
     const QVariant &data, Card::HandlingMethod method, ServerPlayer *to,
     bool isRetrial, const QString &_skill_name, bool isProvision)
 {
-
     Q_ASSERT(pattern != "slash" || method != Card::MethodUse); // use askForUseSlashTo instead
+    if (!player || player->isDead()) return NULL;
+
     tryPause();
     notifyMoveFocus(player, S_COMMAND_RESPONSE_CARD);
 
@@ -1711,28 +1698,37 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
         QVariant decisionData = QVariant::fromValue(QString("cardResponded:%1:%2:_%3_").arg(pattern).arg(prompt).arg(card->toString()));
         thread->trigger(ChoiceMade, this, player, decisionData);
 
+        QList<int> move_result;
+        bool move = false;
         if (method == Card::MethodUse) {
             QList<int> card_ids;
             if (card->isVirtualCard())
                 card_ids = card->getSubcards();
             else
                 card_ids << card->getEffectiveId();
+            CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(), QString(), card->getSkillName(), QString());
             if (!card_ids.isEmpty()) {
-                CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(), QString(), card->getSkillName(), QString());
+                reason.m_cardString = card->toString();
                 if (!card->getSkillPosition().isEmpty())
-                    reason.m_eventName = card->getSkillPosition() == "left" ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
+                    reason.m_position = card->getSkillPosition();
                 QList<CardsMoveStruct> moves;
                 foreach (int id, card_ids) {
                     CardsMoveStruct move(id, NULL, Player::PlaceTable, reason);
                     moves.append(move);
                 }
-                moveCardsAtomic(moves, true);
+                move_result = moveCardsAtomic(moves, true);
+                move = true;
+            } else if (card->getTypeId() != Card::TypeSkill) {
+                CardsMoveStruct move(-1, NULL, Player::PlaceTable, reason);
+                notifyUsingVirtualCard(card->toString(), move);
             }
             player->showSkill(card->showSkill(), card->getSkillPosition());
         } else if (method == Card::MethodDiscard) {
             CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
-            moveCardTo(card, player, NULL, Player::PlaceTable, reason, true);
-            QList<int> table_cardids = getCardIdsOnTable(card);
+            reason.m_cardString = card->toString();
+            move_result = moveCardTo(card, player, NULL, Player::PlaceTable, reason, true);
+            move = true;
+            QList<int> table_cardids = getCardIdsOnTable(move_result);
             if (!table_cardids.isEmpty()) {
                 DummyCard dummy(table_cardids);
                 moveCardTo(&dummy, player, NULL, Player::DiscardPile, reason, true);
@@ -1743,20 +1739,27 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 card_ids = card->getSubcards();
             else
                 card_ids << card->getEffectiveId();
+            CardMoveReason reason(CardMoveReason::S_REASON_RESPONSE, player->objectName());
             if (!card_ids.isEmpty()) {
-                CardMoveReason reason(CardMoveReason::S_REASON_RESPONSE, player->objectName());
                 reason.m_skillName = card->getSkillName();
+                reason.m_cardString = card->toString();
                 if (!card->getSkillPosition().isEmpty())
-                    reason.m_eventName = card->getSkillPosition() == "left" ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
+                    reason.m_position = card->getSkillPosition();
                 QList<CardsMoveStruct> moves;
                 foreach (int id, card_ids) {
                     CardsMoveStruct move(id, NULL, Player::PlaceTable, reason);
                     moves.append(move);
                 }
-                moveCardsAtomic(moves, true);
+                move_result = moveCardsAtomic(moves, true);
+                move = true;
+            }  else if (card->getTypeId() != Card::TypeSkill) {
+                CardsMoveStruct move(-1, NULL, Player::PlaceTable, reason);
+                notifyUsingVirtualCard(card->toString(), move);
             }
             player->showSkill(card->showSkill(), card->getSkillPosition());
         }
+
+        if (!move) move_result = ids;
 
         if ((method == Card::MethodUse || method == Card::MethodResponse) && !isRetrial) {
             if (!card->getSkillName().isNull() && card->getSkillName(true) == card->getSkillName(false)
@@ -1767,13 +1770,14 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             QVariant data = QVariant::fromValue(resp);
             thread->trigger(CardResponded, this, player, data);
             if (method == Card::MethodUse) {
-                QList<int> table_cardids = getCardIdsOnTable(card);
+                QList<int> table_cardids = getCardIdsOnTable(move_result);
                 if (!table_cardids.isEmpty()) {
                     DummyCard dummy(table_cardids);
                     CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(),
                         QString(), card->getSkillName(), QString());
+                    reason.m_cardString = card->toString();
                     if (!card->getSkillPosition().isEmpty())
-                        reason.m_eventName = card->getSkillPosition() == "left" ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
+                        reason.m_position = card->getSkillPosition();
                     moveCardTo(&dummy, NULL, Player::DiscardPile, reason, true);
                 }
                 CardUseStruct card_use;
@@ -1783,13 +1787,14 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 QVariant data2 = QVariant::fromValue(card_use);
                 thread->trigger(CardFinished, this, player, data2);
             } else if (!isProvision) {
-                QList<int> table_cardids = getCardIdsOnTable(card);
+                QList<int> table_cardids = getCardIdsOnTable(move_result);
                 if (!table_cardids.isEmpty()) {
                     DummyCard dummy(table_cardids);
                     CardMoveReason reason(CardMoveReason::S_REASON_RESPONSE, player->objectName());
                     reason.m_skillName = card->getSkillName();
+                    reason.m_cardString = card->toString();
                     if (!card->getSkillPosition().isEmpty())
-                        reason.m_eventName = card->getSkillPosition() == "left" ? player->getActualGeneral1Name() : player->getActualGeneral2Name();
+                        reason.m_position = card->getSkillPosition();
                     moveCardTo(&dummy, NULL, Player::DiscardPile, reason, true);
                 }
             }
@@ -1803,9 +1808,10 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
 }
 
 const Card *Room::askForUseCard(ServerPlayer *player, const QString &pattern, const QString &prompt, int notice_index,
-    Card::HandlingMethod method, bool addHistory)
+    Card::HandlingMethod method, bool addHistory, const QString &position)
 {
     Q_ASSERT(method != Card::MethodResponse);
+
     tryPause();
     notifyMoveFocus(player, S_COMMAND_RESPONSE_CARD);
 
@@ -1830,11 +1836,8 @@ const Card *Room::askForUseCard(ServerPlayer *player, const QString &pattern, co
         ask_str << int(method);
         ask_str << notice_index;
         QRegExp rx("@@([_A-Za-z]+)(\\d+)?!?");
-        if (rx.exactMatch(pattern)) {
-            QStringList texts = rx.capturedTexts();
-            if (!getTag(texts.at(1) + player->objectName()).toStringList().isEmpty())
-                ask_str << getTag(texts.at(1) + player->objectName()).toStringList().last();
-        }
+        if (rx.exactMatch(pattern) && !position.isEmpty())
+            ask_str << position;
 
         bool success = doRequest(player, S_COMMAND_RESPONSE_CARD, ask_str, true);
         if (success) {
@@ -1850,6 +1853,9 @@ const Card *Room::askForUseCard(ServerPlayer *player, const QString &pattern, co
         thread->trigger(ChoiceMade, this, player, decisionData);
         if (!useCard(card_use, addHistory))
             return askForUseCard(player, pattern, prompt, notice_index, method, addHistory);
+
+        decisionData = QVariant::fromValue("cardUsed:" + pattern + ":" + prompt + ":" + card_use.card->toString());
+        thread->trigger(ChoiceMade, this, player, decisionData);
         return card_use.card;
     } else {
         QVariant decisionData = QVariant::fromValue("cardUsed:" + pattern + ":" + prompt + ":nil");
@@ -2104,6 +2110,11 @@ const Card *Room::askForSinglePeach(ServerPlayer *player, ServerPlayer *dying)
     notifyMoveFocus(player, S_COMMAND_ASK_PEACH);
     _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_RESPONSE_USE);
 
+    if (player == dying)
+        _m_roomState.setCurrentCardUsePattern("peach+analeptic");
+    else
+        _m_roomState.setCurrentCardUsePattern("peach");
+
     const Card *card = NULL;
 
     AI *ai = player->getAI();
@@ -2142,6 +2153,179 @@ const Card *Room::askForSinglePeach(ServerPlayer *player, ServerPlayer *dying)
     return result;
 }
 
+TriggerStruct Room::askForSkillTrigger(ServerPlayer *player, const QString &reason, QList<TriggerStruct> skills, const QVariant &data)
+{
+    tryPause();
+
+    Q_ASSERT(!skills.isEmpty());
+    TriggerStruct answer;
+    QList<TriggerStruct> all_skills, all_skills_copy;
+    QVariantList all_skills_q, all_skills_q2;
+    bool optional = true;
+
+    foreach (const TriggerStruct &skill, skills) {                                  //append target
+        if (skill.skill_name.isEmpty() || skill.invoker.isEmpty()) continue;
+
+        bool can_skip = true;
+        ServerPlayer *invoker = findPlayer(skill.invoker, true);
+        ServerPlayer *skill_owner = findPlayer(skill.skill_owner, true);
+        if (!skill_owner) skill_owner = invoker;
+        const TriggerSkill *trskill = Sanguosha->getTriggerSkill(skill.skill_name);
+        if (trskill && (skill_owner->hasShownSkill(trskill) || trskill->isGlobal())
+                && (trskill->getFrequency() == Skill::Compulsory || trskill->getFrequency() == Skill::Wake)) {
+            optional = false;
+            can_skip = false;
+        }
+        if (skill.targets.isEmpty()) {
+            TriggerStruct skill_copy = skill;
+            if (!skill.skill_owner.isEmpty()) skill_copy.result_target = skill.skill_owner;
+            all_skills << skill_copy;
+        } else {
+            if (!can_skip) {
+                TriggerStruct skill_copy = skill;
+                skill_copy.result_target = skill.targets.first();
+                all_skills << skill_copy;
+            } else {
+                foreach (QString name, skill.targets) {
+                    TriggerStruct skill_copy = skill;
+                    skill_copy.result_target = name;
+                    all_skills << skill_copy;
+                }
+            }
+        }
+    }
+
+    foreach (const TriggerStruct &skill, all_skills)
+        all_skills_q << skill.toVariant();
+    foreach (QVariant skill_q, all_skills_q) {                                      //count duplicated
+        if (!all_skills_q2.contains(skill_q)) {
+            int count = all_skills_q.count(skill_q);
+            TriggerStruct skill;
+            skill.tryParse(skill_q);
+            skill.times = count;
+            all_skills_copy << skill;
+            all_skills_q2 << skill_q;
+        }
+    }
+
+    all_skills.clear();
+    foreach (const TriggerStruct &skill, all_skills_copy) {                         //judge head or deputy
+        if (!skill.skill_position.isEmpty() || !Sanguosha->getSkill(skill.skill_name))
+            all_skills << skill;
+        else {
+            ServerPlayer *invoker = findPlayer(skill.invoker, true);
+            ServerPlayer *skill_owner = findPlayer(skill.skill_owner, true);
+            if (!skill_owner) skill_owner = invoker;
+            const Skill *real_skill = Sanguosha->getSkill(skill.skill_name);
+            if (skill_owner != invoker) {
+                if (skill_owner->hasShownSkill(skill.skill_name)) {
+                    if (skill_owner->getHeadActivedSkills(true, true).contains(real_skill)) {
+                        TriggerStruct skill_copy = skill;
+                        skill_copy.skill_position = "head";
+                        all_skills << skill_copy;
+                    }
+                    if (skill_owner->getDeputyActivedSkills(true, true).contains(real_skill)) {
+                        TriggerStruct skill_copy = skill;
+                        skill_copy.skill_position = "deputy";
+                        all_skills << skill_copy;
+                    }
+                }
+            } else {
+                if (skill_owner->getHeadActivedSkills().contains(real_skill) || skill_owner->getDeputyActivedSkills().contains(real_skill)) {
+                    if (skill_owner->getHeadActivedSkills().contains(real_skill)) {
+                        TriggerStruct skill_copy = skill;
+                        skill_copy.skill_position = "head";
+                        all_skills << skill_copy;
+                    }
+                    if (skill_owner->getDeputyActivedSkills().contains(real_skill)) {
+                        TriggerStruct skill_copy = skill;
+                        skill_copy.skill_position = "deputy";
+                        all_skills << skill_copy;
+                    }
+                } else
+                    all_skills << skill;
+            }
+        }
+    }
+
+    all_skills_copy = all_skills;                                           //re match duplicated
+    all_skills.clear();
+    foreach (const TriggerStruct &skill1, all_skills_copy) {
+        if (skill1.targets.isEmpty()) {
+            all_skills << skill1;
+            continue;
+        }
+
+        bool same = false;
+        foreach (const TriggerStruct &skill2, all_skills) {
+            if (skill1.skill_name == skill2.skill_name && !skill1.targets.isEmpty() && !skill2.targets.isEmpty() && skill1.invoker == skill2.invoker &&
+                    skill1.result_target == skill2.result_target && skill1.skill_position == skill2.skill_position) {
+                same = true;
+                break;
+            }
+        }
+        if (!same) {
+            int times = 0;
+            QStringList targets;
+            foreach (const TriggerStruct &skill3, all_skills_copy) {
+                if (skill1.skill_name == skill3.skill_name && !skill1.targets.isEmpty() && !skill3.targets.isEmpty() && skill1.invoker == skill3.invoker &&
+                        skill1.result_target == skill3.result_target && skill1.skill_position == skill3.skill_position) {
+                    times = times + skill3.times;
+                    if (skill3.targets.length() > targets.length()) targets = skill3.targets;
+                }
+            }
+            TriggerStruct new_skill = skill1;
+            new_skill.targets = targets;
+            new_skill.times = times;
+            all_skills << new_skill;
+        }
+    }
+
+    if (all_skills.length() == 1 && reason != "GameRule:TurnStart") {                                        //do not use this function when only 1 choice except turnstart
+        answer = all_skills.first();
+    } else {
+        notifyMoveFocus(player, S_COMMAND_TRIGGER_ORDER);
+
+        AI *ai = player->getAI();
+        if (ai) {
+            //Temporary method to keep compatible with existing AI system
+            QStringList alls;
+            foreach (const TriggerStruct &skill, skills)
+                alls << skill.skill_name;
+
+            if (optional)
+                alls << "cancel";
+
+            const QString reply = ai->askForChoice(reason, alls.join("+"), data);
+            if (reply != "cancel") {
+                foreach (const TriggerStruct &skill, all_skills) {
+                    if (skill.skill_name == reply) {
+                        answer = skill;
+                        break;
+                    }
+                }
+            }
+            thread->delay();
+        } else {
+            JsonArray args;
+            args << reason;
+            args << optional;
+            foreach (const TriggerStruct &skill, all_skills)
+                args << skill.toVariant();
+
+            bool success = doRequest(player, S_COMMAND_TRIGGER_ORDER, args, true);
+            const QVariant &clientReply = player->getClientReply();
+            if (!success || !answer.tryParse(clientReply)) {
+                if (!optional)
+                    answer = all_skills.first();
+            }
+        }
+    }
+    answer.times = 1;
+
+    return answer;
+}
+
 QString Room::askForTriggerOrder(ServerPlayer *player, const QString &reason, SPlayerDataMap &skills, bool optional, const QVariant &data)
 {
     tryPause();
@@ -2150,51 +2334,20 @@ QString Room::askForTriggerOrder(ServerPlayer *player, const QString &reason, SP
 
     QString answer;
     QStringList all_pairs;
-    foreach (const ServerPlayer *p, skills.keys()) {                            //if string not contains the skill_postion info, then it will check for each general
+    foreach (const ServerPlayer *p, skills.keys()) {                            //if string doesnt contain the skill_postion info, then it will check for each general
         foreach (const QString &str, skills.value(p)) {                         //sample as: player_name?skill_position:skill_name(*skill_time or ->skill_target)
-            if (str.contains("!") && !str.contains("&")) {                      //it means skill will invoke serveral times
-                QString skill_name = str.split("!").first();
-                const Skill *skill = Sanguosha->getSkill(skill_name);
-                if (skill && (p->getHeadActivedSkills().contains(skill) || p->getDeputyActivedSkills().contains(skill))) {
-                    if (p->getHeadActivedSkills().contains(skill))
-                        all_pairs << QString("%1?%2:%3*%4").arg(p->objectName()).arg("left").arg(str.split("!").first()).arg(str.split("*").last());
-                    if (p->getDeputyActivedSkills().contains(skill))
-                        all_pairs << QString("%1?%2:%3*%4").arg(p->objectName()).arg("right").arg(str.split("!").first()).arg(str.split("*").last());
-                } else
-                    all_pairs << QString("%1:%2*%3").arg(p->objectName()).arg(str.split("!").first()).arg(str.split("*").last());   //it means player doesnt has this skill
-            } else {
-                const Skill *skill = Sanguosha->getSkill(str);
-                if (skill && (p->getHeadActivedSkills().contains(skill) || p->getDeputyActivedSkills().contains(skill))) {
-                    if (p->getHeadActivedSkills().contains(skill))
-                        all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("left").arg(str);
-                    if (p->getDeputyActivedSkills().contains(skill))
-                        all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("right").arg(str);
-                } else {                                                        //it means str contains much infomation
-                    if (str.contains("->")) {
-                        QString skill_name = str.split("->").first();
-                        QString targets = str.split("->").last();
-                        QString skill_position;
-                        if (skill_name.contains("?")) {
-                            skill_position = skill_name.split("?").first();
-                            skill_name = skill_name.split("?").last();
-                        }
-                        if (!skill_position.isEmpty())
-                            all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg(skill_position).arg(skill_name + "->" + targets);
-                        else {
-                            const Skill *skill = Sanguosha->getSkill(skill_name);
-                            if (skill && (p->getHeadActivedSkills().contains(skill) || p->getDeputyActivedSkills().contains(skill))) {
-                                if (p->getHeadActivedSkills().contains(skill))
-                                    all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("left").arg(str);
-                                if (p->getDeputyActivedSkills().contains(skill))
-                                    all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("right").arg(str);
-                            } else
-                                all_pairs << QString("%1:%2").arg(p->objectName()).arg(str);
-                        }
-                    } else if (str.contains("?"))
-                        all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg(str.split("?").first()).arg(str.split("?").last());
-                    else                                                                                    //it means player doesnt has this skill. sgs1'songwei also here,
-                        all_pairs << QString("%1:%2").arg(p->objectName()).arg(str);                        //cause its very complicated when invoke others skill
-                }
+            const Skill *skill = Sanguosha->getSkill(str);
+            if (skill && (p->getHeadActivedSkills().contains(skill) || p->getDeputyActivedSkills().contains(skill))) {
+                if (p->getHeadActivedSkills().contains(skill))
+                    all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("head").arg(str);
+                if (p->getDeputyActivedSkills().contains(skill))
+                    all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("deputy").arg(str);
+            } else {                                                        //it means str contains much infomation
+                if (str.contains("?"))
+                    all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg(str.split("?").first()).arg(str.split("?").last());
+                else                                                                                    //it means player doesnt has this skill. sgs1'songwei also here,
+                    all_pairs << QString("%1:%2").arg(p->objectName()).arg(str);                        //cause its very complicated when invoke others skill
+
             }
         }
     }
@@ -2234,8 +2387,8 @@ QString Room::askForTriggerOrder(ServerPlayer *player, const QString &reason, SP
             //example: "["turn_start", ["sgs1:tiandu", "sgs1:tuntian", "sgs2:slobsb"], true]"
 
             args << reason;
-            args << JsonUtils::toJsonArray(all_pairs);
             args << optional;
+            args << JsonUtils::toJsonArray(all_pairs);
 
             bool success = doRequest(player, S_COMMAND_TRIGGER_ORDER, args, true);
             const QVariant &clientReply = player->getClientReply();
@@ -2245,7 +2398,7 @@ QString Room::askForTriggerOrder(ServerPlayer *player, const QString &reason, SP
                 answer = clientReply.toString();
         }
 
-        if (answer != "cancel" && !all_pairs.contains(answer))
+        if ((answer != "cancel" && !all_pairs.contains(answer)) || (!optional && answer == "cancel"))
             answer = all_pairs[0];
     }
 
@@ -2293,7 +2446,8 @@ void Room::notifyMoveToPile(ServerPlayer *player, const QList<int> &cards, const
     notifyMoveCards(false, moves, is_visible, _player);
 }
 
-QList<int> Room::notifyChooseCards(ServerPlayer *player, const QList<int> &cards, const QString &reason, Player::Place notify_from_place, Player::Place notify_to_place, int max_num, int min_num, const QString &prompt, const QString &pattern)
+QList<int> Room::notifyChooseCards(ServerPlayer *player, const QList<int> &cards, const QString &reason, Player::Place notify_from_place,
+                                   Player::Place notify_to_place, int max_num, int min_num, const QString &prompt, const QString &pattern, const QString &position)
 {
     setPlayerFlag(player, "Global_InTempMoving");
     notifyMoveToPile(player, cards, reason, notify_from_place, true, true);
@@ -2303,12 +2457,17 @@ QList<int> Room::notifyChooseCards(ServerPlayer *player, const QList<int> &cards
     else
         new_pattern = pattern;
 
-    QList<int> result = askForExchange(player, reason, max_num, min_num, prompt, "#" + reason, new_pattern);
+    QList<int> result = askForExchange(player, reason, max_num, min_num, prompt, "#" + reason, new_pattern, position);
 
     notifyMoveToPile(player, cards, reason, notify_to_place, false, false);
 
     setPlayerFlag(player, "-Global_InTempMoving");
     return result;
+}
+
+void Room::notifyUpdatePile(ServerPlayer *player, const QList<int> &ids, const QString &pile_name, bool in)
+{
+    doNotify(player, QSanProtocol::S_COMMAND_UPDATE_PRIVATE_PILE, JsonArray() << pile_name << in << JsonUtils::toJsonArray(ids));
 }
 
 void Room::setPlayerFlag(ServerPlayer *player, const QString &flag)
@@ -2557,30 +2716,6 @@ void Room::broadcast(const QByteArray &message, ServerPlayer *except)
     }
 }
 
-void Room::swapPile()
-{
-    if (m_discardPile->isEmpty()) {
-        // the standoff
-        gameOver(".");
-    }
-
-    int times = tag.value("SwapPile", 0).toInt();
-    setTag("SwapPile", ++times);
-
-    int limit = Config.value("PileSwappingLimitation", 5).toInt() + 1;
-    if (limit > 0 && times == limit)
-        gameOver(".");
-
-    qShuffle(*m_discardPile);
-    foreach (int card_id, *m_discardPile)
-        setCardMapping(card_id, NULL, Player::DrawPile);
-    *m_drawPile += *m_discardPile;
-    *m_discardPile = QList<int>();
-
-    doBroadcastNotify(S_COMMAND_RESET_PILE, QVariant());
-    doBroadcastNotify(S_COMMAND_UPDATE_PILE, m_drawPile->length());
-}
-
 QList<int> Room::getDiscardPile()
 {
     return *m_discardPile;
@@ -2603,17 +2738,6 @@ ServerPlayer *Room::findPlayer(const QString &general_name, bool include_dead) c
         if (player->getGeneralName() == general_name || player->objectName() == general_name)
             return player;
     }
-
-    return NULL;
-}
-
-ServerPlayer *Room::findPlayerbyobjectName(const QString &name, bool include_dead) const
-{
-    const QList<ServerPlayer *> &list = include_dead ? m_players : m_alivePlayers;
-
-    foreach (ServerPlayer *player, list)
-        if (player->objectName() == name)
-            return player;
 
     return NULL;
 }
@@ -2797,8 +2921,8 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
     }
 
     foreach (const TriggerSkill *skill, game_start) {
-        if (skill->cost(GameStart, this, player, void_data, player))
-            skill->effect(GameStart, this, player, void_data, player);
+		if (skill->cost(GameStart, this, player, void_data, player, TriggerStruct(skill->objectName(), player)).skill_name == skill->objectName())
+			skill->effect(GameStart, this, player, void_data, player, TriggerStruct());
     }
 
     if (full_state) {
@@ -2889,8 +3013,8 @@ void Room::transformDeputyGeneral(ServerPlayer *player)
     }
 
     foreach (const TriggerSkill *skill, game_start) {
-        if (skill->cost(GameStart, this, player, void_data, player))
-            skill->effect(GameStart, this, player, void_data, player);
+        if (skill->cost(GameStart, this, player, void_data, player, TriggerStruct(skill->objectName(), player)).skill_name == skill->objectName())
+            skill->effect(GameStart, this, player, void_data, player, TriggerStruct());
     }
 
     if (Sanguosha->getGeneral(names[0])->isCompanionWith(general_name))
@@ -2936,13 +3060,160 @@ const ProhibitSkill *Room::isProhibited(const Player *from, const Player *to, co
 {
     return Sanguosha->isProhibited(from, to, card, others);
 }
-
+/*
 int Room::drawCard()
 {
+
     thread->trigger(FetchDrawPileCard, this, NULL);
     if (m_drawPile->isEmpty())
         swapPile();
     return m_drawPile->takeFirst();
+
+}
+*/
+void Room::drawCards(ServerPlayer *player, int n, const QString &reason)
+{
+    QList<ServerPlayer *> players;
+    players.append(player);
+    drawCards(players, n, reason);
+}
+
+void Room::drawCards(QList<ServerPlayer *> players, int n, const QString &reason)
+{
+    QList<int> n_list;
+    n_list.append(n);
+    drawCards(players, n_list, reason);
+}
+
+void Room::drawCards(QList<ServerPlayer *> players, QList<int> n_list, const QString &reason)
+{
+    QList<CardsMoveStruct> moves;
+    int index = -1, len = n_list.length();
+    Q_ASSERT(len >= 1);
+    foreach (ServerPlayer *player, players) {
+        index++;
+        if (!player->isAlive() && reason != "reform") continue;
+        int n = n_list.at(qMin(index, len - 1));
+        if (n <= 0) continue;
+        QList<int> card_ids = getNCards(n, true);
+
+        CardsMoveStruct move;
+        move.card_ids = card_ids;
+        move.from = NULL;
+        move.to = player;
+        move.to_place = Player::PlaceHand;
+        moves.append(move);
+    }
+    moveCardsAtomic(moves, false);
+}
+/*
+QList<int> Room::getNCards(int n, bool update_pile_number)
+{
+    QList<int> card_ids;
+    for (int i = 0; i < n; i++)
+        card_ids << drawCard();
+
+    if (update_pile_number)
+        doBroadcastNotify(S_COMMAND_UPDATE_PILE, m_drawPile->length());
+
+    return card_ids;
+}
+*/
+QList<int> Room::getNCards(int n, bool update_pile_number)
+{
+    QList<int> card_ids;
+    int m = m_drawPile->length();
+    while (n > m) {
+        for (int i = 0; i < m; i++) {
+            card_ids << m_drawPile->takeFirst();
+            thread->trigger(FetchDrawPileCard, this, NULL);
+        }
+        swapPile();
+        returnToDrawPile(card_ids, false);
+        m = m_drawPile->length();
+    }
+
+    card_ids.clear();
+    for (int i = 0; i < n; i++)
+        card_ids << m_drawPile->at(i);
+
+    if (update_pile_number)
+        removeFromDrawPile(card_ids);
+
+    return card_ids;
+}
+
+void Room::returnToDrawPile(const QList<int> &cards, bool isBottom)
+{
+    if (cards.isEmpty()) return;
+    if (isBottom) {
+        foreach (int id, cards) {
+            setCardMapping(id, NULL, Player::DrawPile);
+            m_drawPile->removeAll(id);
+            m_drawPile->append(id);
+        }
+    } else {
+        QListIterator<int> i(cards);
+        i.toBack();
+        while (i.hasPrevious()) {
+            int id = i.previous();
+            setCardMapping(id, NULL, Player::DrawPile);
+            m_drawPile->removeAll(id);
+            m_drawPile->prepend(id);
+        }
+    }
+	thread->trigger(DrawPileChanged, this, NULL, QVariant(m_drawPile->length()));
+    doBroadcastNotify(S_COMMAND_UPDATE_PILE, m_drawPile->length());
+}
+
+void Room::removeFromDrawPile(int id)
+{
+    removeFromDrawPile(QList<int>() << id);
+}
+
+void Room::removeFromDrawPile(QList<int> ids)
+{
+    bool update = false;
+    foreach (int id, ids) {
+        if (m_drawPile->contains(id)) {
+            m_drawPile->removeAll(id);
+            thread->trigger(FetchDrawPileCard, this, NULL);
+            update = true;
+        }
+    }
+
+    if (update) {
+        thread->trigger(DrawPileChanged, this, NULL, QVariant(m_drawPile->length()));
+        doBroadcastNotify(S_COMMAND_UPDATE_PILE, m_drawPile->length());
+    }
+
+    if (m_drawPile->isEmpty())
+        swapPile();
+}
+
+void Room::swapPile()
+{
+    if (m_discardPile->isEmpty()) {
+        // the standoff
+        gameOver(".");
+    }
+
+    int times = tag.value("SwapPile", 0).toInt();
+    setTag("SwapPile", ++times);
+
+    int limit = Config.value("PileSwappingLimitation", 5).toInt() + 1;
+    if (limit > 0 && times == limit)
+        gameOver(".");
+
+    qShuffle(*m_discardPile);
+    foreach (int card_id, *m_discardPile)
+        setCardMapping(card_id, NULL, Player::DrawPile);
+    *m_drawPile += *m_discardPile;
+    *m_discardPile = QList<int>();
+
+    doBroadcastNotify(S_COMMAND_RESET_PILE, QVariant());
+    doBroadcastNotify(S_COMMAND_UPDATE_PILE, m_drawPile->length());
+	thread->trigger(DrawPileChanged, this, NULL, QVariant(m_drawPile->length()));
 }
 
 void Room::prepareForStart()
@@ -3374,7 +3645,7 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign)
     }
 }
 
-void Room::chooseGenerals(QList<ServerPlayer *> &to_assign, bool has_assign, bool is_scenario)
+void Room::chooseGenerals(QList<ServerPlayer *> &to_assign, bool has_assign, bool is_scenario, bool assign_kindom)
 {
     if (!has_assign)
         assignGeneralsForPlayers(to_assign);
@@ -3383,7 +3654,8 @@ void Room::chooseGenerals(QList<ServerPlayer *> &to_assign, bool has_assign, boo
         JsonArray args;
         args << JsonUtils::toJsonArray(player->getSelected());
         args << false;
-        args << !is_scenario;
+        args << true;
+        args << assign_kindom;
         player->m_commandArgs = args;
     }
 
@@ -3392,14 +3664,14 @@ void Room::chooseGenerals(QList<ServerPlayer *> &to_assign, bool has_assign, boo
         if (player->getGeneral() != NULL) continue;
         const QVariant &generalName = player->getClientReply();
         if (!player->m_isClientResponseReady || !JsonUtils::isString(generalName)) {
-            QStringList default_generals = _chooseDefaultGenerals(player);
+            QStringList default_generals = _chooseDefaultGenerals(player, assign_kindom);
             _setPlayerGeneral(player, default_generals.first(), true);
             _setPlayerGeneral(player, default_generals.last(), false);
         } else {
             QStringList generals = generalName.toString().split("+");
             if (generals.length() != 2 || !_setPlayerGeneral(player, generals.first(), true)
                 || !_setPlayerGeneral(player, generals.last(), false)) {
-                QStringList default_generals = _chooseDefaultGenerals(player);
+                QStringList default_generals = _chooseDefaultGenerals(player, assign_kindom);
                 _setPlayerGeneral(player, default_generals.first(), true);
                 _setPlayerGeneral(player, default_generals.last(), false);
             }
@@ -3616,10 +3888,10 @@ int Room::getCardFromPile(const QString &card_pattern)
     return -1;
 }
 
-QStringList Room::_chooseDefaultGenerals(ServerPlayer *player) const
+QStringList Room::_chooseDefaultGenerals(ServerPlayer *player, bool assign_kingdom) const
 {
     Q_ASSERT(!player->getSelected().isEmpty());
-    QStringList generals = m_generalSelector->selectGenerals(player, player->getSelected());
+    QStringList generals = m_generalSelector->selectGenerals(player, player->getSelected(), assign_kingdom);
 
     Q_ASSERT(!generals.isEmpty());
     return generals;
@@ -3864,6 +4136,7 @@ bool Room::useCard(const CardUseStruct &use, bool add_history)
         key = card->getClassName();
 
     int slash_count = card_use.from->getSlashCount();
+    /*
     bool showTMskill = false;
     foreach (const Skill *skill, card_use.from->getSkillList(false, true)) {
         if (skill->inherits("TargetModSkill")) {
@@ -3872,19 +4145,20 @@ bool Room::useCard(const CardUseStruct &use, bool add_history)
         }
     }
     bool slash_not_record = key.contains("Slash") && slash_count > 0 && (card_use.from->hasWeapon("Crossbow") || showTMskill);
+    */
     card = card_use.card->validate(card_use);
     if (card == NULL)
         return false;
 
     if (card_use.from->getPhase() == Player::Play && add_history) {
-        if (!slash_not_record) {
+        //if (!slash_not_record) {
             card_use.m_addHistory = true;
             addPlayerHistory(card_use.from, key);
             if (!card->getSkillName().isEmpty()) {
                 QString name = card->getSkillName();
                 addPlayerHistory(card_use.from, "ViewAsSkill_" + name + "Card");
             }
-        }
+        //}
         addPlayerHistory(NULL, "pushPile");
     }
 
@@ -3904,6 +4178,7 @@ bool Room::useCard(const CardUseStruct &use, bool add_history)
                 broadcastUpdateCard(getPlayers(), wrapped->getId(), wrapped);
                 card_use.card = wrapped;
                 wrapped->setShowSkill(card->showSkill());
+                wrapped->setSkillPosition(card->getSkillPosition());
                 wrapped->onUse(this, card_use);
                 return true;
             }
@@ -4418,43 +4693,7 @@ bool Room::broadcastProperty(ServerPlayer *player, const char *property_name, co
     return doBroadcastNotify(S_COMMAND_SET_PROPERTY, arg);
 }
 
-void Room::drawCards(ServerPlayer *player, int n, const QString &reason)
-{
-    QList<ServerPlayer *> players;
-    players.append(player);
-    drawCards(players, n, reason);
-}
-
-void Room::drawCards(QList<ServerPlayer *> players, int n, const QString &reason)
-{
-    QList<int> n_list;
-    n_list.append(n);
-    drawCards(players, n_list, reason);
-}
-
-void Room::drawCards(QList<ServerPlayer *> players, QList<int> n_list, const QString &reason)
-{
-    QList<CardsMoveStruct> moves;
-    int index = -1, len = n_list.length();
-    Q_ASSERT(len >= 1);
-    foreach (ServerPlayer *player, players) {
-        index++;
-        if (!player->isAlive() && reason != "reform") continue;
-        int n = n_list.at(qMin(index, len - 1));
-        if (n <= 0) continue;
-        QList<int> card_ids = getNCards(n, false);
-
-        CardsMoveStruct move;
-        move.card_ids = card_ids;
-        move.from = NULL;
-        move.to = player;
-        move.to_place = Player::PlaceHand;
-        moves.append(move);
-    }
-    moveCardsAtomic(moves, false);
-}
-
-void Room::throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower, const QString &skill_name)
+QList<int> Room::throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower, const QString &skill_name)
 {
     CardMoveReason reason;
     if (thrower == NULL) {
@@ -4466,15 +4705,15 @@ void Room::throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower,
         reason.m_playerId = thrower->objectName();
     }
     reason.m_skillName = card->getSkillName();
-    throwCard(card, reason, who, thrower, skill_name);
+    return throwCard(card, reason, who, thrower, skill_name);
 }
 
-void Room::throwCard(const Card *card, const CardMoveReason &reason, ServerPlayer *who, ServerPlayer *thrower, const QString &skill_name)
+QList<int> Room::throwCard(const Card *card, const CardMoveReason &reason, ServerPlayer *who, ServerPlayer *thrower, const QString &skill_name)
 {
     if (card == NULL)
-        return;
+        return QList<int>();
 
-    QList<int> to_discard;
+    QList<int> to_discard, result;
     if (card->isVirtualCard())
         to_discard.append(card->getSubcards());
     else
@@ -4498,13 +4737,14 @@ void Room::throwCard(const Card *card, const CardMoveReason &reason, ServerPlaye
     } else {
         log.type = "$EnterDiscardPile";
     }
-    log.card_str = IntList2StringList(to_discard).join("+");
-    sendLog(log);
 
     if (who) { // player's card cannot enter discard_pile directly
         CardsMoveStruct move(to_discard, who, NULL, Player::PlaceUnknown, Player::PlaceTable, reason);
-        moveCardsAtomic(move, true);
-        QList<int> new_list = getCardIdsOnTable(to_discard);
+        result = moveCardsAtomic(move, true);
+        log.card_str = IntList2StringList(result).join("+");
+        sendLog(log);
+
+        QList<int> new_list = getCardIdsOnTable(result);
         if (!new_list.isEmpty()) {
             CardsMoveStruct move2(new_list, who, NULL, Player::PlaceTable, Player::DiscardPile, reason);
             moveCardsAtomic(move2, true);
@@ -4512,21 +4752,27 @@ void Room::throwCard(const Card *card, const CardMoveReason &reason, ServerPlaye
     } else if ((reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
         // discard must through place_table
         CardsMoveStruct move(to_discard, NULL, Player::PlaceTable, reason);
-        moveCardsAtomic(move, true);
-        QList<int> new_list = getCardIdsOnTable(to_discard);
+        result = moveCardsAtomic(move, true);
+        log.card_str = IntList2StringList(result).join("+");
+        sendLog(log);
+
+        QList<int> new_list = getCardIdsOnTable(result);
         if (!new_list.isEmpty()) {
             CardsMoveStruct move2(new_list, NULL, Player::DiscardPile, reason);
             moveCardsAtomic(move2, true);
         }
     } else { // other conditions
         CardsMoveStruct move(to_discard, NULL, Player::DiscardPile, reason);
-        moveCardsAtomic(move, true);
+        result = moveCardsAtomic(move, true);
+        log.card_str = IntList2StringList(result).join("+");
+        sendLog(log);
     }
+    return result;
 }
 
-void Room::throwCard(int card_id, ServerPlayer *who, ServerPlayer *thrower, const QString &skill_name)
+QList<int> Room::throwCard(int card_id, ServerPlayer *who, ServerPlayer *thrower, const QString &skill_name)
 {
-    throwCard(Sanguosha->getCard(card_id), who, thrower, skill_name);
+    return throwCard(Sanguosha->getCard(card_id), who, thrower, skill_name);
 }
 
 RoomThread *Room::getThread() const
@@ -4534,31 +4780,31 @@ RoomThread *Room::getThread() const
     return thread;
 }
 
-void Room::moveCardTo(const Card *card, ServerPlayer *dstPlayer, Player::Place dstPlace, bool forceMoveVisible)
+QList<int> Room::moveCardTo(const Card *card, ServerPlayer *dstPlayer, Player::Place dstPlace, bool forceMoveVisible)
 {
-    moveCardTo(card, dstPlayer, dstPlace,
+    return moveCardTo(card, dstPlayer, dstPlace,
         CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, QString()), forceMoveVisible);
 }
 
-void Room::moveCardTo(const Card *card, ServerPlayer *dstPlayer, Player::Place dstPlace,
+QList<int> Room::moveCardTo(const Card *card, ServerPlayer *dstPlayer, Player::Place dstPlace,
     const CardMoveReason &reason, bool forceMoveVisible)
 {
-    moveCardTo(card, NULL, dstPlayer, dstPlace, QString(), reason, forceMoveVisible);
+    return moveCardTo(card, NULL, dstPlayer, dstPlace, QString(), reason, forceMoveVisible);
 }
 
-void Room::moveCardTo(const Card *card, ServerPlayer *srcPlayer, ServerPlayer *dstPlayer, Player::Place dstPlace,
+QList<int> Room::moveCardTo(const Card *card, ServerPlayer *srcPlayer, ServerPlayer *dstPlayer, Player::Place dstPlace,
     const CardMoveReason &reason, bool forceMoveVisible)
 {
-    moveCardTo(card, srcPlayer, dstPlayer, dstPlace, QString(), reason, forceMoveVisible);
+    return moveCardTo(card, srcPlayer, dstPlayer, dstPlace, QString(), reason, forceMoveVisible);
 }
 
-void Room::moveCardTo(const Card *card, ServerPlayer *srcPlayer, ServerPlayer *dstPlayer, Player::Place dstPlace,
+QList<int> Room::moveCardTo(const Card *card, ServerPlayer *srcPlayer, ServerPlayer *dstPlayer, Player::Place dstPlace,
     const QString &pileName, const CardMoveReason &reason, bool forceMoveVisible)
 {
     CardsMoveStruct move;
     if (card->isVirtualCard()) {
         move.card_ids = card->getSubcards();
-        if (move.card_ids.size() == 0) return;
+        if (move.card_ids.size() == 0) return QList<int>();
     } else
         move.card_ids.append(card->getId());
     move.to = dstPlayer;
@@ -4572,7 +4818,7 @@ void Room::moveCardTo(const Card *card, ServerPlayer *srcPlayer, ServerPlayer *d
     move.reason = reason;
     QList<CardsMoveStruct> moves;
     moves.append(move);
-    moveCardsAtomic(moves, forceMoveVisible);
+    return moveCardsAtomic(moves, forceMoveVisible);
 }
 
 void Room::moveCards(CardsMoveStruct cards_move, bool forceMoveVisible, bool ignoreChanges)
@@ -4739,14 +4985,14 @@ QList<CardsMoveStruct> Room::_separateMoves(QList<CardsMoveOneTimeStruct> moveOn
     return card_moves;
 }
 
-void Room::moveCardsAtomic(CardsMoveStruct cards_move, bool forceMoveVisible)
+QList<int> Room::moveCardsAtomic(CardsMoveStruct cards_move, bool forceMoveVisible)
 {
     QList<CardsMoveStruct> cards_moves;
     cards_moves.append(cards_move);
-    moveCardsAtomic(cards_moves, forceMoveVisible);
+    return moveCardsAtomic(cards_moves, forceMoveVisible);
 }
 
-void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible)
+QList<int> Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible)
 {
     cards_moves = _breakDownCardMoves(cards_moves);
 
@@ -4769,7 +5015,7 @@ void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVis
 
     notifyMoveCards(true, cards_moves, forceMoveVisible);
     // First, process remove card
-    bool drawpile_changed = false;
+    //bool drawpile_changed = false;
     for (int i = 0; i < cards_moves.size(); i++) {
         CardsMoveStruct &cards_move = cards_moves[i];
         for (int j = 0; j < cards_move.card_ids.size(); j++) {
@@ -4784,8 +5030,11 @@ void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVis
                     m_discardPile->removeOne(card_id);
                     break;
                 case Player::DrawPile:
+                    removeFromDrawPile(card_id);
+                    break;
                 case Player::DrawPileBottom:
-                    m_drawPile->removeOne(card_id);
+                    //m_drawPile->removeOne(card_id);
+                    removeFromDrawPile(card_id);
                     break;
                 case Player::PlaceSpecial:
                     table_cards.removeOne(card_id);
@@ -4794,12 +5043,12 @@ void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVis
                     break;
             }
         }
-        if (cards_move.from_place == Player::DrawPile || cards_move.from_place == Player::DrawPileBottom)
-            drawpile_changed = true;
+        //if (cards_move.from_place == Player::DrawPile || cards_move.from_place == Player::DrawPileBottom)
+        //    drawpile_changed = true;
     }
 
-    if (drawpile_changed)
-        doBroadcastNotify(S_COMMAND_UPDATE_PILE, QVariant(m_drawPile->length()));
+    //if (drawpile_changed)
+    //    doBroadcastNotify(S_COMMAND_UPDATE_PILE, QVariant(m_drawPile->length()));
 
     foreach (const CardsMoveStruct &move, cards_moves)
         updateCardsOnLose(move);
@@ -4831,10 +5080,12 @@ void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVis
                     m_discardPile->prepend(card_id);
                     break;
                 case Player::DrawPile:
-                    m_drawPile->prepend(card_id);
+                    //m_drawPile->prepend(card_id);
+                    returnToDrawPile(QList<int>() << card_id, false);
                     break;
                 case Player::DrawPileBottom:
-                    m_drawPile->append(card_id);
+                    //m_drawPile->append(card_id);
+                    returnToDrawPile(QList<int>() << card_id, true);
                     break;
                 case Player::PlaceSpecial:
                     table_cards.append(card_id);
@@ -4847,13 +5098,18 @@ void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVis
 
     //trigger event
     moveOneTimes = _mergeMoves(cards_moves);
+    QList<int> result;
     foreach (ServerPlayer *player, getAllPlayers()) {
+        result.clear();
         foreach (const CardsMoveOneTimeStruct &moveOneTime, moveOneTimes) {
             if (moveOneTime.card_ids.size() == 0) continue;
             QVariant data = QVariant::fromValue(moveOneTime);
             thread->trigger(CardsMoveOneTime, this, player, data);
+            CardsMoveOneTimeStruct moveOneTime_result = data.value<CardsMoveOneTimeStruct>();
+            result << moveOneTime_result.card_ids;
         }
     }
+    return result;
 }
 
 QList<CardsMoveStruct> Room::_breakDownCardMoves(QList<CardsMoveStruct> &cards_moves)
@@ -4937,7 +5193,7 @@ void Room::_moveCards(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible,
         cards_move.to = NULL;
     }
 
-    bool drawpile_changed = false;
+    //bool drawpile_changed = false;
     for (int i = 0; i < cards_moves.size(); i++) {
         CardsMoveStruct &cards_move = cards_moves[i];
         for (int j = 0; j < cards_move.card_ids.size(); j++) {
@@ -4952,8 +5208,12 @@ void Room::_moveCards(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible,
                     m_discardPile->removeOne(card_id);
                     break;
                 case Player::DrawPile:
+                    removeFromDrawPile(card_id);
+                    //m_drawPile->removeOne(card_id);
+                    break;
                 case Player::DrawPileBottom:
-                    m_drawPile->removeOne(card_id);
+                    removeFromDrawPile(card_id);
+                    //m_drawPile->removeOne(card_id);
                     break;
                 case Player::PlaceSpecial:
                     table_cards.removeOne(card_id);
@@ -4964,13 +5224,13 @@ void Room::_moveCards(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible,
 
             setCardMapping(card_id, NULL, Player::PlaceTable);
         }
-        if (cards_move.from_place == Player::DrawPile || cards_move.from_place == Player::DrawPileBottom)
-            drawpile_changed = true;
+        //if (cards_move.from_place == Player::DrawPile || cards_move.from_place == Player::DrawPileBottom)
+        //    drawpile_changed = true;
     }
 
-    if (drawpile_changed) {
-        doBroadcastNotify(S_COMMAND_UPDATE_PILE, QVariant(m_drawPile->length()));
-    }
+    //if (drawpile_changed)
+    //    doBroadcastNotify(S_COMMAND_UPDATE_PILE, QVariant(m_drawPile->length()));
+
 
     foreach(const CardsMoveStruct &move, cards_moves)
         updateCardsOnLose(move);
@@ -5072,10 +5332,12 @@ void Room::_moveCards(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible,
                     m_discardPile->prepend(card_id);
                     break;
                 case Player::DrawPile:
-                    m_drawPile->prepend(card_id);
+                    returnToDrawPile(QList<int>() << card_id, false);
+                    //m_drawPile->prepend(card_id);
                     break;
                 case Player::DrawPileBottom:
-                    m_drawPile->append(card_id);
+                    returnToDrawPile(QList<int>() << card_id, true);
+                    //m_drawPile->append(card_id);
                     break;
                 case Player::PlaceSpecial:
                     table_cards.append(card_id);
@@ -5139,6 +5401,15 @@ void Room::updateCardsOnGet(const CardsMoveStruct &move)
             cards.append(getCard(cardId));
         filterCards(player, cards, true);
     }
+}
+
+void Room::notifyUsingVirtualCard(QString &card_string, CardsMoveStruct cards_moves)
+{
+    JsonArray arg;
+    cards_moves.open = true;
+    arg << cards_moves.toVariant();
+    arg << card_string;
+    doBroadcastNotify(S_COMMAND_GET_CARD, arg);
 }
 
 bool Room::notifyMoveCards(bool isLostPhase, QList<CardsMoveStruct> cards_moves, bool forceVisible, QList<ServerPlayer *> players)
@@ -5213,15 +5484,6 @@ void Room::broadcastSkillInvoke(const QString &skill_name, bool isMale, int type
 
 void Room::broadcastSkillInvoke(const QString &skill_name, const QString &category, int type, const ServerPlayer *who, const QString &position)
 {
-    QString position_copy = position;
-    if (who != NULL && position.isEmpty()) {
-        const Skill *mainskill = Sanguosha->getMainSkill(skill_name);
-        if (mainskill && !getTag(mainskill->objectName() + who->objectName()).toStringList().isEmpty()) {
-            QStringList names = getTag(mainskill->objectName() + who->objectName()).toStringList();
-            if (!names.isEmpty())
-                position_copy = names.last();
-        }
-    }
     JsonArray args;
     args << QSanProtocol::S_GAME_EVENT_PLAY_EFFECT;
     args << skill_name;
@@ -5229,8 +5491,8 @@ void Room::broadcastSkillInvoke(const QString &skill_name, const QString &catego
     args << type;
     if (who != NULL) {
         args << who->objectName();
-        if (!position_copy.isEmpty())
-            args << position_copy;
+        if (!position.isEmpty())
+            args << position;
     }
     doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
@@ -5364,26 +5626,29 @@ void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool ref
     for (int i = 0; i < cards.size(); i++)
         cardChanged << false;
 
-    QSet<const Skill *> skills = player->getSkills(false, false);
+    QList<const Skill *> skills = player->getSkillList(false, false);
     QList<const FilterSkill *> filterSkills;
 
-    foreach (QString name, Sanguosha->getSkillNames()) {
-        if (Sanguosha->getSkill(name)->inherits("ViewHasSkill")) {
-            const ViewHasSkill *skill = qobject_cast<const ViewHasSkill *>(Sanguosha->getSkill(name));
-            foreach (QString name1, Sanguosha->getSkillNames()) {
-                if (!Sanguosha->getSkill(name1)->inherits("ViewHasSkill") && skill->ViewHas(player, name1, "skill"))
-                    skills.insert(Sanguosha->getSkill(name1));
+    foreach (const Skill *s,  player->getSkills(false, false)) {
+        if (s->inherits("ViewHasSkill")) {
+            const ViewHasSkill *skill = qobject_cast<const ViewHasSkill *>(s);
+            foreach (QString name1, skill->getViewHasSkills()) {
+                const Skill *mskill = Sanguosha->getSkill(name1);
+                if (!mskill) continue;
+                if ((mskill->inherits("FilterSkill") || mskill->inherits("TriggerSkill")) && !skills.contains(mskill)
+                        && skill->ViewHas(player, name1))
+                    skills << mskill;
             }
         }
     }
 
     foreach (const Skill *skill, skills) {
-        if (player->hasSkill(skill->objectName()) && skill->inherits("FilterSkill")) {
+        if (player->hasShownSkill(skill->objectName()) && skill->inherits("FilterSkill")) {
             const FilterSkill *filter = qobject_cast<const FilterSkill *>(skill);
             Q_ASSERT(filter);
             filterSkills.append(filter);
         }
-        if (player->hasSkill(skill->objectName()) && skill->inherits("TriggerSkill")) {
+        if (player->hasShownSkill(skill->objectName()) && skill->inherits("TriggerSkill")) {
             const TriggerSkill *trigger = qobject_cast<const TriggerSkill *>(skill);
             const ViewAsSkill *vsskill = trigger->getViewAsSkill();
             if (vsskill && vsskill->inherits("FilterSkill")) {
@@ -5401,7 +5666,7 @@ void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool ref
             bool converged = true;
             foreach (const FilterSkill *skill, filterSkills) {
                 Q_ASSERT(skill);
-                if (skill->viewFilter(cards[i], player)) {
+                if (skill->viewFilter(cards[i])) {
                     cards[i] = skill->viewAs(card);
                     Q_ASSERT(cards[i] != NULL);
                     converged = false;
@@ -5714,7 +5979,8 @@ QString Room::askForKingdom(ServerPlayer *player)
     return "wei";
 }
 
-bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discard_num, int min_num, bool optional, bool include_equip, const QString &prompt, bool notify_skill)
+bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discard_num, int min_num, bool optional,
+                         bool include_equip, const QString &prompt, bool notify_skill, const QString &position)
 {
     if (!player->isAlive())
         return false;
@@ -5751,6 +6017,11 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
                 else
                     movereason.m_reason = CardMoveReason::S_REASON_THROW;
 
+                if (notify_skill) {
+                    notifySkillInvoked(player, reason);
+                    if (!position.isEmpty())
+                        movereason.m_position = position;
+                }
                 throwCard(dummy, movereason, player);
 
                 QVariant data;
@@ -5802,9 +6073,8 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
         ask_str << include_equip;
         ask_str << prompt;
         ask_str << reason;
-        const Skill *mainskill = Sanguosha->getMainSkill(reason);
-        if (mainskill && !getTag(mainskill->objectName() + player->objectName()).toStringList().isEmpty())
-            ask_str << getTag(mainskill->objectName() + player->objectName()).toStringList().last();
+        if (!position.isEmpty())
+            ask_str << position;
 
         bool success = doRequest(player, S_COMMAND_DISCARD_CARD, ask_str, true);
 
@@ -5826,8 +6096,11 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
         throwCard(&dummy_card, move_reason, player);
     } else {
         CardMoveReason move_reason(CardMoveReason::S_REASON_THROW, player->objectName(), QString(), notify_skill ? reason : QString(), QString());
-        if (notify_skill)
+        if (notify_skill) {
             notifySkillInvoked(player, reason);
+            if (!position.isEmpty())
+                move_reason.m_position = position;
+        }
         throwCard(&dummy_card, move_reason, player, NULL, notify_skill ? reason : QString());
     }
 
@@ -5838,7 +6111,8 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
     return true;
 }
 
-QList<int> Room::askForExchange(ServerPlayer *player, const QString &reason, int exchange_num, int min_num, const QString &prompt, const QString &_expand_pile, const QString &pattern)
+QList<int> Room::askForExchange(ServerPlayer *player, const QString &reason, int exchange_num, int min_num,
+                                const QString &prompt, const QString &_expand_pile, const QString &pattern, const QString &position)
 {
     if (!player->isAlive())
         return QList<int>();
@@ -5876,9 +6150,8 @@ QList<int> Room::askForExchange(ServerPlayer *player, const QString &reason, int
         exchange_str << _expand_pile;
         exchange_str << (pattern.isEmpty() ? new_pattern : pattern);
         exchange_str << reason;
-        const Skill *mainskill = Sanguosha->getMainSkill(reason);
-        if (mainskill && !getTag(mainskill->objectName() + player->objectName()).toStringList().isEmpty())
-            exchange_str << getTag(mainskill->objectName() + player->objectName()).toStringList().last();
+        if (!position.isEmpty())
+            exchange_str << position;
 
         bool success = doRequest(player, S_COMMAND_EXCHANGE_CARD, exchange_str, true);
         //@todo: also check if the player does have that card!!!
@@ -5902,6 +6175,7 @@ void Room::setCardMapping(int card_id, ServerPlayer *owner, Player::Place place)
 {
     owner_map.insert(card_id, owner);
     place_map.insert(card_id, place == Player::DrawPileBottom ? Player::DrawPile : place);
+    doBroadcastNotify(S_COMMAND_CARD_MAPPING, JsonArray() << card_id << place);
 }
 
 ServerPlayer *Room::getCardOwner(int card_id) const
@@ -6035,12 +6309,18 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
             guanxingArgs << (guanxing_type != GuanxingBothSides);
             bool success = doRequest(zhuge, S_COMMAND_SKILL_GUANXING, guanxingArgs, true);
             if (!success) {
+                /*
                 foreach (int card_id, cards) {
                     if (guanxing_type == GuanxingDownOnly)
                         m_drawPile->append(card_id);
                     else
                         m_drawPile->prepend(card_id);
                 }
+                */
+                if (guanxing_type == GuanxingDownOnly)
+                    returnToDrawPile(cards, true);
+                else
+                    returnToDrawPile(cards, false);
                 return;
             }
             JsonArray clientReply = zhuge->getClientReply().value<JsonArray>();
@@ -6094,7 +6374,7 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
         log.card_str = IntList2StringList(bottom_cards).join("+");
         doNotify(zhuge, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
     }
-
+/*
     QListIterator<int> i(top_cards);
     i.toBack();
     while (i.hasPrevious())
@@ -6105,13 +6385,15 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
         m_drawPile->append(i.next());
 
     doBroadcastNotify(S_COMMAND_UPDATE_PILE, QVariant(m_drawPile->length()));
-
+*/
+    returnToDrawPile(top_cards, false);
+    returnToDrawPile(bottom_cards, true);
     QVariant decisionData = QVariant::fromValue("guanxingViewCards:" + zhuge->objectName() + ":" + IntList2StringList(top_cards).join("+") + ":" + IntList2StringList(bottom_cards).join("+"));
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
 }
 
-AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
-    const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse, bool moverestricted, const QList<int> &notify_visible_list)
+AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &skillName,
+    const QString &pattern, int min_num, int max_num, bool can_refuse, bool moverestricted, const QList<int> &notify_visible_list, const QString &position)
 {
     QList<int> top_cards, bottom_cards, to_move;
     to_move << upcards << downcards;
@@ -6120,6 +6402,16 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
     notifyMoveFocus(zhuge, S_COMMAND_SKILL_MOVECARDS);
 
     JsonArray stepArgs;
+    stepArgs << S_GUANXING_START;
+    stepArgs << zhuge->objectName();
+    stepArgs << skillName;
+    stepArgs << JsonUtils::toJsonArray(upcards);
+    stepArgs << JsonUtils::toJsonArray(downcards);
+    stepArgs << pattern;
+    stepArgs << moverestricted;
+    stepArgs << min_num;
+    stepArgs << max_num;
+
     if (visible) {
         QList<int> notify_up, notify_down;
         foreach (int id, upcards) {
@@ -6143,22 +6435,13 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
                     notify_down << -1;
             }
         }
-
-        stepArgs << S_GUANXING_START;
-        stepArgs << zhuge->objectName();
-        stepArgs << reason;
-        stepArgs << JsonUtils::toJsonArray(notify_up);
-        stepArgs << JsonUtils::toJsonArray(notify_down);
-        stepArgs << pattern;
-        stepArgs << moverestricted;
-        stepArgs << min_num;
-        stepArgs << max_num;
+        stepArgs[3] = JsonUtils::toJsonArray(notify_up);
+        stepArgs[4] = JsonUtils::toJsonArray(notify_down);
         doBroadcastNotify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs, zhuge);
     }
     AI *ai = zhuge->getAI();
     if (ai) {
-        QMap<QString, QList<int> > map = ai->askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
-
+        QMap<QString, QList<int> > map = ai->askForMoveCards(upcards, downcards, skillName, pattern, min_num, max_num);
         top_cards = map["top"];
         bottom_cards = map["bottom"];
         bool length_equal = top_cards.length() + bottom_cards.length() == to_move.length();
@@ -6183,15 +6466,12 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
             }
             success = true;
         }
-
         bool isTrustAI = zhuge->getState() == "trust";
         if (isTrustAI) {
             stepArgs[1] = QVariant();
-            stepArgs[3] = JsonUtils::toJsonArray(upcards);
-            stepArgs[4] = JsonUtils::toJsonArray(downcards);
             zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);
         }
-        if (success && visible) {
+        if (success && (visible || isTrustAI)) {
             thread->delay();
             thread->delay();
 
@@ -6304,18 +6584,16 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
         JsonArray CardChooseArgs;
         CardChooseArgs << JsonUtils::toJsonArray(upcards);
         CardChooseArgs << JsonUtils::toJsonArray(downcards);
-        CardChooseArgs << reason;
-        CardChooseArgs << pattern;
         CardChooseArgs << skillName;
+        CardChooseArgs << pattern;
         CardChooseArgs << moverestricted;
         CardChooseArgs << min_num;
         CardChooseArgs << max_num;
         CardChooseArgs << can_refuse;
-        const Skill *mainskill = Sanguosha->getMainSkill(skillName);
-        if (mainskill && !getTag(mainskill->objectName() + zhuge->objectName()).toStringList().isEmpty())
-            CardChooseArgs << getTag(mainskill->objectName() + zhuge->objectName()).toStringList().last();
-
+        if (!position.isEmpty())
+            CardChooseArgs << position;
         success = doRequest(zhuge, S_COMMAND_SKILL_MOVECARDS, CardChooseArgs, true);
+
         if (success) {
             JsonArray clientReply = zhuge->getClientReply().value<JsonArray>();
             if (clientReply.size() == 2) {
@@ -6356,7 +6634,7 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
         bottom_cards.clear();
     }
 
-    QVariant decisionData = QVariant::fromValue(reason + "chose:" + zhuge->objectName() + ":" + IntList2StringList(top_cards).join("+") + ":" + IntList2StringList(bottom_cards).join("+"));
+    QVariant decisionData = QVariant::fromValue(skillName + "chose:" + zhuge->objectName() + ":" + IntList2StringList(top_cards).join("+") + ":" + IntList2StringList(bottom_cards).join("+"));
     thread->trigger(ChoiceMade, this, zhuge, decisionData);
     AskForMoveCardsStruct returns;
     returns.top = top_cards;
@@ -6548,7 +6826,7 @@ QList<const Card *> Room::askForPindianRace(ServerPlayer *from,const QList<Serve
 }
 
 ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const QString &skillName,
-    const QString &prompt, bool optional, bool notify_skill)
+    const QString &prompt, bool optional, bool notify_skill, const QString &position)
 {
     if (targets.isEmpty()) {
         Q_ASSERT(optional);
@@ -6577,9 +6855,8 @@ ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerP
         req << prompt;
         req << 1;
         req << (optional ? 0 : 1);
-        const Skill *mainskill = Sanguosha->getMainSkill(skillName);
-        if (mainskill && !getTag(mainskill->objectName() + player->objectName()).toStringList().isEmpty())
-            req << getTag(mainskill->objectName() + player->objectName()).toStringList().last();
+        if (!position.isEmpty())
+            req << position;
 
         bool success = doRequest(player, S_COMMAND_CHOOSE_PLAYER, req, true);
 
@@ -6611,7 +6888,8 @@ ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerP
     return choice;
 }
 
-QList<ServerPlayer *> Room::askForPlayersChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const QString &skillName, int min_num, int max_num, const QString &prompt, bool notify_skill)
+QList<ServerPlayer *> Room::askForPlayersChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets,
+                            const QString &skillName, int min_num, int max_num, const QString &prompt, bool notify_skill, const QString &position)
 {
     if (targets.length() <= min_num) {
         QStringList names;
@@ -6642,9 +6920,8 @@ QList<ServerPlayer *> Room::askForPlayersChosen(ServerPlayer *player, const QLis
         req << prompt;
         req << max_num;
         req << min_num;
-        const Skill *mainskill = Sanguosha->getMainSkill(skillName);
-        if (mainskill && !getTag(mainskill->objectName() + player->objectName()).toStringList().isEmpty())
-            req << getTag(mainskill->objectName() + player->objectName()).toStringList().last();
+        if (!position.isEmpty())
+            req << position;
 
         bool success = doRequest(player, S_COMMAND_CHOOSE_PLAYER, req, true);
 
@@ -6687,7 +6964,58 @@ QList<ServerPlayer *> Room::askForPlayersChosen(ServerPlayer *player, const QLis
     return result;
 }
 
-QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, const QString &_default_choice, bool single_result, const QString &skill_name, const QVariant &data, bool can_convert)
+QList<ServerPlayer *> Room::askForExtraTargets(ServerPlayer *player, const QList<ServerPlayer *> &selected_targets,
+        const Card *card, const QString &skillName, const QString &prompt, bool notify_skill, const QString &position)
+{
+    tryPause();
+    notifyMoveFocus(player, S_COMMAND_CHOOSE_EXTRA_TARGET);
+
+    AI *ai = player->getAI();
+    QList<ServerPlayer *> result;
+    if (ai) {
+        result = ai->askForPlayersChosen(getAlivePlayers(), skillName, 1, 0);
+        if (!result.isEmpty())
+            thread->delay();
+    } else {
+        JsonArray req;
+        JsonArray req_targets;
+        foreach (ServerPlayer *target, selected_targets)
+            req_targets << target->objectName();
+        req << QVariant(req_targets);
+        req << card->toString();
+        req << skillName;
+        req << prompt;
+        if (!position.isEmpty())
+            req << position;
+
+        bool success = doRequest(player, S_COMMAND_CHOOSE_EXTRA_TARGET, req, true);
+
+        const QVariant &clientReply = player->getClientReply();
+        if (success && JsonUtils::isString(clientReply))
+            foreach (const QString &name, clientReply.toString().split("+"))
+                result << findChild<ServerPlayer *>(name);
+    }
+
+    if (!result.isEmpty() && notify_skill) {
+        QString main = Sanguosha->getMainSkill(skillName)->objectName();
+        notifySkillInvoked(player, main);
+        LogMessage log;
+        log.type = "$extra_target";
+        log.from = player;
+        log.to = result;
+        log.card_str = card->toString();
+        log.arg = main;
+        sendLog(log);
+
+        player->showSkill(main, position);
+        const TargetModSkill *skill = qobject_cast<const TargetModSkill *>(Sanguosha->getSkill(skillName));
+        broadcastSkillInvoke(main, "male", skill->getEffectIndex(player, card, TargetModSkill::ExtraTarget), player, position);
+    }
+    return result;
+}
+
+QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, const QString &_default_choice, bool single_result,
+                            const QString &skill_name, const QVariant &data, bool can_convert, bool assign_kingdom)
 {
     tryPause();
     notifyMoveFocus(player, S_COMMAND_CHOOSE_GENERAL);
@@ -6738,6 +7066,7 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, c
         options << JsonUtils::toJsonArray(generals);
         options << single_result;
         options << can_convert;
+        options << assign_kingdom;
         bool success = doRequest(player, S_COMMAND_CHOOSE_GENERAL, options, true);
 
         const QVariant &clientResponse = player->getClientReply();
@@ -6758,9 +7087,10 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, c
     return default_choice;
 }
 
-QString Room::askForGeneral(ServerPlayer *player, const QString &generals, const QString &default_choice, bool single_result, const QString &skill_name, const QVariant &data, bool can_convert)
+QString Room::askForGeneral(ServerPlayer *player, const QString &generals, const QString &default_choice,
+                            bool single_result, const QString &skill_name, const QVariant &data, bool can_convert, bool assign_kingdom)
 {
-    return askForGeneral(player, generals.split("+"), default_choice, single_result, skill_name, data, can_convert); // For Lua only!!!
+    return askForGeneral(player, generals.split("+"), default_choice, single_result, skill_name, data, can_convert, assign_kingdom); // For Lua only!!!
 }
 
 bool Room::makeCheat(ServerPlayer *player)
@@ -6963,12 +7293,14 @@ QList<ServerPlayer *> Room::getLieges(const QString &kingdom, ServerPlayer *lord
     return lieges;
 }
 
-void Room::sendLog(const LogMessage &log)
+void Room::sendLog(const LogMessage &log, QList<ServerPlayer *> except)
 {
     if (log.type.isEmpty())
         return;
 
-    doBroadcastNotify(S_COMMAND_LOG_SKILL, log.toVariant());
+    foreach (ServerPlayer *p, m_players)
+        if (!except.contains(p))
+            doNotify(p, S_COMMAND_LOG_SKILL, log.toVariant());
 }
 
 void Room::sendCompulsoryTriggerLog(ServerPlayer *player, const QString &skill_name, bool notify_skill)
@@ -7069,10 +7401,9 @@ void Room::showAllCards(ServerPlayer *player, ServerPlayer *to)
     }
 }
 
-void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, const QString &skill_name, bool exchange)
+void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, const QString &skill_name, bool exchange, const QString &position)
 {
     if (card == NULL) return;
-
     bool triggerResponded = getCardOwner(card->getEffectiveId()) == player;
     bool isHandcard = (triggerResponded && getCardPlace(card->getEffectiveId()) == Player::PlaceHand);
 
@@ -7080,7 +7411,8 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, c
     judge->card = Sanguosha->getCard(card->getEffectiveId());
 
     CardsMoveStruct move1(QList<int>(), judge->who, Player::PlaceJudge,
-        CardMoveReason(CardMoveReason::S_REASON_RETRIAL, player->objectName(), skill_name, QString()));
+        CardMoveReason(CardMoveReason::S_REASON_RETRIAL, player->objectName(), judge->who->objectName(), skill_name, QString(), position));
+
 
     move1.card_ids.append(card->getEffectiveId());
     int reasonType;

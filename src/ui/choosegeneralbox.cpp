@@ -36,7 +36,7 @@
 using namespace QSanProtocol;
 
 GeneralCardItem::GeneralCardItem(const QString &generalName, const int skinId)
-    : CardItem(generalName), hasCompanion(false)
+    : CardItem(generalName), hasCompanion(false), can_convert(false)
 {
     _skinId = skinId;
     setAcceptHoverEvents(true);
@@ -98,14 +98,18 @@ void GeneralCardItem::hideCompanion()
     update();
 }
 
+void GeneralCardItem::setConvert(bool convert)
+{
+    can_convert = convert;
+}
+
 #ifdef Q_OS_ANDROID
 void GeneralCardItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     pressPos = event->pos();
-    timerLongPress.setInterval(1000);
     timerLongPress.setSingleShot(true);
     outOfRange = false;
-    timerLongPress.start();
+    timerLongPress.start(2000);
 }
 
 void GeneralCardItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -127,10 +131,10 @@ void GeneralCardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     qreal releaseX = event->pos().x(), releaseY = event->pos().y();
     qreal pressX = pressPos.x(), pressY = pressPos.y();
 
-    if (ServerInfo.FreeChoose && !outOfRange && !timerLongPress.isActive() && releaseX >= pressX - moveRange
+    if (can_convert && ServerInfo.FreeChoose && !outOfRange && !timerLongPress.isActive() && releaseX >= pressX - moveRange
         && releaseX <= pressX + moveRange && releaseY >= pressY - moveRange && releaseY <= pressY + moveRange) {
 #else
-    if (ServerInfo.FreeChoose && Qt::RightButton == event->button()) {
+    if (ServerInfo.FreeChoose && Qt::RightButton == event->button() && can_convert) {
 #endif
         FreeChooseDialog *general_changer = new FreeChooseDialog(QApplication::focusWidget());
         connect(general_changer, &FreeChooseDialog::general_chosen, this, &GeneralCardItem::changeGeneral);
@@ -138,6 +142,7 @@ void GeneralCardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         general_changer->deleteLater();
         return;
     }
+
     CardItem::mouseReleaseEvent(event);
 }
 
@@ -278,7 +283,8 @@ static bool sortByKingdom(const QString &gen1, const QString &gen2)
 
 }
 
-void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_only, bool single_result, const QString &reason, const Player *player, const bool can_convert)
+void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_only, bool single_result,
+                                     const QString &reason, const Player *player, const bool can_convert, const bool assign_kingdom)
 {
     //repaint background
     QStringList generals = _generals;
@@ -293,7 +299,17 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
         if (general.endsWith("(lord)"))
             generals.removeOne(general);
     }
-
+    this->assign_kingdom = QString();
+    if (assign_kingdom) {
+        foreach (QString name, generals) {
+            if (this->assign_kingdom.isEmpty())
+                this->assign_kingdom = Sanguosha->getGeneral(name)->getKingdom();
+            else if (this->assign_kingdom != Sanguosha->getGeneral(name)->getKingdom()) {
+                this->assign_kingdom = QString();
+                break;
+            }
+        }
+    }
     general_number = generals.length();
     if (!view_only) {
         title = single_result ? tr("Please select one general")
@@ -331,6 +347,7 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
         general_item->setProperty("source", general);
         general_item->setFlag(QGraphicsItem::ItemIsFocusable);
         general_item->setZValue(z--);
+        general_item->setConvert(can_convert);
 
         if (view_only || single_result) {
             general_item->setFlag(QGraphicsItem::ItemIsMovable, false);
@@ -338,11 +355,23 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
             general_item->setAutoBack(true);
             connect(general_item, &GeneralCardItem::released, this, &ChooseGeneralBox::_adjust);
             if (!Sanguosha->getConvertGenerals(general).isEmpty() && can_convert) {
-                Button *button = new Button(Sanguosha->translate("convert_general"), 0.45);
-                button->setPos((93 - button->boundingRect().width()) / 2, 130 - button->boundingRect().height());
-                button->setParentItem(general_item);
-                button->setObjectName(general);
-                connect(button, &Button::clicked, this, &ChooseGeneralBox::_onConvertButtonClicked);
+                bool check = false;
+                if (!this->assign_kingdom.isEmpty()) {
+                    foreach (QString name, Sanguosha->getConvertGenerals(general)) {
+                        if (Sanguosha->getGeneral(name)->getKingdom() == this->assign_kingdom) {
+                            check = true;
+                            break;
+                        }
+                    }
+                } else
+                    check = true;
+                if (check) {
+                    Button *button = new Button(Sanguosha->translate("convert_general"), 0.45);
+                    button->setPos((93 - button->boundingRect().width()) / 2, 130 - button->boundingRect().height());
+                    button->setParentItem(general_item);
+                    button->setObjectName(general);
+                    connect(button, &Button::clicked, this, &ChooseGeneralBox::_onConvertButtonClicked);
+                }
             }
         }
 
@@ -484,8 +513,11 @@ void ChooseGeneralBox::adjustItems()
     if (selected.length() == 2) {
         foreach(GeneralCardItem *card, items)
             card->setFrozen(true);
-        confirm->setEnabled(Sanguosha->getGeneral(selected.first()->objectName())->getKingdom()
-            == Sanguosha->getGeneral(selected.last()->objectName())->getKingdom());
+        bool enable = Sanguosha->getGeneral(selected.first()->objectName())->getKingdom()
+                == Sanguosha->getGeneral(selected.last()->objectName())->getKingdom();
+        if (!assign_kingdom.isEmpty() && Sanguosha->getGeneral(selected.first()->objectName())->getKingdom() != assign_kingdom)
+            enable = false;
+        confirm->setEnabled(enable);
     } else if (selected.length() == 1) {
         selected.first()->hideCompanion();
         const General *seleted_general = Sanguosha->getGeneral(selected.first()->objectName());
@@ -598,7 +630,8 @@ void ChooseGeneralBox::_onItemClicked()
 
     if (single_result) {
         selected << item;
-        reply();
+        if (assign_kingdom.isEmpty() || Sanguosha->getGeneral(item->objectName())->getKingdom() == assign_kingdom)
+            reply();
         return;
     }
 
@@ -637,13 +670,15 @@ void ChooseGeneralBox::_onConvertButtonClicked()
     generals << origin_item;
 
     foreach (QString name, Sanguosha->getConvertGenerals(general)) {
-        GeneralCardItem *item = new GeneralCardItem(name, 0);
-        item->setParentItem(convertContainer);
-        item->setFlag(ItemIsMovable, false);
-        item->setObjectName(name);
-        item->setProperty("source", general);
-        connect(item, &GeneralCardItem::clicked, this, &ChooseGeneralBox::_onConvertClicked);
-        generals << item;
+        if (assign_kingdom.isEmpty() || Sanguosha->getGeneral(name)->getKingdom() == assign_kingdom) {
+            GeneralCardItem *item = new GeneralCardItem(name, 0);
+            item->setParentItem(convertContainer);
+            item->setFlag(ItemIsMovable, false);
+            item->setObjectName(name);
+            item->setProperty("source", general);
+            connect(item, &GeneralCardItem::clicked, this, &ChooseGeneralBox::_onConvertClicked);
+            generals << item;
+        }
     }
     convertContainer->fillGeneralCards(generals);
     convertContainer->setObjectName(general);

@@ -58,11 +58,15 @@ public:
 
     virtual int getPriority() const;
     virtual bool canPreshow() const;
-    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    //virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    //virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL, const QString &position = QString()) const;
+    //virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL, const QString &position = QString()) const;
     void onTurnBroken(const char *function_name, TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+
+    virtual QList<TriggerStruct> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual TriggerStruct cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who, const TriggerStruct &info) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who, const TriggerStruct &info) const;
 
     LuaFunction on_record;
     LuaFunction can_trigger;
@@ -93,11 +97,11 @@ public:
 
     virtual int getPriority() const;
 
-    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
-    void onTurnBroken(const char *function_name, TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual QList<TriggerStruct> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual TriggerStruct cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who, const TriggerStruct &info) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who, const TriggerStruct &info) const;
+    void onTurnBroken(const char *function_name, TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
 
     LuaFunction on_record;
     LuaFunction can_trigger;
@@ -158,11 +162,13 @@ public:
     LuaFunction enabled_at_response;
     LuaFunction enabled_at_nullification;
     LuaFunction in_pile;
+    LuaFunction get_guhuo;
 
     virtual bool isEnabledAtPlay(const Player *player) const;
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const;
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const;
     virtual QString getExpandPile() const;
+    virtual QList<const Card *> getGuhuoCards(const QList<const Card *> &cards) const;
 
 protected:
     QString guhuo_type;
@@ -176,11 +182,19 @@ class LuaViewHasSkill : public ViewHasSkill
 public:
     LuaViewHasSkill(const char *name);
 
-    virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const;
+    virtual bool ViewHas(const Player *player, const QString &skill_name) const;
     LuaFunction is_viewhas;
     inline void setGlobal(bool global)
     {
         this->global = global;
+    }
+    inline void addViewhasSkill(const char *skill_name)
+    {
+        viewhas_skills << skill_name;
+    }
+    inline void addViewhasArmor(const char *armor_name)
+    {
+        viewhas_armors << armor_name;
     }
 };
 
@@ -191,7 +205,7 @@ class LuaFilterSkill : public FilterSkill
 public:
     LuaFilterSkill(const char *name);
 
-    virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const;
+    virtual bool viewFilter(const Card *to_select) const;
     virtual const Card *viewAs(const Card *originalCard) const;
 
     LuaFunction view_filter;
@@ -232,12 +246,17 @@ public:
     LuaTargetModSkill(const char *name, const char *pattern);
 
     virtual int getResidueNum(const Player *from, const Card *card) const;
-    virtual int getDistanceLimit(const Player *from, const Card *card) const;
     virtual int getExtraTargetNum(const Player *from, const Card *card) const;
+    virtual bool getDistanceLimit(const Player *from, const Player *to, const Card *card) const;
+    virtual bool checkExtraTargets(const Player *from, const Player *to, const Card *card,
+                                   const QList<const Player *> &previous_targets, const QList<const Player *> &targets = QList<const Player *>()) const;
+    virtual int getEffectIndex(const ServerPlayer *player, const Card *card, const TargetModSkill::ModType type) const;
 
     LuaFunction residue_func;
     LuaFunction distance_limit_func;
     LuaFunction extra_target_func;
+    LuaFunction check_extra_func;
+    LuaFunction audio_index_func;
 };
 
 class LuaAttackRangeSkill : public AttackRangeSkill
@@ -281,7 +300,10 @@ public:
     {
         this->mute = isMute;
     }
-
+    inline void setVote(bool isVotes)
+    {
+        this->votes = isVotes;
+    }
     // member functions that do not expose to Lua interpreter
     static LuaSkillCard *Parse(const QString &str);
     void pushSelf(lua_State *L) const;
@@ -289,8 +311,7 @@ public:
     virtual QString toString(bool hidden = false) const;
 
     // these functions are defined at swig/luaskills.i
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self,
-        int &maxVotes) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
@@ -611,7 +632,7 @@ public:
         return origin->getPriority();
     }
 
-    virtual bool effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual bool effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who, const TriggerStruct &info) const;
 
 protected:
     TriggerSkill *origin;

@@ -105,11 +105,15 @@ void PindianBox::onReply(const QString &who, int card_id)
 {
     _m_mutex_pindian.lock();
     if (who == zhuge) {
+        if (Self->objectName() == who)
+            downItems.first()->setCard(Sanguosha->getCard(card_id));
         this->card_id = card_id;
         downItems.first()->show();
     } else {
         for (int i = 0; i < targets.length(); i++) {
             if (who == targets.at(i)) {
+                if (Self->objectName() == who)
+                    upItems.at(i)->setCard(Sanguosha->getCard(card_id));
                 upItems.at(i)->show();
                 card_ids[i] = card_id;
             }
@@ -123,13 +127,54 @@ void PindianBox::doPindianAnimation(const QString &who)
 {
     _m_mutex_pindian.lock();
     downItems.first()->setCard(Sanguosha->getCard(card_id));
-    int i = 0;
-    for (i; i < targets.length(); i++) {
+    downItems.first()->setFootnote("");
+
+    for (int i = 0; i < targets.length(); i++) {
         if (who == targets.at(i)) {
             upItems.at(i)->setCard(Sanguosha->getCard(card_ids.at(i)));
             break;
         } else
             upItems.at(i)->setEnabled(false);
+    }
+    update();
+    _m_mutex_pindian.unlock();
+}
+
+void PindianBox::alterPindian(const QString &who, int number, int card_id)
+{
+    _m_mutex_pindian.lock();
+
+    if (who == zhuge) {
+        QString footnote;
+        if (this->card_id != card_id) {
+            footnote = Sanguosha->translate("alter_pindian_card");
+            this->card_id = card_id;
+        }
+        if (number != Sanguosha->getCard(card_id)->getNumber()) {
+            if (!footnote.isEmpty()) footnote.append(",");
+            footnote.append(Sanguosha->translate("alter_pindian"));
+            footnote.append(QString::number(number));
+        }
+        downItems.first()->setCard(Sanguosha->getCard(card_id));
+        downItems.first()->setFootnote(footnote);
+    } else {
+        for (int i = 0; i < targets.length(); i++) {
+            if (who == targets.at(i)) {
+                QString footnote;
+                if (card_ids[i] != card_id) {
+                    footnote = Sanguosha->translate("alter_pindian_card");
+                    card_ids[i] = card_id;
+                    upItems.at(i)->setCard(Sanguosha->getCard(card_id));
+                }
+                if (number != Sanguosha->getCard(card_id)->getNumber()) {
+                    if (!footnote.isEmpty()) footnote.append(",");
+                    footnote.append(Sanguosha->translate("alter_pindian"));
+                    footnote.append(QString::number(number));
+                }
+                upItems.at(i)->setFootnote(footnote);
+                break;
+            }
+        }
     }
     update();
     _m_mutex_pindian.unlock();

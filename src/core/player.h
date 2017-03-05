@@ -177,6 +177,7 @@ public:
     const General *getGeneral() const;
 
     bool isLord() const;
+    QString willbeRole() const;
 
     void acquireSkill(const QString &skill_name, bool head = true);
     void detachSkill(const QString &skill_name, bool head = true);
@@ -216,7 +217,8 @@ public:
     const EquipCard *getEquip(int index) const;
 
     bool hasWeapon(const QString &weapon_name) const;
-    bool hasArmorEffect(const QString &armor_name) const;
+    bool hasShownArmorEffect() const;
+    bool hasArmorEffect(const QString &armor_name, bool include_viewhas = true) const;
     bool hasTreasure(const QString &treasure_name) const;
 
     bool isKongcheng() const;
@@ -272,8 +274,8 @@ public:
     QList<const Skill *> getSkillList(bool include_equip = false, bool visible_only = true) const;
     QList<const Skill *> getHeadSkillList(bool visible_only = true, bool include_acquired = false, bool include_equip = false) const;
     QList<const Skill *> getDeputySkillList(bool visible_only = true, bool include_acquired = false, bool include_equip = false) const;
-    QList<const Skill *> getHeadActivedSkills() const;
-    QList<const Skill *> getDeputyActivedSkills() const;
+    QList<const Skill *> getHeadActivedSkills(bool include_acquired = true, bool shown = false) const;
+    QList<const Skill *> getDeputyActivedSkills(bool include_acquired = true, bool shown = false) const;
     QSet<const Skill *> getVisibleSkills(bool include_equip = false) const;
     QList<const Skill *> getVisibleSkillList(bool include_equip = false) const;
     QSet<QString> getAcquiredSkills() const;
