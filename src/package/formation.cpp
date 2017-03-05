@@ -973,15 +973,8 @@ public:
             if (use.to.length() != 1) return skill_list;
             foreach (ServerPlayer *yuji, yujis) {
                 if (yuji->getPile("sorcery").isEmpty()) continue;
-                if (yuji->hasFlag(objectName()) && (yuji->getPile("sorcery").length() / yuji->getPlayerNumWithSameKingdom("AI")) < 1) continue;
                 if (yuji->willBeFriendWith(use.to.first()))
                     skill_list<< TriggerStruct(objectName(), yuji);
-            }
-        } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive) {
-                foreach (ServerPlayer *yuji, yujis)
-                    room->setPlayerFlag(yuji, "-" + objectName());
             }
         }
         return skill_list;
@@ -991,7 +984,7 @@ public:
     {
         ServerPlayer *yuji = ask_who;
         if (yuji == NULL)
-            return false;
+            return TriggerStruct();
         yuji->tag["qianhuan_data"] = data;
 
         bool invoke = false;

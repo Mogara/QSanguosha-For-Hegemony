@@ -1247,7 +1247,7 @@ public:
         }
         lirang_card.removeLast();
         player->tag["lirang_to_judge"] = lirang_card;
-        if (cards.isEmpty()) return false;
+        if (cards.isEmpty()) return TriggerStruct();
 
         room->notifyMoveToPile(player, cards, objectName(), Player::DiscardPile, true, true);
         player->tag["lirang_this_time"] = IntList2VariantList(cards);

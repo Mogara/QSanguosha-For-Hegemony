@@ -1011,7 +1011,7 @@ QString Client::getSkillToHighLight() const
     return skill_position;
 }
 
-void Client::setSkillPosition(QString &positon)
+void Client::setSkillPosition(const QString &positon)
 {
     skill_position = positon;
 }

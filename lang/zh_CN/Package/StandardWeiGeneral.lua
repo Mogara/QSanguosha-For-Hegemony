@@ -52,6 +52,7 @@ return {
 	["#xuchu"] = "虎痴",
 	["xuchu"] = "许褚",
 	["luoyi"] = "裸衣",
+	["#luoyi-damage"] = "裸衣（伤害）",
 	[":luoyi"] = "摸牌阶段，你可以少摸一张牌，若如此做，每当你于此回合内使用【杀】或【决斗】对目标角色造成伤害时，此伤害+1。",
 	["#LuoyiBuff"] = "%from 的“<font color=\"yellow\"><b>裸衣</b></font>”效果被触发，伤害从 %arg 点增加至 %arg2 点",
 
@@ -98,6 +99,7 @@ return {
 	["xuhuang"] = "徐晃",
 	["illustrator:xuhuang"] = "Tuu.",
 	["duanliang"] = "断粮",
+	["#duanliang-target"] = "断粮",
 	[":duanliang"] = "你可以将一张不为锦囊牌的黑色牌当【兵粮寸断】使用；你能对距离为2的角色使用【兵粮寸断】。",
 
 	["#caoren"] = "大将军",

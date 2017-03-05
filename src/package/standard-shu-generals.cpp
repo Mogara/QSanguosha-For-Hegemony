@@ -356,7 +356,7 @@ public:
             }
         }
 
-        return false;
+        return TriggerStruct();
     }
 
     virtual bool onPhaseChange(ServerPlayer *zhuge, const TriggerStruct &) const
@@ -1475,7 +1475,7 @@ public:
                 friends << p;
         }
 
-        if (friends.isEmpty()) return false;
+        if (friends.isEmpty()) return TriggerStruct();
         ServerPlayer *target = room->askForPlayerChosen(player, friends, objectName(), "shushen-invoke", true, true, info.skill_position);
         if (target != NULL) {
             room->broadcastSkillInvoke(objectName(), "male", -1, player, info.skill_position);

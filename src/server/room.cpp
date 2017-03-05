@@ -3162,7 +3162,8 @@ void Room::returnToDrawPile(const QList<int> &cards, bool isBottom)
             m_drawPile->prepend(id);
         }
     }
-	thread->trigger(DrawPileChanged, this, NULL, QVariant(m_drawPile->length()));
+    QVariant data = QVariant(m_drawPile->length());
+    thread->trigger(DrawPileChanged, this, NULL, data);
     doBroadcastNotify(S_COMMAND_UPDATE_PILE, m_drawPile->length());
 }
 
@@ -3183,8 +3184,8 @@ void Room::removeFromDrawPile(QList<int> ids)
     }
 
     if (update) {
-        thread->trigger(DrawPileChanged, this, NULL, QVariant(m_drawPile->length()));
-        doBroadcastNotify(S_COMMAND_UPDATE_PILE, m_drawPile->length());
+        QVariant data = QVariant(m_drawPile->length());
+        thread->trigger(DrawPileChanged, this, NULL, data);
     }
 
     if (m_drawPile->isEmpty())
@@ -3213,7 +3214,8 @@ void Room::swapPile()
 
     doBroadcastNotify(S_COMMAND_RESET_PILE, QVariant());
     doBroadcastNotify(S_COMMAND_UPDATE_PILE, m_drawPile->length());
-	thread->trigger(DrawPileChanged, this, NULL, QVariant(m_drawPile->length()));
+    QVariant data = QVariant(m_drawPile->length());
+    thread->trigger(DrawPileChanged, this, NULL, data);
 }
 
 void Room::prepareForStart()
@@ -5403,7 +5405,7 @@ void Room::updateCardsOnGet(const CardsMoveStruct &move)
     }
 }
 
-void Room::notifyUsingVirtualCard(QString &card_string, CardsMoveStruct cards_moves)
+void Room::notifyUsingVirtualCard(const QString &card_string, CardsMoveStruct cards_moves)
 {
     JsonArray arg;
     cards_moves.open = true;

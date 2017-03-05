@@ -28,7 +28,11 @@ local t = {
 	["slash-jink"] = "%src 使用了【杀】，请使用一张【闪】",
 	["@multi-jink-start"] = "%src 使用了【杀】，你须连续使用 %arg 张【闪】",
 	["@multi-jink"] = "%src 使用了【杀】，你须再使用 %arg 张【闪】",
-	["@slash_extra_targets"] = "请选择此【杀】的额外目标",
+	["@extra_targets"] = "请选择最多 <font color=\"yellow\"><b>%dest</b></font> 名角色成为卡牌：%src 的额外目标",
+	["@extra_targets1"] = "请选择卡牌：%src 的额外目标",
+	["$extra_target"] = "%from 发动了【<font color=\"yellow\"><b>%arg</b></font>】选择 %to 成为 %card 的额外目标",
+	["extra_target_skill"] = "声明技能并选择额外目标",
+    ["declare_skill_invoke"] = "选择需要声明的技能" ,
 
 	["fire_slash"] = "火杀",
 	[":fire_slash"] = "基本牌\n\n使用时机：出牌阶段限一次。\n使用目标：你攻击范围内的一名角色。\n作用效果：你对目标角色造成1点火焰伤害。",
