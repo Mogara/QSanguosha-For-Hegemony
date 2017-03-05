@@ -5468,12 +5468,8 @@ end
 function SmartAI:hasArmorEffect(player, armor)
 	player = player or self.player
 	if self.player and player:objectName() == self.player:objectName() then
-		return player:hasArmorEffect("EightDiagram")
 		return player:hasArmorEffect(armor)
 	else
-		if player:getArmor() and player:getArmor():isKindOf("EightDiagram") then return true end
-		local skill = sgs.Sanguosha:ViewHas(player, "EightDiagram", "armor")
-		if skill and self:hasSkill(skill:objectName(), player) then return true end
 		if player:hasArmorEffect(armor, false) then return true end
 		if player:hasArmorEffect(armor) then
 			local skills = sgs.Sanguosha:ViewHas(player, armor, "armor")
