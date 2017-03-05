@@ -178,24 +178,53 @@ sgs.ai_skill_invoke.zhiyu = function(self, data)
 end
 
 --卞皇后
---[[
-sgs.ai_skill_invoke.wanwei = function(self, data)
-	if not self:willShowForDefence() then return false end
-	local move = data:toMoveOneTime()
-	local target = move.to
-	if self:isFriend(target) then return false end
-	self.wanwei = {}
-	local cards = sgs.QList2Table(self.player:getCards("e"))
-	local handcards = sgs.QList2Table(self.player:getHandcards())
-	table.insertTable(cards, handcards)
-	self:sortByUseValue(cards)
-	for i = 1, move.card_ids:length(), 1 do
-		table.insert(self.wanwei, card[i]:getEffectiveId())
+sgs.ai_skill_use["@@wanwei"] = function(self, prompt)
+	if not self:willShowForDefence() then return "." end
+	local num = self.player:getMark("wanwei")
+	local names = prompt:split(":")
+	local target = self.room:findPlayerbyobjectName(names[#names])
+	local cards = {}
+	local result = {}
+	for _, card in sgs.qlist(self.player:getCards("he")) do
+		if card:hasFlag("can_wanwei") then
+			table.insert(cards, card)
+		end
 	end
-	return true
-end
---]]
 
+	if target and self:isFriend(target) then
+		if not self:needToThrowArmor() and self.player:getJudgingArea():isEmpty() then
+			for i = 1, num, 1 do
+				local card, friend = self:getCardNeedPlayer(cards, {target})
+				if card and friend then
+					table.insert(result, card:getEffectiveId())
+					cards = self:resetCards(cards, card)
+				else
+					return "."
+				end
+			end
+			if #result == self.player:getMark("wanwei") then
+				return ("@WanweiCard=" .. table.concat(result, "+") .. "&wanwei")
+			end
+		end
+		return "."
+	end
+
+	if self:needToThrowArmor() and table.contains(cards, self.player:getArmor()) then
+		table.insert(result, self.player:getArmor():getEffectiveId())
+		table.removeOne(cards, self.player:getArmor())
+		num = num - 1
+	end
+	self:sortByUseValue(cards)
+	for i = 1, num, 1 do
+		table.insert(result, cards[i]:getEffectiveId())
+	end
+	if #result == self.player:getMark("wanwei") then
+		return ("@WanweiCard=" .. table.concat(result, "+") .. "&wanwei")
+	end
+	return "."
+end
+
+--[[
 sgs.ai_skill_exchange.wanwei = function(self)
 	if not self:willShowForDefence() then return {} end
 	local target = self.player:getTag("wanwei"):toPlayer()
@@ -215,6 +244,7 @@ sgs.ai_skill_discard.wanwei = function(self)
 	if not self:willShowForDefence() then return {} end
 	return self:askForDiscard("dummy_reason", 1, 1, false, true)
 end
+--]]
 
 sgs.ai_skill_invoke.yuejian = function(self, data)
 	local target = self.room:getCurrent()
@@ -1239,7 +1269,7 @@ local Luminouspearl_skill = {}
 Luminouspearl_skill.name = "Luminouspearl"
 table.insert(sgs.ai_skills, Luminouspearl_skill)
 Luminouspearl_skill.getTurnUseCard = function(self)
-	if not self.player:hasUsed("ZhihengCard") and not self.player:hasShownSkill("zhiheng") and self.player:hasTreasure("Luminouspearl") then
+	if not self.player:hasUsed("ZhihengCard") and self.player:hasTreasure("Luminouspearl") then
 		return sgs.Card_Parse("@ZhihengCard=.")
 	end
 end

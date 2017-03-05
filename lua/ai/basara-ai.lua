@@ -289,6 +289,13 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 	return "cancel"
 end
 
+sgs.ai_skill_choice["extra_target_skill"] = function(self, choice, data)
+	if string.find(choice, "#halberd-target") then return "#halberd-target" end
+	if string.find(choice, "#tianyi-target") then return "#tianyi-target" end
+	local choices = choice:split("+")
+	return choices[1]
+end
+
 sgs.ai_skill_choice["GameRule:TurnStart"] = function(self, choices, data)
 	local canShowHead = string.find(choices, "GameRule_AskForGeneralShowHead")
 	local canShowDeputy = string.find(choices, "GameRule_AskForGeneralShowDeputy")
@@ -308,7 +315,7 @@ sgs.ai_skill_choice["GameRule:TurnStart"] = function(self, choices, data)
 			end
 		end
 		if not self.player:hasShownOneGeneral() then
-			local gameProcess = sgs.gameProcess():split(">>")
+			local gameProcess = self:gameProcess():split(">>")
 			if self.player:getKingdom() == gameProcess[1] and (self.player:getLord() or sgs.shown_kingdom[self.player:getKingdom()] < self.player:aliveCount() / 2) then
 				if self.player:hasSkill("xichou") and self.player:getMark("xichou") == 0 then
 					if self.player:inHeadSkills("xichou") and canShowHead then

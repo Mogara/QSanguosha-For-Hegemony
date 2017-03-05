@@ -87,6 +87,9 @@ function sgs.CreateTriggerSkill(spec)
 	if spec.on_turn_broken then
 		skill.on_turn_broken = spec.on_turn_broken
 	end
+	if spec.check_guhuo then
+		skill.check_guhuo = spec.check_guhuo
+	end
 	if spec.dynamic_priority and type(spec.dynamic_priority) == "table" then
 		for e,v in pairs(spec.dynamic_priority)do
 			skill:insertPriority(e,v)
@@ -100,6 +103,10 @@ function sgs.CreateProhibitSkill(spec)
 	assert(type(spec.is_prohibited) == "function")
 
 	local skill = sgs.LuaProhibitSkill(spec.name)
+
+	if spec.relate_to_place then
+		skill:setRelateToPlace(spec.relate_to_place)
+	end
 	skill.is_prohibited = spec.is_prohibited
 
 	return skill
@@ -110,6 +117,9 @@ function sgs.CreateFixCardSkill(spec)
 	assert(type(spec.is_cardfixed) == "function")
 
 	local skill = sgs.LuaFixCardSkill(spec.name)
+	if spec.relate_to_place then
+		skill:setRelateToPlace(spec.relate_to_place)
+	end
 	skill.is_cardfixed = spec.is_cardfixed
 
 	return skill
@@ -120,6 +130,11 @@ function sgs.CreateViewHasSkill(spec)
 	assert(type(spec.is_viewhas) == "function")
 
 	local skill = sgs.LuaViewHasSkill(spec.name)
+
+	if spec.relate_to_place then
+		skill:setRelateToPlace(spec.relate_to_place)
+	end
+
 	skill.is_viewhas = spec.is_viewhas
 	if type(spec.global) == "boolean" then skill:setGlobal(spec.global) end
 
@@ -180,7 +195,8 @@ end
 
 function sgs.CreateTargetModSkill(spec)
 	assert(type(spec.name) == "string")
-	assert(type(spec.residue_func) == "function" or type(spec.distance_limit_func) == "function" or type(spec.extra_target_func) == "function")
+	assert(type(spec.residue_func) == "function" or type(spec.distance_limit_func) == "function" or type(spec.extra_target_func) == "function"
+			or type(spec.check_extra_func) == "function" or type(spec.audio_index_func) == "function")
 	if spec.pattern then assert(type(spec.pattern) == "string") end
 
 	local skill = sgs.LuaTargetModSkill(spec.name, spec.pattern or "Slash")
@@ -198,7 +214,12 @@ function sgs.CreateTargetModSkill(spec)
 	if spec.extra_target_func then
 		skill.extra_target_func = spec.extra_target_func
 	end
-
+	if spec.check_extra_func then
+		skill.check_extra_func = spec.check_extra_func
+	end
+	if spec.audio_index_func then
+		skill.audio_index_func = spec.audio_index_func
+	end
 	return skill
 end
 
@@ -295,6 +316,10 @@ function sgs.CreateSkillCard(spec)
 	end
 	if type(spec.mute) == "boolean" then
 		card:setMute(spec.mute)
+	end
+
+	if type(spec.votes) == "boolean" then
+		card:setVote(spec.votes)
 	end
 
 	if type(spec.handling_method) == "number" then
@@ -591,7 +616,9 @@ function sgs.CreateViewAsSkill(spec)
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
 	skill.in_pile = spec.in_pile
-
+	if spec.check_guhuo then
+		skill.check_guhuo = spec.check_guhuo
+	end
 	return skill
 end
 
@@ -639,7 +666,9 @@ function sgs.CreateOneCardViewAsSkill(spec)
 	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
 		skill:setGuhuoType(spec.guhuo_type)
 	end
-
+	if spec.check_guhuo then
+		skill.check_guhuo = spec.check_guhuo
+	end
 	return skill
 end
 
@@ -673,7 +702,9 @@ function sgs.CreateZeroCardViewAsSkill(spec)
 	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
 		skill:setGuhuoType(spec.guhuo_type)
 	end
-
+	if spec.check_guhuo then
+		skill.check_guhuo = spec.check_guhuo
+	end
 	return skill
 end
 

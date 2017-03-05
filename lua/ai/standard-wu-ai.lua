@@ -21,8 +21,8 @@ local zhiheng_skill = {}
 zhiheng_skill.name = "zhiheng"
 table.insert(sgs.ai_skills, zhiheng_skill)
 zhiheng_skill.getTurnUseCard = function(self)
-	if ( self:willShowForAttack() or self:willShowForDefence() ) and not self.player:hasUsed("ZhihengCard") and not self.player:hasUsed("LuminouspearlCard") then
-		return sgs.Card_Parse("@ZhihengCard=.&zhiheng")
+	if (self:willShowForAttack() or self:willShowForDefence()) and not self.player:hasUsed("ZhihengCard") then
+		return sgs.Card_Parse("@ZhihengCard=.")
 	end
 end
 
@@ -30,23 +30,32 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 	local unpreferedCards = {}
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	local unlimited
-	if self.player:hasTreasure("Luminouspearl") and self.player:ownSkill("zhiheng") then unlimited = true end
-	local show = "&zhiheng"
-	if not self.player:ownSkill("zhiheng") then show = "" end
 	local skill = sgs.Sanguosha:getSkill("zhiheng")
-	if self.player:hasTreasure("Luminouspearl") and ((self.player:getHeadSkillList(true, false, false):contains(skill) and not self.player:hasShownGeneral1())
-		or (self.player:getDeputySkillList(true, false, false):contains(skill) and not self.player:hasShownGeneral2())) then show = "" end
+	local owned = self.player:getVisibleSkillList(true):contains(skill)
+	if self.player:hasTreasure("Luminouspearl") and owned then unlimited = true end
+	local show = ""
+	if owned then
+		if self.player:hasTreasure("Luminouspearl") then
+			if ((self.player:getHeadSkillList(true, false, false):contains(skill) and self.player:hasShownGeneral1())
+				or (self.player:getDeputySkillList(true, false, false):contains(skill) and self.player:hasShownGeneral2())) then
+				show = "&zhiheng"
+			end
+		else
+			show = "&zhiheng"
+		end
+	end
 
 	if self:getCardsNum("Crossbow", 'he') > 0 and #self.enemies > 0 and self.player:getCardCount(true) >= 4 then
 		local zcards = sgs.QList2Table(self.player:getCards("he"))
 		self:sortByUseValue(zcards, true)
 		for _, zcard in ipairs(zcards) do
-			if not isCard("Peach", zcard, self.player) and (self.player:getOffensiveHorse() or card:isKindOf("OffensiveHorse")) and not self.player:isJilei(zcard) then
-				table.insert(unpreferedCards, zcard:getEffectiveId())
-				if #unpreferedCards >= self.player:getMaxHp() and not unlimited then break end
+			if not isCard("Peach", zcard, self.player) and (self.player:getOffensiveHorse() or zcard:isKindOf("OffensiveHorse")) and not self.player:isJilei(zcard) then
+				if #unpreferedCards < self.player:getMaxHp() or unlimited then
+					table.insert(unpreferedCards, zcard:getEffectiveId())
+				end
 			end
 		end
-		if #unpreferedCards > self.player:getMaxHp() or not self.player:ownSkill("zhiheng") then
+		if #unpreferedCards > self.player:getMaxHp() or not owned then
 			table.removeOne(unpreferedCards, self.player:getTreasure():getEffectiveId())
 		end
 		if #unpreferedCards > 0 then
@@ -185,19 +194,16 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 	local use_cards = {}
 	for index = #unpreferedCards, 1, -1 do
 		if not self.player:isJilei(sgs.Sanguosha:getCard(unpreferedCards[index])) then
-			if #use_cards < self.player:getMaxHp() and not unlimited then
-				table.insert(use_cards, unpreferedCards[index])
-			end
-			if unlimited then
+			if #use_cards < self.player:getMaxHp() or unlimited then
 				table.insert(use_cards, unpreferedCards[index])
 			end
 		end
 	end
-	if #use_cards > self.player:getMaxHp() or not self.player:ownSkill("zhiheng") then
+	if #use_cards > self.player:getMaxHp() or not owned then
 		table.removeOne(use_cards, self.player:getTreasure():getEffectiveId())
 	end
 	if #use_cards > 0 then
-		if #unpreferedCards > self.player:getMaxHp() then
+		if #use_cards > self.player:getMaxHp() then
 			use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(use_cards, "+") .. "&zhiheng")
 		else
 			use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(use_cards, "+") .. show)
@@ -762,7 +768,7 @@ sgs.ai_skill_use["@@liuli"] = function(self, prompt, method)
 
 	local liuli = {}
 
-	if not self:damageIsEffective(self.player, nature, source) then liuli[2] = "."
+	if not self:damageIsEffective(self.player, nature, source, true) then liuli[2] = "."
 	elseif self:needToLoseHp(self.player, source, true) then liuli[2] = "."
 	elseif self:getDamagedEffects(self.player, source, true) then liuli[2] = "." end
 
@@ -1241,7 +1247,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data, method)
 	local newDamageStruct = dmg
 	for _, friend in ipairs(self.friends_noself) do
 		newDamageStruct.to = friend
-		if not self:damageIsEffective_(newDamageStruct) then
+		if not self:damageIsEffective_(newDamageStruct, true) then
 			return "@TianxiangCard=" .. card_id .. "&tianxiang->" .. friend:objectName()
 		end
 	end
@@ -1473,6 +1479,11 @@ sgs.ai_skill_use_func.TianyiCard = function(TYCard, use, self)
 		end
 	end
 	return nil
+end
+
+sgs.ai_skill_playerchosen["#tianyi_target"] = function(self)
+	local use = self.player:getTag("extra_target_skill"):toCardUse()
+	return { self:addExtraSlashTarget(nil, use) }
 end
 
 function sgs.ai_skill_pindian.tianyi(minusecard, self, requestor)
@@ -1870,7 +1881,6 @@ sgs.ai_skill_exchange.guzheng = function(self, pattern, max_num, min_num, expand
 	if not self.player:hasShownOneGeneral() then
 		flag = self.player:inHeadSkills("guzheng") and "h" or "d"
 	end
-
 	local invoke = (self:isFriend(who) and not (who:hasSkill("kongcheng") and who:isKongcheng()))
 					or (#card_ids == 2 and not self:hasSkills(sgs.cardneed_skill, who))
 					or (self:isEnemy(who) and who:hasSkill("kongcheng") and who:isKongcheng())
@@ -2005,12 +2015,28 @@ function getBestHp(player)
 			return math.max( (player:isLord() and 3 or 2) ,player:getMaxHp() - dec)
 		end
 	end
-	if player:hasSkills("quanji+zhonghuizili") and player:getMark("zhonghuizili") == 0 then return (player:getMaxHp() - 1) end
 	return player:getMaxHp()
 end
 
 sgs.ai_skill_invoke["_Guzheng"] = function(self, data)
 	return not (self:needKongcheng() and self.player:isKongcheng())
+end
+
+sgs.ai_skill_playerchosen["duanbing"] = function(self)
+	if not self:willShowForAttack() then return {} end
+	local use = self.player:getTag("extra_target_skill"):toCardUse()
+	local rangefix = 0
+	if self.player:getOffensiveHorse() and use.card:getSubcards():contains(self.player:getOffensiveHorse():getId()) then
+		rangefix = 1
+	end
+	local targets = {}
+	for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+		if self.player:distanceTo(p, rangefix) == 1 then
+			table.insert(targets, p)
+		end
+	end
+	if #targets == 0 then return {} end
+	return { self:addExtraSlashTarget(targets, use) }
 end
 
 local fenxun_skill = {}
@@ -2119,4 +2145,3 @@ sgs.ai_skill_invoke.keji = function(self, data)
 	end
 	return true
 end
---

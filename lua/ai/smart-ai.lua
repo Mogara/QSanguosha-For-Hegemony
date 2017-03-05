@@ -107,6 +107,9 @@ sgs.shown_kingdom =         {
 }
 sgs.ai_damage_effect =      {}
 sgs.ai_explicit =           {}
+sgs.ai_personal_process =	{}
+sgs.ai_show_inclination = 	{}
+sgs.personal_judge = 		{}
 sgs.ai_loyalty =            {
 	wei = {},
 	shu = {},
@@ -307,7 +310,7 @@ end
 
 function SmartAI:getTurnUse()
 	local cards = {}
-	for _ ,c in sgs.qlist(self.player:getHandcards()) do
+	for _, c in sgs.qlist(self.player:getHandcards()) do
 		if c:isAvailable(self.player) then table.insert(cards, c) end
 	end
 	for _, id in sgs.qlist(self.player:getHandPile()) do
@@ -390,7 +393,7 @@ function SmartAI:activate(use)
 				self.toUse = nil
 				return
 			end
-			if self.player:hasShownSkill("xichou") and use.card:getTypeId() ~= sgs.Card_TypeSkill then
+			if use.card and self.player:hasShownSkill("xichou") and use.card:getTypeId() ~= sgs.Card_TypeSkill then
 				local dying
 				for _, p in sgs.qlist(room:getAlivePlayers()) do
 					if p:hasFlag("Global_Dying") then
@@ -417,6 +420,7 @@ function SmartAI:objectiveLevel(player)
 	if self.player:objectName() == player:objectName() then return -2 end
 	if self.player:isFriendWith(player) then return -2 end
 	if self.room:alivePlayerCount() == 2 then return 5 end
+	local all_num = self.room:getAllPlayers(true):length()
 
 	if sgs.isRoleExpose() then
 		if self.lua_ai:isFriend(player) then return -2
@@ -430,19 +434,77 @@ function SmartAI:objectiveLevel(player)
 	local player_kingdom_evaluate = self:evaluateKingdom(player)
 	local player_kingdom_explicit = sgs.ai_explicit[player:objectName()]
 	if player_kingdom_explicit == "unknown" then
-		local mark = string.format("KnownBoth_%s_%s", self.player:objectName(), player:objectName())
-		if player:getMark(mark) > 0 then
-			player_kingdom_explicit = player:getRole() == "careerist" and "careerist" or player:getKingdom()
+		if sgs.personal_judge[self.player:objectName()][player:objectName()] then
+			player_kingdom_explicit = sgs.personal_judge[self.player:objectName()][player:objectName()]
+		else
+			local mark = string.format("KnownBoth_%s_%s", self.player:objectName(), player:objectName())
+			if player:getMark(mark) > 0 then
+				--player_kingdom_explicit = player:getRole() == "careerist" and "careerist" or player:getKingdom()
+				player_kingdom_explicit = player:willbeRole() == "careerist" and "careerist" or player:getKingdom()
+			end
 		end
 	end
+	if player_kingdom_explicit ~= "unknown" and player_kingdom_explicit ~= "careerist" then
+		player_kingdom_evaluate = player_kingdom_explicit
+	end
 
-	local upperlimit = self.player:getLord() and 99 or math.floor(self.room:getPlayers():length() / 2)
+	local lord, dead_lord = self:countPlayers()
+	local upperlimit = lord[self_kingdom] and 99 or math.floor(all_num / 2)
 	if (not sgs.isAnjiang(self.player) or sgs.shown_kingdom[self_kingdom] < upperlimit) and self.role ~= "careerist" and self_kingdom == player_kingdom_explicit then return -2 end
 	if self:getKingdomCount() <= 2 then return 5 end
 
+	local big_kingdom
+	local anjiangs = 0
+	local kingdoms = { ["wei"] = 0, ["qun"] = 0, ["shu"] = 0, ["wu"] = 0 }
+	local kingdoms_alive = { ["wei"] = 0, ["qun"] = 0, ["shu"] = 0, ["wu"] = 0 }
+	if all_num > 3 then
+		for _, p in sgs.qlist(self.room:getAllPlayers(true)) do
+			if p:hasShownOneGeneral() and (p:getRole() ~= "careerist" or lord[p:getKingdom()]) then
+				kingdoms[p:getKingdom()] = kingdoms[p:getKingdom()] + 1
+				if p:isAlive() then
+					kingdoms_alive[p:getKingdom()] = kingdoms_alive[p:getKingdom()] + 1
+				end
+			end
+		end	
+		for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+			local kingdom_explicit = sgs.ai_explicit[p:objectName()]
+			if kingdom_explicit == "unknown" then
+				kingdom_explicit = sgs.personal_judge[self.player:objectName()][p:objectName()] or self:evaluateKingdom(p)
+				local wei_limit = (dead_lord["wei"] and 0) or (lord["wei"] and 99) or math.floor(all_num / 2)
+				local shu_limit = (dead_lord["shu"] and 0) or (lord["shu"] and 99) or math.floor(all_num / 2)
+				local qun_limit = (dead_lord["qun"] and 0) or (lord["qun"] and 99) or math.floor(all_num / 2)
+				local wu_limit = (dead_lord["wu"] and 0) or (lord["wu"] and 99) or math.floor(all_num / 2)
+				if kingdom_explicit == "unknown" or string.find(kingdom_explicit, "?") then anjiangs = anjiangs + 1 end
+				if (string.find(kingdom_explicit, "wei") or kingdom_explicit == "unknown") and kingdoms["wei"] < wei_limit then
+					kingdoms["wei"] = kingdoms["wei"] + 1
+					kingdoms_alive["wei"] = kingdoms_alive["wei"] + 1
+				end
+				if (string.find(kingdom_explicit, "qun") or kingdom_explicit == "unknown") and kingdoms["qun"] < qun_limit then
+					kingdoms["qun"] = kingdoms["qun"] + 1
+					kingdoms_alive["qun"] = kingdoms_alive["qun"] + 1
+				end
+				if (string.find(kingdom_explicit, "shu") or kingdom_explicit == "unknown") and kingdoms["shu"] < shu_limit then
+					kingdoms["shu"] = kingdoms["shu"] + 1
+					kingdoms_alive["shu"] = kingdoms_alive["shu"] + 1
+				end
+				if (string.find(kingdom_explicit, "wu") or kingdom_explicit == "unknown") and kingdoms["wu"] < wu_limit then
+					kingdoms["wu"] = kingdoms["wu"] + 1
+					kingdoms_alive["wu"] = kingdoms_alive["wu"] + 1
+				end
+			end
+		end
+	end
+
+	local kingdoms_sort = sgs.KingdomsTable
+	local cmp = function(a, b)
+		return kingdoms_alive[a] > kingdoms_alive[b]
+	end
+	table.sort(kingdoms_sort, cmp)
+	big_kingdom = kingdoms_alive[kingdoms_sort[1]] > 1 and kingdoms_alive[kingdoms_sort[1]] > kingdoms_alive[kingdoms_sort[2]] and kingdoms_sort[1]
+
 	local selfIsCareerist = self.role == "careerist" or sgs.shown_kingdom[self_kingdom] >= upperlimit and not self.player:hasShownOneGeneral()
 
-	local gameProcess = sgs.gameProcess()
+	local gameProcess = self:gameProcess()
 	if gameProcess == "===" then
 		if player:getMark("KnownBothEnemy" .. self.player:objectName()) > 0 then return 5 end
 		if not selfIsCareerist and sgs.shown_kingdom[self_kingdom] < upperlimit then
@@ -450,20 +512,65 @@ function SmartAI:objectiveLevel(player)
 				if player_kingdom_evaluate == self_kingdom then return -1
 				elseif string.find(player_kingdom_evaluate, self_kingdom) then return 0
 				elseif player_kingdom_evaluate == "unknown" and player:getHp() <= 1 then return 0
-				else
-					return self:getOverflow() > 0 and 3.5 or 0
+				else return self:getOverflow() > 0 and 3.5 or 0
 				end
 			else
-				return 5
+				if big_kingdom then
+					return player:getKingdom() == big_kingdom and 5 or 3
+				else
+					local huashen = player:hasShownSkill("huashen") and player:getTag("Huashens"):toList():length() > 0
+					local point = self:getDynamicPlayerStrength(player, huashen) + sgs.getDefense(player) / 2
+					if point > 15 then
+						return 5
+					elseif point > 12 then
+						return 4
+					else
+						return 3.5
+					end
+				end
 			end
-		else return self:getOverflow() > 0 and 4 or 0
+		else
+			if big_kingdom then
+				return player:getKingdom() == big_kingdom and 5 or 3
+			else
+				local huashen = player:hasShownSkill("huashen") and player:getTag("Huashens"):toList():length() > 0
+				local point = self:getDynamicPlayerStrength(player, huashen) + sgs.getDefense(player) / 2
+				if point > 15 then
+					return 5
+				elseif point > 12 then
+					return 4
+				else
+					return 3.5
+				end
+			end
 		end
 	elseif string.find(gameProcess, ">") then
 		local kingdom = gameProcess:split(">")[1]
+		if not table.contains(sgs.KingdomsTable, kingdom) then					--careerist
+			if string.find(gameProcess, ">>") then
+				if self.player:objectName() == kingdom then
+					return 5
+				else
+					if player:objectName() == kingdom then return 5 end
+					return 0
+				end
+			else
+				if self.player:objectName() == kingdom then
+					return 5
+				else
+					if player:objectName() == kingdom then return 5 end
+					local huashen = player:hasShownSkill("huashen") and player:getTag("Huashens"):toList():length() > 0
+					local point = self:getDynamicPlayerStrength(player, huashen) + sgs.getDefense(player) / 2
+					return point >= 10 and 3.5 or 2
+				end
+			end
+		end
+
 		if string.find(gameProcess, ">>>") then
 			if self_kingdom == kingdom and not selfIsCareerist then
 				if sgs.shown_kingdom[self_kingdom] < upperlimit and sgs.isAnjiang(player)
-					and (player_kingdom_evaluate == self_kingdom or string.find(player_kingdom_evaluate, self_kingdom)) then return 0
+					and (player_kingdom_evaluate == self_kingdom or string.find(player_kingdom_evaluate, self_kingdom))
+					and not (sgs.isAnjiang(self.player) and sgs.ai_show_inclination[self.player:objectName()]) then return 0
 				elseif player_kingdom_evaluate == "unknown" and sgs.turncount <= 0 then return 0
 				else return 5
 				end
@@ -478,8 +585,8 @@ function SmartAI:objectiveLevel(player)
 		elseif string.find(gameProcess, ">>") then
 			if self_kingdom == kingdom and not selfIsCareerist then
 				if sgs.shown_kingdom[self_kingdom] < upperlimit and sgs.isAnjiang(player) then
-					if player_kingdom_evaluate == self_kingdom then return -1
-					elseif string.find(player_kingdom_evaluate, self_kingdom) then return 0
+					if player_kingdom_evaluate == self_kingdom and not (sgs.isAnjiang(self.player) and sgs.ai_show_inclination[self.player:objectName()]) then return -1
+					elseif string.find(player_kingdom_evaluate, self_kingdom) and not (sgs.isAnjiang(self.player) and sgs.ai_show_inclination[self.player:objectName()]) then return 0
 					elseif player_kingdom_evaluate == "unknown" and sgs.turncount <= 0 then return 0
 					end
 				end
@@ -492,17 +599,31 @@ function SmartAI:objectiveLevel(player)
 			end
 		else
 			if self_kingdom == kingdom and not selfIsCareerist then
+				if anjiangs >= math.floor(all_num / 2) or (big_kingdom and big_kingdom ~= self_kingdom) then
+					local huashen = self.player:hasShownSkill("huashen") and self.player:getTag("Huashens"):toList():length() > 0
+					local point = self:getDynamicPlayerStrength(self.player, huashen) + sgs.getDefense(self.player) / 2
+					if point < 13 then return 1 end
+				end
 				if sgs.shown_kingdom[self_kingdom] < upperlimit and sgs.isAnjiang(player) then
-					if player_kingdom_evaluate == self_kingdom then return -1
-					elseif string.find(player_kingdom_evaluate, self_kingdom) then return 0
+					if player_kingdom_evaluate == self_kingdom and not (sgs.isAnjiang(self.player) and sgs.ai_show_inclination[self.player:objectName()]) then return -1
+					elseif string.find(player_kingdom_evaluate, self_kingdom) and not (sgs.isAnjiang(self.player) and sgs.ai_show_inclination[self.player:objectName()]) then return 0
 					elseif player_kingdom_evaluate == "unknown" and sgs.turncount <= 0 then return 0
 					end
 				end
 				return 5
 			else
+				if big_kingdom then
+					if big_kingdom == kingdom and player_kingdom_explicit == kingdom then return 4 end
+					if player_kingdom_explicit ~= big_kingdom and self_kingdom ~= player_kingdom_explicit then return 2 end
+				end
+				if anjiangs >= math.floor(all_num / 2) then
+					local huashen = self.player:hasShownSkill("huashen") and self.player:getTag("Huashens"):toList():length() > 0
+					local point = self:getDynamicPlayerStrength(self.player, huashen) + sgs.getDefense(self.player) / 2
+					if point < 13 then return 1 end
+				end
 				local isWeakPlayer = player:getHp() == 1 and not player:hasShownSkill("duanchang") and self:isWeak(player)
-										and (player:isKongcheng() or sgs.card_lack[player:objectName()] == 1 and player:getHandcardNum() <= 1)
-										and (sgs.getReward(player) >= 2 or self.player:aliveCount() <= 4)
+					and (player:isKongcheng() or sgs.card_lack[player:objectName()] == 1 and player:getHandcardNum() <= 1)
+					and (sgs.getReward(player) >= 2 or self.player:aliveCount() <= 4)
 				if player_kingdom_explicit == kingdom or isWeakPlayer then return 5
 				elseif player_kingdom_evaluate == kingdom then return 3
 				elseif player_kingdom_explicit == "careerist" then return 0
@@ -514,9 +635,192 @@ function SmartAI:objectiveLevel(player)
 	end
 end
 
-function sgs.gameProcess(update)
-	if not update and sgs.ai_process then return sgs.ai_process end
+function SmartAI:gameProcess(update)
+	if not update and sgs.ai_personal_process[self.player:objectName()] then return sgs.ai_personal_process[self.player:objectName()] end
+	local room = self.room
+	local scenario = self.room:getScenario()
+	if scenario and scenario:objectName() == "jiange_defense" then return "wei>>>" end
 
+	local value = {}
+	local lord, dead_lord, anjiang, ai_kingdoms, careerists = self:countPlayers()
+	local kingdoms = table.copyFrom(sgs.KingdomsTable)
+	for _, kingdom in ipairs(kingdoms) do
+		value[kingdom] = 0
+	end
+	value["careerist"] = 0
+	sgs.personal_judge[self.player:objectName()] = {}
+	local players = room:getAllPlayers(true)
+	local all_num = room:getAllPlayers(true):length()
+	room:sortByActionOrder(players)
+
+	local careerist_copy = table.copyFrom(careerists)
+	for _, ap in ipairs(careerist_copy) do								--ajust careerists
+		local kingdom = ap:getActualGeneral1():getKingdom()
+		if lord[kingdom] then
+			ai_kingdoms[kingdom] = ai_kingdoms[kingdom] + 1
+			table.removeOne(careerists, ap)
+		end
+	end
+
+	for _, ap in sgs.qlist(players) do
+		local huashen = ap:hasShownSkill("huashen") and ap:getTag("Huashens"):toList():length() > 0
+		local v = self:getDynamicPlayerStrength(ap, huashen) + sgs.getDefense(ap) / 2
+		if ap:hasShownOneGeneral() and ap:isAlive() and not table.contains(careerists, ap) then
+			value[ap:getKingdom()] = value[ap:getKingdom()] + v
+		elseif sgs.ai_explicit[ap:objectName()] == "careerist" and table.contains(careerists, ap) and ap:isAlive() then
+			if not value[sgs.ai_explicit[ap:objectName()]] then value[sgs.ai_explicit[ap:objectName()]] = 0 end
+			value[sgs.ai_explicit[ap:objectName()]] = value[sgs.ai_explicit[ap:objectName()]] + v
+		end
+	end
+
+	local get_possible_kingdom = function(player)
+		if self.player:objectName() == player:objectName() then
+			local kingdom = self.player:getActualGeneral1():getKingdom()
+			if math.floor(all_num / 2) <= ai_kingdoms[kingdom] and not lord[kingdom] or dead_lord[kingdom] then
+				table.insert(careerists, player)
+				return "careerist"
+			else
+				ai_kingdoms[kingdom] = ai_kingdoms[kingdom] + 1
+				return kingdom
+			end
+		end
+		if self.player:getTag("KnownBoth_" .. player:objectName()):toString() ~= "" then
+			local generals = self.player:getTag("KnownBoth_" .. player:objectName()):toString():split("+")
+			for _, g in ipairs(generals) do
+				if g ~= "anjiang" then
+					local kingdom = sgs.Sanguosha:getGeneral(g):getKingdom()
+					if math.floor(all_num / 2) <= ai_kingdoms[kingdom] and not lord[kingdom] or dead_lord[kingdom] then
+						table.insert(careerists, player)
+						return "careerist"
+					else
+						ai_kingdoms[kingdom] = ai_kingdoms[kingdom] + 1
+						return kingdom
+					end
+				end
+			end
+		end
+
+		local max_value, max_kingdom = 0, {}
+		for kingdom, v in pairs(sgs.ai_loyalty) do
+			if not table.contains(sgs.KingdomsTable, kingdom) or (math.floor(all_num / 2) <= ai_kingdoms[kingdom] and not lord[kingdom]) then continue end
+			if sgs.ai_loyalty[kingdom][player:objectName()] > max_value then
+				max_value = sgs.ai_loyalty[kingdom][player:objectName()]
+			end
+		end
+		if max_value > 0 then
+			for kingdom, v in pairs(sgs.ai_loyalty) do
+				if not table.contains(sgs.KingdomsTable, kingdom) or (math.floor(all_num / 2) <= ai_kingdoms[kingdom] and not lord[kingdom]) or dead_lord[kingdom] then continue end
+				if sgs.ai_loyalty[kingdom][player:objectName()] == max_value then
+					table.insert(max_kingdom, kingdom)
+				end
+			end
+		end
+		return #max_kingdom > 0 and table.concat(max_kingdom, "?") or "unknown"
+	end
+
+	local anjiang_copy = table.copyFrom(anjiang)
+	for _, p in ipairs(anjiang) do
+		local kingdom_evaluate = get_possible_kingdom(p)
+		local possible_kingdoms = kingdom_evaluate:split("?")
+		if #possible_kingdoms == 1 and kingdom_evaluate ~= "unknown" then
+			value[kingdom_evaluate] = value[kingdom_evaluate] + 6 + sgs.getDefense(p) / 2
+			sgs.personal_judge[self.player:objectName()][p:objectName()] = kingdom_evaluate
+			table.removeOne(anjiang_copy, p)	
+		elseif #possible_kingdoms > 1 then
+			local point = (6 + sgs.getDefense(p) / 2) / #possible_kingdoms
+			if string.find(kingdom_evaluate, "wei") then
+				value["wei"] = value["wei"] + point
+			end
+			if string.find(kingdom_evaluate, "qun") then
+				value["qun"] = value["qun"] + point
+			end
+			if string.find(kingdom_evaluate, "shu") then
+				value["shu"] = value["shu"] + point
+			end
+			if string.find(kingdom_evaluate, "wu") then
+				value["wu"] = value["wu"] + point
+			end
+			table.removeOne(anjiang_copy, p)
+		end
+	end
+
+	local cmp = function(a, b)
+		return value[a] > value[b]
+	end
+	table.sort(kingdoms, cmp)
+
+	if #anjiang_copy > 0 then
+		local anjiang_num = #anjiang_copy
+		local anjiang_value = 0
+		for _, p in ipairs(anjiang) do
+			anjiang_value = anjiang_value + 6 + sgs.getDefense(p) / 2
+		end
+		for i = 1, #kingdoms do
+			local playerNum = players:first():getPlayerNumWithSameKingdom("AI", kingdoms[i])
+			if lord[kingdoms[i]] then
+				value[kingdoms[i]] = value[kingdoms[i]] + anjiang_value / anjiang_num / (#kingdoms - i + 1)
+				anjiang_value = anjiang_value - anjiang_value / anjiang_num / (#kingdoms - i + 1)
+				anjiang_num = anjiang_num - anjiang_num / (#kingdoms - i + 1)
+			else
+				value[kingdoms[i]] = value[kingdoms[i]] + math.min((math.floor(all_num / 2) - playerNum), anjiang_num / (#kingdoms + 1 - i)) * anjiang_value / anjiang_num
+				anjiang_value = anjiang_value - math.min((math.floor(all_num / 2) - playerNum), anjiang_num / (#kingdoms + 1 - i)) * anjiang_value / anjiang_num
+				anjiang_num = anjiang_num - math.min((math.floor(all_num / 2) - playerNum), anjiang_num / (#kingdoms + 1 - i))
+			end
+		end
+	end
+
+	table.sort(kingdoms, cmp)
+	if value["careerist"] > 0 then
+		table.insert(kingdoms, "careerist")
+	end
+	local sum_value1, sum_value2 = 0, 0
+	for i = 2, #kingdoms do
+		sum_value1 = sum_value1 + value[kingdoms[i]]
+	end
+	if #kingdoms > 2 and kingdoms[3] ~= "careerist" then
+		sum_value2 = value[kingdoms[2]] + value[kingdoms[3]]
+	end
+
+	local single = true
+	for _, kingdom in ipairs(sgs.KingdomsTable) do
+		if sgs.current_mode_players[kingdom] > 1 then
+			single = false
+			break
+		end
+	end
+
+	if single and value["careerist"] > 0 then
+		local names = {}
+		for _, ap in sgs.qlist(room:getAlivePlayers()) do
+			table.insert(names, ap:objectName())
+			local huashen = ap:hasShownSkill("huashen") and ap:getTag("Huashens"):toList():length() > 0
+			value[ap:objectName()] = self:getDynamicPlayerStrength(ap, huashen) + sgs.getDefense(ap) / 2
+		end
+		table.sort(names, cmp)
+		local process = names[1] .. ">"
+		if #names > 2 and value[names[1]] >= value[names[#names - 1]] + value[names[#names]] then
+			process = process .. ">>"
+		end
+		sgs.ai_personal_process[self.player:objectName()] = process
+		return process
+	end
+
+	local process = "==="
+	if value[kingdoms[1]] >= sum_value1 and value[kingdoms[1]] > 0 then
+		process = kingdoms[1] .. ">>>"
+	elseif value[kingdoms[1]] >= sum_value2 and sum_value2 > 0 then
+		process = kingdoms[1] .. ">>"
+	elseif value[kingdoms[1]] >= value[kingdoms[2]] and value[kingdoms[2]] > 0 or kingdoms[2] == "careerist" then
+		process = kingdoms[1] .. ">"
+	end
+	sgs.ai_personal_process[self.player:objectName()] = process
+	return process
+end
+
+function sgs.gameProcess(update)
+	if sgs.ai_process then return sgs.ai_process end
+	if not update and sgs.ai_process then return sgs.ai_process end
+	
 	local scenario = global_room:getScenario()
 	if scenario and scenario:objectName() == "jiange_defense" then return "wei>>>" end
 
@@ -534,7 +838,7 @@ function sgs.gameProcess(update)
 			local v = 0
 			if ap:hasShownOneGeneral() then
 				local huashen = ap:hasShownSkill("huashen") and ap:getTag("Huashens"):toList():length() > 0
-				v = sgs.getDynamicPlayerStrength(ap, huashen) + sgs.getDefense(ap) / 2
+				v = self:getDynamicPlayerStrength(ap, huashen) + sgs.getDefense(ap) / 2
 			else
 				v = 6 + sgs.getDefense(ap) / 2
 			end
@@ -574,11 +878,14 @@ function sgs.gameProcess(update)
 			local point = (6 + sgs.getDefense(p) / 2) / #possible_kingdoms
 			if string.find(kingdom_evaluate, "wei") then
 				value["wei"] = value["wei"] + point
-			elseif string.find(kingdom_evaluate, "qun") then
+			end
+			if string.find(kingdom_evaluate, "qun") then
 				value["qun"] = value["qun"] + point
-			elseif string.find(kingdom_evaluate, "shu") then
+			end
+			if string.find(kingdom_evaluate, "shu") then
 				value["shu"] = value["shu"] + point
-			elseif string.find(kingdom_evaluate, "wu") then
+			end
+			if string.find(kingdom_evaluate, "wu") then
 				value["wu"] = value["wu"] + point
 			end
 			table.removeOne(anjiang_copy, p)
@@ -630,12 +937,17 @@ function sgs.gameProcess(update)
 	return process
 end
 
-function sgs.getDynamicPlayerStrength(player, ishuashen)
+function SmartAI:getDynamicPlayerStrength(player, ishuashen)
 	player = player or self.player
 	local g1, g2
 	if not ishuashen then
 		g1 = player:getGeneral()
 		g2 = player:getGeneral2()
+		if self.player:getTag("KnownBoth_" .. player:objectName()):toString() ~= "" then
+			local generals = self.player:getTag("KnownBoth_" .. player:objectName()):toString():split("+")
+			if g1:objectName() == "anjiang" and generals[1] ~= "anjiang" then g1 = sgs.Sanguosha:getGeneral(generals[1]) end
+			if g2 and g2:objectName() == "anjiang" and generals[2] ~= "anjiang" then g1 = sgs.Sanguosha:getGeneral(generals[2]) end
+		end
 	else
 		local huashens = player:getTag("Huashens"):toList()
 		local names = {}
@@ -671,7 +983,7 @@ function sgs.getDynamicPlayerStrength(player, ishuashen)
 	end
 
 	local hp_ajust = player:getMaxHp() - math.min(g1:getMaxHpHead(), g2:getMaxHpDeputy())
-	if hp_ajust > 0 and not player:hasShownSkills("xichou|benghuai") then
+	if hp_ajust > 0 and not self:hasSkill("xichou|benghuai", player) then
 		for i = 1, hp_ajust, 1 do
 			current_value = current_value - 1
 		end
@@ -704,36 +1016,34 @@ function sgs.getDynamicPlayerStrength(player, ishuashen)
 	if g1:isCompanionWith(g2:objectName()) and player:getMark("CompanionEffect") == 0 then
 		current_value = current_value - 0.5
 	end
-	if player:hasShownSkills(sgs.cardneed_skill) then
+	if self:hasSkill(sgs.cardneed_skill, player) then
 		if player:getHandcardNum() < 3 then
 			current_value = current_value - 0.4
 		elseif player:getHandcardNum() < 5 then
 			current_value = current_value + 0.5
 		end
 	end
-	if player:hasShownSkills(sgs.masochism_skill) then
+	if self:hasSkill(sgs.masochism_skill, player) then
 		if player:getHp() < 2 then
 			current_value = current_value - 0.3
 		end
 		for i = 1, player:getHp() - 3, 1 do
 			current_value = current_value + 1
 		end
-		--[[
 		for i = 1, getKnownCard(player, self.player, "Peach", true, "he"), 1 do
 			current_value = current_value + 0.15
 		end
 		for i = 1, getKnownCard(player, self.player, "Analeptic", true, "he"), 1 do
 			current_value = current_value + 0.1
 		end
-		--]]
 	end
-	if player:hasShownSkills(sgs.lose_equip_skill) then
-		--if not player:hasEquip() and getKnownCard(player, self.player, "EquipCard", true, "h") < 2 then
-		--	current_value = current_value - 0.3
-		--end
-		--for i = 1, getKnownCard(player, self.player, "EquipCard", true, "he") - 2, 1 do
-		--	current_value = current_value + 0.15
-		--end
+	if self:hasSkill(sgs.lose_equip_skill, player) then
+		if not player:hasEquip() and getKnownCard(player, self.player, "EquipCard", true, "h") < 2 then
+			current_value = current_value - 0.3
+		end
+		for i = 1, getKnownCard(player, self.player, "EquipCard", true, "he") - 2, 1 do
+			current_value = current_value + 0.15
+		end
 		for i = 1, player:getEquips():length(), 1 do
 			current_value = current_value + 0.15
 		end
@@ -748,9 +1058,9 @@ function sgs.getDynamicPlayerStrength(player, ishuashen)
 			end
 		end
 	end
-	if player:hasShownSkills("qianhuan") then
+	if self:hasSkill("qianhuan", player) then
 		for _, p in sgs.qlist(global_room:getAllPlayers()) do
-			if p:isFriendWith(player) and p:hasShownSkills("jijiu|qingnang") then
+			if p:isFriendWith(player) and self:hasSkill("jijiu|qingnang", p) then
 				current_value = current_value + 5
 			end
 			if p:isFriendWith(player) and not p:objectName() == player:objectName() then
@@ -761,13 +1071,11 @@ function sgs.getDynamicPlayerStrength(player, ishuashen)
 	if player:getLord() and player:getLord():isAlive() and not player:getLord():getPile("flame_map"):isEmpty() then
 		current_value = current_value + 0.5 * player:getLord():getPile("flame_map"):length()
 	end
-	--[[
-	if player:hasShownSkill("jizhi") then
+	if self:hasSkill("jizhi", player) then
 		for i = 1, getKnownCard(player, self.player, "TrickCard", false, "he"), 1 do
 			current_value = current_value + 0.1
 		end
 	end
-	--]]
 	return current_value
 end
 
@@ -890,7 +1198,7 @@ function sgs.outputKingdomValues(player, level, sendLog)
 			msg = msg .. " " .. kingdom .. math.ceil(sgs.ai_loyalty[kingdom][player:objectName()])
 		end
 	end
-	msg = msg .. " gP:" .. sgs.gameProcess() .. " "
+	msg = msg .. " gP:" .. sgs.ai_process .. " "
 	for _, kingdom in ipairs(sgs.KingdomsTable) do
 		msg = msg .. string.upper(string.sub(kingdom, 1, 1)) .. string.sub(kingdom, 2) .. sgs.current_mode_players[kingdom] .. " "
 	end
@@ -905,6 +1213,47 @@ function sgs.outputKingdomValues(player, level, sendLog)
 	end]]
 end
 
+function SmartAI:countPlayers()
+	local lord = {}
+	local dead_lord = {}
+	local anjiang = {}
+	local ai_kingdoms = {}
+	local kingdoms = sgs.KingdomsTable
+	for _, kingdom in ipairs(kingdoms) do
+		ai_kingdoms[kingdom] = 0
+	end
+	local careerists = {}
+	for _, ap in sgs.qlist(self.room:getAllPlayers(true)) do
+		if ap:hasShownOneGeneral() then
+			if ap:getRole() == "careerist" then
+				table.insert(careerists, ap)
+			elseif table.contains(kingdoms, ap:getKingdom()) then
+				ai_kingdoms[ap:getKingdom()] = ai_kingdoms[ap:getKingdom()] + 1
+			end
+			if ap:isLord() then
+				if ap:isAlive() then
+					lord[ap:getKingdom()] = true
+				else
+					dead_lord[ap:getKingdom()] = true
+				end
+			end
+		elseif ap:objectName() == self.player:objectName() and self.player:getActualGeneral1():isLord() then
+			lord[ap:getKingdom()] = true
+		elseif self.player:getTag("KnownBoth_" .. ap:objectName()):toString() ~= "" then
+			local general1 = self.player:getTag("KnownBoth_" .. ap:objectName()):toString():split("+")[1]
+			if general1 ~= "anjiang" then
+				local general = sgs.Sanguosha:getGeneral(general1)
+				if general:isLord() then
+					lord[ap:getKingdom()] = true
+				end
+			end
+		else
+			table.insert(anjiang, ap)
+		end
+	end
+	return lord, dead_lord, anjiang, ai_kingdoms, careerists
+end
+
 function SmartAI:updatePlayers(update, resetAI)
 	if not resetAI and self.player:isDead() then return end
 	if update ~= false then update = true end
@@ -914,10 +1263,31 @@ function SmartAI:updatePlayers(update, resetAI)
 	self.friends_noself = {}
 
 	sgs.updateAlivePlayerRoles()
-	self.role = self.player:getRole()
+
+	local lord, dead_lord, anjiang, ai_kingdoms = self:countPlayers()
+	local room = self.room
+	local players = room:getAllPlayers(true)
+	local all_num = room:getAllPlayers(true):length()
+	room:sortByActionOrder(players)
+
+	if not self.player:hasShownOneGeneral() then					--update player show inclination to prevent becoming careerist
+		local self_kingdom = self.player:getActualGeneral1():getKingdom()
+		if ai_kingdoms[self_kingdom] > 0 and all_num / 2 - ai_kingdoms[self_kingdom] >= 1 and all_num / 2 - ai_kingdoms[self_kingdom] < 2 and not lord[self_kingdom] and #anjiang > 1 then
+			sgs.ai_show_inclination[self.player:objectName()] = true
+		end
+
+		if sgs.ai_explicit[self.player:objectName()] ~= "unknown" and sgs.ai_explicit[self.player:objectName()] ~= self.player:getKingdom() and sgs.ai_explicit[self.player:objectName()] ~= "careerist" then
+			sgs.ai_explicit[self.player:objectName()] = "unknown"
+		end
+	end
+
+	if sgs.isAnjiang(self.player) then
+		self.role = self.player:willbeRole()
+	end
 
 	if update then
-		sgs.gameProcess(true)
+		self:gameProcess(true)
+		sgs.ai_process = self:gameProcess()
 	end
 
 	if sgs.isRoleExpose() then
@@ -987,8 +1357,10 @@ function SmartAI:updatePlayerKingdom(player, data)
 	end
 
 	for _, k in ipairs(sgs.KingdomsTable) do
-		if k == sgs.ai_explicit[player:objectName()] then sgs.ai_loyalty[k][player:objectName()] = 99
-		else sgs.ai_loyalty[k][player:objectName()] = 0
+		if k == sgs.ai_explicit[player:objectName()] then
+			sgs.ai_loyalty[k][player:objectName()] = 99
+		else
+			sgs.ai_loyalty[k][player:objectName()] = 0
 		end
 	end
 	local all_shown = true
@@ -1643,6 +2015,28 @@ function SmartAI:sortByKeepValue(cards, inverse, kept)
 	end
 
 	table.sort(cards, compare_func)
+end
+
+function SmartAI:sortByActionOrder(players)
+	local copy = sgs.SPlayerList()
+	for _, p in ipairs(players) do
+		copy:append(p)
+	end
+	self.room:sortByActionOrder(copy)
+
+	local values = {}
+	for _, p in ipairs(players) do
+		values[p:objectName()] = copy:indexOf(p)
+	end
+	local compare_func = function(a, b)
+		local value1 = values[a:objectName()]
+		local value2 = values[b:objectName()]
+
+		if value1 ~= value2 then
+			return value1 < value2
+		end
+	end
+	table.sort(players, compare_func)
 end
 
 function SmartAI:sortByUseValue(cards, inverse)
@@ -3942,16 +4336,15 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 	end
 end
 
-
-function SmartAI:damageIsEffective(to, nature, from)
+function SmartAI:damageIsEffective(to, nature, from, effect)
 	local damageStruct = {}
 	damageStruct.to = to or self.player
 	damageStruct.from = from or self.room:getCurrent()
 	damageStruct.nature = nature or sgs.DamageStruct_Normal
-	return self:damageIsEffective_(damageStruct)
+	return self:damageIsEffective_(damageStruct, effect)
 end
 
-function SmartAI:damageIsEffective_(damageStruct)
+function SmartAI:damageIsEffective_(damageStruct, effect)
 	if type(damageStruct) ~= "table" and type(damageStruct) ~= "DamageStruct" and type(damageStruct) ~= "userdata" then self.room:writeToConsole(debug.traceback()) return end
 	if not damageStruct.to then self.room:writeToConsole(debug.traceback()) return end
 	local to = damageStruct.to
@@ -3966,10 +4359,8 @@ function SmartAI:damageIsEffective_(damageStruct)
 		if damage < 1 then return false end
 	end
 
-	if to:hasArmorEffect("PeaceSpell") and not from:hasWeapon("IceSword") and not from:hasShownSkill("zhiman") and nature ~= sgs.DamageStruct_Normal then return false end
-	if to:hasShownSkills("jgyuhuo_pangtong|jgyuhuo_zhuque") and nature == sgs.DamageStruct_Fire then return false end
-	if to:getMark("@fog") > 0 and nature ~= sgs.DamageStruct_Thunder then return false end
-	if to:hasArmorEffect("Breastplate") and (damage > to:getHp() or (to:getHp() > 1 and damage == to:getHp())) then return false end
+	if to:hasArmorEffect("PeaceSpell") and nature ~= sgs.DamageStruct_Normal then return false end
+	if not effect and to:hasArmorEffect("Breastplate") and (damage > to:getHp() or (to:getHp() > 1 and damage == to:getHp())) then return false end
 
 	for _, callback in pairs(sgs.ai_damage_effect) do
 		if type(callback) == "function" then
@@ -3977,7 +4368,6 @@ function SmartAI:damageIsEffective_(damageStruct)
 			if not is_effective then return false end
 		end
 	end
-
 	return true
 end
 
@@ -4187,7 +4577,7 @@ end
 function getKnownCard(player, from, class_name, viewas, flags, return_table)
 	if not player or (flags and type(flags) ~= "string") then global_room:writeToConsole(debug.traceback()) return 0 end
 	flags = flags or "h"
-	player = findPlayerByObjectName(player:objectName())
+	if type(player) ~= "ServerPlayer" then player = findPlayerByObjectName(player:objectName()) end
 	if not player then global_room:writeToConsole(debug.traceback()) return 0 end
 	local cards = player:getCards(flags)
 	if flags:match("h") then
@@ -4803,8 +5193,8 @@ function SmartAI:getAoeValue(card)
 	if card:isKindOf("SavageAssault") then
 		local menghuo = sgs.findPlayerByShownSkillName("huoshou")
 		attacker = menghuo or attacker
-		if self:isFriend(attacker) and menghuo and menghuo:hasSkill("zhiman") then zhiman = true end
-		if not self:isFriend(attacker) and menghuo:hasSkill("zhiman") then zhimanprevent = true end
+		if self:isFriend(attacker) and attacker:hasSkill("zhiman") then zhiman = true end
+		if not self:isFriend(attacker) and attacker:hasSkill("zhiman") then zhimanprevent = true end
 	end
 
 	local function getAoeValueTo(to, attacker)
@@ -5048,7 +5438,7 @@ function SmartAI:hasTrickEffective(card, to, from)
 	elseif card:isKindOf("Drowning") then nature = sgs.DamageStruct_Thunder end
 
 	if (card:isKindOf("Duel") or card:isKindOf("FireAttack") or card:isKindOf("ArcheryAttack") or card:isKindOf("SavageAssault"))
-		and not self:damageIsEffective(to, nature, from) then return false end
+		and not self:damageIsEffective(to, nature, from, true) then return false end
 
 	if to:hasArmorEffect("IronArmor") and (card:isKindOf("FireAttack") or card:isKindOf("BurningCamps")) then return false end
 
@@ -5400,7 +5790,7 @@ function SmartAI:needToLoseHp(to, from, isSlash, passive, recover)
 	if not passive then
 		if to:hasShownSkill("rende") and to:getMaxHp() > 2 and not self:willSkipPlayPhase(to) and self:findFriendsByType(sgs.Friend_Draw, to) then
 			n = math.min(n, to:getMaxHp() - 1)
-		elseif to:hasShownSkill("hengzheng") and sgs.ai_skill_invoke.hengzheng(sgs.ais[to:objectName()]) then
+		elseif to:hasShownSkill("hengzheng") and self:SimpleGuixinInvoke(to) then
 			n = math.min(n, to:getMaxHp() - 1)
 		elseif to:hasShownSkills("yinghun_sunjian|yinghun_sunce|zaiqi") then
 			n = math.min(n, to:getMaxHp() - 1)
@@ -5538,7 +5928,11 @@ function SmartAI:findPlayerToDiscard(flags, include_self, method, players, retur
 		end
 	end
 
-	self:sort(enemies, "defense")
+	if not self:isEnemy(self.room:getCurrent()) then
+		self:sort(enemies, "defense")
+	else
+		self:sortByActionOrder(enemies)
+	end
 	if flags:match("e") then
 		for _, enemy in ipairs(enemies) do
 			local dangerous = self:getDangerousCard(enemy)
@@ -6110,7 +6504,7 @@ function SmartAI:cantbeHurt(player, from, damageNum)
 	end
 	if player:hasShownSkill("hengzheng") and player:getHandcardNum() ~= 0 and player:getHp() - damageNum == 1
 		and from:getNextAlive():objectName() == player:objectName() then
-		if sgs.ai_skill_invoke.hengzheng(sgs.ais[player:objectName()]) then return true end
+		if self:SimpleGuixinInvoke(player) then return true end
 	end
 	return false
 end
@@ -6204,6 +6598,7 @@ end
 
 function SmartAI:willShowForAttack()
 	if sgs.isRoleExpose() then return true end
+	if sgs.isAnjiang(self.player) and sgs.ai_show_inclination[self.player:objectName()] then return true end
 	if self.player:hasShownOneGeneral() then return true end
 	if self.room:alivePlayerCount() < 3 then return true end
 
@@ -6241,6 +6636,7 @@ end
 
 function SmartAI:willShowForDefence()
 	if sgs.isRoleExpose() then return true end
+	if sgs.isAnjiang(self.player) and sgs.ai_show_inclination[self.player:objectName()] then return true end
 	if self.player:hasShownOneGeneral() then return true end
 	if self.room:alivePlayerCount() < 3 then return true end
 	if self:isWeak() then return true end
@@ -6278,6 +6674,7 @@ end
 
 function SmartAI:willShowForMasochism()
 	if sgs.isRoleExpose() then return true end
+	if sgs.isAnjiang(self.player) and sgs.ai_show_inclination[self.player:objectName()] then return true end
 	if self.player:hasShownOneGeneral() then return true end
 	if self.room:alivePlayerCount() < 3 then return true end
 

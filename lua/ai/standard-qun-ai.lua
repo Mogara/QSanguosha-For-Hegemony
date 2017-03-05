@@ -105,7 +105,9 @@ sgs.ai_skill_invoke.wushuang = function(self, data)
 	local left_trigger = sgs.SPlayerList()
 	if use.to:length() > index + 1 then
 		for i = index, use.to:length() - 1, 1 do
-			left_trigger:append(use.to:at(i))
+			if (use.to:at(i)) then
+				left_trigger:append(use.to:at(i))
+			end
 		end
 	end
 
@@ -342,7 +344,7 @@ luanji_skill.getTurnUseCard = function(self)
 		self:sortByKeepValue(cards)
 		local useAll = false
 		for _, enemy in ipairs(self.enemies) do
-			if enemy:getHp() == 1 and not enemy:hasArmorEffect("Vine") and not self:hasEightDiagramEffect(enemy) and self:damageIsEffective(enemy, nil, self.player)
+			if enemy:getHp() == 1 and not enemy:hasArmorEffect("Vine") and not self:hasEightDiagramEffect(enemy) and self:damageIsEffective(enemy, nil, self.player, true)
 				and self:isWeak(enemy) and getCardsNum("Jink", enemy, self.player) + getCardsNum("Peach", enemy, self.player) + getCardsNum("Analeptic", enemy, self.player) == 0 then
 				useAll = true
 			end
@@ -849,7 +851,7 @@ xiongyi_skill.getTurnUseCard = function(self)
 			return sgs.Card_Parse("@XiongyiCard=.&xiongyi")
 		end
 	end
-	if sgs.gameProcess() == "qun>>>" then
+	if self:gameProcess() == "qun>>>" then
 		return sgs.Card_Parse("@XiongyiCard=.&xiongyi")
 	end
 end
@@ -994,13 +996,13 @@ sgs.ai_skill_cardchosen.kuangfu = function(self, who, flags)
 			elseif card:isKindOf("Treasure") and who:getTreasure() then return who:getTreasure():getEffectiveId()
 			end
 		end
-		if who:getArmor() and who:getArmor():isKindOf("EightDiagram") and not self:needToThrowArmor(who) then return who:getArmor():getEffectiveId() end
+		if who:getArmor() and who:hasArmorEffect("EightDiagram") and not self:needToThrowArmor(who) then return who:getArmor():getEffectiveId() end
 		if who:hasShownSkills("jijiu|beige|weimu|qingcheng") and not self:doNotDiscard(who, "e", false, 1, reason) then
 			if who:getPile("wooden_ox"):length() > 1 or who:hasTreasure("JadeSeal") then return who:getTreasure():getEffectiveId() end
 			if who:getDefensiveHorse() then return who:getDefensiveHorse():getEffectiveId() end
 			if who:getArmor() and who:getArmor() and not self:needToThrowArmor(who) then return who:getArmor():getEffectiveId() end
-			if who:getOffensiveHorse() and (not who:hasShownSkills("jijiu") or who:getOffensiveHorse():isRed()) then return who:getOffensiveHorse():getEffectiveId() end
-			if who:getWeapon() and (not who:hasShownSkills("jijiu") or who:getWeapon():isRed()) then return who:getWeapon():getEffectiveId() end
+			if who:getOffensiveHorse() and (not who:hasShownSkill("jijiu") or who:getOffensiveHorse():isRed()) then return who:getOffensiveHorse():getEffectiveId() end
+			if who:getWeapon() and (not who:hasShownSkill("jijiu") or who:getWeapon():isRed()) then return who:getWeapon():getEffectiveId() end
 		end
 		local valuable = self:getValuableCard(who)
 		if valuable then

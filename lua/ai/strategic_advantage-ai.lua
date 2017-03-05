@@ -101,7 +101,7 @@ sgs.ai_skill_use_func.TransferCard = function(transferCard, use, self)
 				end
 			end
 		elseif card:isKindOf("BurningCamps") then
-			local gameProcess = sgs.gameProcess()
+			local gameProcess = self:gameProcess()
 			if string.find(gameProcess, self.player:getKingdom() .. ">") then
 				for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
 					if transferCard:targetFilter(targets, p, self.player) and (self:isFriend(p) or (p:hasShownOneGeneral() and self:willSkipPlayPhase(p))) then
@@ -138,7 +138,7 @@ function SmartAI:useCardDrowning(card, use)
 	local players = sgs.PlayerList()
 	for _, enemy in ipairs(self.enemies) do
 		if card:targetFilter(players, enemy, self.player) and not players:contains(enemy) and enemy:hasEquip()
-			and self:hasTrickEffective(card, enemy) and self:damageIsEffective(enemy, sgs.DamageStruct_Thunder, self.player) and self:canAttack(enemy)
+			and self:hasTrickEffective(card, enemy) and self:damageIsEffective(enemy, sgs.DamageStruct_Thunder, self.player, true) and self:canAttack(enemy)
 			and not self:getDamagedEffects(enemy, self.player) and not self:needToLoseHp(enemy, self.player) and not self:needToThrowArmor(enemy)
 			and not (enemy:hasArmorEffect("PeaceSpell") and (enemy:getHp() > 1 or self:needToLoseHp(enemy, self.player)))
 			and not (enemy:hasArmorEffect("Breastplate") and enemy:getHp() == 1) then
@@ -175,7 +175,7 @@ end
 
 sgs.ai_card_intention.Drowning = function(self, card, from, tos)
 	for _, to in ipairs(tos) do
-		if not self:hasTrickEffective(card, to, from) or not self:damageIsEffective(to, sgs.DamageStruct_Thunder, from)
+		if not self:hasTrickEffective(card, to, from) or not self:damageIsEffective(to, sgs.DamageStruct_Thunder, from, true)
 			or self:needToThrowArmor(to) then
 		else
 			sgs.updateIntention(from, to, 80)
@@ -190,7 +190,7 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 
 	if self:damageIsEffective(self.player, sgs.DamageStruct_Thunder, effect.from) and self.player:isChained() then
 		for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
-			if not self:isGoodChainTarget(self.player, p, sgs.DamageStruct_Thunder) and self:damageIsEffective(p, sgs.DamageStruct_Thunder) and self:isFriend(p) then
+			if not self:isGoodChainTarget(self.player, p, sgs.DamageStruct_Thunder) and self:damageIsEffective(p, sgs.DamageStruct_Thunder, effect.from, true) and self:isFriend(p) then
 				table.insert(chained, p)
 				if self:isWeak(p) then dangerous = true end
 			end
@@ -655,7 +655,7 @@ function SmartAI:useCardFightTogether(card, use)
 					if p:isChained() then
 						v_big = v_big - 1
 					else
-						local gameProcess = sgs.gameProcess()
+						local gameProcess = self:gameProcess()
 						if p:hasShownOneGeneral() and string.find(gameProcess, p:getKingdom() .. ">>") then
 							v_big = v_big + 2
 						else v_big = v_big + 1 end
@@ -671,7 +671,7 @@ function SmartAI:useCardFightTogether(card, use)
 					if p:isChained() then
 						v_small = v_small - 1
 					else
-						local gameProcess = sgs.gameProcess()
+						local gameProcess = self:gameProcess()
 						if p:hasShownOneGeneral() and string.find(gameProcess, p:getKingdom() .. ">>") then
 							v_small = v_small + 2
 						else v_small = v_small + 1 end
@@ -1006,11 +1006,23 @@ sgs.ai_skill_cardask["@imperial_order-equip"] = function(self)
 		return self.player:getArmor():getEffectiveId()
 	end
 	local discard
-	local kingdom = self:evaluateKingdom(self.player)
-	if kingdom == "unknown" then discard = true
+	self.order = nil
+
+	if not self.player:canShowGeneral() then
+		discard = true
 	else
-		kingdom = kingdom:split("?")
-		discard = #kingdom / #sgs.KingdomsTable >= 0.5
+		local gameProcess = self:gameProcess()
+		if not string.find(gameProcess, ">>") then
+			local kingdom = self:evaluateKingdom(self.player)
+			if kingdom == "unknown" then
+				discard = true
+			else
+				kingdom = kingdom:split("?")
+				discard = #kingdom / #sgs.KingdomsTable >= 0.5
+			end
+		else
+			self.order = "show"
+		end
 	end
 	if self.player:getPhase() == sgs.Player_NotActive and discard then
 		local cards = self.player:getCards("he")
@@ -1027,6 +1039,7 @@ sgs.ai_skill_cardask["@imperial_order-equip"] = function(self)
 end
 
 sgs.ai_skill_choice.imperial_order = function(self)
+	if self.order then return self.order end
 	if self.player:getPhase() ~= sgs.Player_NotActive then return "show" end
 	if self:needToLoseHp() then return "losehp" end
 	if not self.player:isWounded() and self.player:getCards("he"):length() > 6 then return "losehp" end
@@ -1122,7 +1135,45 @@ end
 
 sgs.ai_use_priority.HalberdCard = sgs.ai_use_priority.Slash + 0.2
 
-sgs.ai_skill_playerchosen.Halberd = sgs.ai_skill_playerchosen.slash_extra_targets
+--sgs.ai_skill_playerchosen.Halberd = sgs.ai_skill_playerchosen.slash_extra_targets
+
+sgs.ai_skill_playerchosen["#halberd_target"] = function(self)
+	local use = self.player:getTag("extra_target_skill"):toCardUse()
+	local kingdoms = {}
+	local result = {}
+
+	local targets = {}
+	for _, p in sgs.qlist(use.to) do
+		if not p:hasShownOneGeneral() or p:getRole() == "careerist" then continue end
+		table.insert(kingdoms, p:getKingdom())
+	end
+	for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+		if p:objectName() == self.player:objectName() then continue end
+		if p:hasShownOneGeneral() and p:getRole() ~= "careerist" and not table.contains(kingdoms, p:getKingdom()) or not p:hasShownOneGeneral() then
+			table.insert(targets, p)
+		end
+	end
+	if #targets == 0 then return {} end
+	local target = self:addExtraSlashTarget(targets, use)
+	while (target) do
+		table.insert(result, target)
+		use.to:append(target)
+		local targets = {}
+		local kingdoms = {}
+		for _, p in sgs.qlist(use.to) do
+			if not p:hasShownOneGeneral() or p:getRole() == "careerist" then continue end
+			table.insert(kingdoms, p:getKingdom())
+		end
+		for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+			if p:hasShownOneGeneral() and p:getRole() ~= "careerist" and not table.contains(kingdoms, p:getKingdom()) or not p:hasShownOneGeneral() then
+				table.insert(targets, p)
+			end
+		end
+		if #targets == 0 then break end
+		target = self:addExtraSlashTarget(targets, use)
+	end
+	return result
+end
 
 sgs.ai_skill_cardask["@Halberd"] = function(self)
 	local use = { to = sgs.SPlayerList() }
@@ -1182,7 +1233,7 @@ wooden_ox_skill.getTurnUseCard = function(self)
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByUseValue(cards, true)
 	local card, friend = self:getCardNeedPlayer(cards, self.friends_noself, "WoodenOx")
-	if card and friend and friend:objectName() ~= self.player:objectName() and (self:getOverflow() > 0 or self:isWeak(friend)) then
+	if card and friend and friend:objectName() ~= self.player:objectName() and (self:getOverflow() > 0 or self:isWeak(friend) or friend:hasShownSkills(sgs.lose_equip_skill)) then
 		self.wooden_ox_assist = friend
 		return sgs.Card_Parse("@WoodenOxCard=" .. card:getEffectiveId())
 	end

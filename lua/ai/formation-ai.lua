@@ -473,6 +473,7 @@ end
 
 local function will_discard_zhendu(self)
 	local current = self.room:getCurrent()
+	if not sgs.Analeptic_IsAvailable(current) then return -1 end
 	local need_damage = self:getDamagedEffects(current, self.player) or self:needToLoseHp(current, self.player)
 	if self:isFriend(current) then
 		if current:getMark("drank") > 0 and not need_damage then return -1 end
@@ -491,6 +492,7 @@ local function will_discard_zhendu(self)
 		end
 		if need_damage then return 3 end
 	elseif self:isEnemy(current) then
+		if current:getHp() == 1 and (not self:hasSkill("niepan", current) or current:getMark("@nirvana") < 1) then return 1 end
 		if current:getHp() == 1 then return 1 end
 		if need_damage or current:getHandcardNum() >= 2 then return -1 end
 		if getKnownCard(current, self.player, "Slash") == 0 and getCardsNum("Slash", current, self.player) < 0.5 then return 3.5 end

@@ -47,10 +47,10 @@ sgs.ai_skill_invoke.Fan = function(self, data)
 
 	for _, target in sgs.qlist(use.to) do
 		if self:isFriend(target) then
-			if not self:damageIsEffective(target, sgs.DamageStruct_Fire) then return true end
+			if not self:damageIsEffective(target, sgs.DamageStruct_Fire, self.player, true) then return true end
 			if target:isChained() and self:isGoodChainTarget(target, nil, nil, nil, use.card) then return true end
 		else
-			if not self:damageIsEffective(target, sgs.DamageStruct_Fire) then return false end
+			if not self:damageIsEffective(target, sgs.DamageStruct_Fire, self.player, true) then return false end
 			if target:isChained() and not self:isGoodChainTarget(target, nil, nil, nil, use.card) then return false end
 			if target:hasArmorEffect("Vine") then
 				return true
@@ -104,7 +104,7 @@ function sgs.ai_armor_value.Vine(player, self)
 		return player:hasShownSkill("kongcheng") and 5 or 3.8
 	end
 	if self.player:hasSkills(sgs.lose_equip_skill) then return 3.8 end
-	if not self:damageIsEffective(player, sgs.DamageStruct_Fire) then return 6 end
+	if not self:damageIsEffective(player, sgs.DamageStruct_Fire, player, true) then return 6 end
 
 	local fslash = sgs.cloneCard("fire_slash")
 	local tslash = sgs.cloneCard("thunder_slash")
@@ -141,7 +141,6 @@ function SmartAI:shouldUseAnaleptic(target, card_use)
 	end
 
 	if target:hasArmorEffect("PeaceSpell") and card_use.card and card_use.card:isKindOf("NatureSlash") then return false end
-
 	local hcard = target:getHandcardNum()
 	if self.player:hasSkill("liegong") and self.player:getPhase() == sgs.Player_Play and (hcard >= self.player:getHp() or hcard <= self.player:getAttackRange()) then return true end
 	if self.player:hasSkill("tieqi") then return true end
@@ -162,6 +161,53 @@ function SmartAI:useCardAnaleptic(card, use)
 		and sgs.Analeptic_IsAvailable(self.player, card) then
 		use.card = card
 	end
+end
+
+local function getPlayerSkillList(player)
+	local skills = sgs.QList2Table(player:getVisibleSkillList(true))
+	return skills
+end
+
+local function cardsViewValue(self, class_name, player,reason) -- 优先权最高的ViewCards。
+	local returnList = {}
+	for _, skill in ipairs(getPlayerSkillList(player)) do
+		local askill = skill:objectName()
+		if player:hasSkill(askill) or player:hasLordSkill(askill) then
+			local callback = sgs.ai_cardsview_value[askill]
+			if type(callback) == "function" then
+				local ret = callback(self, class_name, player,reason)
+				if ret then
+					if type(ret) == "table" then
+						table.insertTable(returnList,ret)
+					else
+						table.insert(returnList,ret)
+					end
+				end
+			end
+		end
+	end
+	return returnList
+end
+
+local function cardsView(self, class_name, player, cards)
+	local returnList = {}
+	for _, skill in ipairs(getPlayerSkillList(player)) do
+		local askill = skill:objectName()
+		if player:hasSkill(askill) or player:hasLordSkill(askill) then
+			local callback = sgs.ai_cardsview[askill]
+			if type(callback) == "function" then
+				local ret = callback(self, class_name, player, cards)
+				if ret then
+					if type(ret) == "table" then
+						table.insertTable(returnList,ret)
+					else
+						table.insert(returnList,ret)
+					end
+				end
+			end
+		end
+	end
+	return returnList
 end
 
 function SmartAI:searchForAnaleptic(use, enemy, slash)
@@ -190,6 +236,7 @@ function SmartAI:searchForAnaleptic(use, enemy, slash)
 
 	local card_str = self:getCardId("Analeptic")
 	if card_str then return sgs.Card_Parse(card_str) end
+
 
 	for _, anal in ipairs(cards) do
 		if (anal:getClassName() == "Analeptic") and not (anal:getEffectiveId() == slash:getEffectiveId()) then
@@ -575,7 +622,7 @@ function SmartAI:useCardFireAttack(fire_attack, use)
 			damage = damage - 1
 		end
 		return self:objectiveLevel(enemy) > 3 and damage > 0 and not enemy:isKongcheng()
-				and self:damageIsEffective(enemy, sgs.DamageStruct_Fire, self.player) and not self:cantbeHurt(enemy, self.player, damage)
+				and self:damageIsEffective(enemy, sgs.DamageStruct_Fire, self.player, true) and not self:cantbeHurt(enemy, self.player, damage)
 				and self:hasTrickEffective(fire_attack, enemy)
 				and sgs.isGoodTarget(enemy, self.enemies, self)
 				and (not (enemy:hasShownSkill("jianxiong") and not self:isWeak(enemy)) and not self:getDamagedEffects(enemy, self.player)
@@ -641,7 +688,7 @@ function SmartAI:useCardFireAttack(fire_attack, use)
 		if enemy:hasShownSkill("mingshi") and not self.player:hasShownAllGenerals() then
 			damage = damage - 1
 		end
-		if self:damageIsEffective(enemy, sgs.DamageStruct_Fire, self.player) and damage > 1 then
+		if self:damageIsEffective(enemy, sgs.DamageStruct_Fire, self.player, true) and damage > 1 then
 			if not table.contains(targets, enemy) then table.insert(targets, enemy) end
 		end
 	end
@@ -697,6 +744,7 @@ end
 sgs.ai_use_value.FireAttack = 4.8
 sgs.ai_keep_value.FireAttack = 3.28
 sgs.ai_use_priority.FireAttack = sgs.ai_use_priority.Dismantlement + 0.1
+
 sgs.dynamic_value.damage_card.FireAttack = true
+
 sgs.ai_card_intention.FireAttack = 80
-sgs.dynamic_value.damage_card.FireAttack = true
