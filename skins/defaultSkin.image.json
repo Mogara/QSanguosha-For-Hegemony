@@ -226,6 +226,7 @@
 "handCardMainPhoto-default": "image/card/%1.png",
 "handCardMainPhoto-default2": "image/card/%1.png",
 "handCardMainPhoto-unknown": "image/system/card-back.png",
+"handCardAlterPhoto-default": "image/card/alter/%1.png",
 
 //Added By Xusine:
 "cardTiny-amazing_grace": ["image/big-card/amazing_grace.png",[57, 62, 115, 115],[40, 40]],

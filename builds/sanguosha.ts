@@ -2810,22 +2810,22 @@
 <context>
     <name>PlayerCardBox</name>
     <message>
-        <location filename="../src/ui/PlayerCardBox.cpp" line="64"/>
+        <location filename="../src/ui/PlayerCardBox.cpp" line="65"/>
         <source>%1: please choose %2&apos;s card</source>
         <translation>%1：请选择 %2 的一张卡牌</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlayerCardBox.cpp" line="180"/>
+        <location filename="../src/ui/PlayerCardBox.cpp" line="246"/>
         <source>Handcard area</source>
         <translation>手牌区域</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlayerCardBox.cpp" line="186"/>
+        <location filename="../src/ui/PlayerCardBox.cpp" line="252"/>
         <source>Equip area</source>
         <translation>装备区</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlayerCardBox.cpp" line="192"/>
+        <location filename="../src/ui/PlayerCardBox.cpp" line="258"/>
         <source>Judging area</source>
         <translation>判定区</translation>
     </message>
@@ -3361,6 +3361,11 @@
         <location filename="../src/ui/roomscene.cpp" line="1901"/>
         <source>use upon %1(%2)</source>
         <translation>对%1(%2)</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/roomscene.cpp" line="2147"/>
+        <source>view as </source>
+        <translation>视为 </translation>
     </message>
     <message>
         <location filename="../src/ui/roomscene.cpp" line="3158"/>
