@@ -2614,7 +2614,7 @@ void RoomScene::cancelViewAsSkill()
     updateStatus(status, status);
 }
 
-void RoomScene::highlightSkillButton(const QString &skillName, const CardUseStruct::CardUseReason reason, const QString &pattern, const QString &head)
+bool RoomScene::highlightSkillButton(const QString &skillName, const CardUseStruct::CardUseReason reason, const QString &pattern, const QString &head)
 {
     const bool isViewAsSkill = reason != CardUseStruct::CARD_USE_REASON_UNKNOWN && !pattern.isEmpty();
     if (Self->hasSkill(skillName, true)) {
@@ -2628,18 +2628,19 @@ void RoomScene::highlightSkillButton(const QString &skillName, const CardUseStru
                     button->setEnabled(true);
                     button->setState(QSanButton::S_STATE_DOWN);
                     button->skill_activated();
-                    break;
+                    return true;
                 }
             } else {
                 const Skill *skill = button->getSkill();
                 if (skill != NULL && skill->objectName() == skillName) {
                     button->setEnabled(true);
                     button->setState(QSanButton::S_STATE_DOWN);
-                    break;
+                    return true;
                 }
             }
         }
     }
+    return false;
 }
 
 void RoomScene::selectTarget(int order, bool multiple)
@@ -2940,7 +2941,11 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                         ClientInstance->onPlayerResponseCard(NULL);
                         break;
                     }
-                    highlightSkillButton(skill_name, reason, pattern, ClientInstance->getSkillToHighLight());
+                    if (!highlightSkillButton(skill_name, reason, pattern, ClientInstance->getSkillToHighLight())) {
+                        dashboard->startPending(skill);
+                        if (skill->inherits("OneCardViewAsSkill") && Config.EnableIntellectualSelection)
+                            dashboard->selectOnlyCard();
+                    }
                 }
             } else {
                 if (pattern.endsWith("!"))
@@ -3172,7 +3177,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         if (!promote.pattern.startsWith("@") && !promote.skill_name.isEmpty()) {
             QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
             CardUseStruct::CardUseReason reason = Sanguosha->currentRoomState()->getCurrentCardUseReason();
-            if (pattern == promote.pattern &&  reason == promote.reason)
+            if (pattern == promote.pattern && reason == promote.reason)
                 highlightSkillButton(promote.skill_name, promote.reason, promote.pattern, promote.skill_position);
         }
     }

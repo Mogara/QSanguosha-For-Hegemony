@@ -1014,7 +1014,7 @@ public:
     virtual void onSkillDetached(Room *room, ServerPlayer *player, QVariant &data) const
     {
         QStringList huashen_skill = player->tag["HuashenSkill"].toStringList();
-        bool head = data.toString().split(":").last() == "head";
+        bool head = data.value<InfoStruct>().head;
         foreach (QString skill_name, huashen_skill) {
             room->detachSkillFromPlayer(player, skill_name, false, true, head);
         }
@@ -1038,10 +1038,13 @@ public:
                 player->hideGeneral(!head);
                 room->setPlayerDisableShow(player, (head ? "d" : "h"), "zuoci");
             }
-        } else if (data.toString().split(":").first() == "huashen") {
-            bool head = data.toString().split(":").last() == "head";
-            player->hideGeneral(!head);
-            room->setPlayerDisableShow(player, (head ? "d" : "h"), "zuoci");
+        } else {
+            InfoStruct info = data.value<InfoStruct>();
+            if (info.info == "huashen") {
+                bool head = info.head;
+                player->hideGeneral(!head);
+                room->setPlayerDisableShow(player, (head ? "d" : "h"), "zuoci");
+            }
         }
 
         return TriggerStruct();

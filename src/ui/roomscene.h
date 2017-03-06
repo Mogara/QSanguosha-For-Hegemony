@@ -388,7 +388,7 @@ private:
 
     void callViewAsSkill();
     void cancelViewAsSkill();
-    void highlightSkillButton(const QString &skillName,
+    bool highlightSkillButton(const QString &skillName,
         const CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_UNKNOWN,
         const QString &pattern = QString(), const QString &head = QString());
 

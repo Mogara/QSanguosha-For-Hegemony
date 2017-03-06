@@ -157,6 +157,14 @@ public:
     PlayerNumStruct toPlayerNum() const{
         return $self->value<PlayerNumStruct>();
     }
+
+    InfoStruct toInfo() const{
+        return $self->value<InfoStruct>();
+    }
+
+    void setValue(InfoStruct info) {
+        $self->setValue(QVariant::fromValue(info));
+    }
 /*
     void setValue(QList<int> intlist) {
         QVariantList varlist;

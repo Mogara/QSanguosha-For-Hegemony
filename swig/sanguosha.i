@@ -1419,6 +1419,13 @@ struct PromoteStruct
     QString skill_position;
 };
 
+struct InfoStruct
+{
+    InfoStruct(const char *info, bool head);
+    QString info;
+    bool head;
+};
+
 class RoomThread: public QThread {
 public:
     explicit RoomThread(Room *room);

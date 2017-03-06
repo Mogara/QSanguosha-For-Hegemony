@@ -893,7 +893,7 @@ DetachEffectSkill::DetachEffectSkill(const QString &skillname, const QString &pi
 
 TriggerStruct DetachEffectSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &data, ServerPlayer *) const
 {
-    if (target && data.toString().split(":").first() == name)
+    if (target && data.value<InfoStruct>().info == name)
 		return TriggerStruct(objectName(), target);
 	return TriggerStruct();
 }

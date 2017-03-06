@@ -563,7 +563,7 @@ public:
             }
         }
 
-        if (triggerEvent == EventLoseSkill && data.toString().split(":").first() == "tianfu")
+        if (triggerEvent == EventLoseSkill && data.value<InfoStruct>().info == "tianfu")
             return TriggerStruct();
         if (triggerEvent == GeneralHidden && player->ownSkill(this) && player->inHeadSkills(objectName()) == data.toBool())
             return TriggerStruct();

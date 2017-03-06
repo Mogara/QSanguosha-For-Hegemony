@@ -1824,9 +1824,8 @@ void ServerPlayer::removeGeneral(bool head_general)
     log.arg2 = from_general;
     room->sendLog(log);
 
-    from_general = from_general + (head_general ? ":head" : ":deputy");
     Q_ASSERT(room->getThread() != NULL);
-    QVariant _from = from_general;
+    QVariant _from = QVariant::fromValue(InfoStruct(from_general, head_general));
     room->getThread()->trigger(GeneralRemoved, room, this, _from);
 
     room->filterCards(this, getCards("he"), true);
@@ -1852,7 +1851,7 @@ void ServerPlayer::sendSkillsToOthers(bool head_skill /* = true */)
 void ServerPlayer::disconnectSkillsFromOthers(bool head_skill /* = true */)
 {
     foreach (const QString &skill, head_skill ? head_skills.keys() : deputy_skills.keys()) {
-        QVariant _skill = skill + ":" + (head_skill ? "head" : "deputy");
+        QVariant _skill = QVariant::fromValue(InfoStruct(skill, head_skill));
         room->getThread()->trigger(EventLoseSkill, room, this, _skill);
         JsonArray args;
         args << (int)QSanProtocol::S_GAME_EVENT_DETACH_SKILL;

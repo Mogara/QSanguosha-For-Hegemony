@@ -440,11 +440,13 @@ public:
                 } else
                     return TriggerStruct();
             }
-        } else if (triggerEvent == GeneralRemoved && player->isWounded() && player->hasFlag(data.toString())) {
-            QString head = data.toString().split(":").last();
-            TriggerStruct trigger = TriggerStruct(objectName(), player);
-            trigger.skill_position = head;
-            return trigger;
+        } else if (triggerEvent == GeneralRemoved && player->isWounded()) {
+            InfoStruct info = data.value<InfoStruct>();
+            if (player->hasFlag(info.info + (info.head ? ":head" : ":deputy"))) {
+                TriggerStruct trigger = TriggerStruct(objectName(), player);
+                trigger.skill_position = info.head ? "head" : "deputy";
+                return trigger;
+            }
         }
 
 		return TriggerStruct();

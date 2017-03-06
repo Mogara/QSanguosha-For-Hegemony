@@ -1668,10 +1668,10 @@ public:
             return r;
         if (triggerEvent == Death && (data.value<DeathStruct>().who != player || !player->hasShownSkill(this)))
             return r;
-        if ((triggerEvent == EventAcquireSkill || triggerEvent == EventLoseSkill) && data.toString().split(":").first() != objectName())
+        if ((triggerEvent == EventAcquireSkill || triggerEvent == EventLoseSkill) && data.value<InfoStruct>().info != objectName())
             return r;
         if (triggerEvent == EventLoseSkill) {
-            bool head = data.toString().split(":").last() == "head";
+            bool head = data.value<InfoStruct>().head;
             bool show;
             if (head)
                 show = player->getDeputyActivedSkills(false).contains(this) && player->hasShownGeneral2() || player->getAcquiredSkills("d").contains(objectName());

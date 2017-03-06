@@ -689,6 +689,14 @@ struct PromoteStruct
     QString skill_position;
 };
 
+struct InfoStruct
+{
+    InfoStruct();
+    InfoStruct(const QString &info, bool head);
+    QString info;
+    bool head;
+};
+
 Q_DECLARE_METATYPE(DamageStruct)
 Q_DECLARE_METATYPE(CardEffectStruct)
 Q_DECLARE_METATYPE(SlashEffectStruct)
@@ -708,5 +716,6 @@ Q_DECLARE_METATYPE(PindianStruct *)
 Q_DECLARE_METATYPE(AskForMoveCardsStruct)
 Q_DECLARE_METATYPE(TriggerStruct)
 Q_DECLARE_METATYPE(PromoteStruct)
+Q_DECLARE_METATYPE(InfoStruct)
 #endif
 

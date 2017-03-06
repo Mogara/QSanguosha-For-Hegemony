@@ -591,6 +591,12 @@ void ChooseGeneralBox::_initializeItems()
 
 void ChooseGeneralBox::reply()
 {
+    if (convertContainer != NULL) {
+        convertContainer->clear();
+        convertContainer->deleteLater();
+        convertContainer = NULL;
+    }
+
     if (progress_bar != NULL) {
         progress_bar->hide();
         progress_bar->deleteLater();

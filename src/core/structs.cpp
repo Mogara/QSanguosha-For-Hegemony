@@ -449,3 +449,13 @@ QVariant PromoteStruct::toVariant() const
     arg << skill_name << pattern << (int)reason << skill_position;
     return arg;
 }
+
+InfoStruct::InfoStruct()
+    : info(QString()), head(true)
+{
+}
+
+InfoStruct::InfoStruct(const QString &info, bool head)
+    : info(info), head(head)
+{
+}
