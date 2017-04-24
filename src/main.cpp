@@ -74,9 +74,14 @@ int main(int argc, char *argv[])
     bool noGui = argc > 1 && strcmp(argv[1], "-server") == 0;
 
     if (noGui)
+    {
         new QCoreApplication(argc, argv);
+    }
     else
+    {
+        QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
         new QApplication(argc, argv);
+    }
 
 #if defined(Q_OS_MAC) || defined(Q_OS_ANDROID)
 #define showSplashMessage(message)
