@@ -90,10 +90,6 @@ public:
             widget->makeCurrent();
             setViewport(widget);
             setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
-            //QSurfaceFormat format;
-            //format.setRenderableType(QSurfaceFormat::OpenGLES);
-            //widget->setFormat(format);
-            //setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
         }
 #endif
     }
@@ -147,23 +143,6 @@ public:
         if (main_window)
             main_window->fitBackgroundBrush();
     }
-
-    virtual void paintEvent(QPaintEvent *e)
-    {
-//        QRect rect(e->rect());
-//        int dx = rect.width() * 0.5;
-//        dx = rect.width()<100?100:dx;
-//        int dy = rect.height()* 0.5;
-//        dy = rect.width()<100?100:dy;
-//        QMargins margins(dx,dy,dx,dy);
-//        rect += margins;
-//        QPaintEvent n(rect);
-//        QGraphicsView::paintEvent(&n);
-//        qDebug()<<e->rect();
-        QGraphicsView::paintEvent(e);
-        //viewport()->update();
-
-    }
 };
 
 MainWindow::MainWindow(QWidget *parent)
@@ -177,7 +156,6 @@ MainWindow::MainWindow(QWidget *parent)
 #if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint);
 #endif
-    //setAttribute(Qt::WA_TranslucentBackground);
 
     setMouseTracking(true);
     setMinimumWidth(800);
@@ -1258,28 +1236,6 @@ void MainWindow::on_actionRecord_analysis_triggered()
 
     rec_dialog->exec();
 }
-
-//void MainWindow::on_actionAbout_fmod_triggered()
-//{
-//    if (scene == NULL)
-//        return;
-
-//    QString content = tr("FMOD is a proprietary audio library made by Firelight Technologies");
-//    content.append("<p align='center'> <img src='image/logo/fmod.png' /> </p> <br/>");
-
-//    QString address = "http://www.fmod.org";
-//    content.append(tr("Official site: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(address));
-
-//    Window *window = new Window(tr("About fmod"), QSize(500, 260));
-//    scene->addItem(window);
-
-//    window->addContent(content);
-//    window->addCloseButton(tr("OK"));
-//    window->setZValue(32766);
-//    window->shift(scene->sceneRect().center());
-
-//    window->appear();
-//}
 
 void MainWindow::on_actionAbout_Lua_triggered()
 {
