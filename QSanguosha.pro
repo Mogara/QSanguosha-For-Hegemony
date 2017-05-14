@@ -4,7 +4,7 @@
 TARGET = QSanguosha
 QT += network widgets
 TEMPLATE = app
-CONFIG += audio
+CONFIG += audio opengl
 
 CONFIG += c++11
 
@@ -279,7 +279,6 @@ INCLUDEPATH += src/scenario
 INCLUDEPATH += src/server
 INCLUDEPATH += src/ui
 INCLUDEPATH += src/util
-INCLUDEPATH += ../../../../mingw64/include/freetype2
 
 win32{
     RC_FILE += resource/icon.rc
@@ -327,7 +326,7 @@ win32-g++{
     DEFINES += WIN32
     LIBS += -L"$$_PRO_FILE_PWD_/lib/win/MinGW"
     DEFINES += GPP
-    CONFIG(!static) {
+    CONFIG(debug) {
         CONFIG += link_pkgconfig
         PKGCONFIG += freetype2
     }

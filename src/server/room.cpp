@@ -89,7 +89,11 @@ Room::~Room()
 {
     lua_close(L);
     if (thread != NULL)
-        delete thread;
+    {
+        thread->terminate();
+        //delete thread;
+        thread->deleteLater();
+    }
 }
 
 void Room::initCallbacks()
