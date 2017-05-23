@@ -88,8 +88,9 @@ void RoomThread::constructTriggerTable()
         if (skill) addTriggerSkill(skill);
     }
 
+    QVariant data = QVariant();
     foreach(ServerPlayer *player, room->getPlayers())
-        trigger(GameStart, room, player, QVariant());
+        trigger(GameStart, room, player, data);
 }
 
 void RoomThread::actionNormal(GameRule *game_rule)
