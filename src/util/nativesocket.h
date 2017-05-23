@@ -22,6 +22,7 @@
 #define _NATIVESOCKET_H
 
 #include "socket.h"
+#include <QMutex>
 
 class QUdpSocket;
 
@@ -69,6 +70,7 @@ private slots:
 
 private:
     QTcpSocket *const socket;
+    QMutex mutex;
 
     void init();
 };

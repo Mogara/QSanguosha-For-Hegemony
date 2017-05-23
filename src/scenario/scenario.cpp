@@ -80,6 +80,10 @@ bool Scenario::generalSelection() const
     return false;
 }
 
+void Scenario::prepareForStart(Room *, QList<ServerPlayer *> &) const
+{
+}
+
 AI::Relation Scenario::relationTo(const ServerPlayer *a, const ServerPlayer *b) const
 {
     return AI::GetRelationHegemony(a, b);

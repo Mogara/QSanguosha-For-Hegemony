@@ -149,7 +149,8 @@ void TriggerOptionButton::paint(QPainter *painter, const QStyleOptionGraphicsIte
     painter->setRenderHint(QPainter::HighQualityAntialiasing);
     painter->save();
     painter->setBrush(Qt::black);
-    painter->setPen(Sanguosha->getKingdomColor(Self->getGeneral()->getKingdom()));
+    ClientPlayer *player = ClientInstance->getPlayer(playerName);
+    painter->setPen(Sanguosha->getKingdomColor(player->getGeneral()->getKingdom()));
     QRectF rect = boundingRect();
     painter->drawRoundedRect(rect, 5, 5);
     painter->restore();
@@ -269,8 +270,8 @@ void TriggerOptionButton::needDisabled(bool disabled)
     }
 }
 
-GeneralButton::GeneralButton(QGraphicsObject *parent, const QString &general, const bool isHead)
-    : QGraphicsObject(parent), generalName(general), isHead(isHead)
+GeneralButton::GeneralButton(QGraphicsObject *parent, const QString &general, const bool isHead, const Player *player)
+    : QGraphicsObject(parent), generalName(general), isHead(isHead), m_player(player)
 {
     setToolTip(Sanguosha->getGeneral(general)->getSkillDescription(true));
     setAcceptedMouseButtons(Qt::LeftButton);
@@ -284,7 +285,7 @@ GeneralButton::GeneralButton(QGraphicsObject *parent, const QString &general, co
 void GeneralButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setRenderHint(QPainter::HighQualityAntialiasing);
-    QPixmap generalImage = G_ROOM_SKIN.getGeneralPixmap(generalName, QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE, isHead ? Self->getHeadSkinId() : Self->getDeputySkinId());
+    QPixmap generalImage = G_ROOM_SKIN.getGeneralPixmap(generalName, QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE, isHead ? m_player->getHeadSkinId() : m_player->getDeputySkinId());
     generalImage = generalImage.scaled(generalButtonSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     painter->setBrush(generalImage);
     painter->drawRoundedRect(boundingRect(), 5, 5, Qt::RelativeSize);
@@ -295,8 +296,8 @@ void GeneralButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
     QPixmap nameBg = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK, general->getKingdom());
     painter->drawPixmap(0, 5, nameBg);
 
-    if (Self->getGeneral() == general || Self->getGeneral2() == general) {
-        QString key = (Self->getGeneral() == general) ? QSanRoomSkin::S_SKIN_KEY_HEAD_ICON : QSanRoomSkin::S_SKIN_KEY_DEPUTY_ICON;
+    if (m_player->getGeneral() == general || m_player->getGeneral2() == general) {
+        QString key = (m_player->getGeneral() == general) ? QSanRoomSkin::S_SKIN_KEY_HEAD_ICON : QSanRoomSkin::S_SKIN_KEY_DEPUTY_ICON;
         QPixmap positionIcon = G_ROOM_SKIN.getPixmap(key);
         painter->drawPixmap(G_COMMON_LAYOUT.generalButtonPositionIconRegion, positionIcon);
     }
@@ -342,7 +343,7 @@ void GeneralButton::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 
 ChooseTriggerOrderBox::ChooseTriggerOrderBox()
     : optional(true), m_minimumWidth(0),
-    cancel(new Button(tr("cancel"), 0.6)), progressBar(NULL)
+    cancel(new Button(tr("cancel"), 0.6)), progressBar(NULL), m_player(Self)
 {
     cancel->hide();
     cancel->setParentItem(this);
@@ -355,9 +356,9 @@ ChooseTriggerOrderBox::ChooseTriggerOrderBox()
 int ChooseTriggerOrderBox::getGeneralNum() const
 {
     int count = 0;
-    if (options.contains(QString("%1:%2").arg(Self->objectName()).arg(headString)))
+    if (options.contains(QString("%1:%2").arg(m_player->objectName()).arg(headString)))
         ++count;
-    if (options.contains(QString("%1:%2").arg(Self->objectName()).arg(deputyString)))
+    if (options.contains(QString("%1:%2").arg(m_player->objectName()).arg(deputyString)))
         ++count;
 
     foreach (const TriggerStruct &skill, skills) {
@@ -421,12 +422,13 @@ QRectF ChooseTriggerOrderBox::boundingRect() const
     return QRectF(0, 0, width, height);
 }
 
-void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringList &options, const bool optional)
+void ChooseTriggerOrderBox::chooseOption(const Player *player, const QString &reason, const QStringList &options, const bool optional)
 {
     skills.clear();
     this->options = options;
     this->optional = optional;
     title = Sanguosha->translate(reason);
+    m_player = player;
 
     storeMinimumWidth();
 
@@ -438,8 +440,8 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
     int generalHeight = 0;
 
     if (generalCount == 2) {
-        GeneralButton *head = new GeneralButton(this, Self->getGeneral()->objectName(), true);
-        head->setObjectName(QString("%1:%2").arg(Self->objectName()).arg(headString));
+        GeneralButton *head = new GeneralButton(this, player->getGeneral()->objectName(), true, player);
+        head->setObjectName(QString("%1:%2").arg(player->objectName()).arg(headString));
         generalButtons << head;
 
         const int generalTop = m_topBlankWidth
@@ -449,8 +451,8 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
         const int generalLeft = (boundingRect().width() / 2) - (interval / 2) - width;
         head->setPos(generalLeft, generalTop);
 
-        GeneralButton *deputy = new GeneralButton(this, Self->getGeneral2()->objectName(), false);
-        deputy->setObjectName(QString("%1:%2").arg(Self->objectName()).arg(deputyString));
+        GeneralButton *deputy = new GeneralButton(this, player->getGeneral2()->objectName(), false, player);
+        deputy->setObjectName(QString("%1:%2").arg(player->objectName()).arg(deputyString));
         generalButtons << deputy;
         deputy->setPos(head->pos().x() + head->boundingRect().width() + interval,
             generalTop);
@@ -458,11 +460,11 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
         width = deputy->pos().x() - head->pos().x() + deputy->boundingRect().width();
         generalHeight = head->boundingRect().height();
     } else if (generalCount == 1) {
-        const bool isHead = options.contains(QString("%1:%2").arg(Self->objectName()).arg(headString));
-        const QString general = isHead ? Self->getGeneralName() : Self->getGeneral2Name();
-        GeneralButton *generalButton = new GeneralButton(this, general, isHead);
+        const bool isHead = options.contains(QString("%1:%2").arg(player->objectName()).arg(headString));
+        const QString general = isHead ? player->getGeneralName() : player->getGeneral2Name();
+        GeneralButton *generalButton = new GeneralButton(this, general, isHead, player);
         QString objectName = QString("%1:%2")
-            .arg(Self->objectName())
+            .arg(player->objectName())
             .arg(isHead ? headString : deputyString);
         generalButton->setObjectName(objectName);
         generalButtons << generalButton;
@@ -537,7 +539,7 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
     }
 }
 
-void ChooseTriggerOrderBox::chooseOption(const QString &reason, QList<TriggerStruct> skills, const bool optional)
+void ChooseTriggerOrderBox::chooseOption(const Player *player, const QString &reason, QList<TriggerStruct> skills, const bool optional)
 {
     options.clear();
     this->skills = skills;
@@ -554,7 +556,7 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, QList<TriggerStr
     int generalHeight = 0;
 
     if (generalCount == 2) {
-        GeneralButton *head = new GeneralButton(this, Self->getGeneral()->objectName(), true);
+        GeneralButton *head = new GeneralButton(this, player->getGeneral()->objectName(), true, player);
         foreach (const TriggerStruct &skill, skills) {
             if (skill.skill_name.contains(headString))
                 head->setProperty("trigger", skill.toVariant());
@@ -568,7 +570,7 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, QList<TriggerStr
         const int generalLeft = (boundingRect().width() / 2) - (interval / 2) - width;
         head->setPos(generalLeft, generalTop);
 
-        GeneralButton *deputy = new GeneralButton(this, Self->getGeneral2()->objectName(), false);
+        GeneralButton *deputy = new GeneralButton(this, player->getGeneral2()->objectName(), false, player);
         foreach (const TriggerStruct &skill, skills) {
             if (skill.skill_name.contains(deputyString))
                 deputy->setProperty("trigger", skill.toVariant());
@@ -590,8 +592,8 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, QList<TriggerStr
             if (skill.skill_name.contains(deputyString))
                 q = skill.toVariant();
         }
-        const QString general = isHead ? Self->getGeneralName() : Self->getGeneral2Name();
-        GeneralButton *generalButton = new GeneralButton(this, general, isHead);
+        const QString general = isHead ? player->getGeneralName() : player->getGeneral2Name();
+        GeneralButton *generalButton = new GeneralButton(this, general, isHead, player);
         generalButton->setProperty("trigger", q);
         generalButtons << generalButton;
         const int generalTop = m_topBlankWidth

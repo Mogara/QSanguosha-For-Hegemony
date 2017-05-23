@@ -81,30 +81,15 @@ RoomThread::RoomThread(Room *room)
     game_rule = new GameRule(this);
 }
 
-void RoomThread::addPlayerSkills(ServerPlayer *player, bool invoke_game_start)
-{
-    QVariant void_data;
-    bool invoke_verify = false;
-
-    foreach (const TriggerSkill *skill, player->getTriggerSkills()) {
-
-        if (invoke_game_start && skill->getTriggerEvents().contains(GameStart))
-            invoke_verify = true;
-    }
-
-    //We should make someone trigger a whole GameStart event instead of trigger a skill only.
-    if (invoke_verify)
-        trigger(GameStart, room, player, void_data);
-}
-
 void RoomThread::constructTriggerTable()
 {
     foreach (QString skill_name, Sanguosha->getSkillNames()) {
         const TriggerSkill *skill = Sanguosha->getTriggerSkill(skill_name);
         if (skill) addTriggerSkill(skill);
     }
+
     foreach(ServerPlayer *player, room->getPlayers())
-        addPlayerSkills(player, true);
+        trigger(GameStart, room, player, QVariant());
 }
 
 void RoomThread::actionNormal(GameRule *game_rule)
@@ -167,12 +152,16 @@ void RoomThread::run()
     Sanguosha->registerRoom(room);
 
     addTriggerSkill(game_rule);
-    foreach(const TriggerSkill *triggerSkill, Sanguosha->getGlobalTriggerSkills())
-        addTriggerSkill(triggerSkill);
 
     if (room->getScenario() != NULL) {
         const ScenarioRule *rule = room->getScenario()->getRule();
         if (rule) addTriggerSkill(rule);
+    }
+
+    foreach (QString skill_name, Sanguosha->getSkillNames()) {
+        const TriggerSkill *skill = Sanguosha->getTriggerSkill(skill_name);
+        if (skill && skill->isGlobal() && skill->getTriggerEvents().contains(GameStart))
+            addTriggerSkill(skill);
     }
 
     QString winner = game_rule->getWinner(room->getPlayers().first());
@@ -396,6 +385,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                     QList<TriggerStruct> triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
                                     foreach (ServerPlayer *p, room->getPlayers()) {
                                         foreach (const TriggerStruct &skill, triggerSkillList) {
+                                            if (skill.skill_name == name.skill_name && skill.invoker == name.invoker && !do_effect && skill.targets.isEmpty())
+                                                break;                                                   //skill refused will not triggered again
                                             if (p->objectName() == skill.invoker) {
                                                 TriggerStruct tskill = skill;
                                                 if (tskill.times != 1) tskill.times = 1;            //makesure times == 1
@@ -440,31 +431,12 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                             break;
                                         }
                                     }
-
                                     trigger_who[p].removeOne(skill);
                                     break;
                                 }
                             }
                         }
-/*
-                        if (has_compulsory) {
-                            has_compulsory = false;
-                            foreach (QVariant s, trigger_who[p]) {
-                                TriggerStruct skill;
-                                skill.tryParse(s);
-                                const TriggerSkill *trskill = Sanguosha->getTriggerSkill(skill.skill_name);
-                                if (trskill && (p->hasShownSkill(trskill) || trskill->isGlobal())
-                                    && (trskill->getFrequency() == Skill::Compulsory
-                                    //|| trskill->getFrequency() == Skill::NotCompulsory //for Paoxia, Anjian, etc.
-                                    || trskill->getFrequency() == Skill::Wake)) {
-                                    has_compulsory = true;
-                                    break;
-                                }
-                            }
-                        }
-*/
                     }
-
                     if (broken) break;
                 }
                 // @todo_Slob: for drawing cards when game starts -- stupid design of triggering no player!

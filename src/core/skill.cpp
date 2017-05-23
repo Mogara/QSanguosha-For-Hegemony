@@ -32,7 +32,7 @@
 #include <QDir>
 
 Skill::Skill(const QString &name, Frequency frequency)
-    : frequency(frequency), limit_mark(QString()), relate_to_place(QString()), attached_lord_skill(false)
+    : frequency(frequency), limit_mark(QString()), relate_to_place(QString()), attached_lord_skill(false), skill_type(Normal)
 {
     static QChar lord_symbol('$');
 
@@ -70,10 +70,10 @@ QString Skill::getDescription(bool inToolTip, bool in_game) const
     }
 
     QString des_src = Sanguosha->translate(":" + skill_name);
-    if (in_game && Sanguosha->getSkill(skill_name) && Sanguosha->getSkill(skill_name)->isAttachedLordSkill()
-            && (!Self->isLord() || !Self->getGeneral()->getRelatedSkillNames().contains(skill_name)))
+    if ((in_game && Sanguosha->getSkill(skill_name) && Sanguosha->getSkill(skill_name)->isAttachedLordSkill()
+            && (!Self->isLord() || !Self->getGeneral()->getRelatedSkillNames().contains(skill_name))) || ServerInfo.SkillModify.contains(skill_name))
         des_src = Sanguosha->translate("&" + skill_name) != "&" + skill_name ? Sanguosha->translate("&" + skill_name) : des_src;
-    if (des_src == ":" + skill_name)
+    if (des_src == ":" + skill_name || des_src == "&" + skill_name)
         return desc;
 
     foreach (const QString &skill_type, Sanguosha->getSkillColorMap().keys()) {
@@ -180,6 +180,11 @@ Skill::Frequency Skill::getFrequency() const
     return frequency;
 }
 
+Skill::SkillType Skill::getType() const
+{
+    return skill_type;
+}
+
 QString Skill::getLimitMark() const
 {
     return limit_mark;
@@ -268,12 +273,12 @@ ViewAsSkill::ViewAsSkill(const QString &name)
 {
 }
 
-QString ViewAsSkill::getGuhuoBox() const
+bool ViewAsSkill::viewFilter(const QList<const Card *> &selected, const Card *to_select, const Player *) const
 {
-    return guhuo_type;
+    return viewFilter(selected, to_select);
 }
 
-QString TriggerSkill::getGuhuoBox() const
+QString ViewAsSkill::getGuhuoBox() const
 {
     return guhuo_type;
 }
@@ -281,9 +286,13 @@ QString TriggerSkill::getGuhuoBox() const
 bool ViewAsSkill::isAvailable(const Player *invoker, CardUseStruct::CardUseReason reason, const QString &pattern) const
 {
     if (!inherits("TransferSkill") && !invoker->hasSkill(objectName())
-        && !invoker->hasFlag(objectName())) { // For Shuangxiong
+            && !invoker->hasFlag(objectName() + "_head") && !invoker->hasFlag(objectName() + "_deputy")) { // For Shuangxiong
         return false;
     }
+
+    if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE && pattern == "nullification")
+        return isEnabledAtNullification(invoker);
+
     switch (reason) {
         case CardUseStruct::CARD_USE_REASON_PLAY: return isEnabledAtPlay(invoker);
         case CardUseStruct::CARD_USE_REASON_RESPONSE:
@@ -305,7 +314,7 @@ bool ViewAsSkill::isEnabledAtResponse(const Player *, const QString &pattern) co
     return false;
 }
 
-bool ViewAsSkill::isEnabledAtNullification(const ServerPlayer *) const
+bool ViewAsSkill::isEnabledAtNullification(const Player *) const
 {
     return false;
 }
@@ -501,46 +510,10 @@ void TriggerSkill::record(TriggerEvent, Room *, ServerPlayer *, QVariant &) cons
 
 }
 
-/*
-    You are expected to return a QMap<ServerPlayer *, QStringList> in TriggerSkill::triggerable.
-    And the QStringList of QMap is expected to include some items as the examples below:
-    \list 1
-    \li Skill name, such as: "yiji", "fankui", etc.
-    \li Skill name combines someone's object name who is the owner of the skill, such as: "sgs1'songwei", "sgs10'baonue", etc.
-    \note must use a single quote mark to concatenate
-    \li Skill name combines multitargets' object names.
-    If you use this kind of type, it means the skill's trigger order of targets should be according to the order you write, such as: "tieqi->sgs4+sgs8+sgs1+sgs2"
-    \note must use a "->" to concatenate skill name to targets and "+" to concatenate targets' object names
-    \endlist
-
-TriggerList TriggerSkill::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+QString TriggerSkill::getGuhuoBox() const
 {
-    TriggerList skill_lists;
-    if (objectName() == "game_rule") return skill_lists;
-    ServerPlayer *ask_who = player;
-    QStringList skill_list = triggerable(triggerEvent, room, player, data, ask_who);
-    if (!skill_list.isEmpty())
-        skill_lists.insert(ask_who, skill_list);
-    return skill_lists;
+    return guhuo_type;
 }
-
-QStringList TriggerSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer* &) const
-{
-    if (triggerable(target))
-        return QStringList(objectName());
-    return QStringList();
-}
-
-bool TriggerSkill::cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *, const QString &) const
-{
-    return true;
-}
-
-bool TriggerSkill::effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *, const QString &) const
-{
-    return false;
-}
-*/
 
 bool TriggerSkill::triggerable(const ServerPlayer *target) const
 {
@@ -769,6 +742,16 @@ const ViewAsSkill *DistanceSkill::getViewAsSkill() const
     return view_as_skill;
 }
 
+int DistanceSkill::getCorrect(const Player *, const Player *) const
+{
+    return 0;
+}
+
+int DistanceSkill::getFixed(const Player *, const Player *) const
+{
+    return 0;
+}
+
 ShowDistanceSkill::ShowDistanceSkill(const QString &name)
     : ZeroCardViewAsSkill(name)
 {
@@ -784,7 +767,7 @@ const Card *ShowDistanceSkill::viewAs() const
 bool ShowDistanceSkill::isEnabledAtPlay(const Player *player) const
 {
     const DistanceSkill *skill = qobject_cast<const DistanceSkill *>(Sanguosha->getSkill(objectName()));
-    if (skill) {
+    if (skill && player->hasSkill(objectName())) {
         if (!player->hasShownSkill(skill->objectName())) return true;
     }
     return false;
@@ -817,6 +800,11 @@ int TargetModSkill::getExtraTargetNum(const Player *, const Card *) const
 }
 
 bool TargetModSkill::getDistanceLimit(const Player *, const Player *, const Card *) const
+{
+    return false;
+}
+
+bool TargetModSkill::checkSpecificAssignee(const Player *, const Player *, const Card *) const
 {
     return false;
 }
@@ -889,13 +877,32 @@ DetachEffectSkill::DetachEffectSkill(const QString &skillname, const QString &pi
     : TriggerSkill(QString("#%1-clear").arg(skillname)), name(skillname), pile_name(pilename)
 {
     events << EventLoseSkill;
+    frequency = Compulsory;
 }
 
 TriggerStruct DetachEffectSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &data, ServerPlayer *) const
 {
-    if (target && data.value<InfoStruct>().info == name)
-		return TriggerStruct(objectName(), target);
-	return TriggerStruct();
+    TriggerStruct trigger;
+    if (target && data.value<InfoStruct>().info == name) {
+        trigger = TriggerStruct(objectName(), target);
+        trigger.skill_position = data.value<InfoStruct>().head ? "head" : "deputy";
+    }
+
+    return trigger;
+}
+
+TriggerStruct DetachEffectSkill::cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *, const TriggerStruct &info) const
+{
+    if (player->hasSkill(name) && player->isAlive()) {
+        QString position = data.value<InfoStruct>().head ? "deputy" : "head";
+        if (!player->hasShownSkill(name) && player->askForSkillInvoke(name, QVariant(), position)) {
+            player->showSkill(name, position);
+            return TriggerStruct();
+        } else if (player->hasShownSkill(name))
+            return TriggerStruct();
+    }
+
+    return info;
 }
 
 bool DetachEffectSkill::effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *, const TriggerStruct &) const

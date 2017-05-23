@@ -160,11 +160,10 @@ void PixmapAnimation::timerEvent(QTimerEvent *)
 
 void PixmapAnimation::start(bool permanent, int interval)
 {
-    if (_m_timerId > 0) {
-        if (m_timer > 0)
-            m_timeout = 0;
+    m_timeout = 0;
+    if (_m_timerId > 0)
         return;
-    }
+
     m_interval = interval;
     _m_timerId = startTimer(interval);
     if (!permanent)
@@ -191,11 +190,10 @@ bool PixmapAnimation::isFirstFrame()
 
 void PixmapAnimation::preStart()
 {
-    if (_m_timerId > 0) {
-        if (m_timer > 0)
-            m_timeout = 0;
+    m_timeout = 0;
+    if (_m_timerId > 0)
         return;
-    }
+
     this->show();
 	m_interval = S_DEFAULT_INTERVAL;
     _m_timerId = startTimer(S_DEFAULT_INTERVAL);

@@ -35,8 +35,10 @@ public:
     virtual QString getSubtype() const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
+    virtual void checkTargetModSkillShow(const CardUseStruct &use) const;
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool secondFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool extratargetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool isAvailable(const Player *player) const;
 
@@ -108,8 +110,7 @@ public:
     virtual bool isAvailable(const Player *player) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
-
-    virtual QStringList checkTargetModSkillShow(const CardUseStruct &use) const;
+    virtual void checkTargetModSkillShow(const CardUseStruct &use) const;
 };
 
 #endif

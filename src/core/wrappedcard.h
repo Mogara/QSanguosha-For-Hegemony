@@ -305,10 +305,10 @@ public:
         m_card->setTransferable(transferbale);
     }
 
-    inline virtual QStringList checkTargetModSkillShow(const CardUseStruct &use) const
+    inline virtual void checkTargetModSkillShow(const CardUseStruct &use) const
     {
         Q_ASSERT(m_card != NULL);
-        return m_card->checkTargetModSkillShow(use);
+        m_card->checkTargetModSkillShow(use);
     }
 
 protected:

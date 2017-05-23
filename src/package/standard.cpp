@@ -146,7 +146,6 @@ void EquipCard::onInstall(ServerPlayer *player) const
             room->attachSkillToPlayer(player, this->objectName());
         } else if (skill->inherits("TriggerSkill")) {
             const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
-            room->getThread()->addTriggerSkill(trigger_skill);
             if (trigger_skill->getViewAsSkill())
                 room->attachSkillToPlayer(player, this->objectName());
         }
@@ -430,7 +429,6 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
                 continue;
             }
             if (player->hasFlag(toString() + "_delay_trick_cancel")) continue;
-            //if (target == player) break;
 
             CardUseStruct use(this, NULL, player);
             QVariant data = QVariant::fromValue(use);
@@ -442,7 +440,7 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
                 break;
             }
 
-            if (room->getCardIdsOnTable(this).isEmpty()) return;
+            //if (room->getCardIdsOnTable(this).isEmpty()) return;
 
             CardMoveReason reason(CardMoveReason::S_REASON_TRANSFER, QString());
             room->moveCardTo(this, NULL, player, Player::PlaceDelayedTrick, reason, true);
@@ -461,12 +459,9 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
             if (player->hasFlag(toString() + "_delay_trick_cancel"))
                 player->setFlags("-" + toString() + "_delay_trick_cancel");
 
-        QList<int> table_cardids = room->getCardIdsOnTable(this);
-        if (!table_cardids.isEmpty()) {
-            DummyCard dummy(table_cardids);
-            CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString());
-            room->moveCardTo(&dummy, NULL, Player::DiscardPile, reason, true);
-        }
+        //QList<int> table_cardids = room->getCardIdsOnTable(this);
+        CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString());
+        room->moveCardTo(this, NULL, Player::DiscardPile, reason, true);
     }
 }
 

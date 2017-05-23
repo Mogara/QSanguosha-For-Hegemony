@@ -329,7 +329,34 @@ QWidget *ServerDialog::createConversionTab()
     layout->addWidget(convert_lord);
     layout->addWidget(convert_ds_to_dp);
     layout->addWidget(convert_jf_to_ps);
+
+    QGroupBox *ai_groupbox = new QGroupBox(tr("Skill Modify"));
+    ai_groupbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    QVBoxLayout *conver_layout = new QVBoxLayout;
+    convert_xunxun = new QCheckBox(tr("Xunxun: do not skip draw cards"));
+    convert_xunxun->setChecked(Config.value("SkillModify").toStringList().contains("xunxun"));
+    convert_shengxi = new QCheckBox(tr("Shengxi: triggered at discard phase"));
+    convert_shengxi->setChecked(Config.value("SkillModify").toStringList().contains("shengxi"));
+    convert_qianhuan = new QCheckBox(tr("Qianhuan: consume 1 card"));
+    convert_qianhuan->setChecked(Config.value("SkillModify").toStringList().contains("qianhuan"));
+    convert_hunshang = new QCheckBox(tr("Hunshang: HP less than or equal to 1"));
+    convert_hunshang->setChecked(Config.value("SkillModify").toStringList().contains("hunshang"));
+
+    conver_layout->addWidget(convert_xunxun);
+    conver_layout->addWidget(convert_shengxi);
+    conver_layout->addWidget(convert_qianhuan);
+    conver_layout->addWidget(convert_hunshang);
+
+    conver_layout->addStretch();
+
+    ai_groupbox->setLayout(conver_layout);
+
+    layout->addWidget(ai_groupbox);
+    layout->addStretch();
+
     widget->setLayout(layout);
+
     return widget;
 }
 
@@ -688,12 +715,21 @@ bool ServerDialog::config()
 
     Config.BanPackages = ban_packages.toList();
     Config.setValue("BanPackages", Config.BanPackages);
-    Config.setValue("EnableLordConvertion", convert_lord->isChecked());
+    Config.Lord_convert = convert_lord->isChecked();
+    Config.setValue("EnableLordConvertion", Config.Lord_convert);
 
     QStringList card_conversions;
     if (convert_ds_to_dp->isChecked()) card_conversions << "DragonPhoenix";
     if (convert_jf_to_ps->isChecked()) card_conversions << "PeaceSpell";
     Config.setValue("CardConversions", card_conversions);
+
+    QStringList skill_conversions;
+    if (convert_xunxun->isChecked()) skill_conversions << "xunxun";
+    if (convert_shengxi->isChecked()) skill_conversions << "shengxi";
+    if (convert_qianhuan->isChecked()) skill_conversions << "qianhuan";
+    if (convert_hunshang->isChecked()) skill_conversions << "hunshang";
+    Config.SkillModify = skill_conversions;
+    Config.setValue("SkillModify", skill_conversions);
 
     return true;
 }

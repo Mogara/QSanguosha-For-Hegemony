@@ -23,6 +23,7 @@
 
 #include "photo.h"
 #include "dashboard.h"
+#include "dashboard_copy.h"
 #include "tablepile.h"
 #include "card.h"
 #include "client.h"
@@ -39,6 +40,7 @@ class CardContainer;
 class GuanxingBox;
 class CardChooseBox;
 class PindianBox;
+class BanPickBox;
 class QSanButton;
 class QGroupBox;
 class ChooseGeneralBox;
@@ -47,6 +49,7 @@ class ChooseTriggerOrderBox;
 class BubbleChatBox;
 class PlayerCardBox;
 class ChooseSuitBox;
+class GuhuoBox;
 struct RoomLayout;
 
 #include <QGraphicsScene>
@@ -159,6 +162,7 @@ public:
         return ok_button != NULL && ok_button->isEnabled();
     }
 
+    void resetDashboard();
     void stopHeroSkinChangingAnimations();
 
     bool m_skillButtonSank;
@@ -168,11 +172,19 @@ public:
     void addHeroSkinContainer(HeroSkinContainer *heroSkinContainer);
     HeroSkinContainer *findHeroSkinContainer(const QString &position) const;
 
-    Dashboard *getDasboard() const;
+    Dashboard *getDashboard() const;
 
-    GuhuoBox *current_guhuo_box;
+    //GuhuoBox *current_guhuo_box;
 
     void updateGlobalCardBox(const ClientPlayer *player, int id = -1);
+    void message(QString a, QString b); //debug
+    bool clearBoxes();
+
+    // 1 control n
+    inline DashboardCopy *getMappingButtons() const
+    {
+        return mapping_button;
+    }
 
 public slots:
     void addPlayer(ClientPlayer *player);
@@ -183,7 +195,7 @@ public slots:
     void keepLoseCardLog(const CardsMoveStruct &move);
     void keepGetCardLog(const CardsMoveStruct &move);
     // choice dialog
-    void chooseGeneral(const QStringList &generals, const bool single_result, const bool can_convert, const bool assign_kingdom);
+    void chooseGeneral(const QString &reason, const QStringList &generals, const bool single_result, const bool can_convert, const bool assign_kingdom);
     void chooseSuit(const QStringList &suits);
     void chooseCard(const ClientPlayer *playerName, const QString &flags, const QString &reason,
         bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids, QList<int> handcards);
@@ -192,8 +204,8 @@ public slots:
     //void chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand reason);
     //void chooseRole(const QString &scheme, const QStringList &roles);
     //void chooseDirection();
-    void chooseTriggerOrder(const QString &reason, const QStringList &options, const bool optional);
-    void chooseTriggerOrder_new(const QString &reason, QList<TriggerStruct> skills, const bool optional);
+    void chooseTriggerOrder(const Player *player, const QString &reason, const QStringList &options, const bool optional);
+    void chooseTriggerOrder_new(const Player *player, const QString &reason, QList<TriggerStruct> skills, const bool optional);
 
     void bringToFront(QGraphicsItem *item);
     void arrangeSeats(const QList<const ClientPlayer *> &seats);
@@ -242,7 +254,8 @@ public slots:
     void onSkillDeactivated();
     void trust();
 
-    void message(QString a, QString b); //debug
+    //1v1 mode
+    void dashboardchange(ClientPlayer *player);
 
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -287,6 +300,8 @@ private:
     CardItem *pindian_from_card, *pindian_to_card;
     QGraphicsItem *control_panel;
     QMap<PlayerCardContainer *, const ClientPlayer *> item2player;
+    DashboardCopy *mapping_button;  //1 control n mode
+
     QDialog *m_choiceDialog; // Dialog for choosing generals, suits, card/equip, or kingdoms
 
     QGraphicsRectItem *pausing_item;
@@ -309,6 +324,8 @@ private:
 
     CardChooseBox *m_cardchooseBox;
 
+    BanPickBox *m_banpickBox;
+
     PindianBox *m_pindianBox;
 
     ChooseGeneralBox *m_chooseGeneralBox;
@@ -324,7 +341,6 @@ private:
     QList<CardItem *> gongxin_items;
 
     //Xusine:
-
     QMap<QString, GuhuoBox *> guhuo_items;
 
     ClientLogBox *log_box;
@@ -377,7 +393,7 @@ private:
     // home for it.
     QString _translateMovement(const CardsMoveStruct &move);
 
-    void useCard(const Card *card);
+    void useCard(const Player *player, const Card *card);
     void fillTable(QTableWidget *table, const QList<const ClientPlayer *> &players);
     void chooseSkillButton();
 
@@ -477,6 +493,7 @@ private slots:
     void startArrange(const QString &);
     void toggleArrange();
     void finishArrange();
+
     //void revealGeneral(bool self, const QString &general);
 
     //void skillStateChange(const QString &skill_name);

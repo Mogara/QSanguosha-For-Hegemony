@@ -51,6 +51,7 @@ public:
     }
     virtual QList<CardItem *> removeCardItems(const QList<int> &card_ids, Player::Place place) = 0;
     virtual void addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo);
+    virtual void addCardItems(QList<int> ids, const CardsMoveStruct &moveInfo);
     virtual QList<CardItem *> cloneCardItems(QList<int> card_ids);
 
 protected:
@@ -174,6 +175,7 @@ public slots:
     void showLiegong();
     void hideTips();
     void showLijian(bool first);
+    void hideSkillName();
     void onRemovedChanged();
     virtual void showSeat();
     virtual void showPile();
@@ -296,6 +298,7 @@ protected:
     QLabel *_m_equipLabel[S_EQUIP_AREA_LENGTH];
     QParallelAnimationGroup *_m_equipAnim[S_EQUIP_AREA_LENGTH];
     QMutex _mutexEquipAnim;
+    QMutex _changePlayer;
 
     // controls
     MagatamasBoxItem *_m_hpBox;
@@ -333,8 +336,11 @@ protected:
 #else
     PixmapAnimation *_m_chainIcon, *_m_chainIcon2;  //move here by weidouncle
     void _createChainAnimation();
-#endif
 
+    PixmapAnimation *_m_skill_animation[7];
+    void _createSkillAnimation(int index);
+#endif
+    QGraphicsPixmapItem *_m_skillNameItem;
     PixmapAnimation *m_head_animation;
     PixmapAnimation *m_deputy_animation;
     void _createAvatarAnimations(const QString name, bool head, const QRect &area);

@@ -22,8 +22,8 @@
 #define _SERVER_PLAYER_H
 
 class Room;
+class ServerClient;
 class AI;
-class Recorder;
 
 class CardMoveReason;
 struct PhaseStruct;
@@ -31,7 +31,6 @@ struct PindianStruct;
 
 #include "structs.h"
 #include "player.h"
-#include "socket.h"
 #include "protocol.h"
 #include "namespace.h"
 
@@ -53,20 +52,17 @@ public:
 class ServerPlayer : public Player
 {
     Q_OBJECT
-    Q_PROPERTY(QString ip READ getIp)
 
 public:
     explicit ServerPlayer(Room *room);
     ~ServerPlayer();
 
-    void setSocket(ClientSocket *socket);
-    void unicast(const QSanProtocol::AbstractPacket *packet);
     void notify(QSanProtocol::CommandType type, const QVariant &arg = QVariant());
-    void kick();
     QString reportHeader() const;
-    void unicast(const QByteArray &message);
     void drawCard(const Card *card);
     Room *getRoom() const;
+    ServerClient *getClient() const;
+    void setClient(ServerClient *client);
     void broadcastSkillInvoke(const Card *card) const;
     void broadcastSkillInvoke(const QString &card_name) const;
     int getRandomHandCardId() const;
@@ -134,9 +130,6 @@ public:
     void addVictim(ServerPlayer *victim);
     QList<ServerPlayer *> getVictims() const;
 
-    void startRecord();
-    void saveRecord(const QString &filename);
-
     // 3v3 methods
     void addToSelected(const QString &general);
     QStringList getSelected() const;
@@ -146,9 +139,8 @@ public:
     int getGeneralMaxHp() const;
     virtual QString getGameMode() const;
 
-    QString getIp() const;
-    void introduceTo(ServerPlayer *player);
-    void marshal(ServerPlayer *player) const;
+    void introduceTo(ServerClient *player);
+    void marshal(ServerClient *player) const;
 
     void addToPile(const QString &pile_name, const Card *card, bool open = true, QList<ServerPlayer *> open_players = QList<ServerPlayer *>());
     void addToPile(const QString &pile_name, int card_id, bool open = true, QList<ServerPlayer *> open_players = QList<ServerPlayer *>());
@@ -159,55 +151,6 @@ public:
 
     void copyFrom(ServerPlayer *sp);
 
-    void startNetworkDelayTest();
-    qint64 endNetworkDelayTest();
-
-    //Synchronization helpers
-    enum SemaphoreType
-    {
-        SEMA_MUTEX, // used to protect mutex access to member variables
-        SEMA_COMMAND_INTERACTIVE // used to wait for response from client
-    };
-    inline QSemaphore *getSemaphore(SemaphoreType type)
-    {
-        return semas[type];
-    }
-    inline void acquireLock(SemaphoreType type)
-    {
-        semas[type]->acquire();
-    }
-    inline bool tryAcquireLock(SemaphoreType type, int timeout = 0)
-    {
-        return semas[type]->tryAcquire(1, timeout);
-    }
-    inline void releaseLock(SemaphoreType type)
-    {
-        semas[type]->release();
-    }
-    inline void drainLock(SemaphoreType type)
-    {
-        while (semas[type]->tryAcquire()) {
-        }
-    }
-    inline void drainAllLocks()
-    {
-        for (int i = 0; i < S_NUM_SEMAPHORES; i++) {
-            drainLock((SemaphoreType)i);
-        }
-    }
-    inline const QVariant &getClientReply() const
-    {
-        return _m_clientResponse;
-    }
-
-    void setClientReply(const QVariant &val);
-    unsigned int m_expectedReplySerial; // Suggest the acceptable serial number of an expected response.
-    bool m_isClientResponseReady; //Suggest whether a valid player's reponse has been received.
-    bool m_isWaitingReply; // Suggest if the server player is waiting for client's response.
-    QVariant m_cheatArgs; // Store the cheat code received from client.
-    QSanProtocol::CommandType m_expectedReplyCommand; // Store the command to be sent to the client.
-    QVariant m_commandArgs; // Store the command args to be sent to the client.
-
     // static function
     static bool CompareByActionOrder(ServerPlayer *a, ServerPlayer *b);
 
@@ -216,15 +159,13 @@ public:
     void hideGeneral(bool head_general = true);
     void removeGeneral(bool head_general = true);
     void sendSkillsToOthers(bool head_skill = true);
-    void disconnectSkillsFromOthers(bool head_skill = true);
+    void disconnectSkillsFromOthers(bool head_skill = true, bool trigger = true);
     bool askForGeneralShow(bool one = true, bool refusable = false);
-    void notifyPreshow();
+    void notifyPreshow(const QString &flag = "hd");
 
     bool inSiegeRelation(const ServerPlayer *skill_owner, const ServerPlayer *victim) const;
     bool inFormationRalation(ServerPlayer *teammate) const;
     void summonFriends(const HegemonyMode::ArrayType type);
-
-    virtual QStringList getBigKingdoms(const QString &reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const;
 
     // remove QinggangTag and BladeDisableShow
     void slashSettlementFinished(const Card *slash);
@@ -245,32 +186,17 @@ protected:
 #endif
 
 private:
-    ClientSocket *socket;
     QList<const Card *> handcards;
     Room *room;
+    ServerClient *client;
     AI *ai;
     AI *trust_ai;
     QList<ServerPlayer *> victims;
-    Recorder *recorder;
     QList<Phase> phases;
     int _m_phases_index;
     QList<PhaseStruct> _m_phases_state;
     QStringList selected; // 3v3 mode use only
-    QDateTime test_time;
     QVariant _m_clientResponse;
-
-private slots:
-    void getMessage(QByteArray request);
-    void sendMessage(const QByteArray &message);
-
-signals:
-    void disconnected();
-    void request_got(const QByteArray &request);
-    void message_ready(const QByteArray &msg);
-
-    void roomPacketReceived(const QSanProtocol::Packet &packet);
-    void lobbyPacketReceived(const QSanProtocol::Packet &packet);
-    void invalidPacketReceived(const QByteArray &message);
 };
 
 #endif

@@ -40,6 +40,7 @@ struct ServerInfoStruct
     int OperationTimeout;
     int NullificationCountDown;
     QStringList Extensions;
+    QStringList SkillModify;
     bool RandomSeat;
     bool EnableCheat;
     bool FreeChoose;

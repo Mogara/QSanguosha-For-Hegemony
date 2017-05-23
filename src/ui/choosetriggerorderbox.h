@@ -91,10 +91,11 @@ protected:
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
 private:
-    GeneralButton(QGraphicsObject *parent, const QString &general, const bool isHead);
+    GeneralButton(QGraphicsObject *parent, const QString &general, const bool isHead, const Player *player);
 
     QString generalName;
     bool isHead;
+    const Player *m_player;
 };
 
 class ChooseTriggerOrderBox : public GraphicsBox
@@ -105,8 +106,8 @@ public:
     ChooseTriggerOrderBox();
 
     virtual QRectF boundingRect() const;
-    void chooseOption(const QString &reason, const QStringList &options, const bool optional);
-    void chooseOption(const QString &reason, QList<TriggerStruct> skills, const bool optional);
+    void chooseOption(const Player *player, const QString &reason, const QStringList &options, const bool optional);
+    void chooseOption(const Player *player, const QString &reason, QList<TriggerStruct> skills, const bool optional);
     void clear();
 
 public slots:
@@ -115,6 +116,7 @@ public slots:
 private:
     QList<TriggerOptionButton *> optionButtons;
     QList<GeneralButton *> generalButtons;
+    const Player *m_player;
     static const int top_dark_bar;
     static const int m_topBlankWidth;
     static const int bottom_blank_width;

@@ -33,6 +33,14 @@ return {
 	["xunxun#up"] = "置于牌堆底",
 	["xunxun#down"] = "获得",
 	["#XunxunResult"] = "%from “<font color=\"yellow\"><b>恂恂</b></font>” 将 <font color=\"yellow\"><b>2</b></font> 张牌置于牌堆底",
+
+	["xunxun-convert"] = "恂恂",
+	["&xunxun"] = "摸牌阶段开始时，你可以观看牌堆顶的四张牌，然后将其中的两张牌置于牌堆顶，将其余的牌置于牌堆底。",
+	["@xunxun-convert"] = "将各两张牌调整顺序后分别置于牌堆顶和牌堆底",
+	["xunxun-convert#down"] = "置于牌堆顶",
+	["xunxun-convert#up"] = "置于牌堆底",
+	["#XunxunGuanxingResult"] = "%from “<font color=\"yellow\"><b>恂恂</b></font>” 将 <font color=\"yellow\"><b>2</b></font> 张牌置于牌堆顶，将 <font color=\"yellow\"><b>2</b></font> 张牌置于牌堆底",
+
 	["wangxi"] = "忘隙",
 	[":wangxi"] = "每当你对其他角色造成1点伤害后，或受到其他角色造成的1点伤害后，若其存活，你可以令你与其各摸一张牌。",
 
@@ -79,6 +87,7 @@ return {
 	["$Yingyang"] = "%from 的拼点牌点数视为 %arg",
 	["hunshang"] = "魂殇",
 	[":hunshang"] = "副将技，此武将牌上单独的阴阳鱼个数-1；副将技，准备阶段开始时，若你的体力值为1，你于此回合内拥有\"英姿\"和\"英魂\"。",
+	["&hunshang"] = "副将技，此武将牌上单独的阴阳鱼个数-1；副将技，准备阶段开始时，若你的体力值不大于1，你于此回合内拥有\"英姿\"和\"英魂\"。",
 	["yingzi_sunce"] = "英姿",
 	["yinghun_sunce"] = "英魂",
 	["#yinghun_sunce"] = "英魂 对 %to",

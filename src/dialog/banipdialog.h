@@ -25,7 +25,7 @@
 
 class Server;
 class QListWidget;
-class ServerPlayer;
+class ServerClient;
 
 class BanIpDialog : public FlatDialog
 {
@@ -39,13 +39,13 @@ private:
     QListWidget *right;
 
     Server *server;
-    QList<ServerPlayer *> sp_list;
+    QList<ServerClient *> sp_list;
 
     void loadIPList();
     void loadBannedList();
 
 private slots:
-    void addPlayer(ServerPlayer *player);
+    void addPlayer(ServerClient *player);
     void removePlayer();
 
     void insertClicked();

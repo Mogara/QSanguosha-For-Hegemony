@@ -58,7 +58,10 @@ void ClientPlayer::addCard(const Card *card, Place place)
 {
     switch (place) {
         case PlaceHand: {
-            if (card) known_cards << card;
+            if (card) {
+                known_cards << card;
+                card_ids << card->getEffectiveId();
+            }
             handcard_num++;
             break;
         }
@@ -114,6 +117,7 @@ void ClientPlayer::removeCard(const Card *card, Place place)
             if (card) {
                 known_cards.removeOne(card);
                 visible_cards.removeOne(card);
+                card_ids.removeOne(card->getEffectiveId());
             }
             break;
         }
@@ -258,62 +262,6 @@ void ClientPlayer::setMark(const QString &mark, int value)
 
     if (mark == "@duanchang")
         emit duanchang_invoked();
-}
-
-QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCardsCount type) const
-{
-    QMap<QString, int> kingdom_map;
-    kingdom_map.insert("wei", 0);
-    kingdom_map.insert("shu", 0);
-    kingdom_map.insert("wu", 0);
-    kingdom_map.insert("qun", 0);
-    QList<const Player *> players = getAliveSiblings();
-    players.prepend(this);
-    foreach (const Player *p, players) {
-        if (!p->hasShownOneGeneral())
-            continue;
-        if (p->getRole() == "careerist") {
-            kingdom_map["careerist"] = 1;
-            continue;
-        }
-        ++kingdom_map[p->getKingdom()];
-    }
-    if (type == MaxCardsType::Max && hasLordSkill("hongfa") && !getPile("heavenly_army").isEmpty())
-        kingdom_map["qun"] += getPile("heavenly_army").length();
-    QStringList big_kingdoms;
-    foreach (const QString &key, kingdom_map.keys()) {
-        if (kingdom_map[key] == 0)
-            continue;
-        if (big_kingdoms.isEmpty()) {
-            if (kingdom_map[key] > 1)
-                big_kingdoms << key;
-            continue;
-        }
-        if (kingdom_map[key] == kingdom_map[big_kingdoms.first()]) {
-            big_kingdoms << key;
-        } else if (kingdom_map[key] > kingdom_map[big_kingdoms.first()]) {
-            big_kingdoms.clear();
-            big_kingdoms << key;
-        }
-    }
-    const Player *jade_seal_owner = NULL;
-    foreach (const Player *p, players) {
-        if (p->hasTreasure("JadeSeal") && p->hasShownOneGeneral()) {
-            jade_seal_owner = p;
-            break;
-        }
-    }
-    if (jade_seal_owner != NULL) {
-        if (jade_seal_owner->getRole() == "careerist") {
-            big_kingdoms.clear();
-            big_kingdoms << jade_seal_owner->objectName(); // record player's objectName who has JadeSeal.
-        } else { // has shown one general but isn't careerist
-            QString kingdom = jade_seal_owner->getKingdom();
-            big_kingdoms.clear();
-            big_kingdoms << kingdom;
-        }
-    }
-    return big_kingdoms;
 }
 
 void ClientPlayer::setHeadSkinId(int id)

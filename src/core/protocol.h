@@ -170,7 +170,10 @@ namespace QSanProtocol
         S_COMMAND_CHOOSE_EXTRA_TARGET,
         S_COMMAND_CARD_MAPPING,
         S_COMMAND_UPDATE_PRIVATE_PILE,
-        S_COMMAND_SET_PROMOTE_SKILL
+        S_COMMAND_SET_PROMOTE_SKILL,
+        S_COMMAND_BAN_PICK,
+        S_COMMAND_MAPPING_PLAYER,
+        S_COMMAND_OWNER_CHANGE
     };
 
     enum GameEventType
@@ -191,8 +194,7 @@ namespace QSanProtocol
         S_GAME_EVENT_SKILL_INVOKED,
         S_GAME_EVENT_PAUSE,
         S_GAME_EVENT_REVEAL_PINDIAN,
-        S_GAME_EVENT_ALTER_PINDIAN,
-        S_GAME_EVENT_HUASHEN
+        S_GAME_EVENT_ALTER_PINDIAN
     };
 
     enum AnimateType

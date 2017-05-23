@@ -35,14 +35,14 @@ protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     bool check(const QList<int> &selected, int to_select);
 
-    public slots:
+public slots:
     void doCardChoose(const QList<int> &upcards, const QList<int> &downcards, const QString &reason, const QString &pattern, bool moverestricted, int min_num, int max_num);
     void clear();
 
     void mirrorCardChooseStart(const QString &who, const QString &reason, const QList<int> &upcards, const QList<int> &downcards, const QString &pattern, bool moverestricted, int min_num, int max_num);
     void mirrorCardChooseMove(int from, int to);
 
-    private slots:
+private slots:
     void onItemReleased();
     void onItemClicked();
 

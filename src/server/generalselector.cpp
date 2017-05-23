@@ -246,17 +246,25 @@ void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QSt
                 v += (kingdom_list.indexOf(kingdom) - 1);
 
             const int max_hp = general1->getMaxHpHead() + general2->getMaxHpDeputy();
-            if (max_hp % 2) v -= 1;
+            if (max_hp % 2) v -= 0.5;
+            if (max_hp >= 8) v += 1;
+
+            if (Config.value("EnableLordConvertion", true).toBool()) {
+                QString lord = "lord_" + first;
+                const General *lord_general = Sanguosha->getGeneral(lord);
+                if (lord_general && !Sanguosha->getBanPackages().contains(lord_general->getPackage()))
+                    v += 5;
+            }
 
             if (general1->isCompanionWith(second)) v += 3;
 
             if (general1->isFemale()) {
-                if ("wu" == kingdom)
-                    v -= 2;
+                if ("wu" == kingdom && !general1->hasSkill("jieying"))
+                    v -= 1;
                 else if (kingdom != "qun")
-                    v += 1;
+                    v += 0.5;
             } else if ("qun" == kingdom)
-                v += 1;
+                v += 0.5;
 
             if (general1->hasSkill("baoling") && general2_value > 6) v -= 5;
 

@@ -99,6 +99,7 @@ return {
 	["duanchang"] = "断肠",
 	[":duanchang"] = "锁定技，当你死亡时，你令杀死你的角色失去你选择的其一张武将牌的技能。",
 	["@duanchang"] = "断肠",
+	["#duanchang"] = "选择%src的一张武将牌并令其失去所有技能",
 	["#DuanchangLoseHeadSkills"] = "%from 的“%arg”被触发， %to 失去所有主将技能",
 	["#DuanchangLoseDeputySkills"] = "%from 的“%arg”被触发， %to 失去所有副将技能",
 
@@ -159,6 +160,7 @@ return {
 	["huoshui"] = "祸水",
 	[":huoshui"] = "出牌阶段，你可以明置此武将牌；其他角色于你的回合内不能明置其武将牌。",
 	["qingcheng"] = "倾城",
+	["@qingcheng"] = "选择并暗置的%src一张武将牌",
 	[":qingcheng"] = "出牌阶段，你可以弃置一张装备牌并选择一名两张武将牌均明置的其他角色，暗置其一张武将牌。",
 }
 

@@ -65,7 +65,8 @@ void GenericCardContainer::_destroyCard()
     CardItem *card = qobject_cast<CardItem *>(sender());
     if (card != NULL) {
         card->setVisible(false);
-        card->deleteLater();
+        delete card;
+        card = NULL;
     }
 }
 
@@ -125,6 +126,15 @@ void GenericCardContainer::_playMoveCardsAnimation(QList<CardItem *> &cards, boo
     connect(animation, &QParallelAnimationGroup::finished, this, &GenericCardContainer::_doUpdate);
     connect(animation, &QParallelAnimationGroup::finished, this, &GenericCardContainer::onAnimationFinished);
     animation->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void GenericCardContainer::addCardItems(QList<int> ids, const CardsMoveStruct &moveInfo)
+{
+    QList<CardItem *> cards;
+    foreach (int id, ids)
+        cards << _createCard(id);
+
+    _addCardItems(cards, moveInfo);
 }
 
 void GenericCardContainer::addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo)
@@ -257,8 +267,9 @@ void PlayerCardContainer::updateAvatar()
         _paintPixmap(avatarIconTmp, area, avatarIcon, _getAvatarParent());
         // this is just avatar general, perhaps game has not started yet.
 
+#ifndef Q_OS_ANDROID
         _createAvatarAnimations(name, true, area);
-
+#endif
         if (m_player->getGeneral() != NULL) {
             QString kingdom = m_player->getKingdom();
             _paintPixmap(_m_kingdomColorMaskIcon, _m_layout->m_kingdomMaskArea,
@@ -331,8 +342,9 @@ void PlayerCardContainer::updateSmallAvatar()
         QRect area = _m_layout->m_secondaryAvatarArea;
         _paintPixmap(smallAvatarIconTmp, area, avatarIcon, _getAvatarParent());
 
+#ifndef Q_OS_ANDROID
         _createAvatarAnimations(name, false, area);
-
+#endif
         QString kingdom = m_player->getKingdom();
         _paintPixmap(_m_kingdomColorMaskIcon2, _m_layout->m_kingdomMaskArea2,
             G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK, kingdom), this->_getAvatarParent());
@@ -388,6 +400,7 @@ void PlayerCardContainer::updatePile(const QString &pile_name)
     if (!player)
         player = m_player;
     if (!player) return;
+
     QString treasure_name;
     if (player->getTreasure()) treasure_name = player->getTreasure()->objectName();
 
@@ -634,7 +647,7 @@ void PlayerCardContainer::repaintAll()
 #ifdef Q_OS_ANDROID
     _paintPixmap(_m_chainIcon, _m_layout->m_chainedIconRegion, QSanRoomSkin::S_SKIN_KEY_CHAIN, _getAvatarParent());
 #else
-    _m_chainIcon->setParentItem( _getAvatarParent());
+    _m_chainIcon->setParentItem(_getAvatarParent());
     _m_chainIcon->setSize(_m_layout->m_chainedIconRegion.size());
     _m_chainIcon->setPos(_m_layout->m_chainedIconRegion.x(), _m_layout->m_chainedIconRegion.y());
 #endif
@@ -697,6 +710,30 @@ void PlayerCardContainer::playChainAnimation()
 {
     _m_chainIcon->preStart();
 }
+
+void PlayerCardContainer::_createSkillAnimation(int index)
+{
+    if (_m_skill_animation[index] == NULL) {
+        _m_skill_animation[index] = new PixmapAnimation();
+        _m_skill_animation[index]->setParentItem(_getAvatarParent());
+        _m_skill_animation[index]->setPath(QString("image/system/emotion/skill_invoke/%1/").arg(QString::number(index)));
+        _m_skill_animation[index]->setHideonStop(true);
+        _m_skill_animation[index]->hide();
+        connect(_m_skill_animation[index], &PixmapAnimation::finished, _m_skill_animation[index], &PixmapAnimation::stop);
+        if (!_m_skill_animation[index]->valid()) {
+            delete _m_skill_animation[index];
+            _m_skill_animation[index] = NULL;
+        }
+    }
+
+    if (_m_skill_animation[index]) {
+        int app = (index == 4 ? 10 : 0);
+        _m_skill_animation[index]->setPos(_m_skillNameItem->boundingRect().width() / 2 - _m_skill_animation[index]->boundingRect().width() / 2 + app,
+            _m_skillNameItem->pos().y() + _m_skillNameItem->boundingRect().height() / 2 - _m_skill_animation[index]->boundingRect().height() / 2 + 10);
+        _m_skill_animation[index]->reset();
+        _m_skill_animation[index]->setZValue(_m_skillNameItem->zValue() - 1);
+    }
+}
 #endif
 
 void PlayerCardContainer::setPlayer(ClientPlayer *player)
@@ -726,6 +763,7 @@ void PlayerCardContainer::setPlayer(ClientPlayer *player)
         connect(player, &ClientPlayer::deputySkinIdChanged, _m_smallAvatarIcon, &GraphicsPixmapHoverItem::startChangeHeroSkinAnimation);
     }
     updateAvatar();
+    //updateSmallAvatar();
     refresh();
 }
 
@@ -918,17 +956,7 @@ void PlayerCardContainer::startHuaShen(QStringList generalName)
     _m_huashenAnimation = G_ROOM_SKIN.createHuaShenAnimation(pixmap1,
             second_zuoci ? animRect.topLeft() : _m_layout->m_avatarArea.topLeft(), _getAvatarParent(), _m_huashenItem);
     _m_huashenAnimation->start();
-    /*
-    _paintPixmap(_m_extraSkillBg, _m_layout->m_extraSkillArea, QSanRoomSkin::S_SKIN_KEY_EXTRA_SKILL_BG, _getAvatarParent());
-    if (!skillName.isEmpty())
-        _m_extraSkillBg->show();
-    _m_layout->m_extraSkillFont.paintText(_m_extraSkillText, _m_layout->m_extraSkillTextArea, Qt::AlignCenter,
-        Sanguosha->translate(skillName).left(2));
-    if (!skillName.isEmpty()) {
-        _m_extraSkillText->show();
-        _m_extraSkillBg->setToolTip(Sanguosha->getSkill(skillName)->getDescription());
-    }
-    */
+
     _adjustComponentZValues();
 
 }
@@ -989,6 +1017,13 @@ PlayerCardContainer::PlayerCardContainer()
         _m_equipAnim[i] = NULL;
         _m_equipLabel[i] = NULL;
     }
+
+#ifndef Q_OS_ANDROID
+    for (int i = 0; i < 7; i++) {
+        _m_skill_animation[i] = NULL;
+    }
+#endif
+
     _m_huashenItem = NULL;
     _m_huashenAnimation = NULL;
     m_head_animation = NULL;
@@ -1204,12 +1239,12 @@ void PlayerCardContainer::revivePlayer()
 
 void PlayerCardContainer::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-//#ifdef Q_OS_ANDROID
+#ifdef Q_OS_ANDROID
     pressPos = event->pos();
     timerCount.setSingleShot(true);
     timerCount.start(1500);
     connect(&timerCount, &QTimer::timeout, this, &PlayerCardContainer::showSkillDescription);
-//#endif
+#endif
 }
 
 void PlayerCardContainer::updateVotes(bool need_select, bool display_1)
@@ -1301,11 +1336,16 @@ void PlayerCardContainer::onRemovedChanged()
 
 void PlayerCardContainer::showSeat()
 {
+    int number = m_player->getSeat();
+    if (!m_player->property("UI_Seat").toInt())
+        m_player->setProperty("UI_Seat", m_player->getSeat());
+    else
+        //save the seat number for later use
+        number = m_player->property("UI_Seat").toInt();
+
     _paintPixmap(_m_seatItem, _m_layout->m_seatIconRegion,
-        _getPixmap(QSanRoomSkin::S_SKIN_KEY_SEAT_NUMBER, QString::number(m_player->getSeat())),
+        _getPixmap(QSanRoomSkin::S_SKIN_KEY_SEAT_NUMBER, QString::number(number)),
         _getAvatarParent());
-    //save the seat number for later use
-    m_player->setProperty("UI_Seat", m_player->getSeat());
     _m_seatItem->setZValue(1.1);
 }
 
@@ -1317,10 +1357,10 @@ bool PlayerCardContainer::_isSelected(QGraphicsItem *item) const
 
 void PlayerCardContainer::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-//#ifdef Q_OS_ANDROID
+#ifdef Q_OS_ANDROID
     timerCount.stop();
     hideSkillDescription();
-//#endif
+#endif
 
     QGraphicsItem *item1 = getMouseClickReceiver();
     QGraphicsItem *item2 = getMouseClickReceiver2();
@@ -1407,7 +1447,6 @@ void PlayerCardContainer::stopHeroSkinChangingAnimation(bool head)
 
 void PlayerCardContainer::_createAvatarAnimations(const QString name, bool head, const QRect &area)
 {
-#ifndef Q_OS_ANDROID
     if (m_player->isDead()) return;
     if (head) {
         if (m_head_animation != NULL) {
@@ -1469,7 +1508,6 @@ void PlayerCardContainer::_createAvatarAnimations(const QString name, bool head,
             _m_smallAvatarIcon->setOpacity(1);
     }
     _adjustComponentZValues();
-#endif
 }
 
 void PlayerCardContainer::stopHeadAnimation()
@@ -1488,6 +1526,11 @@ void PlayerCardContainer::stopDeputyAnimation()
         m_deputy_animation->hide();
         _m_smallAvatarIcon->setOpacity(1);
     }
+}
+
+void PlayerCardContainer::hideSkillName()
+{
+    _m_skillNameItem->hide();
 }
 
 //#ifdef Q_OS_ANDROID

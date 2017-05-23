@@ -65,6 +65,7 @@ public:
         AskForMoveCards = 0x000013,
         AskForExtraTargets = 0x000014,
         GlobalCardChosen = 0x000015,
+        DoBanPick = 0x000016,
 
         RespondingUse = 0x000101,
         RespondingForDiscard = 0x000201,
@@ -98,7 +99,7 @@ public:
     {
         request(unicode.toUtf8());
     }
-    void onPlayerResponseCard(const Card *card, const QList<const Player *> &targets = QList<const Player *>());
+    void onPlayerResponseCard(const Player *player, const Card *card, const QList<const Player *> &targets = QList<const Player *>());
     void setStatus(Status status);
     Status getStatus() const;
     int alivePlayerCount() const;
@@ -166,7 +167,7 @@ public:
     void setKnownCards(const QVariant &set_str);
     void setVisibleCards(const QVariant &set_str);
     void viewGenerals(const QVariant &arg);
-    void setFixedDistance(const QVariant &set_str);
+    //void setFixedDistance(const QVariant &set_str);
     void updateStateItem(const QVariant &state);
     void setAvailableCards(const QVariant &pile);
     void setCardFlag(const QVariant &pattern_str);
@@ -188,8 +189,8 @@ public:
     void askForChoice(const QVariant &);
     void askForDiscard(const QVariant &reqvar);
     void askForExchange(const QVariant &exchange);
-    void askForSuit(const QVariant &);
-    void askForKingdom(const QVariant &);
+    void askForSuit(const QVariant &arg);
+    void askForKingdom(const QVariant &arg);
     void askForNullification(const QVariant &);
     void askForPindian(const QVariant &);
     void askForCardChosen(const QVariant &ask_str);
@@ -214,6 +215,23 @@ public:
     void fillGenerals(const QVariant &generals);
     void takeGeneral(const QVariant &take_str);
     void startArrange(const QVariant &to_arrange);
+
+    void doBanPick(const QVariant &ask_str);
+    void onPlayerReplyBanPick(const QString &name);
+    void setMappingPlayer(const QVariant &ask_str);
+    void changeSelf(ClientPlayer *player);
+
+    void changeToOwner(const QVariant &ask_str);
+
+    inline ClientPlayer *getCurrentOperator()
+    {
+        return m_current;
+    }
+    QList<ClientPlayer *> controls;
+    inline bool isOwner() const
+    {
+        return owner;
+    }
 
     void recoverGeneral(const QVariant &recover);
     void revealGeneral(const QVariant &reveal);
@@ -305,7 +323,7 @@ public slots:
     void onPlayerChangeSkin(int skin_id, bool is_head = true);
     void onPlayerChooseSuit(const QString &suit);
     void onPlayerChooseKingdom();
-    void preshow(const QString &skill_name, const bool isPreshowed, bool head);
+    void preshow(ClientPlayer *who, const QString &skill_name, const bool isPreshowed, bool head);
     void trust();
     void addRobot();
     void fillRobots();
@@ -324,6 +342,9 @@ protected:
     RoomState _m_roomState;
     QMap<int, Player::Place> place_map;
     PromoteStruct promote_skill;
+    ClientPlayer *m_current;
+    bool owner;
+    QHash<QString, ClientPlayer *> filter_skills;
 
 private:
     ClientSocket *socket;
@@ -349,6 +370,8 @@ private:
 
     bool _loseSingleCard(int card_id, CardsMoveStruct move);
     bool _getSingleCard(int card_id, CardsMoveStruct move);
+    void doFilter(const QString &skill_name, bool activate, bool status_changed);
+    QStringList checkFilterSkill(QList<int> ids);
 
 private slots:
     void processServerPacket(const QByteArray &cmd);
@@ -365,7 +388,7 @@ signals:
     void player_added(ClientPlayer *new_player);
     void player_removed(const QString &player_name);
     // choice signal
-    void generals_got(const QStringList &generals, const bool single_result, const bool can_convert, const bool assign_kingdom);
+    void generals_got(const QString &reason, const QStringList &generals, const bool single_result, const bool can_convert, const bool assign_kingdom);
     void kingdoms_got(const QStringList &kingdoms);
     void suits_got(const QStringList &suits);
     void options_got(const QString &skillName, const QStringList &options);
@@ -374,8 +397,8 @@ signals:
     void roles_got(const QString &scheme, const QStringList &roles);
     void directions_got();
     void orders_got(QSanProtocol::Game3v3ChooseOrderCommand reason);
-    void triggers_got(const QString &reason, const QStringList &options, const bool optional);
-    void trigger_skills_got(const QString &reason, QList<TriggerStruct> skills, const bool optional);
+    void triggers_got(const Player *player, const QString &reason, const QStringList &options, const bool optional);
+    void trigger_skills_got(const Player *player, const QString &reason, QList<TriggerStruct> skills, const bool optional);
 
     void seats_arranged(const QList<const ClientPlayer *> &seats);
     void hp_changed(const QString &who, int delta, DamageStruct::Nature nature, bool losthp);
@@ -416,7 +439,7 @@ signals:
     void skill_detached(const QString &skill_name, bool head = true);
     void do_filter();
 
-    void nullification_asked(bool asked);
+    void nullification_asked();
     void surrender_enabled(bool enabled);
 
     void mirror_guanxing_start(const QString &who, bool up_only, const QList<int> &cards);
@@ -449,9 +472,19 @@ signals:
 
     void update_handcard_num();
 
-    void startPindian(const QString &requestor, const QString &reason, const QStringList &targets);
+    void update_filter_card();
+
+    void startPindian(const QString &requestor, const QString &reason, const QStringList &targets, QList<int> ids);
     void onPindianReply(const QString &who, int card_id);
     void pindianSuccess(int type, int index);
+
+    // 1v1 mode
+    void show_banpick(QStringList self, QStringList opponent, QStringList bans, QStringList selected);
+    void start_banpick(const QString &selector);
+    void end_banpick();
+    void mapping_player(ClientPlayer *player);
+
+    void owner_changed(bool owner);
 };
 
 extern Client *ClientInstance;

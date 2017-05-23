@@ -110,6 +110,7 @@ CommonTranslationTable = {
 	["discardPile"] = "弃牌堆",
 	["drawPileTop"] = "牌堆顶",
 	["drawPileBottom"] = "牌堆底",
+	["generalPile"] = "武将牌堆",
 
 	["yourself"] = "你",
 
@@ -219,8 +220,12 @@ CommonTranslationTable = {
 	["#AnalepticBuff"] = "%from 使用【<font color=\"yellow\"><b>酒</b></font>】，对 %to 造成的伤害从 %arg 点增加至 %arg2 点",
 	["#GetMark"] = "%from 得到了 %arg2 枚 %arg 标记",
 	["#LoseMark"] = "%from 失去了 %arg2 枚 %arg 标记",
-	["$AddToPile"] = "%card 被作为 %arg 牌移出游戏",
-	["#RemoveFromGame"] = "%arg2 张牌被作为 %arg 牌移出游戏",
+	["$AddToPileFrom"] = "%from 将 %card 作为 %to 的 %arg 牌移出游戏",
+	["#RemoveFromGameFrom"] = "%from 将 %arg2 张牌作为 %to 的 %arg 牌移出游戏",
+	["$AddToPile"] = "%card 作为 %to 的 %arg 牌移出游戏",
+	["#RemoveFromGame"] = "%arg2 张牌作为 %to 的 %arg 牌移出游戏",
+	["$AddToPile1"] = "%card 被作为 %to 的 %arg 牌移出游戏",
+	["#RemoveFromGame1"] = "%arg2 张牌被作为 %to 的 %arg 牌移出游戏",
 	["$GotCardFromPile"] = "%from 从 %arg 牌中获得 %card",
 	["#GotNCardFromPile"] = "%from 从 %arg 牌中获得 %arg2 张牌",
 	["@askforslash"] = "你可以对你攻击范围内的一名其他角色使用一张【杀】",
@@ -242,8 +247,8 @@ CommonTranslationTable = {
 	["custom"] = "自定义模式",
 	["UnknowNick"] = "",
 	["DefaultIllustrator"] = "KayaK",
-
 	["@waked"] = "觉醒",
+	["dead_general"] = "阵亡",
 
 	["CAPITAL(1)"] = "一",
 	["CAPITAL(2)"] = "二",

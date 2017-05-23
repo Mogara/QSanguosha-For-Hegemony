@@ -37,19 +37,20 @@ public:
         return 10;
     }
 
-    virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer *) const{
-        return (target != NULL) ? TriggerStruct(objectName(), target) : TriggerStruct();
-    }
-
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *, const TriggerStruct &) const{
-        foreach (ServerPlayer *p, room->getAllPlayers()) {
-            if (p->hasFlag("Global_InTempMoving"))
-                return true;
+    virtual TriggerStruct triggerable(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *) const{
+        if (target != NULL) {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (p->hasFlag("Global_InTempMoving"))
+                    return TriggerStruct(objectName(), target);
+            }
         }
 
-        return false;
+        return TriggerStruct();
     }
 
+    virtual bool effect(TriggerEvent , Room *, ServerPlayer *, QVariant &, ServerPlayer *, const TriggerStruct &) const{
+        return true;
+    }
 };
 
 ShowMashu::ShowMashu()

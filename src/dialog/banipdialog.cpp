@@ -99,8 +99,8 @@ void BanIpDialog::loadIPList()
     left->clear();
 
     foreach (Room *room, server->rooms) {
-        foreach (ServerPlayer *p, room->getPlayers()) {
-            if (p->getState() != "offline" && p->getState() != "robot")
+        foreach (ServerClient *p, room->getClients()) {
+            if (p->getState() != "offline")
                 addPlayer(p);
         }
     }
@@ -140,11 +140,11 @@ void BanIpDialog::kickClicked()
 {
     int row = left->currentRow();
     if (row != -1) {
-        ServerPlayer *p = sp_list[row];
+        ServerClient *p = sp_list[row];
         QStringList split_data = left->currentItem()->text().split("::");
         QString ip = "::" + split_data.takeLast();
         QString screenName = split_data.first();
-        if (p->screenName() == screenName && p->getIp() == ip)
+        if (p->objectName() == screenName && p->getIp() == ip)
             p->kick(); // procedure kick
     }
 }
@@ -160,18 +160,18 @@ void BanIpDialog::save()
     Config.setValue("BannedIP", ips);
 }
 
-void BanIpDialog::addPlayer(ServerPlayer *player)
+void BanIpDialog::addPlayer(ServerClient *player)
 {
     sp_list << player;
 
-    QString parsed_string = QString("%1::%2").arg(player->screenName(), player->getIp());
+    QString parsed_string = QString("%1::%2").arg(player->objectName(), player->getIp());
     left->addItem(parsed_string);
-    connect(player, &ServerPlayer::disconnected, this, &BanIpDialog::removePlayer);
+    connect(player, &ServerClient::disconnected, this, &BanIpDialog::removePlayer);
 }
 
 void BanIpDialog::removePlayer()
 {
-    ServerPlayer *player = qobject_cast<ServerPlayer *>(sender());
+    ServerClient *player = qobject_cast<ServerClient *>(sender());
     if (player) {
         int row = sp_list.indexOf(player);
         if (row != -1) {

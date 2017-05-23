@@ -101,15 +101,23 @@ bool ResponseSkill::matchPattern(const Player *player, const Card *card) const
         if ((request == Card::MethodUse || request == Card::MethodResponse) && pat.contains("hand")) {
             pat.replace("hand", player->getHandPileList().join(","));
         }
+
         ExpPattern exp_pattern(pat);
-        return exp_pattern.match(player, card);
+        bool check = exp_pattern.match(player, card);
+        if (!check)
+            return false;
+        else {
+            if (request == Card::MethodUse && !card->isAvailable(player)) return false;
+            return true;
+        }
+
     }
     return false;
 }
 
-bool ResponseSkill::viewFilter(const Card *card) const
+bool ResponseSkill::viewFilter(const QList<const Card *> &, const Card *to_select, const Player *player) const
 {
-    return matchPattern(Self, card);
+    return matchPattern(player, to_select);
 }
 
 const Card *ResponseSkill::viewAs(const Card *originalCard) const

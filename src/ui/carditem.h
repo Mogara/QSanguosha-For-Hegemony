@@ -103,6 +103,8 @@ public:
     void setVirtualCard(QString &card_string);
     void setAutoBack(bool auto_back);
     void setFootnote(const QString &desc);
+    void doRotateAnimation();
+    void startRotate();
 
     inline bool isSelected() const
     {
@@ -166,6 +168,9 @@ protected:
     bool auto_back, frozen;
     QPointF _m_lastMousePressScenePos;
 
+    int _m_timerId;
+    int m_count = 0;
+
     static const int _S_CLICK_JITTER_TOLERANCE;
     static const int _S_MOVE_JITTER_TOLERANCE;
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -175,6 +180,7 @@ protected:
     virtual void hoverEnterEvent(QGraphicsSceneHoverEvent *);
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *);
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void timerEvent(QTimerEvent *e);
 
 private:
     int m_cardId;

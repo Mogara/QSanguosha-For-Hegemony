@@ -311,16 +311,18 @@ bool CardUseStruct::isValid(const QString &pattern) const
 bool CardUseStruct::tryParse(const QVariant &usage, Room *room)
 {
     JsonArray use = usage.value<JsonArray>();
-    if (use.size() < 2 || !JsonUtils::isString(use[0]) || !use[1].canConvert<JsonArray>())
+    if (use.size() < 3 || !JsonUtils::isString(use[1]) || !use[2].canConvert<JsonArray>())
         return false;
 
-    card = Card::Parse(use[0].toString());
-    JsonArray targets = use[1].value<JsonArray>();
+    card = Card::Parse(use[1].toString());
+    JsonArray targets = use[2].value<JsonArray>();
 
     foreach (const QVariant &target, targets) {
         if (!JsonUtils::isString(target)) return false;
         this->to << room->findChild<ServerPlayer *>(target.toString());
     }
+
+    if (use.size() >= 4) this->extra_shows = use[3].toStringList();
     return true;
 }
 

@@ -15,6 +15,29 @@
     </message>
 </context>
 <context>
+    <name>BanPickBox</name>
+    <message>
+        <location filename="../src/ui/banpickbox.cpp" line="209"/>
+        <source>Please pick self or ban opponent's general</source>
+        <translation>请选择己方出场武将或禁用对手武将</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/banpickbox.cpp" line="211"/>
+        <source>opponent is choosing</source>
+        <translation>对手正在选择</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/banpickbox.cpp" line="214"/>
+        <source>ready to start</source>
+        <translation>即将开始</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/banpickbox.cpp" line="216"/>
+        <source>result</source>
+        <translation>选择结果</translation>
+    </message>
+</context>
+<context>
     <name>BanIpDialog</name>
     <message>
         <location filename="../src/dialog/banipdialog.cpp" line="48"/>
@@ -3347,10 +3370,15 @@
         <translation>返回主菜单</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="1896"/>
-        <location filename="../src/ui/roomscene.cpp" line="1903"/>
+        <location filename="../src/ui/roomscene.cpp" line="2278"/>
+        <location filename="../src/ui/roomscene.cpp" line="2284"/>
         <source>yourself</source>
         <translation>你</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/roomscene.cpp" line="2286"/>
+        <source>yourown</source>
+        <translation>自己</translation>
     </message>
     <message>
         <location filename="../src/ui/roomscene.cpp" line="1899"/>
@@ -3365,7 +3393,7 @@
     <message>
         <location filename="../src/ui/roomscene.cpp" line="2147"/>
         <source>view as </source>
-        <translation>视为 </translation>
+        <translation>视为</translation>
     </message>
     <message>
         <location filename="../src/ui/roomscene.cpp" line="3158"/>
@@ -3737,14 +3765,39 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>国战模式选将上限</translation>
     </message>
     <message>
-        <location filename="../src/dialog/serverdialog.cpp" line="287"/>
+        <location filename="../src/dialog/serverdialog.cpp" line="315"/>
         <source>Convert DoubleSword to DragonPhoenix</source>
         <translation>将雌雄双股剑替换为飞龙夺凤</translation>
     </message>
     <message>
-        <location filename="../src/dialog/serverdialog.cpp" line="291"/>
+        <location filename="../src/dialog/serverdialog.cpp" line="319"/>
         <source>Convert JingFan to PeaceSpell</source>
         <translation>将惊帆替换为太平要术</translation>
+    </message>
+    <message>
+        <location filename="../src/dialog/serverdialog.cpp" line="340"/>
+        <source>Skill Modify</source>
+        <translation>技能修改</translation>
+    </message>
+    <message>
+        <location filename="../src/dialog/serverdialog.cpp" line="344"/>
+        <source>Xunxun: do not skip draw cards</source>
+        <translation>循循：不会放弃摸牌</translation>
+    </message>
+    <message>
+        <location filename="../src/dialog/serverdialog.cpp" line="346"/>
+        <source>Shengxi: triggered at discard phase</source>
+        <translation>生息：在弃牌阶段开始时触发</translation>
+    </message>
+    <message>
+        <location filename="../src/dialog/serverdialog.cpp" line="348"/>
+        <source>Qianhuan: consume 1 card</source>
+        <translation>千幻：需要消耗1张牌</translation>
+    </message>
+    <message>
+        <location filename="../src/dialog/serverdialog.cpp" line="350"/>
+        <source>Hunshang: HP less than or equal to 1</source>
+        <translation>魂殇：体力值小于等于1</translation>
     </message>
     <message>
         <location filename="../src/dialog/serverdialog.cpp" line="331"/>
@@ -4121,42 +4174,52 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>玩家人数为 %1</translation>
     </message>
     <message>
-        <location filename="../src/ui/startscene.cpp" line="292"/>
+        <location filename="../src/ui/startscene.cpp" line="291"/>
+        <source>Lord convert is open</source>
+        <translation>君主替换已启用</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/startscene.cpp" line="293"/>
+        <source>Skill: %1 is modified</source>
+        <translation>技能：%1 已修改</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/startscene.cpp" line="298"/>
         <source>Cheat is enabled</source>
         <translation>作弊功能已启用</translation>
     </message>
     <message>
-        <location filename="../src/ui/startscene.cpp" line="292"/>
+        <location filename="../src/ui/startscene.cpp" line="298"/>
         <source>Cheat is disabled</source>
         <translation>作弊功能未启用</translation>
     </message>
     <message>
-        <location filename="../src/ui/startscene.cpp" line="294"/>
+        <location filename="../src/ui/startscene.cpp" line="300"/>
         <source>Free choose is enabled</source>
         <translation>自由选将选牌 已启用</translation>
     </message>
     <message>
-        <location filename="../src/ui/startscene.cpp" line="294"/>
+        <location filename="../src/ui/startscene.cpp" line="300"/>
         <source>Free choose is disabled</source>
         <translation>自由选将未启用</translation>
     </message>
     <message>
-        <location filename="../src/ui/startscene.cpp" line="297"/>
+        <location filename="../src/ui/startscene.cpp" line="303"/>
         <source>The reward of showing general first is enabled</source>
         <translation>首亮奖励已开启</translation>
     </message>
     <message>
-        <location filename="../src/ui/startscene.cpp" line="300"/>
+        <location filename="../src/ui/startscene.cpp" line="306"/>
         <source>This server is AI enabled, AI delay is %1 milliseconds</source>
         <translation>服务器启用了 AI，AI 的延迟是 %1 毫秒</translation>
     </message>
     <message>
-        <location filename="../src/ui/startscene.cpp" line="302"/>
+        <location filename="../src/ui/startscene.cpp" line="308"/>
         <source>This server is AI disabled</source>
         <translation>此服务器尚未启用 AI</translation>
     </message>
     <message>
-        <location filename="../src/ui/startscene.cpp" line="290"/>
+        <location filename="../src/ui/startscene.cpp" line="296"/>
         <source>There is no time limit</source>
         <translation>没有时间限制</translation>
     </message>
@@ -4166,7 +4229,7 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>公元2014年8月19日10时40分，神杀开发者墨宣砚韵于大连医学院平静离开人世，是时年仅18岁，与白血病斗争4年多。愿天堂没有病痛。</translation>
     </message>
     <message>
-        <location filename="../src/ui/startscene.cpp" line="291"/>
+        <location filename="../src/ui/startscene.cpp" line="297"/>
         <source>Operation timeout is %1 seconds</source>
         <translation>操作时间是 %1 秒</translation>
     </message>

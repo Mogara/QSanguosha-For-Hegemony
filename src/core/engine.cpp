@@ -31,6 +31,7 @@
 #include "banpair.h"
 #include "miniscenarios.h"
 #include "jiange-defense-scenario.h"
+#include "1v1.h"
 
 #include <lua.hpp>
 #include <QFile>
@@ -68,6 +69,7 @@ void Engine::_loadModScenarios()
 {
     //wait for a new scenario
     addScenario(new JiangeDefenseScenario());
+    //addScenario(new OneOnOneScenario());      //for test only
 }
 
 void Engine::addPackage(const QString &name)
@@ -205,11 +207,6 @@ void Engine::addSkills(const QList<const Skill *> &all_skills)
             targetmod_skills << qobject_cast<const TargetModSkill *>(skill);
         else if (skill->inherits("AttackRangeSkill"))
             attackrange_skills << qobject_cast<const AttackRangeSkill *>(skill);
-        else if (skill->inherits("TriggerSkill")) {
-            const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
-            if (trigger_skill && trigger_skill->isGlobal())
-                global_trigger_skills << trigger_skill;
-        }
     }
 }
 
@@ -231,11 +228,6 @@ QList<const TargetModSkill *> Engine::getTargetModSkills() const
 QList<const AttackRangeSkill *> Engine::getAttackRangeSkills() const
 {
     return attackrange_skills;
-}
-
-QList<const TriggerSkill *> Engine::getGlobalTriggerSkills() const
-{
-    return global_trigger_skills;
 }
 
 void Engine::addPackage(Package *package)
@@ -332,13 +324,23 @@ QStringList Engine::getBanPackages() const
         return ban_package.toList();
 }
 
+QStringList Engine::getModifiedSkills()
+{
+    QObject *room = currentRoomObject();
+    Q_ASSERT(room);
+    Room *serverRoom = qobject_cast<Room *>(room);
+    if (serverRoom != NULL)
+        return Config.SkillModify;
+    else
+        return ServerInfo.SkillModify;
+}
+
 QStringList Engine::getConvertGenerals(const QString &name) const
 {
     if (!getGeneral(name)) return QStringList();
     QStringList generals;
     foreach(const QString &name1, sp_convert_pairs.values(name)) {
-        if (!getGeneral(name1)) continue;
-        if (getBanPackages().contains(getGeneral(name1)->getPackage())) continue;
+        if (!getGeneral(name1) || !ServerInfo.Extensions.contains(getGeneral(name1)->getPackage())) continue;
         generals << name1;
     }
 
@@ -388,7 +390,23 @@ const CardPattern *Engine::getPattern(const QString &name) const
 bool Engine::matchExpPattern(const QString &pattern, const Player *player, const Card *card) const
 {
     ExpPattern p(pattern);
-    return p.match(player, card);
+    if (p.match(player, card))
+        return true;
+    else {
+        ExpPattern p(getPattern(pattern)->getPatternString());
+        return p.match(player, card);
+    }
+}
+
+bool Engine::matchExpPatternType(const QString &pattern, const Card *card) const
+{
+    ExpPattern p(pattern);
+    if (p.match(card))
+        return true;
+    else {
+        ExpPattern p(getPattern(pattern)->getPatternString());
+        return p.match(card);
+    }
 }
 
 Card::HandlingMethod Engine::getCardHandlingMethod(const QString &method_name) const
@@ -508,6 +526,11 @@ QString Engine::getCurrentCardUsePattern()
 CardUseStruct::CardUseReason Engine::getCurrentCardUseReason()
 {
     return currentRoomState()->getCurrentCardUseReason();
+}
+
+Player *Engine::getCurrentAskforPeachPlayer()
+{
+    return currentRoomState()->getCurrentAskforPeachPlayer();
 }
 
 bool Engine::isGeneralHidden(const QString &general_name) const
@@ -974,6 +997,13 @@ QList<int> Engine::getRandomCards() const
     else
         list.removeOne(109);
 
+    if (Config.GameMode == "one_on_one") {
+        list.removeOne(138);
+        list.removeOne(146);
+        list.removeOne(151);
+        list.removeOne(152);
+    }
+
     qShuffle(list);
 
     return list;
@@ -1116,6 +1146,16 @@ int Engine::correctDistance(const Player *from, const Player *to) const
     return correct;
 }
 
+int Engine::getFixedDistance(const Player *from, const Player *to) const
+{
+    foreach (const DistanceSkill *skill, distance_skills) {
+        int fixed = skill->getFixed(from, to);
+        if (fixed > 0) return fixed;
+    }
+
+    return 0;
+}
+
 int Engine::correctMaxCards(const ServerPlayer *target, bool fixed, MaxCardsType::MaxCardsCount type) const
 {
     int extra = 0;
@@ -1146,7 +1186,7 @@ int Engine::correctCardTarget(const TargetModSkill::ModType type, const Player *
                 x += residue;
             }
         }
-    } else if (type == TargetModSkill::ExtraTarget) {
+    } else if (type == TargetModSkill::ExtraMaxTarget) {
         foreach (const TargetModSkill *skill, targetmod_skills) {
             ExpPattern p(skill->getPattern());
             if (p.match(from, card))
@@ -1157,15 +1197,26 @@ int Engine::correctCardTarget(const TargetModSkill::ModType type, const Player *
     return x;
 }
 
-bool Engine::correctCardTarget(const Player *from, const Player *to, const Card *card) const
+bool Engine::correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Player *to, const Card *card) const
 {
-    foreach (const TargetModSkill *skill, targetmod_skills) {
-        ExpPattern p(skill->getPattern());
-        if (p.match(from, card)) {
-            int distance_limit = skill->getDistanceLimit(from, to, card);
-            if (distance_limit) return true;
+    if (type == TargetModSkill::DistanceLimit) {
+        foreach (const TargetModSkill *skill, targetmod_skills) {
+            ExpPattern p(skill->getPattern());
+            if (p.match(from, card)) {
+                bool distance_limit = skill->getDistanceLimit(from, to, card);
+                if (distance_limit) return true;
+            }
+        }
+    } else if (type == TargetModSkill::SpecificAssignee) {
+        foreach (const TargetModSkill *skill, targetmod_skills) {
+            ExpPattern p(skill->getPattern());
+            if (p.match(from, card)) {
+                bool can_slash = skill->checkSpecificAssignee(from, to, card);
+                if (can_slash) return true;
+            }
         }
     }
+
     return false;
 }
 

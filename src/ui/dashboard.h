@@ -94,12 +94,12 @@ public:
     void selectOnlyCard(bool need_only = false);
     void useSelected();
     const Card *getSelected() const;
+    const Player *getSelectedCardOwner() const;
     void unselectAll(const CardItem *except = NULL, bool update_pending = true);
     void hideAvatar();
 
     void disableAllCards();
     void enableCards();
-    void enableAllCards();
 
     void adjustCards(bool playAnimation = true);
 
@@ -116,7 +116,8 @@ public:
     const ViewAsSkill *currentSkill() const;
     const Card *getPendingCard() const;
 
-    //void expandGuhuoPile(const QString &pile_name, const ViewAsSkill *skill);
+    void expandAllMappingCards();
+    void removeAllMappingCards();
     void removeAllVirtualCard();
     void expandPileCards(const QString &pile_name);
     void retractPileCards(const QString &pile_name);
@@ -138,6 +139,7 @@ public:
     void updateSkillButton();
 
     void setPlayer(ClientPlayer *player);
+    void changePlayer(ClientPlayer *player);
 
     void showSeat();
 
@@ -160,13 +162,20 @@ public:
 
     inline bool hasHandCard(CardItem *item) const
     {
-        return m_handCards.contains(item);
+        if (m_handCards.contains(item)) return true;
+
+        foreach (const Player *p, m_ClientCards.keys())
+            if (m_ClientCards[p].contains(item))
+                return true;
+
+        return false;
     }
 
     void addTransferButton(TransferButton *button);
     QList<TransferButton *> getTransferButtons() const;
 
     void playBattleArrayAnimations();
+    void showSkillName(const Skill *skill);
 
 public slots:
     void sortCards();
@@ -177,7 +186,7 @@ public slots:
     void skillButtonDeactivated();
     void selectAll();
     void selectCards(const QString &pattern);
-    void controlNullificationButton(bool keepState);
+    void controlNullificationButton();
 
     virtual void updateAvatar();
     virtual void updateSmallAvatar();
@@ -187,7 +196,7 @@ public slots:
 protected:
     void _createExtraButtons();
     virtual void _adjustComponentZValues();
-    virtual void addHandCards(QList<CardItem *> &cards);
+    virtual void addHandCards(QList<CardItem *> &cards, const Player *player);
     virtual QList<CardItem *> removeHandCards(const QList<int> &cardIds);
 
     // initialization of _m_layout is compulsory for children classes.
@@ -245,7 +254,7 @@ protected:
     bool _addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo);
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
-    void _addHandCard(CardItem *card_item, bool prepend = false, const QString &footnote = QString());
+    void _addHandCard(CardItem *card_item, const Player *player, bool prepend = false, const QString &footnote = QString());
     void _addGuhuoCard(CardItem *card_item, const QString &footnote = QString());
     void _adjustCards();
     void _adjustCards(const QList<CardItem *> &list, int y);
@@ -269,6 +278,7 @@ protected:
     CardItem *selected;
     QList<CardItem *> m_handCards;
     QList<CardItem *> m_guhuoCards;
+    QMap<const Player *, QList<CardItem *>> m_ClientCards;
 
     QGraphicsRectItem *trusting_item;
     QGraphicsSimpleTextItem *trusting_text;
@@ -365,6 +375,7 @@ private slots:
     void onAvatarHoverLeave();
     void onSkinChangingStart();
     void onSkinChangingFinished();
+    void updateFilterCards();
 
 signals:
     void card_selected(const Card *card);

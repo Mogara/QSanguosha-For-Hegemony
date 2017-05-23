@@ -26,7 +26,7 @@
 #include "client.h"
 #include "engine.h"
 #include "structs.h"
-#include "roomthread.h"
+#include "settings.h"
 
 class Xunxun : public PhaseChangeSkill
 {
@@ -54,25 +54,58 @@ public:
     virtual bool onPhaseChange(ServerPlayer *lidian, const TriggerStruct &info) const
     {
         Room *room = lidian->getRoom();
-        room->notifySkillInvoked(lidian, objectName());
-
         QList<int> card_ids = room->getNCards(4);
-        AskForMoveCardsStruct result = room->askForMoveCards(lidian, card_ids, QList<int>(), true, objectName(), "",
-                                                             2, 2, false, false, QList<int>() << -1, info.skill_position);
-        DummyCard dummy(result.bottom);
-        lidian->obtainCard(&dummy, false);
-        room->returnToDrawPile(result.top, true);
+        LogMessage log;
+        log.type = "$ViewDrawPile";
+        log.from = lidian;
+        log.card_str = IntList2StringList(card_ids).join("+");
+        room->doNotify(lidian->getClient(), QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
+        log.type = "$ViewDrawPile2";
+        log.arg = "4";
+        room->sendLog(log, QList<ServerPlayer *>() << lidian);
 
-        LogMessage a;
-        a.type = "#XunxunResult";
-        a.from = lidian;
-        room->sendLog(a);
-        LogMessage b;
-        b.type = "$GuanxingBottom";
-        b.from = lidian;
-        b.card_str = IntList2StringList(result.top).join("+");
-        room->doNotify(lidian, QSanProtocol::S_COMMAND_LOG_SKILL, b.toVariant());
-        return true;
+        if (Config.SkillModify.contains(objectName())) {
+            AskForMoveCardsStruct result = room->askForMoveCards(lidian, card_ids, QList<int>(), true, "xunxun-convert", "",
+                                                                 2, 2, false, false, QList<int>() << -1);
+
+            room->returnToDrawPile(result.top, true);
+            room->returnToDrawPile(result.bottom, false);
+            LogMessage a;
+            a.type = "#XunxunGuanxingResult";
+            a.from = lidian;
+            room->sendLog(a);
+
+            LogMessage b;
+            LogMessage log;
+            log.type = "$GuanxingTop";
+            log.from = lidian;
+            log.card_str = IntList2StringList(result.bottom).join("+");
+            room->doNotify(lidian->getClient(), QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
+
+            b.type = "$GuanxingBottom";
+            b.from = lidian;
+            b.card_str = IntList2StringList(result.top).join("+");
+            room->doNotify(lidian->getClient(), QSanProtocol::S_COMMAND_LOG_SKILL, b.toVariant());
+            return false;
+        } else {
+            AskForMoveCardsStruct result = room->askForMoveCards(lidian, card_ids, QList<int>(), true, objectName(), "",
+                                                                 2, 2, false, false, QList<int>() << -1, info.skill_position);
+            DummyCard dummy(result.bottom);
+            lidian->obtainCard(&dummy, false);
+            room->returnToDrawPile(result.top, true);
+
+            LogMessage a;
+            a.type = "#XunxunResult";
+            a.from = lidian;
+            room->sendLog(a);
+
+            LogMessage b;
+            b.type = "$GuanxingBottom";
+            b.from = lidian;
+            b.card_str = IntList2StringList(result.top).join("+");
+            room->doNotify(lidian->getClient(), QSanProtocol::S_COMMAND_LOG_SKILL, b.toVariant());
+            return true;
+        }
     }
 };
 
@@ -82,6 +115,7 @@ public:
     Wangxi() : TriggerSkill("wangxi")
     {
         events << Damage << Damaged;
+        skill_type = Replenish;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -141,6 +175,7 @@ class Hengjiang : public MasochismSkill
 public:
     Hengjiang() : MasochismSkill("hengjiang")
     {
+        skill_type = Defense;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -296,6 +331,7 @@ public:
     {
         events << EventPhaseStart << FinishJudge;
         frequency = Frequent;
+        skill_type = Attack;
     }
 
     virtual bool canPreshow() const
@@ -382,10 +418,6 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive)
                 return TriggerStruct();
-        } else if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != player)
-                return TriggerStruct();
         }
 
         QString color = player->tag["qianxi"].toString();
@@ -406,6 +438,7 @@ public:
     {
         events << GeneralShown << GeneralRemoved << GeneralStartRemove;
         frequency = Frequent;
+        skill_type = Replenish;
     }
 
     virtual bool canPreshow() const
@@ -420,7 +453,7 @@ public:
             if (head && player->inHeadSkills(objectName()))
                 room->setPlayerFlag(player, player->getActualGeneral1Name() + ":head");
             if (!head && player->inDeputySkills(objectName()))
-                room->setPlayerFlag(player, player->getActualGeneral1Name() + ":deputy");
+                room->setPlayerFlag(player, player->getActualGeneral2Name() + ":deputy");
         }
     }
 
@@ -533,11 +566,12 @@ void CunsiCard::onEffect(const CardEffectStruct &effect) const
         effect.to->drawCards(2);
 }
 */
-class CunsiVS : public ZeroCardViewAsSkill
+class Cunsi : public ZeroCardViewAsSkill
 {
 public:
-    CunsiVS() : ZeroCardViewAsSkill("cunsi")
-    {
+    Cunsi() : ZeroCardViewAsSkill("cunsi")
+    {  
+        frequency = Limited;
     }
 
     virtual const Card *viewAs() const
@@ -549,24 +583,6 @@ public:
     }
 };
 
-class Cunsi : public TriggerSkill
-{
-public:
-    Cunsi() : TriggerSkill("cunsi")
-    {
-        events << GameStart << EventAcquireSkill;
-        view_as_skill = new CunsiVS;
-        frequency = Limited;
-    }
-
-    virtual TriggerStruct triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
-    {
-        if (!player || !player->isAlive() || !player->ownSkill(this)) return TriggerStruct();
-        room->getThread()->addTriggerSkill(Sanguosha->getTriggerSkill("yongjue"));
-        return TriggerStruct();
-    }
-};
-
 class Yongjue : public TriggerSkill
 {
 public:
@@ -574,6 +590,7 @@ public:
     {
         events << CardUsed << CardResponded << CardsMoveOneTime << EventPhaseStart;
         frequency = Frequent;
+        skill_type = Replenish;
     }
 
     virtual bool canPreshow() const
@@ -691,6 +708,7 @@ public:
     {
         events << TargetConfirmed << TargetChosen;
         frequency = Frequent;
+        skill_type = Replenish;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *sunce, QVariant &data, ServerPlayer *) const
@@ -737,6 +755,7 @@ public:
     {
         events << PindianVerifying;
         frequency = Frequent;
+        skill_type = Wizzard;
     }
 
     virtual QList<TriggerStruct> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
@@ -797,7 +816,7 @@ public:
     Hunshang() : TriggerSkill("hunshang")
     {
         frequency = Compulsory;
-        events << GameStart << EventPhaseStart;
+        events << EventPhaseStart;
         relate_to_place = "deputy";
     }
 
@@ -806,19 +825,12 @@ public:
         return false;
     }
 
-    virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         if (!TriggerSkill::triggerable(player)) return TriggerStruct();
-        if (triggerEvent == GameStart) {
-            const Skill *yinghun = Sanguosha->getSkill("yinghun_sunce");
-            if (yinghun != NULL && yinghun->inherits("TriggerSkill")) {
-                const TriggerSkill *yinghun_trigger = qobject_cast<const TriggerSkill *>(yinghun);
-                room->getThread()->addTriggerSkill(yinghun_trigger);
-            }
+        bool invoke = (Config.SkillModify.contains(objectName()) ? player->getHp() <= 1 : player->getHp() == 1);
 
-            return TriggerStruct();
-        }
-        return (player->getPhase() == Player::Start && player->getHp() == 1) ? TriggerStruct(objectName(), player) : TriggerStruct();
+        return (player->getPhase() == Player::Start && invoke) ? TriggerStruct(objectName(), player) : TriggerStruct();
     }
 
     virtual TriggerStruct cost(TriggerEvent, Room* room, ServerPlayer *player, QVariant &, ServerPlayer *, const TriggerStruct &info) const
@@ -915,6 +927,7 @@ class Fenming : public PhaseChangeSkill
 public:
     Fenming() : PhaseChangeSkill("fenming")
     {
+        skill_type = Attack;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
@@ -970,6 +983,7 @@ public:
     Hengzheng() : PhaseChangeSkill("hengzheng")
     {
         frequency = Frequent;
+        skill_type = Replenish;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
@@ -1015,6 +1029,7 @@ public:
         events << EventPhaseEnd;
         relate_to_place = "head";
         frequency = Compulsory;
+        skill_type = Recover;
     }
 
     virtual bool canPreshow() const
@@ -1108,6 +1123,7 @@ public:
     Chuanxin() : TriggerSkill("chuanxin")
     {
         events << DamageCaused;
+        skill_type = Attack;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -1166,6 +1182,7 @@ public:
     {
         events << TargetChosen;
         frequency = Compulsory;
+        skill_type = Attack;
     }
 
     virtual bool canPreshow() const
@@ -1272,7 +1289,7 @@ public:
         log.type = "$ViewDrawPile";
         log.from = player;
         log.card_str = IntList2StringList(guanxing).join("+");
-        room->doNotify(player, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
+        room->doNotify(player->getClient(), QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
 
         room->askForGuanxing(player, guanxing, Room::GuanxingUpOnly);
 
@@ -1288,6 +1305,7 @@ public:
         attached_lord_skill = true;
         expand_pile = "heavenly_army,%heavenly_army";
         filter_pattern = ".|.|.|heavenly_army,%heavenly_army";
+        skill_type = Attack;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -1328,6 +1346,7 @@ public:
             << EventPhaseStart // get Tianbing
             << PreHpLost << GeneralShown << Death << DFDebut; // HongfaSlash
         frequency = Compulsory;
+        skill_type = Wizzard;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -1370,12 +1389,10 @@ public:
             if (lord && lord->isAlive() && lord->hasLordSkill(objectName()) && !player->getAcquiredSkills().contains("hongfaslash"))
                 room->attachSkillToPlayer(player, "hongfaslash");
         } else if (triggerEvent == Death && player && player->hasLordSkill(objectName())) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != player)
-                return TriggerStruct();
             foreach(ServerPlayer *p, room->getAlivePlayers())
                 room->detachSkillFromPlayer(p, "hongfaslash");
         }
+
         return TriggerStruct();
     }
 
@@ -1388,7 +1405,6 @@ public:
             else if (player_num.m_type == MaxCardsType::Normal) {
                 player->tag["HongfaTianbingData"] = data; // for AI
                 QString prompt = QString("@hongfa-tianbing:%1").arg(player_num.m_reason);
-                //const Card *card = room->askForUseCard(player, "@@hongfa2", prompt, 2, Card::MethodNone);
                 QList<int> ints = room->askForExchange(player,"hongfa2",player->getPile("heavenly_army").length(),0,prompt,"heavenly_army");
                 player->tag.remove("HongfaTianbingData");
                 if (!ints.isEmpty()) {
@@ -1657,20 +1673,28 @@ public:
             room->setEmotion(damage.to, "armor/peacespell");
             return true;
         } else if (triggerEvent == CardsMoveOneTime) {
+            player->setFlags("-peacespell_throwing");
+
+            if (player->hasFlag("Global_Dying"))
+                player->setFlags("peacespell_dying");
+            else {
+                LogMessage l;
+                l.type = "#PeaceSpellLost";
+                l.from = player;
+                room->sendLog(l);
+
+                room->loseHp(player);
+                if (player->isAlive())
+                    player->drawCards(2);
+            }
+        } else {
+            player->setFlags("-peacespell_dying");
             LogMessage l;
             l.type = "#PeaceSpellLost";
             l.from = player;
-
             room->sendLog(l);
 
-            player->setFlags("-peacespell_throwing");
             room->loseHp(player);
-            if (player->hasFlag("Global_Dying"))
-                player->setFlags("peacespell_dying");
-            else if (player->isAlive())
-                player->drawCards(2);
-        } else {
-            player->setFlags("-peacespell_dying");
             if (player->isAlive())
                 player->drawCards(2);
         }

@@ -312,11 +312,29 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
     }
     general_number = generals.length();
     if (!view_only) {
-        title = single_result ? tr("Please select one general")
-            : tr("Please select the same nationality generals");
-        if (!single_result && Self->getSeat() > 0)
-            title.prepend(Sanguosha->translate(QString("SEAT(%1)").arg(Self->getSeat()))
-            + " ");
+        if (reason.isEmpty()) {
+            title = single_result ? tr("Please select one general")
+                : tr("Please select the same nationality generals");
+            if (!single_result && Self->getSeat() > 0)
+                title.prepend(Sanguosha->translate(QString("SEAT(%1)").arg(Self->getSeat()))
+                + " ");
+        } else {
+            QStringList texts = reason.split(":");
+            QString prompt = Sanguosha->translate(texts.at(0));
+            if (texts.length() >= 2)
+                prompt.replace("%src", ClientInstance->getPlayerName(texts.at(1)));
+            if (texts.length() >= 3)
+                prompt.replace("%dest", ClientInstance->getPlayerName(texts.at(2)));
+            if (texts.length() >= 5) {
+                QString arg2 = Sanguosha->translate(texts.at(4));
+                prompt.replace("%arg2", arg2);
+            }
+            if (texts.length() >= 4) {
+                QString arg = Sanguosha->translate(texts.at(3));
+                prompt.replace("%arg", arg);
+            }
+            title = prompt;
+        }
     }
 
     prepareGeometryChange();

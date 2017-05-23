@@ -44,6 +44,7 @@ public:
     virtual AI::Relation relationTo(const ServerPlayer *a, const ServerPlayer *b) const;
     virtual void onTagSet(Room *room, const QString &key) const;
     virtual bool generalSelection() const;
+    virtual void prepareForStart(Room *room, QList<ServerPlayer *> &room_players) const;
     inline bool isRandomSeat() const
     {
         return random_seat;

@@ -260,18 +260,18 @@ void QSanSkillButton::onMouseClick()
     bool head = objectName() == "head";
     if (!Self->hasPreshowedSkill(_m_skill, head) && _m_state == QSanButton::S_STATE_CANPRESHOW) {
         setState(S_STATE_DISABLED);
-        ClientInstance->preshow(_m_skill->objectName(), true, head);
+        ClientInstance->preshow(Self, _m_skill->objectName(), true, head);
     } else if (Self->hasPreshowedSkill(_m_skill, head) && _m_state == QSanButton::S_STATE_DISABLED
         && _m_skill->canPreshow() && !Self->hasShownSkill(_m_skill)) {
         setState(QSanButton::S_STATE_CANPRESHOW);
-        ClientInstance->preshow(_m_skill->objectName(), false, head);
+        ClientInstance->preshow(Self, _m_skill->objectName(), false, head);
     } else {
         if ((_m_style == S_STYLE_TOGGLE && isDown() && _m_emitActivateSignal) || _m_style == S_STYLE_PUSH) {
             emit skill_activated();
-            emit skill_activated(_m_skill);
+            //emit skill_activated(_m_skill);
         } else if (!isDown() && _m_emitDeactivateSignal) {
             emit skill_deactivated();
-            emit skill_deactivated(_m_skill);
+            //emit skill_deactivated(_m_skill);
         }
     }
 }
@@ -469,8 +469,8 @@ QSanSkillButton *QSanInvokeSkillDock::addSkillButtonByName(const QString &skillN
     const Skill *skill = Sanguosha->getSkill(skillName);
     button->setSkill(skill);
     button->setObjectName(this->objectName());
-    connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_activated), this, &QSanInvokeSkillDock::skill_activated);
-    connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_deactivated), this, &QSanInvokeSkillDock::skill_deactivated);
+    //connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_activated), this, &QSanInvokeSkillDock::skill_activated);
+    //connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_deactivated), this, &QSanInvokeSkillDock::skill_deactivated);
     _m_buttons.append(button);
     update();
     return button;

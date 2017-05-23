@@ -30,15 +30,6 @@
 ZhihengCard::ZhihengCard()
 {
     target_fixed = true;
-    mute = true;
-}
-
-
-void ZhihengCard::onUse(Room *room, const CardUseStruct &card_use) const
-{
-    ServerPlayer *source = card_use.from;
-    if (!show_skill.isEmpty()) room->broadcastSkillInvoke("zhiheng", "male", -1, source, getSkillPosition());
-    SkillCard::onUse(room, card_use);
 }
 
 void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
@@ -56,10 +47,6 @@ public:
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
-        if (selected.length() >= Self->getMaxHp())
-            return !Self->isJilei(to_select) && Self->getTreasure() && Self->getTreasure()->isKindOf("Luminouspearl")
-                    && to_select != Self->getTreasure() && !selected.contains(Self->getTreasure());
-
         return !Self->isJilei(to_select) && selected.length() < Self->getMaxHp();
     }
 
@@ -87,11 +74,22 @@ public:
     Qixi() : OneCardViewAsSkill("qixi")
     {
         response_or_use = true;
+        skill_type = Attack;
     }
 
     virtual bool viewFilter(const Card *to_select) const
     {
         return to_select->isBlack();
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            Card *card = Sanguosha->cloneCard("dismantlement");
+            card->deleteLater();
+            if (Sanguosha->matchExpPatternType(pattern, card)) return true;
+        }
+        return false;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -193,6 +191,7 @@ public:
 Yingzi::Yingzi(const QString &owner, bool can_preshow) : DrawCardsSkill("yingzi_" + owner), m_canPreshow(can_preshow)
 {
     frequency = Frequent;
+    skill_type = Replenish;
 }
 
 bool Yingzi::canPreshow() const
@@ -259,6 +258,7 @@ class Fanjian : public ZeroCardViewAsSkill
 public:
     Fanjian() : ZeroCardViewAsSkill("fanjian")
     {
+        skill_type = Attack;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -282,6 +282,17 @@ public:
     {
         filter_pattern = ".|diamond";
         response_or_use = true;
+        skill_type = Alter;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            Card *card = Sanguosha->cloneCard("indulgence");
+            card->deleteLater();
+            if (Sanguosha->matchExpPatternType(pattern, card)) return true;
+        }
+        return false;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -364,6 +375,7 @@ public:
     {
         events << TargetConfirming;
         view_as_skill = new LiuliViewAsSkill;
+        skill_type = Defense;
     }
 
     virtual bool canPreshow() const
@@ -440,6 +452,7 @@ public:
     {
         events << TargetConfirming;
         frequency = Compulsory;
+        skill_type = Defense;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -456,9 +469,8 @@ public:
     {
         bool invoke = player->hasShownSkill(this) ? true : player->askForSkillInvoke(objectName(), QVariant(), info.skill_position);
         if (invoke) {
-            if (player->getTriggerSkills().contains(this)) {
-                room->broadcastSkillInvoke(objectName(), "male", -1, player, info.skill_position);
-            }
+            room->broadcastSkillInvoke(objectName(), "male", -1, player, info.skill_position);
+
             return info;
         }
         return TriggerStruct();
@@ -529,6 +541,7 @@ class Jieyin : public ViewAsSkill
 public:
     Jieyin() : ViewAsSkill("jieyin")
     {
+        skill_type = Recover;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -564,6 +577,7 @@ public:
     {
         events << CardsMoveOneTime;
         frequency = Frequent;
+        skill_type = Replenish;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *sunshangxiang, QVariant &data, ServerPlayer *) const
@@ -683,11 +697,7 @@ public:
     virtual bool viewFilter(const Card *to_select) const
     {
         if (Self->isJilei(to_select)) return false;
-        QString pat;
-        if (Self->hasSkill("hongyan") && !Self->hasShownSkill("hongyan"))
-            pat = ".|heart,spade|.|hand";
-        else
-            pat = ".|heart|.|hand";
+        QString pat = ".|heart|.|hand";
         ExpPattern pattern(pat);
         return pattern.match(Self, to_select);
     }
@@ -700,6 +710,7 @@ public:
     {
         events << DamageInflicted;
         view_as_skill = new TianxiangViewAsSkill;
+        skill_type = Defense;
     }
 
     virtual bool canPreshow() const
@@ -798,7 +809,6 @@ public:
 
     virtual bool viewFilter(const Card *to_select) const
     {
-        //Room *room = player->getRoom();
         int id = to_select->getEffectiveId();
         return to_select->getSuit() == Card::Spade
                 && (Sanguosha->getCardPlace(id) == Player::PlaceEquip
@@ -826,6 +836,7 @@ public:
         events << FinishRetrial;
         frequency = Compulsory;
         view_as_skill = new HongyanFilter;
+        skill_type = Alter;
     }
 
     virtual bool canPreshow() const {
@@ -896,6 +907,7 @@ class Tianyi : public ZeroCardViewAsSkill
 public:
     Tianyi() : ZeroCardViewAsSkill("tianyi")
     {
+        skill_type = Attack;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -1131,6 +1143,7 @@ public:
     {
         events << PostHpReduced;
         frequency = Frequent;
+        skill_type = Defense;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *zhoutai, QVariant &, ServerPlayer *) const
@@ -1260,6 +1273,7 @@ public:
     Haoshi() : DrawCardsSkill("haoshi")
     {
         view_as_skill = new HaoshiViewAsSkill;
+        skill_type = Replenish;
     }
 
     virtual bool canPreshow() const
@@ -1270,9 +1284,8 @@ public:
     virtual TriggerStruct cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *, const TriggerStruct &info) const
     {
         if (player->askForSkillInvoke(objectName(), QVariant(), info.skill_position)) {
-            if (player->getTriggerSkills().contains(this)) {
-                room->broadcastSkillInvoke(objectName(), "male", -1, player, info.skill_position);
-            }
+            room->broadcastSkillInvoke(objectName(), "male", -1, player, info.skill_position);
+
             player->tag[objectName()] = QVariant::fromValue(info.skill_position);
             return info;
         }
@@ -1297,7 +1310,7 @@ public:
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *lusu, QVariant &, ServerPlayer *) const
     {
-		if (!lusu || !lusu->isAlive() || !lusu->hasSkill("haoshi")) return TriggerStruct();
+        if (!lusu || !lusu->isAlive()) return TriggerStruct();
         if (lusu->hasFlag("haoshi")) {
             if (lusu->getHandcardNum() <= 5) {
                 lusu->setFlags("-haoshi");
@@ -1313,6 +1326,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *lusu, QVariant &, ServerPlayer *, const TriggerStruct &info) const
     {
         lusu->setFlags("-haoshi");
+        lusu->tag.remove("haoshi");
         QList<ServerPlayer *> other_players = room->getOtherPlayers(lusu);
         int least = 1000;
         foreach(ServerPlayer *player, other_players)
@@ -1382,11 +1396,17 @@ void DimengCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets)
     int n1 = a->getHandcardNum();
     int n2 = b->getHandcardNum();
 
+    QList<ServerClient *> clients;
+    if (a->getClient())
+        clients << a->getClient();
+    if (b->getClient())
+        clients << b->getClient();
+
     try {
-        foreach (ServerPlayer *p, room->getAlivePlayers()) {
-            if (p != a && p != b)
+        foreach (ServerClient *p, room->getClients()) {
+            if (!clients.contains(p))
                 room->doNotify(p, QSanProtocol::S_COMMAND_EXCHANGE_KNOWN_CARDS,
-                JsonArray() << a->objectName() << b->objectName());
+                    JsonArray() << a->objectName() << b->objectName());
         }
         QList<CardsMoveStruct> exchangeMove;
         CardsMoveStruct move1(a->handCards(), b, Player::PlaceHand,
@@ -1423,6 +1443,7 @@ class Dimeng : public ViewAsSkill
 public:
     Dimeng() : ViewAsSkill("dimeng")
     {
+        skill_type = Wizzard;
     }
 
     virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
@@ -1503,6 +1524,7 @@ public:
     Guzheng() : TriggerSkill("guzheng")
     {
         events << EventPhaseEnd << CardsMoveOneTime;
+        skill_type = Replenish;
     }
 
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *erzhang, QVariant &data) const
@@ -1634,6 +1656,7 @@ class Duanbing : public TargetModSkill
 public:
     Duanbing() : TargetModSkill("duanbing")
     {
+        skill_type = Attack;
     }
 
     virtual bool checkExtraTargets(const Player *from, const Player *to, const Card *card, const QList<const Player *> &previous_targets,
@@ -1653,6 +1676,7 @@ public:
 
 FenxunCard::FenxunCard()
 {
+    will_throw = true;
 }
 
 bool FenxunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
@@ -1663,14 +1687,14 @@ bool FenxunCard::targetFilter(const QList<const Player *> &targets, const Player
 void FenxunCard::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
-    effect.from->tag["FenxunTarget"] = QVariant::fromValue(effect.to);
-    room->setFixedDistance(effect.from, effect.to, 1);
+    room->setPlayerFlag(effect.from, "FenxunInvoker");
+    room->setPlayerFlag(effect.to, "FenxunTarget");
 }
 
-class FenxunViewAsSkill : public OneCardViewAsSkill
+class Fenxun : public OneCardViewAsSkill
 {
 public:
-    FenxunViewAsSkill() : OneCardViewAsSkill("fenxun")
+    Fenxun() : OneCardViewAsSkill("fenxun")
     {
         filter_pattern = ".!";
     }
@@ -1690,34 +1714,19 @@ public:
     }
 };
 
-class Fenxun : public TriggerSkill
+class FenxunDistance : public DistanceSkill
 {
 public:
-    Fenxun() : TriggerSkill("fenxun")
+    FenxunDistance() : DistanceSkill("fenxun-distance")
     {
-        events << EventPhaseChanging << Death;
-        view_as_skill = new FenxunViewAsSkill;
     }
 
-    virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *dingfeng, QVariant &data, ServerPlayer *) const
+    virtual int getFixed(const Player *from, const Player *to) const
     {
-        if (dingfeng == NULL || dingfeng->tag["FenxunTarget"].value<ServerPlayer *>() == NULL) return TriggerStruct();
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive)
-                return TriggerStruct();
-        } else if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != dingfeng)
-                return TriggerStruct();
-        }
-        ServerPlayer *target = dingfeng->tag["FenxunTarget"].value<ServerPlayer *>();
-
-        if (target) {
-            room->setFixedDistance(dingfeng, target, -1);
-            dingfeng->tag.remove("FenxunTarget");
-        }
-        return TriggerStruct();
+        if (from->hasFlag("FenxunInvoker") && to->hasFlag("FenxunTarget"))
+            return 1;
+        else
+            return 0;
     }
 };
 
@@ -1782,8 +1791,6 @@ void StandardPackage::addWuGenerals()
     General *erzhang = new General(this, "erzhang", "wu", 3); // WU 015
     erzhang->addSkill(new Zhijian);
     erzhang->addSkill(new Guzheng);
-    //erzhang->addSkill(new GuzhengRecord);
-    //insertRelatedSkills("guzheng", "#guzheng-record");
 
     General *dingfeng = new General(this, "dingfeng", "wu"); // WU 016
     dingfeng->addSkill(new Duanbing);
@@ -1800,6 +1807,5 @@ void StandardPackage::addWuGenerals()
     addMetaObject<DimengCard>();
     addMetaObject<ZhijianCard>();
     addMetaObject<FenxunCard>();
-    //    addMetaObject<GuzhengCard>();
-    skills << new TianxiangDraw;
+    skills << new TianxiangDraw << new FenxunDistance;
 }

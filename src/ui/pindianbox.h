@@ -41,7 +41,7 @@ protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 public slots:
-    void doPindian(const QString &requestor, const QString &reason, const QStringList &targets);
+    void doPindian(const QString &requestor, const QString &reason, const QStringList &targets, QList<int> ids);
     void onReply(const QString &who, int card_id);
 
 private slots:

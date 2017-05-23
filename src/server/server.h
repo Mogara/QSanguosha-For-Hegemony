@@ -30,7 +30,7 @@
 class Room;
 class ClientSocket;
 class ServerSocket;
-class ServerPlayer;
+class ServerClient;
 
 class Server : public QObject
 {
@@ -48,7 +48,7 @@ public:
 
 
     Room *createNewRoom();
-    void signupPlayer(ServerPlayer *player);
+    void signupPlayer(ServerClient *player);
 
 private:
     void notifyClient(ClientSocket *socket, QSanProtocol::CommandType command, const QVariant &arg = QVariant());
@@ -58,9 +58,9 @@ private:
     ServerSocket *server;
     Room *current;
     QSet<Room *> rooms;
-    QHash<QString, ServerPlayer *> players;
+    QHash<QString, ServerClient *> players;
     QStringList addresses;
-    QMultiHash<QString, QString> name2objname;
+    //QMultiHash<QString, QString> name2objname;
 
 private slots:
     void processNewConnection(ClientSocket *socket);
@@ -70,7 +70,7 @@ private slots:
 
 signals:
     void server_message(const QString &);
-    void newPlayer(ServerPlayer *player);
+    void newPlayer(ServerClient *player);
 };
 
 #endif // SERVER_H

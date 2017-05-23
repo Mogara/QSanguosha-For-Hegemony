@@ -184,6 +184,7 @@ Card::Color Card::getColor() const
 
 bool Card::isEquipped() const
 {
+    if (Self == NULL || this == NULL) return false;
     return Self->hasEquip(this);
 }
 
@@ -513,9 +514,9 @@ const Card *Card::Parse(const QString &card_str)
     QString position = str_list.length() > 1 ? str_list.last() : QString();         //get skill postion info. by weirdouncle
     if (str.startsWith(QChar('@'))) {
         // skill card
-        QRegExp pattern1("@(\\w+)=([^:]+)&(.*)(:.+)?");
+        QRegExp pattern1("@(\\w+)=([^:]+)&(\\w*)(:.+)?");
         QRegExp pattern2("@(\\w+)=([^:]+)(:.+)?");
-        QRegExp ex_pattern("@(\\w*)\\[(\\w+):(.+)\\]=([^:]+)&(.*)(:.+)?");
+        QRegExp ex_pattern("@(\\w*)\\[(\\w+):(.+)\\]=([^:]+)&(\\w*)(:.+)?");
 
         QStringList texts;
         QString card_name, card_suit, card_number;
@@ -719,6 +720,11 @@ bool Card::targetsFeasible(const QList<const Player *> &targets, const Player *)
         return !targets.isEmpty();
 }
 
+bool Card::secondFilter(const QList<const Player *> &, const Player *, const Player *) const
+{
+    return false;
+}
+
 bool Card::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
     return targets.isEmpty() && to_select != Self;
@@ -858,6 +864,10 @@ void Card::onEffect(const CardEffectStruct &) const
 bool Card::isCancelable(const CardEffectStruct &) const
 {
     return false;
+}
+
+void Card::checkTargetModSkillShow(const CardUseStruct & /* use */) const
+{
 }
 
 QString Card::showSkill() const

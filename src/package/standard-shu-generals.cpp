@@ -91,6 +91,7 @@ public:
     {
         events << EventPhaseChanging;
         view_as_skill = new RendeViewAsSkill;
+        skill_type = Replenish;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *) const
@@ -110,6 +111,7 @@ public:
     Wusheng() : OneCardViewAsSkill("wusheng")
     {
         response_or_use = true;
+        skill_type = Attack;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -153,6 +155,7 @@ class Paoxiao : public TargetModSkill
 public:
     Paoxiao() : TargetModSkill("paoxiao")
     {
+        skill_type = Attack;
     }
 
     virtual int getResidueNum(const Player *from, const Card *card) const
@@ -225,65 +228,13 @@ public:
     }
 };
 
-/*
-class PaoxiaoArmorNullificaion : public TriggerSkill{
-public:
-PaoxiaoArmorNullificaion() : TriggerSkill("#paoxiao-null"){
-events << TargetChosen;
-frequency = Compulsory;
-global = true;
-}
-
-virtual bool canPreshow() const {
-return false;
-}
-
-virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
-if (!(player != NULL && player->isAlive() && player->hasSkill("paoxiao")))
-return QStringList();
-
-ServerPlayer *lord = room->getLord(player->getKingdom());
-if (lord != NULL && lord->hasLordSkill("shouyue") && lord->hasShownGeneral1()){
-CardUseStruct use = data.value<CardUseStruct>();
-if (use.card->isKindOf("Slash") && use.from == player)
-return QStringList(objectName());
-}
-
-return QStringList();
-}
-
-virtual TriggerStruct cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-if (player->hasShownSkill("paoxiao"))
-return true;
-else {
-player->tag["paoxiao_use"] = data;
-bool invoke = player->askForSkillInvoke("paoxiao", "armor_nullify");
-player->tag.remove("paoxiao_use");
-if (invoke){
-player->showGeneral(player->inHeadSkills("paoxiao"));
-return true;
-}
-}
-return false;
-}
-
-virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-ServerPlayer *lord = room->getLord(player->getKingdom());
-room->notifySkillInvoked(lord, "shouyue");
-CardUseStruct use = data.value<CardUseStruct>();
-foreach (ServerPlayer *p, use.to.toSet())
-p->addQinggangTag(use.card);
-return false;
-}
-};
-*/
-
 class Guanxing : public PhaseChangeSkill
 {
 public:
     Guanxing() : PhaseChangeSkill("guanxing")
     {
         frequency = Frequent;
+        skill_type = Wizzard;
     }
 
     virtual bool canPreshow() const
@@ -368,7 +319,7 @@ public:
         log.type = "$ViewDrawPile";
         log.from = zhuge;
         log.card_str = IntList2StringList(guanxing).join("+");
-        room->doNotify(zhuge, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
+        room->doNotify(zhuge->getClient(), QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
         log.type = "$ViewDrawPile2";
         log.arg = QString::number(guanxing.length());
         room->sendLog(log, QList<ServerPlayer *>() << zhuge);
@@ -393,6 +344,7 @@ public:
     {
         events << TargetConfirming;
         frequency = Compulsory;
+        skill_type = Defense;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -491,6 +443,7 @@ public:
     {
         view_as_skill = new LongdanVS;
         events << CardUsed << CardResponded;
+        skill_type = Alter;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -555,6 +508,7 @@ public:
     {
         events << TargetChosen;
         frequency = Frequent;
+        skill_type = Attack;
     }
 
     virtual QList<TriggerStruct> triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data) const
@@ -636,6 +590,7 @@ public:
     {
         frequency = Frequent;
         events << CardUsed;
+        skill_type = Replenish;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -676,6 +631,7 @@ public:
     Qicai() : TargetModSkill("qicai")
     {
         pattern = "TrickCard";
+        skill_type = Wizzard;
     }
 
     virtual bool getDistanceLimit(const Player *from, const Player *, const Card *card) const
@@ -696,6 +652,7 @@ public:
     Liegong() : TriggerSkill("liegong")
     {
         events << TargetChosen;
+        skill_type = Attack;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -773,6 +730,7 @@ public:
     {
         frequency = Compulsory;
         events << Damage << PreDamageDone;
+        skill_type = Recover;
     }
 
     virtual void record(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data) const
@@ -834,6 +792,7 @@ public:
     {
         filter_pattern = ".|club|.|hand";
         response_or_use = true;
+        skill_type = Alter;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -854,6 +813,7 @@ public:
         events << AskForPeaches;
         frequency = Limited;
         limit_mark = "@nirvana";
+        skill_type = Recover;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &data, ServerPlayer *) const
@@ -914,6 +874,7 @@ public:
     {
         filter_pattern = ".|red|.|hand";
         response_or_use = true;
+        skill_type = Attack;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -932,6 +893,7 @@ public:
     Bazhen() : TriggerSkill("bazhen")
     {
         frequency = Compulsory;
+        skill_type = Defense;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *, const TriggerStruct &info) const
@@ -980,8 +942,9 @@ public:
     Kanpo() : OneCardViewAsSkill("kanpo")
     {
         filter_pattern = ".|black|.|hand";
-        response_pattern = "nullification";
         response_or_use = true;
+        response_pattern = "nullification";
+        skill_type = Alter;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -993,9 +956,9 @@ public:
         return ncard;
     }
 
-    virtual bool isEnabledAtNullification(const ServerPlayer *player) const
+    virtual bool isEnabledAtNullification(const Player *player) const
     {
-        QList <const Card *> handlist = player->getCards("h");
+        QList <const Card *> handlist = player->getHandcards();
         foreach (int id, player->getHandPile()) {
             const Card *ca = Sanguosha->getCard(id);
             handlist.append(ca);
@@ -1056,6 +1019,7 @@ public:
     {
         events << TargetChosen << ConfirmDamage << CardFinished;
         frequency = Compulsory;
+        skill_type = Wizzard;
     }
 
     virtual QList<TriggerStruct> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
@@ -1113,6 +1077,7 @@ public:
     Zaiqi() : PhaseChangeSkill("zaiqi")
     {
         frequency = Frequent;
+        skill_type = Recover;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *menghuo, QVariant &, ServerPlayer *) const
@@ -1189,6 +1154,7 @@ public:
     {
         events << CardsMoveOneTime;
         frequency = Compulsory;
+        skill_type = Wizzard;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -1241,6 +1207,7 @@ public:
     Lieren() : TriggerSkill("lieren")
     {
         events << Damage;
+        skill_type = Attack;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *zhurong, QVariant &data, ServerPlayer *) const
@@ -1297,6 +1264,7 @@ public:
     {
         events << TargetConfirming;
         frequency = Compulsory;
+        skill_type = Defense;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -1441,6 +1409,7 @@ public:
     Shushen() : TriggerSkill("shushen")
     {
         events << HpRecover;
+        skill_type = Replenish;
     }
 
     virtual bool canPreshow() const
@@ -1515,6 +1484,7 @@ class Shenzhi : public PhaseChangeSkill
 public:
     Shenzhi() : PhaseChangeSkill("shenzhi")
     {
+        skill_type = Recover;
         frequency = Frequent;
         //This skill can't be frequent in game actually.
         //because the frequency = Frequent has no effect in UI currently, we use this to reduce the AI delay

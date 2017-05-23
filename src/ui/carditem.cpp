@@ -33,6 +33,7 @@
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
 #include <QGraphicsDropShadowEffect>
+#include <QTimer>
 
 void CardItem::_initialize()
 {
@@ -423,6 +424,12 @@ void CardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         painter->setOpacity(0.7 * opacity());
     }
 
+    if (m_count > 0 && m_count <= 27) {
+        painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea,
+            G_ROOM_SKIN.getCardMainPixmap("unknown"));
+        return;
+    }
+
     const Card *card = Sanguosha->getEngineCard(m_cardId);
     if (!_m_isUnknownGeneral) {
         const General *general = Sanguosha->getGeneral(objectName());
@@ -504,6 +511,33 @@ void CardItem::setFootnote(const QString &desc)
     QPainter painter(&_m_footnoteImage);
     font.paintText(&painter, QRect(QPoint(0, 0), rect.size()),
         (Qt::AlignmentFlag)((int)Qt::AlignHCenter | Qt::AlignBottom | Qt::TextWrapAnywhere), desc);
+}
+
+void CardItem::doRotateAnimation()
+{
+    m_count++;
+    QRectF r = boundingRect();
+
+    if (m_count > 27)
+        setTransform(QTransform().rotate(m_count * 10 - 360, Qt::YAxis).translate(-r.width() / 2, -r.height() / 2));
+    else
+        setTransform(QTransform().rotate(m_count * 10 - 540, Qt::YAxis).translate(-r.width() / 2, -r.height() / 2));
+
+    if (m_count == 36)
+        killTimer(_m_timerId);
+
+    update();
+}
+
+void CardItem::timerEvent(QTimerEvent *)
+{
+    doRotateAnimation();
+}
+
+void CardItem::startRotate()
+{
+    m_count = 18;
+    _m_timerId = startTimer(30);
 }
 
 int TransferButton::getCardId() const

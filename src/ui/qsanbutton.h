@@ -189,9 +189,9 @@ protected slots:
     void onMouseClick();
 
 signals:
-    void skill_activated(const Skill *);
+    //void skill_activated(const Skill *);
     void skill_activated();
-    void skill_deactivated(const Skill *);
+    //void skill_deactivated(const Skill *);
     void skill_deactivated();
 };
 
@@ -273,8 +273,8 @@ protected:
     int _m_width;
 
 signals:
-    void skill_activated(const Skill *skill);
-    void skill_deactivated(const Skill *skill);
+    //void skill_activated(const Skill *skill);
+    //void skill_deactivated(const Skill *skill);
 };
 
 #endif

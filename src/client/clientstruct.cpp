@@ -83,6 +83,8 @@ bool ServerInfoStruct::parse(const QString &str)
             Extensions << package_name;
         }
 
+        SkillModify = Config.SkillModify;
+
         QString flags = texts.at(6);
 
         RandomSeat = flags.contains("R");

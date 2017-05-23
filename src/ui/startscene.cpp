@@ -286,6 +286,12 @@ void StartScene::printServerInfo()
     serverLog->append(tr("Binding port number is %1").arg(Config.ServerPort));
     serverLog->append(tr("Game mode is %1").arg(Sanguosha->getModeName(Config.GameMode)));
     serverLog->append(tr("Player count is %1").arg(Sanguosha->getPlayerCount(Config.GameMode)));
+
+    if (Config.Lord_convert)
+        serverLog->append(tr("Lord convert is open"));
+    foreach (QString skill_name, Config.SkillModify)
+        serverLog->append(tr("Skill: %1 is modified").arg(Sanguosha->translate(skill_name)));
+
     serverLog->append(Config.OperationNoLimit ?
         tr("There is no time limit") :
         tr("Operation timeout is %1 seconds").arg(Config.OperationTimeout));

@@ -117,6 +117,8 @@ struct CardUseStruct
     bool m_addHistory;
     bool m_isHandcard;
     QStringList nullified_list;
+    QString m_pattern;
+    QStringList extra_shows;
 };
 
 class CardMoveReason
@@ -343,10 +345,6 @@ struct CardsMoveStruct
 
     bool tryParse(const QVariant &arg);
     QVariant toVariant() const;
-    inline bool isRelevant(const Player *player)
-    {
-        return player != NULL && (from == player || (to == player && to_place != Player::PlaceSpecial));
-    }
 };
 
 struct DyingStruct

@@ -62,6 +62,10 @@ function sgs.CreateTriggerSkill(spec)
 		skill:setRelateToPlace(spec.relate_to_place)
 	end
 
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
+	end
+
 	if (not spec.is_battle_array) and (type(spec.global) == "boolean") then skill:setGlobal(spec.global) end
 
 	if spec.on_record then
@@ -104,6 +108,9 @@ function sgs.CreateProhibitSkill(spec)
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
 	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
+	end
 	skill.is_prohibited = spec.is_prohibited
 
 	return skill
@@ -116,6 +123,9 @@ function sgs.CreateFixCardSkill(spec)
 	local skill = sgs.LuaFixCardSkill(spec.name)
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
+	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
 	end
 	skill.is_cardfixed = spec.is_cardfixed
 
@@ -147,6 +157,9 @@ function sgs.CreateViewHasSkill(spec)
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
 	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
+	end
 
 	skill.is_viewhas = spec.is_viewhas
 	if type(spec.global) == "boolean" then skill:setGlobal(spec.global) end
@@ -164,6 +177,9 @@ function sgs.CreateFilterSkill(spec)
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
 	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
+	end
 
 	skill.view_filter = spec.view_filter
 	skill.view_as = spec.view_as
@@ -173,15 +189,19 @@ end
 
 function sgs.CreateDistanceSkill(spec)
 	assert(type(spec.name) == "string")
-	assert(type(spec.correct_func) == "function")
+	assert(type(spec.correct_func) == "function" or type(spec.fixed_func) == "function")
 
 	local skill = sgs.LuaDistanceSkill(spec.name)
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
 	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
+	end
 
 	skill.correct_func = spec.correct_func
+	skill.fixed_func = spec.fixed_func
 
 	return skill
 end
@@ -194,6 +214,9 @@ function sgs.CreateMaxCardsSkill(spec)
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
+	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
 	end
 
 	if spec.extra_func then
@@ -209,13 +232,16 @@ end
 function sgs.CreateTargetModSkill(spec)
 	assert(type(spec.name) == "string")
 	assert(type(spec.residue_func) == "function" or type(spec.distance_limit_func) == "function" or type(spec.extra_target_func) == "function"
-			or type(spec.check_extra_func) == "function" or type(spec.audio_index_func) == "function")
+			or type(spec.check_extra_func) == "function" or type(spec.check_specific_func) == "function" or type(spec.audio_index_func) == "function")
 	if spec.pattern then assert(type(spec.pattern) == "string") end
 
 	local skill = sgs.LuaTargetModSkill(spec.name, spec.pattern or "Slash")
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
+	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
 	end
 
 	if spec.residue_func then
@@ -226,6 +252,9 @@ function sgs.CreateTargetModSkill(spec)
 	end
 	if spec.extra_target_func then
 		skill.extra_target_func = spec.extra_target_func
+	end
+	if spec.check_specific_func then
+		skill.check_specific_func = spec.check_specific_func
 	end
 	if spec.check_extra_func then
 		skill.check_extra_func = spec.check_extra_func
@@ -616,6 +645,9 @@ function sgs.CreateViewAsSkill(spec)
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
 	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
+	end
 
 	function skill:view_as(cards)
 		return spec.view_as(self, cards)
@@ -649,6 +681,9 @@ function sgs.CreateOneCardViewAsSkill(spec)
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
+	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
 	end
 
 	function skill:view_as(cards)
@@ -697,6 +732,9 @@ function sgs.CreateZeroCardViewAsSkill(spec)
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
 	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
+	end
 
 	function skill:view_as(cards)
 		if #cards > 0 then return nil end
@@ -729,6 +767,9 @@ function sgs.CreateArraySummonSkill(spec)
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
+	end
+	if spec.skill_type then
+		skill:setSkillType(spec.skill_type)
 	end
 
 	function skill:view_as(cards)

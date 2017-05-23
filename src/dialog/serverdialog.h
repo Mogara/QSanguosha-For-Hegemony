@@ -150,6 +150,11 @@ private:
     QCheckBox *convert_jf_to_ps;
     QCheckBox *convert_lord;
 
+    QCheckBox *convert_xunxun;
+    QCheckBox *convert_shengxi;
+    QCheckBox *convert_qianhuan;
+    QCheckBox *convert_hunshang;
+
     //QCheckBox *add_peace_spell;
     //QCheckBox *convert_zhangjiao_to_lord;
 

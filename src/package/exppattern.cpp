@@ -34,6 +34,47 @@ bool ExpPattern::match(const Player *player, const Card *card) const
     return false;
 }
 
+QString ExpPattern::replaceCardType(const QString &card_type) const
+{
+    Card *card = Sanguosha->cloneCard(card_type);
+    if (!card) return QString();
+    card->deleteLater();
+
+    QStringList patterns, results;
+    foreach (const QString &one_exp, this->exp.split("#")) {
+        if (this->matchType(card, one_exp))
+            patterns << one_exp;
+    }
+
+    if (patterns.isEmpty()) return card_type;
+
+    foreach (const QString &one_exp, patterns) {
+
+        QStringList factors = one_exp.split('|');
+        QStringList card_types = factors.at(0).split(',');
+
+        QStringList or_names;
+        foreach (const QString &or_name, card_types) {
+
+            QStringList names;
+            names << Sanguosha->getPattern(card_type)->getPatternString();
+            foreach (const QString &_name, or_name.split('+')) {
+                QString name = _name;
+                bool isInt = false;
+                if (name.startsWith('^'))
+                    name = name.mid(1);
+
+                if ((name.toInt(&isInt) && isInt) || name == "0")
+                    names << _name;
+            }
+            or_names << names.join('+');
+        }
+        factors.replace(0, or_names.join(','));
+        results << factors.join('|');
+    }
+    return results.join("#");
+}
+
 // '|' means 'and', '#' means 'or'.
 // the expression splited by '|' has 3 parts,
 // 1st part means the card name, and ',' means more than one options.
@@ -183,3 +224,45 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
     return checkpoint;
 }
 
+bool ExpPattern::match(const Card *card) const
+{
+    foreach (const QString &one_exp, this->exp.split("#"))
+        if (this->matchType(card, one_exp)) return true;
+
+    return false;
+}
+
+bool ExpPattern::matchType(const Card *card, QString exp) const
+{
+    QStringList factors = exp.split('|');
+
+    bool checkpoint = false;
+    QStringList card_types = factors.at(0).split(',');
+    foreach (const QString &or_name, card_types) {
+        checkpoint = false;
+        foreach (const QString &_name, or_name.split('+')) {
+            QString name = _name;
+            if (name == ".") {
+                checkpoint = true;
+            } else {
+                bool isInt = false;
+                bool positive = true;
+                if (name.startsWith('^')) {
+                    positive = false;
+                    name = name.mid(1);
+                }
+
+                if (name.toInt(&isInt) && isInt)                                   //if the card match type or name, viewasskill should be actived
+                    checkpoint = true;
+                else if (card->isKindOf(name.toLocal8Bit().data())
+                        || ("%" + card->objectName() == name))
+                    checkpoint = positive;
+                else
+                    checkpoint = !positive;
+            }
+            if (!checkpoint) break;
+        }
+        if (checkpoint) break;
+    }
+    return checkpoint;
+}

@@ -154,25 +154,26 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
     QString avatar = body[2].toString();
 
     if (is_reconnection) {
-        foreach (const QString &objname, name2objname.values(screen_name)) {
-            ServerPlayer *player = players.value(objname);
-            if (player && player->getState() == "offline" && !player->getRoom()->isFinished()) {
-                player->getRoom()->reconnect(player, socket);
-                return;
-            }
+        ServerClient *player = players.value(screen_name);
+        if (player && player->getState() == "offline" && !player->getRoom()->isFinished()) {
+            player->getRoom()->reconnect(player, socket);
+            return;
         }
     }
 
     if (current == NULL || current->isFull() || current->isFinished())
         createNewRoom();
 
-    ServerPlayer *player = current->addSocket(socket);
-    current->signup(player, screen_name, avatar, false);
-    emit newPlayer(player);
+    ServerClient *client = current->addSocket(socket, screen_name + "+" + avatar);
+    emit newPlayer(client);
 
     if (current->getPlayers().length() == 1 && current->getScenario() && current->getScenario()->objectName() == "jiange_defense") {
         for (int i = 0; i < 4; ++i)
-            current->addRobotCommand(player, QVariant());
+            current->addRobotCommand(client, QVariant());
+    }
+    if (current->getPlayers().length() == 1 && current->getScenario() && current->getScenario()->objectName() == "one_on_one") {
+        for (int i = 0; i < 4; ++i)
+            current->addRobotCommand(client, QVariant());
     }
 }
 
@@ -184,9 +185,9 @@ void Server::cleanup()
     socket->deleteLater();
 }
 
-void Server::signupPlayer(ServerPlayer *player)
+void Server::signupPlayer(ServerClient *player)
 {
-    name2objname.insert(player->screenName(), player->objectName());
+    //name2objname.insert(player->screenName(), player->objectName());
     players.insert(player->objectName(), player);
 }
 
@@ -195,9 +196,9 @@ void Server::gameOver()
     Room *room = qobject_cast<Room *>(sender());
     rooms.remove(room);
 
-    foreach(ServerPlayer *player, room->findChildren<ServerPlayer *>())
+    foreach(ServerClient *player, room->findChildren<ServerClient *>())
     {
-        name2objname.remove(player->screenName(), player->objectName());
+        //name2objname.remove(player->screenName(), player->objectName());
         players.remove(player->objectName());
     }
 }

@@ -69,6 +69,8 @@ public:
     bool EnableMinimizeDialog;
     QString GameMode;
     QStringList BanPackages;
+    QStringList SkillModify;
+    bool Lord_convert;
     bool RandomSeat;
     bool EnableCheat;
     bool FreeChoose;

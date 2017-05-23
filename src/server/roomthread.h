@@ -54,8 +54,6 @@ public:
     bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data);
     bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target);
 
-    void addPlayerSkills(ServerPlayer *player, bool invoke_game_start = false);
-
     void addTriggerSkill(const TriggerSkill *skill);
     void delay(long msecs = -1);
     void actionNormal(GameRule *game_rule);

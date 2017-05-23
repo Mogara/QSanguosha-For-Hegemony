@@ -47,14 +47,16 @@ public:
     ~Photo();
     const ClientPlayer *getPlayer() const;
     void speak(const QString &content);
+    void updateSmallAvatar();
+    virtual void setPlayer(ClientPlayer *player);
     virtual void repaintAll();
     QList<CardItem *> removeCardItems(const QList<int> &card_id, Player::Place place);
 
     void setEmotion(const QString &emotion, bool permanent = false, bool playback = false, int duration = 0);
     void tremble();
-    void showSkillName(const QString &skill_name);
+    void showSkillName(const Skill *skill);
 
-    void updateSmallAvatar();
+    void changePlayer(ClientPlayer *player);
 
     enum FrameType
     {
@@ -73,8 +75,9 @@ public:
 public slots:
     void updatePhase();
     void hideEmotion();
-    void hideSkillName();
     virtual void refresh();
+    virtual void updateAvatarShadow();
+    virtual void updateSmallAvatarShadow();
 
 protected:
     inline virtual QGraphicsItem *_getEquipParent()
@@ -136,11 +139,11 @@ protected:
     FrameType _m_frameType;
     QGraphicsPixmapItem *_m_mainFrame;
     Sprite *emotion_item;
-    QGraphicsPixmapItem *_m_skillNameItem;
     QGraphicsPixmapItem *_m_focusFrame;
     QGraphicsPixmapItem *_m_onlineStatusItem;
 
     QParallelAnimationGroup *_blurEffect;
+    QGraphicsRectItem *_m_shadow_layer1, *_m_shadow_layer2;
 
     QHash<QString, PixmapAnimation *> _m_frameBorders;
     QHash<QString, PixmapAnimation *> _m_roleBorders;

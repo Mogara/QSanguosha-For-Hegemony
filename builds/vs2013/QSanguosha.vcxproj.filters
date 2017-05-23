@@ -959,15 +959,6 @@
     <ClCompile Include="Release\moc_cardchooseBox.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\transformation.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_transformation.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_transformation.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\lightboxanimation.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -985,6 +976,42 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ui\pindianbox.cpp">
       <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_dashboard_copy.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_dashboard_copy.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\dashboard_copy.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\banpickbox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_banpickbox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_banpickbox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\scenario\1v1.cpp">
+      <Filter>scenario</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_1v1.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_1v1.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_serverclient.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_serverclient.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\server\serverclient.cpp">
+      <Filter>server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1288,14 +1315,23 @@
     <CustomBuild Include="..\..\src\ui\cardchooseBox.h">
       <Filter>ui</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\transformation.h">
-      <Filter>package</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\src\ui\lightboxanimation.h">
       <Filter>Generated Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\ui\pindianbox.h">
       <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\dashboard_copy.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\banpickbox.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\scenario\1v1.h">
+      <Filter>scenario</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\server\serverclient.h">
+      <Filter>server</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

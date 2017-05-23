@@ -121,9 +121,12 @@ SOURCES += \
     swig/sanguosha_wrap.cxx \
     src/ui/guhuobox.cpp \
 	src/ui/cardchoosebox.cpp \   
-    src/package/transformation.cpp \
     src/ui/lightboxanimation.cpp \
-    src/ui/pindianbox.cpp
+    src/ui/pindianbox.cpp \
+    src/ui/dashboard_copy.cpp \
+    src/scenario/1v1.cpp \
+    src/ui/banpickbox.cpp \
+    src/server/serverclient.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -238,7 +241,11 @@ HEADERS += \
 	src/ui/cardchoosebox.h \
     src/package/transformation.h \
     src/ui/lightboxanimation.h \
-    src/ui/pindianbox.h
+    src/ui/pindianbox.h \
+    src/ui/dashboard_copy.h \
+    src/scenario/1v1.h \
+    src/ui/banpickbox.h \
+    src/server/serverclient.h
 
 FORMS += \
     src/dialog/cardoverview.ui \

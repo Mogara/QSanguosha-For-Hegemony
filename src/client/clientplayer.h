@@ -54,13 +54,16 @@ public:
     virtual bool isLastHandCard(const Card *card, bool contain = false) const;
     virtual void setMark(const QString &mark, int value);
 
-    virtual QStringList getBigKingdoms(const QString &reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const;
-
     virtual void setHeadSkinId(int id);
     virtual void setDeputySkinId(int id);
+    inline QList<int> getHandCardIds() const
+    {
+        return card_ids;
+    }
 
 private:
     int handcard_num;
+    QList<int> card_ids;
     QList<const Card *> known_cards, visible_cards;
     QTextDocument *mark_doc;
 

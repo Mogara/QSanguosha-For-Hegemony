@@ -26,6 +26,7 @@
 #include "standard.h"
 #include "client.h"
 #include "rolecombobox.h"
+#include "roomscene.h"
 #include "skinbank.h"
 #include "graphicspixmaphoveritem.h"
 
@@ -38,6 +39,7 @@
 #include <QTimer>
 #include <QPropertyAnimation>
 #include <QPushButton>
+#include <QTextDocument>
 #include <QMenu>
 #include <QFile>
 
@@ -65,9 +67,15 @@ Photo::Photo() : PlayerCardContainer()
     setAcceptHoverEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
     setTransform(QTransform::fromTranslate(-G_PHOTO_LAYOUT.m_normalWidth / 2, -G_PHOTO_LAYOUT.m_normalHeight / 2), true);
-    _m_skillNameItem = new QGraphicsPixmapItem(_m_groupMain);
 
+    _m_skillNameItem = new QGraphicsPixmapItem(_getAvatarParent());
     emotion_item = new Sprite(_m_groupMain);
+    _m_shadow_layer1 = new QGraphicsRectItem(_m_groupMain);
+    _m_shadow_layer1->setRect(G_PHOTO_LAYOUT.m_duanchangMaskRegion);
+    _m_shadow_layer1->hide();
+    _m_shadow_layer2 = new QGraphicsRectItem(_m_groupMain);
+    _m_shadow_layer2->setRect(G_PHOTO_LAYOUT.m_duanchangMaskRegion2);
+    _m_shadow_layer2->hide();
 #ifndef Q_OS_ANDROID
     _createChainAnimation();
 #endif
@@ -105,6 +113,20 @@ void Photo::refresh()
         if (!_m_onlineStatusItem->isVisible()) _m_onlineStatusItem->show();
     } else if (_m_onlineStatusItem != NULL && state_str == "online")
         _m_onlineStatusItem->hide();
+
+    _m_shadow_layer1->setRect(G_PHOTO_LAYOUT.m_duanchangMaskRegion);
+    _m_shadow_layer2->setRect(G_PHOTO_LAYOUT.m_duanchangMaskRegion2);
+    if (!m_player || !m_player->getGeneral() || !m_player->isAlive()) {
+        _m_shadow_layer1->hide();
+        _m_shadow_layer2->hide();
+    } else if (m_player && RoomSceneInstance->game_started){
+        _m_shadow_layer1->setBrush((m_player->hasShownGeneral1() || m_player->getGeneralName() == "anjiang") ? Qt::transparent : G_DASHBOARD_LAYOUT.m_generalShadowColor);
+        _m_shadow_layer1->show();
+        if (m_player->getGeneral2()) {
+            _m_shadow_layer2->setBrush((m_player->hasShownGeneral2() || m_player->getGeneral2Name() == "anjiang") ? Qt::transparent : G_DASHBOARD_LAYOUT.m_generalShadowColor);
+            _m_shadow_layer2->show();
+        }
+    }
 }
 
 
@@ -148,6 +170,8 @@ void Photo::_adjustComponentZValues()
     _layBetween(_m_mainFrame, _m_faceTurnedIcon, _m_equipRegions[3]);
     _layBetween(emotion_item, _m_secondaryAvatarNameItem, _m_roleComboBox);
     _layBetween(_m_skillNameItem, _m_secondaryAvatarNameItem, _m_roleComboBox);
+    _layBetween(_m_shadow_layer1, _m_duanchangMask, _m_avatarArea);
+    _layBetween(_m_shadow_layer2, _m_duanchangMask2, _m_smallAvatarIcon);
     _m_progressBarItem->setZValue(_m_groupMain->zValue() + 1);
 }
 
@@ -196,19 +220,24 @@ void Photo::tremble()
     vibrate->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
-void Photo::showSkillName(const QString &skill_name)
+void Photo::showSkillName(const Skill *skill)
 {
     G_PHOTO_LAYOUT.m_skillNameFont.paintText(_m_skillNameItem,
-        G_PHOTO_LAYOUT.m_skillNameArea,
-        Qt::AlignLeft,
-        Sanguosha->translate(skill_name));
+        //G_PHOTO_LAYOUT.m_skillNameArea,
+        QRect(0, 40, G_PHOTO_LAYOUT.m_normalWidth, 50),
+        Qt::AlignHCenter,
+        Sanguosha->translate(skill->objectName()));
     _m_skillNameItem->show();
-    QTimer::singleShot(1000, this, SLOT(hideSkillName()));
-}
+#ifndef Q_OS_ANDROID
+    int index = (int)skill->getType();
+    _createSkillAnimation(index);
+    if (_m_skill_animation[index]) {
+        _m_skill_animation[index]->show();
+        _m_skill_animation[index]->start(true);
+    }
 
-void Photo::hideSkillName()
-{
-    _m_skillNameItem->hide();
+#endif
+    QTimer::singleShot(1000, this, SLOT(hideSkillName()));
 }
 
 void Photo::hideEmotion()
@@ -253,9 +282,6 @@ void Photo::updateSmallAvatar()
             QString(QSanRoomSkin::S_SKIN_KEY_GENERAL_CIRCLE_IMAGE).arg(_m_layout->m_circleImageSize),
             _getAvatarParent());
         _m_secondaryAvatarArea->setToolTip(m_player->getDeputySkillDescription());
-
-        _createAvatarAnimations(general->objectName(), false, _m_layout->m_secondaryAvatarArea);
-
         QString name = Sanguosha->translate("&" + general->objectName());
         if (name.startsWith("&"))
             name = Sanguosha->translate(general->objectName());
@@ -272,6 +298,108 @@ void Photo::updateSmallAvatar()
         _m_secondaryAvatarArea->setToolTip(QString());
     }
     _adjustComponentZValues();
+}
+
+void Photo::setPlayer(ClientPlayer *player)
+{
+    PlayerCardContainer::setPlayer(player);
+    connect(player, &ClientPlayer::general_changed, this, &Photo::updateAvatarShadow);
+    connect(player, &ClientPlayer::general2_changed, this, &Photo::updateSmallAvatarShadow);
+}
+
+void Photo::changePlayer(ClientPlayer *player)
+{
+    _changePlayer.lock();
+
+    bool removed = m_player->isRemoved();
+    if (m_player) {
+        disconnect(m_player, &ClientPlayer::general_changed, this, &Photo::updateAvatarShadow);
+        disconnect(m_player, &ClientPlayer::general2_changed, this, &Photo::updateSmallAvatarShadow);
+        disconnect(m_player, &ClientPlayer::general_changed, this, &PlayerCardContainer::updateAvatar);
+        disconnect(m_player, &ClientPlayer::general2_changed, this, &PlayerCardContainer::updateSmallAvatar);
+        disconnect(m_player, &ClientPlayer::kingdom_changed, this, &PlayerCardContainer::updateAvatar);
+        disconnect(m_player, &ClientPlayer::state_changed, this, &PlayerCardContainer::refresh);
+        disconnect(m_player, &ClientPlayer::phase_changed, this, &PlayerCardContainer::updatePhase);
+        disconnect(m_player, &ClientPlayer::drank_changed, this, &PlayerCardContainer::updateDrankState);
+        disconnect(m_player, &ClientPlayer::action_taken, this, &PlayerCardContainer::refresh);
+        disconnect(m_player, &ClientPlayer::duanchang_invoked, this, &PlayerCardContainer::refresh);
+        disconnect(m_player, &ClientPlayer::pile_changed, this, &PlayerCardContainer::updatePile);
+        disconnect(m_player, &ClientPlayer::kingdom_changed, _m_roleComboBox, &RoleComboBox::fix);
+        disconnect(m_player, &ClientPlayer::hp_changed, this, &PlayerCardContainer::updateHp);
+        disconnect(m_player, &ClientPlayer::disable_show_changed, this, &PlayerCardContainer::refresh);
+        disconnect(m_player, &ClientPlayer::removedChanged, this, &PlayerCardContainer::onRemovedChanged);
+
+        disconnect(m_player->getMarkDoc(), &QTextDocument::contentsChanged, this, &PlayerCardContainer::updateMarks);
+        disconnect(m_player, &ClientPlayer::headSkinIdChanged, _m_avatarIcon, &GraphicsPixmapHoverItem::startChangeHeroSkinAnimation);
+        disconnect(m_player, &ClientPlayer::deputySkinIdChanged, _m_smallAvatarIcon, &GraphicsPixmapHoverItem::startChangeHeroSkinAnimation);
+    }
+
+    QStringList old_piles = m_player->getPileNames();
+    QList<int> equips;
+    foreach (const Card *card, m_player->getEquips())
+        equips << card->getId();
+    foreach (CardItem *card, removeEquips(equips)) {
+        card->deleteLater();
+        card = NULL;
+    }
+    foreach (CardItem *card, removeDelayedTricks(m_player->getJudgingAreaID())) {
+        card->deleteLater();
+        card = NULL;
+    }
+
+    setPlayer(player);
+
+    CardsMoveStruct move_equip(-1, player, Player::PlaceEquip, CardMoveReason());
+    QList<int> equip_cards;
+    foreach (const Card *card, player->getEquips())
+        equip_cards << card->getId();
+    addCardItems(equip_cards, move_equip);
+
+    CardsMoveStruct move_judge(-1, player, Player::PlaceDelayedTrick, CardMoveReason());
+    addCardItems(player->getJudgingAreaID(), move_judge);
+
+    foreach (QString pile, old_piles)
+        updatePile(pile);
+    foreach (QString pile, player->getPileNames())
+        if (!pile.startsWith("#") && !pile.startsWith("^"))
+            updatePile(pile);
+
+    showSeat();
+    updateHp();
+    updateDrankState();
+    if (player->isRemoved() != removed)
+        onRemovedChanged();
+    repaintAll();
+
+    if (player->isAlive()) {
+        if (player->isAlive()) {
+            _m_votesGot = 0;
+            setGraphicsEffect(NULL);
+            if (_m_deathIcon)
+                _m_deathIcon->hide();
+        }
+    } else
+        killPlayer();
+
+    _changePlayer.unlock();
+}
+
+void Photo::updateAvatarShadow()
+{
+    if (m_player && RoomSceneInstance->game_started && !m_player->hasShownGeneral1() && m_player->getGeneralName() != "anjiang") {
+        _m_shadow_layer1->setBrush(G_DASHBOARD_LAYOUT.m_generalShadowColor);
+        _m_shadow_layer1->show();
+    } else
+        _m_shadow_layer1->hide();
+}
+
+void Photo::updateSmallAvatarShadow()
+{
+    if (m_player && RoomSceneInstance->game_started && !m_player->hasShownGeneral2() && m_player->getGeneral2Name() != "anjiang") {
+        _m_shadow_layer2->setBrush(G_DASHBOARD_LAYOUT.m_generalShadowColor);
+        _m_shadow_layer2->show();
+    } else
+        _m_shadow_layer2->hide();
 }
 
 QList<CardItem *> Photo::removeCardItems(const QList<int> &card_ids, Player::Place place)
@@ -434,9 +562,13 @@ void Photo::onSkinChangingFinished()
     QString generalName;
     if (sender() == _m_avatarIcon) {
         generalName = m_player->getGeneralName();
+#ifndef Q_OS_ANDROID
         _createAvatarAnimations(generalName, true, _m_layout->m_avatarArea);
+#endif
     } else {
         generalName = m_player->getGeneral2Name();
+#ifndef Q_OS_ANDROID
         _createAvatarAnimations(generalName, false, _m_layout->m_secondaryAvatarArea);
+#endif
     }
 }

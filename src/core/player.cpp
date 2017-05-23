@@ -27,7 +27,7 @@
 
 Player::Player(QObject *parent)
     : QObject(parent), general(NULL), general2(NULL),
-    headSkinId(0), deputySkinId(0), owner(false),
+    headSkinId(0), deputySkinId(0),
     m_gender(General::Sexless), hp(-1), max_hp(-1),
     role_shown(false), state("online"), seat(0), alive(true),
     actual_general1(NULL), actual_general2(NULL),
@@ -46,19 +46,6 @@ void Player::setScreenName(const QString &screen_name)
 QString Player::screenName() const
 {
     return screen_name;
-}
-
-bool Player::isOwner() const
-{
-    return owner;
-}
-
-void Player::setOwner(bool owner)
-{
-    if (this->owner != owner) {
-        this->owner = owner;
-        emit owner_changed(owner);
-    }
 }
 
 bool Player::hasShownRole() const
@@ -304,7 +291,7 @@ bool Player::inMyAttackRange(const Player *other) const
         return true;
     return distanceTo(other) <= getAttackRange();
 }
-
+/*
 void Player::setFixedDistance(const Player *player, int distance)
 {
     if (distance == -1)
@@ -312,7 +299,7 @@ void Player::setFixedDistance(const Player *player, int distance)
     else
         fixed_distance.insert(player, distance);
 }
-
+*/
 int Player::originalRightDistanceTo(const Player *other) const
 {
     int right = 0;
@@ -332,8 +319,11 @@ int Player::distanceTo(const Player *other, int distance_fix) const
     if (isRemoved() || other->isRemoved())
         return -1;
 
-    if (fixed_distance.contains(other))
-        return fixed_distance.value(other);
+    //if (fixed_distance.contains(other))
+    //    return fixed_distance.value(other);
+
+    int fixed = Sanguosha->getFixedDistance(this, other);
+    if (fixed > 0) return fixed;
 
     int right = originalRightDistanceTo(other);
     int left = aliveCount(false) - right;
@@ -512,18 +502,20 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const
             return hasSkill(main_skill);
     }
 
-    if (!include_lose && !hasEquipSkill(skill_name) && !getAcquiredSkills().contains(skill_name)
-            && ownSkill(skill_name) && !canShowGeneral(inHeadSkills(skill_name) ? "h" : "d"))
-        return false;
     QStringList InvalidSkill = property("invalid_skill_has").toString().split("+");
     if (InvalidSkill.contains(skill_name))
         return false;
 
-    if (head_skills.value(skill_name, false) || deputy_skills.value(skill_name, false)
+    if ((head_skills.value(skill_name, false) && canShowGeneral("h"))
+            || (deputy_skills.value(skill_name, false) && canShowGeneral("d"))
             || head_acquired_skills.contains(skill_name) || deputy_acquired_skills.contains(skill_name))
         return true;
 
-    return !Sanguosha->ViewHas(this, skill_name, "skill").isEmpty();
+    if (!Sanguosha->ViewHas(this, skill_name, "skill").isEmpty()) return true;
+
+    if (include_lose && ownSkill(skill_name)) return true;
+
+    return false;
 }
 
 bool Player::hasSkill(const Skill *skill, bool include_lose) const
@@ -1024,7 +1016,7 @@ bool Player::canGetCard(const Player *to, int card_id) const
 
 bool Player::canTransform() const
 {
-    return getGeneral2() && !getGeneral2Name().contains("sujiang") && !isDuanchang(false) && hasShownGeneral2();
+    return getGeneral2() && !getGeneral2Name().contains("sujiang") && !isDuanchang(false) && canShowGeneral("hd");
 }
 
 void Player::addDelayedTrick(const Card *trick)
@@ -1070,7 +1062,7 @@ bool Player::canBeChainedBy(const Player *_source) const
         return true;
     } else {
         if (hasArmorEffect("IronArmor")) {
-            QStringList big_kingdoms = source->getBigKingdoms("IronArmor", MaxCardsType::Normal);
+            QStringList big_kingdoms = source->getBigKingdoms("IronArmor");
             if (!big_kingdoms.isEmpty()) {
                 QString kingdom;
                 if (!hasShownOneGeneral())
@@ -1152,7 +1144,7 @@ bool Player::canSlash(const Player *other, const Card *slash, bool distance_limi
     if (distance == -1)
         return false;
 
-    if (Sanguosha->correctCardTarget(this, other, slash == NULL ? newslash : slash)) return true;
+	if (Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, other, slash == NULL ? newslash : slash)) return true;
 
     if (distance_limit)
         return distance <= getAttackRange();
@@ -1688,7 +1680,7 @@ void Player::copyFrom(Player *p)
     b->face_up = a->face_up;
     b->chained = a->chained;
     b->judging_area = QList<int>(a->judging_area);
-    b->fixed_distance = QHash<const Player *, int>(a->fixed_distance);
+    //b->fixed_distance = QHash<const Player *, int>(a->fixed_distance);
     b->card_limitation = QMap<Card::HandlingMethod, QStringList>(a->card_limitation);
 
     b->tag = QVariantMap(a->tag);
@@ -2131,4 +2123,59 @@ void Player::setDeputySkinId(int id)
 int Player::getDeputySkinId() const
 {
     return deputySkinId;
+}
+
+QStringList Player::getBigKingdoms(const QString &) const
+{
+    QMap<QString, int> kingdom_map;
+    kingdom_map.insert("wei", 0);
+    kingdom_map.insert("shu", 0);
+    kingdom_map.insert("wu", 0);
+    kingdom_map.insert("qun", 0);
+    QList<const Player *> players = getAliveSiblings();
+    players.prepend(this);
+    foreach (const Player *p, players) {
+        if (!p->hasShownOneGeneral())
+            continue;
+        if (p->getRole() == "careerist") {
+            kingdom_map["careerist"] = 1;
+            continue;
+        }
+        ++kingdom_map[p->getKingdom()];
+    }
+
+    QStringList big_kingdoms;
+    foreach (const QString &key, kingdom_map.keys()) {
+        if (kingdom_map[key] == 0)
+            continue;
+        if (big_kingdoms.isEmpty()) {
+            if (kingdom_map[key] > 1)
+                big_kingdoms << key;
+            continue;
+        }
+        if (kingdom_map[key] == kingdom_map[big_kingdoms.first()]) {
+            big_kingdoms << key;
+        } else if (kingdom_map[key] > kingdom_map[big_kingdoms.first()]) {
+            big_kingdoms.clear();
+            big_kingdoms << key;
+        }
+    }
+    const Player *jade_seal_owner = NULL;
+    foreach (const Player *p, players) {
+        if (p->hasTreasure("JadeSeal") && p->hasShownOneGeneral()) {
+            jade_seal_owner = p;
+            break;
+        }
+    }
+    if (jade_seal_owner != NULL) {
+        if (jade_seal_owner->getRole() == "careerist") {
+            big_kingdoms.clear();
+            big_kingdoms << jade_seal_owner->objectName(); // record player's objectName who has JadeSeal.
+        } else { // has shown one general but isn't careerist
+            QString kingdom = jade_seal_owner->getKingdom();
+            big_kingdoms.clear();
+            big_kingdoms << kingdom;
+        }
+    }
+    return big_kingdoms;
 }

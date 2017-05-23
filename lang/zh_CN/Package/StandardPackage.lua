@@ -28,7 +28,7 @@ local t = {
 	["slash-jink"] = "%src 使用了【杀】，请使用一张【闪】",
 	["@multi-jink-start"] = "%src 使用了【杀】，你须连续使用 %arg 张【闪】",
 	["@multi-jink"] = "%src 使用了【杀】，你须再使用 %arg 张【闪】",
-	["@extra_targets"] = "请选择最多 <font color=\"yellow\"><b>%dest</b></font> 名角色成为卡牌：%src 的额外目标",
+	["@extra_targets"] = "你使用的 %dest 因技能 <font color=\"yellow\"><b>%src</b></font> 目标上限加 <font color=\"yellow\"><b>%arg</b></font>，请选择：",
 	["@extra_targets1"] = "请选择卡牌：%src 的额外目标",
 	["$extra_target"] = "%from 发动了【<font color=\"yellow\"><b>%arg</b></font>】选择 %to 成为 %card 的额外目标",
 	["extra_target_skill"] = "声明技能并选择额外目标",

@@ -189,6 +189,11 @@ bool TablePile::_addCardItems(QList<CardItem *> &card_items, const CardsMoveStru
             rightMostPos += QPointF(G_COMMON_LAYOUT.m_cardNormalWidth, 0);
         }
         card_item->m_uiHelper.tablePileClearTimeStamp = INT_MAX;
+        if (moveInfo.to_place == Player::PlaceJudge && moveInfo.reason.m_reason == CardMoveReason::S_REASON_JUDGE) {
+            //QRectF r = card_item->boundingRect();
+            //card_item->setPos(card_item->pos().x() - r.width() / 2, card_item->pos().y() - r.height() / 2);
+            card_item->startRotate();
+        }
     }
 
     _m_mutex_pileCards.unlock();

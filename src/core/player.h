@@ -57,7 +57,6 @@ class Player : public QObject
     Q_PROPERTY(QString flags READ getFlags WRITE setFlags)
     Q_PROPERTY(bool chained READ isChained WRITE setChained)
     Q_PROPERTY(bool removed READ isRemoved WRITE setRemoved)
-    Q_PROPERTY(bool owner READ isOwner WRITE setOwner)
     Q_PROPERTY(bool role_shown READ hasShownRole WRITE setShownRole)
 
     Q_PROPERTY(bool kongcheng READ isKongcheng)
@@ -70,6 +69,7 @@ class Player : public QObject
     Q_PROPERTY(bool general2_showed READ hasShownGeneral2 WRITE setGeneral2Showed)
 
     Q_PROPERTY(QString next READ getNextName WRITE setNext)
+    Q_PROPERTY(QString screenName READ screenName WRITE setScreenName)
 
     Q_PROPERTY(bool scenario_role_shown READ getScenarioRoleShown WRITE setScenarioRoleShown)
 
@@ -113,9 +113,6 @@ public:
     bool isMale() const;
     bool isFemale() const;
     bool isNeuter() const;
-
-    bool isOwner() const;
-    void setOwner(bool owner);
 
     bool hasShownRole() const;
     void setShownRole(bool shown);
@@ -170,7 +167,7 @@ public:
     void setFaceUp(bool face_up);
 
     virtual int aliveCount(bool includeRemoved = true) const = 0;
-    void setFixedDistance(const Player *player, int distance);
+    //void setFixedDistance(const Player *player, int distance);
     int originalRightDistanceTo(const Player *other) const;
     int distanceTo(const Player *other, int distance_fix = 0) const;
     const General *getAvatarGeneral() const;
@@ -373,7 +370,7 @@ public:
     virtual void setDeputySkinId(int id);
     int getDeputySkinId() const;
 
-    virtual QStringList getBigKingdoms(const QString &reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const = 0;
+    QStringList getBigKingdoms(const QString &reason) const;
 
     QVariantMap tag;
 
@@ -392,7 +389,6 @@ protected:
 
 private:
     QString screen_name;
-    bool owner;
     General::Gender m_gender;
     int hp, max_hp;
     QString kingdom;
@@ -412,7 +408,7 @@ private:
     bool chained;
     bool removed;
     QList<int> judging_area;
-    QHash<const Player *, int> fixed_distance;
+    //QHash<const Player *, int> fixed_distance;
     QString next;
 
     QMap<Card::HandlingMethod, QStringList> card_limitation;
@@ -431,7 +427,6 @@ signals:
     void hp_changed();
     void kingdom_changed(const QString &new_kingdom);
     void phase_changed();
-    void owner_changed(bool owner);
     void head_state_changed();
     void deputy_state_changed();
     void disable_show_changed();

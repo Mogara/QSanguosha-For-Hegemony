@@ -106,6 +106,7 @@ bool QSanProtocol::Packet::parse(const QByteArray &raw)
 
     if (result.size() == 5)
         messageBody = result[4];
+
     return true;
 }
 

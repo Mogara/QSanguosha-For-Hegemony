@@ -14,7 +14,6 @@ static QSize cardButtonSize;
 const int GuhuoBox::topBlankWidth = 38;
 const int GuhuoBox::bottomBlankWidth = 15;
 const int GuhuoBox::interval = 5;
-
 const int GuhuoBox::titleWidth = 22;
 
 GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag)
@@ -41,11 +40,10 @@ QRectF GuhuoBox::boundingRect() const
 
 void GuhuoBox::popup()
 {
-    if (RoomSceneInstance->current_guhuo_box != NULL)
-        RoomSceneInstance->current_guhuo_box->clear();
+    RoomSceneInstance->clearBoxes();
 
-    RoomSceneInstance->getDasboard()->unselectAll();
-    RoomSceneInstance->getDasboard()->stopPending();
+    RoomSceneInstance->getDashboard()->unselectAll();
+    RoomSceneInstance->getDashboard()->stopPending();
     if (flags.startsWith("!") && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
         emit onButtonClick();
         return;
@@ -55,8 +53,7 @@ void GuhuoBox::popup()
         return;
     }
 
-    RoomSceneInstance->getDasboard()->disableAllCards();
-    RoomSceneInstance->current_guhuo_box = this;
+    RoomSceneInstance->getDashboard()->disableAllCards();
 
     maxcardcount = 0;
     maxrow = 0;
@@ -241,13 +238,6 @@ void GuhuoBox::reply()
 
 void GuhuoBox::clear()
 {
-    RoomSceneInstance->current_guhuo_box = NULL;
-
-    if (sender() != NULL && Self->tag[skill_name] == sender()->objectName() && Sanguosha->getViewAsSkill(skill_name) != NULL)
-        RoomSceneInstance->getDasboard()->updatePending();
-    else if (Self->getPhase() == Player::Play)
-        RoomSceneInstance->getDasboard()->enableCards();
-
     if (!isVisible())
         return;
 
@@ -273,7 +263,7 @@ QString GuhuoBox::translate(const QString &option) const
     return translated;
 }
 
-CardButton::CardButton(QGraphicsObject *parent, const QString &card, int scale)
+CardButton::CardButton(QGraphicsObject *parent, const QString &card, int scale, const QString &skill)
     : QGraphicsObject(parent), cardName(card), Scale(scale)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
@@ -284,15 +274,31 @@ CardButton::CardButton(QGraphicsObject *parent, const QString &card, int scale)
     setOpacity(0.7);
     setObjectName(card);
 
-    QString original_tooltip = QString(":%1").arg(card);
-    QString tooltip = "[" + Sanguosha->translate(card) + "] " + Sanguosha->translate(original_tooltip);
-    setToolTip(QString("<font color=%1>%2</font>").arg(Config.SkillDescriptionInToolTipColor.name()).arg(tooltip));
+    const General *general = Sanguosha->getGeneral(card);
+    if (general) {
+        if (skill.isEmpty())
+            setToolTip(general->getSkillDescription(true));
+        else {
+            QString original_tooltip = QString(":%1").arg(skill);
+            QString tooltip = "[" + Sanguosha->translate(skill) + "] " + Sanguosha->translate(original_tooltip);
+            setToolTip(QString("<font color=%1>%2</font>").arg(Config.SkillDescriptionInToolTipColor.name()).arg(tooltip));
+        }
+    } else {
+        QString original_tooltip = QString(":%1").arg(card);
+        QString tooltip = "[" + Sanguosha->translate(card) + "] " + Sanguosha->translate(original_tooltip);
+        setToolTip(QString("<font color=%1>%2</font>").arg(Config.SkillDescriptionInToolTipColor.name()).arg(tooltip));
+    }
 }
 
 void CardButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setRenderHint(QPainter::HighQualityAntialiasing);
-    QPixmap generalImage = G_ROOM_SKIN.getCardMainPixmap(cardName);
+    QPixmap generalImage;
+    if (Sanguosha->getGeneral(cardName))
+        generalImage = G_ROOM_SKIN.getGeneralCardPixmap(cardName);
+    else
+        generalImage = G_ROOM_SKIN.getCardMainPixmap(cardName);
+    QSize cardButtonSize = QSize(G_COMMON_LAYOUT.m_cardNormalWidth, G_COMMON_LAYOUT.m_cardNormalHeight);
     generalImage = generalImage.scaled(cardButtonSize * Scale / 10, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     painter->setBrush(generalImage);
     painter->drawRoundedRect(boundingRect(), 5, 5, Qt::RelativeSize);
@@ -300,6 +306,7 @@ void CardButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 
 QRectF CardButton::boundingRect() const
 {
+    QSize cardButtonSize = QSize(G_COMMON_LAYOUT.m_cardNormalWidth, G_COMMON_LAYOUT.m_cardNormalHeight);
     return QRectF(QPoint(0, 0), cardButtonSize * Scale / 10);
 }
 

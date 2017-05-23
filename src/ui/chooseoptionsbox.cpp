@@ -48,7 +48,11 @@ ChooseOptionsBox::ChooseOptionsBox()
 
 QRectF ChooseOptionsBox::boundingRect() const
 {
-    const int width = getButtonWidth()* (qMax(options.length(), 1)) + outerBlankWidth * 2 + (qMax(options.length(), 1) - 1) * interval;
+    int width = getButtonWidth()* (qMax(options.length(), 1)) + outerBlankWidth * 2 + (qMax(options.length(), 1) - 1) * interval;
+
+    QFontMetrics fontMetrics(Button::defaultFont());
+    if (fontMetrics.width(title) > width)
+        width = fontMetrics.width(title);
 
     int max = 0;
     foreach (const QString &str, options)

@@ -306,7 +306,7 @@ const Card *TrustAI::askForSinglePeach(ServerPlayer *dying)
     if (isFriend(dying)) {
         QList<const Card *> cards = self->getHandcards();
         foreach (const Card *card, cards) {
-            if (card->isKindOf("Peach") && !self->hasFlag("Global_PreventPeach"))
+            if (card->isKindOf("Peach") && card->isAvailable(self))
                 return card;
             if (card->isKindOf("Analeptic") && dying == self)
                 return card;

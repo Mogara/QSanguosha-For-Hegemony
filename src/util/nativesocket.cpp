@@ -140,6 +140,7 @@ void NativeClientSocket::send(const QByteArray &message)
     if (message.isEmpty())
         return;
 
+    mutex.lock();
     socket->write(message);
     if (!message.endsWith('\n')) {
         socket->write("\n");
@@ -149,6 +150,8 @@ void NativeClientSocket::send(const QByteArray &message)
     printf(": %s\n", message.constData());
 #endif
     socket->flush();
+
+    mutex.unlock();
 }
 
 bool NativeClientSocket::isConnected() const

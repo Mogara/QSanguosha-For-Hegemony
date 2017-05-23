@@ -166,7 +166,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const;
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const;
-    virtual bool isEnabledAtNullification(const ServerPlayer *player) const;
+    virtual bool isEnabledAtNullification(const Player *player) const;
     virtual QString getExpandPile() const;
     virtual QList<const Card *> getGuhuoCards(const QList<const Card *> &cards) const;
 
@@ -220,8 +220,10 @@ public:
     LuaDistanceSkill(const char *name);
 
     virtual int getCorrect(const Player *from, const Player *to) const;
+    virtual int getFixed(const Player *from, const Player *to) const;
 
     LuaFunction correct_func;
+    LuaFunction fixed_func;
 };
 
 class LuaMaxCardsSkill : public MaxCardsSkill
@@ -248,6 +250,7 @@ public:
     virtual int getResidueNum(const Player *from, const Card *card) const;
     virtual int getExtraTargetNum(const Player *from, const Card *card) const;
     virtual bool getDistanceLimit(const Player *from, const Player *to, const Card *card) const;
+    virtual bool checkSpecificAssignee(const Player *from, const Player *to, const Card *card) const;
     virtual bool checkExtraTargets(const Player *from, const Player *to, const Card *card,
                                    const QList<const Player *> &previous_targets, const QList<const Player *> &targets = QList<const Player *>()) const;
     virtual int getEffectIndex(const ServerPlayer *player, const Card *card, const TargetModSkill::ModType type) const;
@@ -255,6 +258,7 @@ public:
     LuaFunction residue_func;
     LuaFunction distance_limit_func;
     LuaFunction extra_target_func;
+    LuaFunction check_specific_func;
     LuaFunction check_extra_func;
     LuaFunction audio_index_func;
 };

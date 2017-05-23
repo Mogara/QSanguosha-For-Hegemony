@@ -30,13 +30,16 @@ class ExpPattern : public CardPattern
 public:
     ExpPattern(const QString &exp);
     virtual bool match(const Player *player, const Card *card) const;
+    virtual bool match(const Card *card) const;
     virtual QString getPatternString() const
     {
         return exp;
     }
+    virtual QString replaceCardType(const QString &card_type) const;
 private:
     QString exp;
     bool matchOne(const Player *player, const Card *card, QString exp) const;
+    bool matchType(const Card *card, QString exp) const;
 };
 
 #endif

@@ -70,6 +70,7 @@ public:
     QList<const Package *> getPackages() const;
 
     QStringList getBanPackages() const;
+    QStringList getModifiedSkills();
     Card *cloneCard(const Card *card) const;
     Card *cloneCard(const QString &name, Card::Suit suit = Card::SuitToBeDecided, int number = -1, const QStringList &flags = QStringList()) const;
     SkillCard *cloneSkillCard(const QString &name) const;
@@ -107,6 +108,7 @@ public:
 
     const CardPattern *getPattern(const QString &name) const;
     bool matchExpPattern(const QString &pattern, const Player *player, const Card *card) const;
+    bool matchExpPatternType(const QString &pattern, const Card *card) const;
     Card::HandlingMethod getCardHandlingMethod(const QString &method_name) const;
     QList<const Skill *> getRelatedSkills(const QString &skill_name) const;
     const Skill *getMainSkill(const QString &skill_name) const;
@@ -129,7 +131,6 @@ public:
     QList<const DistanceSkill *> getDistanceSkills() const;
     QList<const MaxCardsSkill *> getMaxCardsSkills() const;
     QList<const TargetModSkill *> getTargetModSkills() const;
-    QList<const TriggerSkill *> getGlobalTriggerSkills() const;
     QList<const AttackRangeSkill *> getAttackRangeSkills() const;
     void addSkills(const QList<const Skill *> &skills);
 
@@ -200,9 +201,10 @@ public:
     QList<const ViewHasSkill *> ViewHas(const Player *player, const QString &skill_name, const QString &flag) const;
     QList<const ViewHasSkill *> ViewHasArmorEffect(const Player *player) const;
     int correctDistance(const Player *from, const Player *to) const;
+    int getFixedDistance(const Player *from, const Player *to) const;
     int correctMaxCards(const ServerPlayer *target, bool fixed = false, MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     int correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Card *card) const;
-    bool correctCardTarget(const Player *from, const Player *to, const Card *card) const;
+    bool correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Player *to, const Card *card) const;
     int correctAttackRange(const Player *target, bool include_weapon = true, bool fixed = false) const;
 
     void registerRoom(QObject *room);
@@ -213,6 +215,7 @@ public:
 
     QString getCurrentCardUsePattern();
     CardUseStruct::CardUseReason getCurrentCardUseReason();
+    Player *getCurrentAskforPeachPlayer();
 
     bool isGeneralHidden(const QString &general_name) const;
 
@@ -245,7 +248,6 @@ private:
     QList<const MaxCardsSkill *> maxcards_skills;
     QList<const TargetModSkill *> targetmod_skills;
     QList<const AttackRangeSkill *> attackrange_skills;
-    QList<const TriggerSkill *> global_trigger_skills;
 
     QList<const Package *> packages;
     QList<Card *> cards;

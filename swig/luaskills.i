@@ -97,6 +97,7 @@ public:
     DistanceSkill(const QString &name);
 
     virtual int getCorrect(const Player *from, const Player *to) const = 0;
+    virtual int getFixed(const Player *from, const Player *to) const = 0;
 };
 
 class MaxCardsSkill: public Skill {
@@ -112,7 +113,9 @@ public:
     enum ModType {
         Residue,
         DistanceLimit,
-        ExtraTarget
+        ExtraMaxTarget,
+        ExtraTarget,
+        SpecificAssignee,
     };
 
     TargetModSkill(const QString &name);
@@ -121,6 +124,7 @@ public:
     virtual int getResidueNum(const Player *from, const Card *card) const;
     virtual int getExtraTargetNum(const Player *from, const Card *card) const;
     virtual bool getDistanceLimit(const Player *from, const Player *to, const Card *card) const;
+    virtual bool checkSpecificAssignee(const Player *from, const Player *to, const Card *card) const;
     virtual bool checkExtraTargets(const Player *from, const Player *to, const Card *card,
                                   const QList<const Player *> &previous_targets, const QList<const Player *> &targets = QList<const Player *>()) const;
     virtual int getEffectIndex(const ServerPlayer *player, const Card *card, const TargetModSkill::ModType type) const;
@@ -232,8 +236,10 @@ class LuaDistanceSkill: public DistanceSkill {
 public:
     LuaDistanceSkill(const char *name);
     virtual int getCorrect(const Player *from, const Player *to) const;
+    virtual int getFixed(const Player *from, const Player *to) const;
 
     LuaFunction correct_func;
+    LuaFunction fixed_func;
 };
 
 class LuaMaxCardsSkill: public MaxCardsSkill {
@@ -271,6 +277,7 @@ public:
 
     virtual int getResidueNum(const Player *from, const Card *card) const;
     virtual int getExtraTargetNum(const Player *from, const Card *card) const;
+    virtual bool checkSpecificAssignee(const Player *from, const Player *to, const Card *card) const;
     virtual bool checkExtraTargets(const Player *from, const Player *to, const Card *card,
             const QList<const Player *> &previous_targets, const QList<const Player *> &targets = QList<const Player *>()) const;
     virtual bool getDistanceLimit(const Player *from, const Player *to, const Card *card) const;
@@ -278,6 +285,7 @@ public:
 
     LuaFunction residue_func;
     LuaFunction distance_limit_func;
+    LuaFunction check_specific_func;
     LuaFunction extra_target_func;
     LuaFunction check_extra_func;
     LuaFunction audio_index_func;
@@ -1095,6 +1103,31 @@ int LuaDistanceSkill::getCorrect(const Player *from, const Player *to) const
     return correct;
 }
 
+int LuaDistanceSkill::getFixed(const Player *from, const Player *to) const
+{
+    if (fixed_func == 0)
+        return 0;
+
+    lua_State *L = Sanguosha->getLuaState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, fixed_func);
+
+    SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaDistanceSkill, 0);
+    SWIG_NewPointerObj(L, from, SWIGTYPE_p_Player, 0);
+    SWIG_NewPointerObj(L, to, SWIGTYPE_p_Player, 0);
+
+    int error = lua_pcall(L, 3, 1, 0);
+    if (error) {
+        Error(L);
+        return 0;
+    }
+
+    int correct = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    return correct;
+}
+
 int LuaMaxCardsSkill::getExtra(const ServerPlayer *target, MaxCardsType::MaxCardsCount type) const
 {
     if (extra_func == 0)
@@ -1218,10 +1251,35 @@ int LuaTargetModSkill::getExtraTargetNum(const Player *from, const Card *card) c
         return 0;
     }
 
-    int extra_target_func = lua_tointeger(L, -1);
+    int extra_target = lua_tointeger(L, -1);
     lua_pop(L, 1);
 
-    return extra_target_func;
+    return extra_target;
+}
+
+bool LuaTargetModSkill::checkSpecificAssignee(const Player *from, const Player *to, const Card *card) const
+{
+    if (check_specific_func == 0)
+        return false;
+
+    lua_State *L = Sanguosha->getLuaState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, check_specific_func);
+
+    SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaTargetModSkill, 0);
+    SWIG_NewPointerObj(L, from, SWIGTYPE_p_Player, 0);
+    SWIG_NewPointerObj(L, to, SWIGTYPE_p_Player, 0);
+    SWIG_NewPointerObj(L, card, SWIGTYPE_p_Card, 0);
+
+    int error = lua_pcall(L, 4, 1, 0);
+    if (error) {
+        Error(L);
+        return false;
+    }
+
+    bool result = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return result;
 }
 
 bool LuaTargetModSkill::checkExtraTargets(const Player *from, const Player *to, const Card *card,
@@ -1516,7 +1574,7 @@ bool LuaViewAsSkill::isEnabledAtResponse(const Player *player, const QString &pa
     }
 }
 
-bool LuaViewAsSkill::isEnabledAtNullification(const ServerPlayer *player) const
+bool LuaViewAsSkill::isEnabledAtNullification(const Player *player) const
 {
     if (enabled_at_nullification == 0)
         return ViewAsSkill::isEnabledAtNullification(player);
@@ -1528,7 +1586,7 @@ bool LuaViewAsSkill::isEnabledAtNullification(const ServerPlayer *player) const
 
     pushSelf(L);
 
-    SWIG_NewPointerObj(L, player, SWIGTYPE_p_ServerPlayer, 0);
+    SWIG_NewPointerObj(L, player, SWIGTYPE_p_Player, 0);
 
     int error = lua_pcall(L, 2, 1, 0);
     if (error) {

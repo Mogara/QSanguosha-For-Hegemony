@@ -77,7 +77,14 @@ public:
     {
         m_currentCardResponsePrompt = prompt;
     }
-
+    inline void setCurrentAskforPeachPlayer(Player *player)
+    {
+        m_currentAskforPeachPlayer = player;
+    }
+    inline Player *getCurrentAskforPeachPlayer()
+    {
+        return m_currentAskforPeachPlayer;
+    }
     // Update a card in the room.
     // @param cardId
     //        Id of card to be updated.
@@ -95,8 +102,7 @@ protected:
     QString m_currentCardUsePattern;
     CardUseStruct::CardUseReason m_currentCardUseReason;
     QString m_currentCardResponsePrompt;
-    bool m_guhuo_expanded;
-    QList<const Card *> m_guhuo_cards;
+    Player *m_currentAskforPeachPlayer;
 };
 
 #endif

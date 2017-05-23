@@ -30,18 +30,26 @@ PindianBox::PindianBox()
 {
 }
 
-void PindianBox::doPindian(const QString &requestor, const QString &reason, const QStringList &targets)
+void PindianBox::doPindian(const QString &requestor, const QString &reason, const QStringList &targets, QList<int> ids)
 {
     _m_mutex_pindian.lock();
     zhuge = requestor;
     this->targets = targets;
     this->reason = reason;
+
+    foreach(CardItem *card_item, upItems)
+        card_item->deleteLater();
+    foreach(CardItem *card_item, downItems)
+        card_item->deleteLater();
+
     upItems.clear();
     downItems.clear();
     scene_width = RoomSceneInstance->sceneRect().width();
+    card_id = ids.first();
+    card_ids = ids;
+	card_ids.removeFirst();
 
-    for (int i = 1; i <= targets.length(); i++) {
-        card_ids << -1;
+    for (int i = 0; i < targets.length(); i++) {
         CardItem *cardItem = new CardItem(Sanguosha->getCard(-1));
         cardItem->setFlag(QGraphicsItem::ItemIsFocusable);
         cardItem->setFlag(ItemIsMovable, false);
@@ -82,7 +90,8 @@ void PindianBox::doPindian(const QString &requestor, const QString &reason, cons
         cardItem->setPos(pos);
         cardItem->setHomePos(pos);
         cardItem->goBack(true);
-        cardItem->hide();
+        if (card_ids.at(i) == -1)
+            cardItem->hide();
     }
 
     QPointF pos;
@@ -93,7 +102,8 @@ void PindianBox::doPindian(const QString &requestor, const QString &reason, cons
     card->setPos(pos);
     card->setHomePos(pos);
     card->goBack(true);
-    card->hide();
+    if (card_id == -1)
+        card->hide();
 
     prepareGeometryChange();
     GraphicsBox::moveToCenter(this);

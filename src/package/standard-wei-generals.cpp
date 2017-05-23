@@ -33,6 +33,7 @@ public:
     Jianxiong() : MasochismSkill("jianxiong")
     {
         frequency = Frequent;
+        skill_type = Replenish;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -70,6 +71,7 @@ class Fankui : public MasochismSkill
 public:
     Fankui() : MasochismSkill("fankui")
     {
+        skill_type = Wizzard;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *simayi, QVariant &data, ServerPlayer *) const
@@ -110,6 +112,7 @@ public:
     Guicai() : TriggerSkill("guicai")
     {
         events << AskForRetrial;
+        skill_type = Wizzard;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
@@ -136,6 +139,7 @@ public:
             room->retrial(card, player, judge, objectName(), false, info.skill_position);
             return info;
         }
+
 		return TriggerStruct();
     }
 
@@ -152,6 +156,7 @@ class Ganglie : public MasochismSkill
 public:
     Ganglie() : MasochismSkill("ganglie")
     {
+        skill_type = Defense;
     }
 
     virtual TriggerStruct cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *, const TriggerStruct &info) const
@@ -186,49 +191,12 @@ public:
     }
 };
 
-// TuxiCard::TuxiCard()
-// {
-// }
-// 
-// bool TuxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
-// {
-//     if (targets.length() >= 2 || to_select == Self)
-//         return false;
-// 
-//     return !to_select->isKongcheng();
-// }
-// 
-// void TuxiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const
-// {
-//     QVariantList target_list;
-//     foreach (ServerPlayer *target, targets) {
-//         target_list << QVariant::fromValue(target);
-//     }
-// 
-//     source->tag["tuxi_invoke"] = target_list;
-//     source->setFlags("tuxi");
-// }
-
-// class TuxiViewAsSkill : public ZeroCardViewAsSkill
-// {
-// public:
-//     TuxiViewAsSkill() : ZeroCardViewAsSkill("tuxi")
-//     {
-//         response_pattern = "@@tuxi";
-//     }
-// 
-//     virtual const Card *viewAs() const
-//     {
-//         return new TuxiCard;
-//     }
-// };
-
 class Tuxi : public PhaseChangeSkill
 {
 public:
     Tuxi() : PhaseChangeSkill("tuxi")
     {
-        //view_as_skill = new TuxiViewAsSkill;
+        skill_type = Attack;
     }
 
     virtual bool canPreshow() const
@@ -307,6 +275,7 @@ public:
     Luoyi() : TriggerSkill("luoyi")
     {
         events << DrawNCards << PreCardUsed;
+        skill_type = Attack;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -347,10 +316,11 @@ public:
 class LuoyiDamage : public TriggerSkill
 {
 public:
-    LuoyiDamage() : TriggerSkill("#luoyi-damage")
+    LuoyiDamage() : TriggerSkill("luoyi-damage")
     {
         events << DamageCaused;
         frequency = Skill::Compulsory;
+        global = true;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -391,6 +361,7 @@ public:
     {
         frequency = Frequent;
         events << FinishJudge;
+        skill_type = Replenish;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -424,6 +395,7 @@ public:
     Yiji() : MasochismSkill("yiji")
     {
         frequency = Frequent;
+        skill_type = Replenish;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -502,6 +474,7 @@ public:
     {
         events << EventPhaseStart;
         frequency = Frequent;
+        skill_type = Replenish;
     }
 
     virtual bool canPreshow() const
@@ -605,6 +578,7 @@ public:
         filter_pattern = ".|black|.|hand";
         response_pattern = "jink";
         response_or_use = true;
+        skill_type = Defense;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -702,6 +676,7 @@ public:
     {
         events << EventPhaseChanging;
         view_as_skill = new ShensuViewAsSkill;
+        skill_type = Attack;
     }
 
     virtual bool canPreshow() const
@@ -914,6 +889,7 @@ public:
     {
         events << EventPhaseChanging;
         view_as_skill = new QiaobianViewAsSkill;
+        skill_type = Wizzard;
     }
 
     virtual bool canPreshow() const
@@ -1011,6 +987,17 @@ public:
     {
         filter_pattern = "BasicCard,EquipCard|black";
         response_or_use = true;
+        skill_type = Alter;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            Card *card = Sanguosha->cloneCard("supply_shortage");
+            card->deleteLater();
+            if (Sanguosha->matchExpPatternType(pattern, card)) return true;
+        }
+        return false;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -1034,7 +1021,7 @@ public:
 
     virtual bool getDistanceLimit(const Player *from, const Player *to, const Card *card) const
     {
-        if (!Sanguosha->matchExpPattern(pattern, from, card))
+        if (!Sanguosha->matchExpPattern(pattern, from, card) || !to)
             return false;
 
         int n = (from && from->getOffensiveHorse() && card->getSubcards().contains(from->getOffensiveHorse()->getId())) ? 1 : 0;
@@ -1051,6 +1038,7 @@ public:
     Jushou() : PhaseChangeSkill("jushou")
     {
         frequency = Frequent;
+        skill_type = Defense;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
@@ -1113,6 +1101,7 @@ class Qiangxi : public ViewAsSkill
 public:
     Qiangxi() : ViewAsSkill("qiangxi")
     {
+        skill_type = Attack;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -1228,6 +1217,7 @@ class Jieming : public MasochismSkill
 public:
     Jieming() : MasochismSkill("jieming")
     {
+        skill_type = Replenish;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -1293,30 +1283,32 @@ public:
     {
         events << Death;
         frequency = Frequent;
+        skill_type = Replenish;
     }
 
-    virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    QList<TriggerStruct> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
-        DeathStruct death = data.value<DeathStruct>();
-        ServerPlayer *dead = death.who;
-        if (dead->isNude() || player == dead)
-            return TriggerStruct();
-        return (TriggerSkill::triggerable(player) && player->isAlive()) ? TriggerStruct(objectName(), player) : TriggerStruct();
+        QList<TriggerStruct> triggers;
+        if (player->isNude()) return triggers;
+        QList<ServerPlayer *> caopis = room->findPlayersBySkillName(objectName());
+        foreach (ServerPlayer *caopi, caopis)
+            if (caopi != player)
+                triggers << TriggerStruct(objectName(), caopi);
+
+        return triggers;
     }
 
-    virtual TriggerStruct cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *, const TriggerStruct &info) const
+    virtual TriggerStruct cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *caopi, const TriggerStruct &info) const
     {
-        if (player->askForSkillInvoke(objectName(), data, info.skill_position)) {
-            room->broadcastSkillInvoke(objectName(), "male", -1, player, info.skill_position);
+        if (!player->isNude() && caopi->askForSkillInvoke(objectName(), data, info.skill_position)) {
+            room->broadcastSkillInvoke(objectName(), "male", -1, caopi, info.skill_position);
             return info;
         }
         return TriggerStruct();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *caopi, QVariant &data, ServerPlayer *, const TriggerStruct &) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *caopi, const TriggerStruct &) const
     {
-        DeathStruct death = data.value<DeathStruct>();
-        ServerPlayer *player = death.who;
         if (player->isNude() || caopi == player)
             return false;
         DummyCard dummy(player->handCards());
@@ -1379,6 +1371,7 @@ public:
     Xiaoguo() : TriggerSkill("xiaoguo")
     {
         events << EventPhaseStart;
+        skill_type = Attack;
     }
 
     virtual QList<TriggerStruct> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
@@ -1435,8 +1428,6 @@ void StandardPackage::addWeiGenerals()
 
     General *xuchu = new General(this, "xuchu", "wei"); // WEI 005
     xuchu->addSkill(new Luoyi);
-    xuchu->addSkill(new LuoyiDamage);
-    insertRelatedSkills("luoyi", "#luoyi-damage");
 
     General *guojia = new General(this, "guojia", "wei", 3); // WEI 006
     guojia->addSkill(new Tiandu);
@@ -1479,7 +1470,8 @@ void StandardPackage::addWeiGenerals()
     General *yuejin = new General(this, "yuejin", "wei", 4); // WEI 016
     yuejin->addSkill(new Xiaoguo);
 
-    //    addMetaObject<TuxiCard>();
+    skills << new LuoyiDamage;
+
     addMetaObject<ShensuCard>();
     addMetaObject<QiaobianCard>();
     addMetaObject<QiangxiCard>();

@@ -122,7 +122,6 @@ public:
     virtual QList<TriggerStruct> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
         QList<TriggerStruct> trigger_map;
-
         if (!Config.value("EnableLordConvertion", true).toBool())
             return trigger_map;
 
@@ -302,7 +301,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                         arg << player->objectName();
                         arg << skill->getLimitMark();
                         arg << 1;
-                        room->doNotify(player, QSanProtocol::S_COMMAND_SET_MARK, arg);
+                        room->doNotify(player->getClient(), QSanProtocol::S_COMMAND_SET_MARK, arg);
                         player->setMark(skill->getLimitMark(), 1);
                     }
                 }
@@ -417,7 +416,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
 
             if (card_use.from->hasFlag("Global_ForbidSurrender")) {
                 card_use.from->setFlags("-Global_ForbidSurrender");
-                room->doNotify(card_use.from, QSanProtocol::S_COMMAND_ENABLE_SURRENDER, true);
+                room->doNotify(card_use.from->getClient(), QSanProtocol::S_COMMAND_ENABLE_SURRENDER, true);
             }
 
             card_use.from->broadcastSkillInvoke(card_use.card);
@@ -520,7 +519,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         if (use.card->isNDTrick())
             room->removeTag(use.card->toString() + "HegNullificationTargets");
 
-        foreach(ServerPlayer *p, room->getAlivePlayers())
+        foreach(ServerClient *p, room->getClients())
             room->doNotify(p, QSanProtocol::S_COMMAND_NULLIFICATION_ASKED, QString("."));
         if (use.card->isKindOf("Slash"))
             use.from->tag.remove("Jink_" + use.card->toString());
@@ -563,31 +562,30 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
 
         try {
             ServerPlayer *jiayu = room->getCurrent();
-            if (jiayu->hasSkill("wansha") && jiayu->hasShownSkill("wansha")
-                && jiayu->isAlive() && jiayu->getPhase() != Player::NotActive) {
-                if (player != dying.who && player != jiayu)
+            if (jiayu->hasShownSkill("wansha") && jiayu->isAlive() && jiayu->getPhase() != Player::NotActive && player != jiayu)
                     room->setPlayerFlag(player, "Global_PreventPeach");
-            }
 
-            if (!player->hasFlag("Global_PreventPeach") && dying.who->isRemoved())
-                room->setPlayerFlag(player, "Global_PreventPeach");
+            //if (!player->hasFlag("Global_PreventPeach") && dying.who->isRemoved())
+            //    room->setPlayerFlag(player, "Global_PreventPeach");
 
             while (dying.who->getHp() <= 0) {
                 peach = NULL;
-                if (dying.who->isAlive())
+                if (dying.who->isAlive() && !dying.who->isRemoved() && !player->isRemoved())
                     peach = room->askForSinglePeach(player, dying.who);
                 if (peach == NULL)
                     break;
                 room->useCard(CardUseStruct(peach, player, dying.who), false);
             }
-            if (player->hasFlag("Global_PreventPeach"))
-                room->setPlayerFlag(player, "-Global_PreventPeach");
+            //if (player->hasFlag("Global_PreventPeach"))
+            //    room->setPlayerFlag(player, "-Global_PreventPeach");
         }
         catch (TriggerEvent triggerEvent) {
+        /*
             if (triggerEvent == TurnBroken || triggerEvent == StageChange) {
                 if (player->hasFlag("Global_PreventPeach"))
                     room->setPlayerFlag(player, "-Global_PreventPeach");
             }
+        */
             throw triggerEvent;
         }
 
@@ -723,8 +721,13 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             }
             QVariant _effect = QVariant::fromValue(effect);
             room->getThread()->trigger(CardEffectConfirmed, room, effect.to, _effect);
+
+            room->setTag("Global_CardEffected", _effect);                                         //for AI
+
             if (effect.to->isAlive() || effect.card->isKindOf("Slash"))
                 effect.card->onEffect(effect);
+
+            room->removeTag("Global_CardEffected");
         }
 
         break;
@@ -824,7 +827,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                         room->setPlayerProperty(p, "role", "careerist");
                     } else {
                         p->setRole("careerist");
-                        room->notifyProperty(p, p, "role");
+                        room->notifyProperty(p->getClient(), p, "role");
                     }
                 }
             }
@@ -846,6 +849,8 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
 
         room->moveCardTo(judge_struct->card, NULL, judge_struct->who, Player::PlaceJudge,
             CardMoveReason(CardMoveReason::S_REASON_JUDGE, judge_struct->who->objectName(), QString(), QString(), judge_struct->reason), true);
+
+        room->getThread()->delay();
         judge_struct->updateResult();
         break;
     }
