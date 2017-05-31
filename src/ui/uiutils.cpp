@@ -215,7 +215,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
         xstep = spacing + fontSize.width();
         // AlignJustifx means the text should fill out the whole rect space
         // so we increase the step
-        if (align & Qt::AlignJustify) {
+        if ((align & Qt::AlignJustify) || xstep * len > boundingBox.width()) {
             xstep = boundingBox.width() / len;
             if (fontSize.width() + spacing > xstep)
                 fontSize.setWidth(xstep - spacing);

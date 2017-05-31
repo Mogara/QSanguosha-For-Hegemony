@@ -36,7 +36,7 @@ const int ServerClient::S_NUM_SEMAPHORES = 6;
 ServerClient::ServerClient(Room *room, const QString &name)
     : QObject(room), m_isClientResponseReady(false), m_isWaitingReply(false),
     event_received(false), socket(NULL), room(room), recorder(NULL),
-    _m_phases_index(0), state("online")
+    _m_phases_index(0), state("online"), owner(false)
 {
     setObjectName(name);
 

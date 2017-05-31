@@ -951,17 +951,18 @@ bool IronChain::targetFilter(const QList<const Player *> &targets, const Player 
 bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
 {
     bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast;
-    QList<int> sub;
+    QList<int> sub, hand_cards;
     if (isVirtualCard())
         sub = subcards;
     else
         sub << getEffectiveId();
+    foreach (const Card *card, Self->getHandcards())
+        hand_cards << card->getEffectiveId();
     foreach (int id, sub) {
-        if (Self->getHandPile().contains(id)) {
+        if (!hand_cards.contains(id)) {
             rec = false;
             break;
         }
-
     }
 
     if (rec && Self->isCardLimited(this, Card::MethodUse))
@@ -978,7 +979,7 @@ void IronChain::onUse(Room *room, const CardUseStruct &card_use) const
     if (use.to.isEmpty()) {
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, use.from->objectName());
         reason.m_skillName = getSkillName();
-        room->moveCardTo(this, use.from, NULL, Player::PlaceTable, reason, true);
+        room->moveCardTo(this, NULL, Player::PlaceTable, reason, true);
         use.from->broadcastSkillInvoke("@recast");
 
         if (!card_use.card->getSkillName().isNull() && card_use.card->getSkillName(true) == card_use.card->getSkillName(false)
@@ -1318,13 +1319,15 @@ bool KnownBoth::targetsFeasible(const QList<const Player *> &targets, const Play
 {
     bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast
         && !Self->isCardLimited(this, Card::MethodRecast);
-    QList<int> sub;
+    QList<int> sub, hand_cards;
     if (isVirtualCard())
         sub = subcards;
     else
         sub << getEffectiveId();
+    foreach (const Card *card, Self->getHandcards())
+        hand_cards << card->getEffectiveId();
     foreach (int id, sub) {
-        if (Self->getHandPile().contains(id)) {
+        if (!hand_cards.contains(id)) {
             rec = false;
             break;
         }
@@ -1344,7 +1347,7 @@ void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const
     if (use.to.isEmpty()) {
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, use.from->objectName());
         reason.m_skillName = getSkillName();
-        room->moveCardTo(this, use.from, NULL, Player::PlaceTable, reason);
+        room->moveCardTo(this, NULL, Player::PlaceTable, reason);
         use.from->broadcastSkillInvoke("@recast");
         if (!card_use.card->getSkillName().isNull() && card_use.card->getSkillName(true) == card_use.card->getSkillName(false)
             && card_use.m_isOwnerUse && card_use.from->hasSkill(card_use.card->getSkillName()))

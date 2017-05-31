@@ -499,14 +499,14 @@ class Wansha : public TriggerSkill
 public:
     Wansha() : TriggerSkill("wansha")
     {
-        events << Dying << TurnStart << GeneralShown << EventAcquireSkill << EventPhaseChanging;
+        events << Dying << EventPhaseStart << GeneralShown << EventAcquireSkill << EventPhaseChanging;
         frequency = Compulsory;
         skill_type = Wizzard;
     }
 
     virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if ((triggerEvent == TurnStart || triggerEvent == GeneralShown || triggerEvent == EventAcquireSkill) && player->hasShownSkill(this)
+        if ((triggerEvent == EventPhaseStart || triggerEvent == GeneralShown || triggerEvent == EventAcquireSkill) && player->hasShownSkill(this)
                 && room->getCurrent() == player && player->getPhase() != Player::NotActive) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
                 room->setPlayerFlag(p, "Global_PreventPeach");

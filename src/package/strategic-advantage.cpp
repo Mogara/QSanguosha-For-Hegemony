@@ -1052,13 +1052,15 @@ bool FightTogether::isAvailable(const Player *player) const
     if (player->hasFlag("Global_FightTogetherFailed"))
         return false;
     bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast;
-    QList<int> sub;
+    QList<int> sub, hand_cards;
     if (isVirtualCard())
         sub = subcards;
     else
         sub << getEffectiveId();
+    foreach (const Card *card, player->getHandcards())
+        hand_cards << card->getEffectiveId();
     foreach (int id, sub) {
-        if (player->getPile("wooden_ox").contains(id)) {
+        if (!hand_cards.contains(id)) {
             rec = false;
             break;
         }
@@ -1129,8 +1131,22 @@ void FightTogether::onUse(Room *room, const CardUseStruct &card_use) const
         if (!smalls.isEmpty())
             choices << "small";
     }
-    if (!source->isCardLimited(this, Card::MethodRecast) && can_recast && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
-        choices << "recast";
+
+    if (!source->isCardLimited(this, Card::MethodRecast) && can_recast && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+        QList<int> sub;
+        if (isVirtualCard())
+            sub = subcards;
+        else
+            sub << getEffectiveId();
+        bool rec = true;
+        foreach (int id, sub) {
+            if (room->getCardOwner(id) != source || Sanguosha->getCardPlace(id) != Player::PlaceHand) {
+                rec = false;
+                break;
+            }
+        }
+        if (rec) choices << "recast";
+    }
 
     if (choices.isEmpty()) {
         room->setPlayerFlag(source, "Global_FightTogetherFailed");
@@ -1141,7 +1157,7 @@ void FightTogether::onUse(Room *room, const CardUseStruct &card_use) const
     if (choice == "recast") {
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
         reason.m_skillName = getSkillName();
-        room->moveCardTo(this, card_use.from, NULL, Player::PlaceTable, reason, true);
+        room->moveCardTo(this, NULL, Player::PlaceTable, reason, true);
         card_use.from->broadcastSkillInvoke("@recast");
         if (!card_use.card->getSkillName().isNull() && card_use.card->getSkillName(true) == card_use.card->getSkillName(false)
             && card_use.m_isOwnerUse && card_use.from->hasSkill(card_use.card->getSkillName()))
