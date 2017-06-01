@@ -3052,14 +3052,6 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                     CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_RESPONSE;
                     if (newStatus == Client::RespondingUse)
                         reason = CardUseStruct::CARD_USE_REASON_RESPONSE_USE;
-                    if (!Self->hasFlag(skill_name))
-                        Self->setFlags(skill_name);
-                    bool available = skill->isAvailable(Self, reason, pattern);
-                    Self->setFlags("-" + skill_name);
-                    if (!available) {
-                        ClientInstance->onPlayerResponseCard(NULL, NULL);
-                        break;
-                    }
                     if (!highlightSkillButton(skill_name, reason, pattern, ClientInstance->getSkillToHighLight())) {
                         dashboard->startPending(skill);
                         if (skill->inherits("OneCardViewAsSkill") && Config.EnableIntellectualSelection)
