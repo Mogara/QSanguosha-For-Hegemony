@@ -395,6 +395,7 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
     RoomThread *thread = room->getThread();
 
     bool move = false;
+    ServerPlayer *p = NULL;
     if (movable) {
         QList<ServerPlayer *> players;
         QList<ServerPlayer *> count_players = room->getPlayers();
@@ -409,8 +410,6 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
             if (count_players[i]->isAlive())
                 players << count_players[i];
         }
-
-        ServerPlayer *p = NULL;
 
         foreach (ServerPlayer *player, players) {
             if (player->containsTrick(objectName()))
@@ -440,8 +439,6 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
                 break;
             }
 
-            //if (room->getCardIdsOnTable(this).isEmpty()) return;
-
             CardMoveReason reason(CardMoveReason::S_REASON_TRANSFER, QString());
             room->moveCardTo(this, NULL, player, Player::PlaceDelayedTrick, reason, true);
             move = true;
@@ -452,14 +449,15 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
                 thread->trigger(TargetConfirmed, room, p, data);
             break;
         }
-        if (p) onNullified(p);
     }
-    if (!move) {
+
+    if (p)
+        onNullified(p);
+    else if (!move) {
         foreach (ServerPlayer *player, room->getAllPlayers())
             if (player->hasFlag(toString() + "_delay_trick_cancel"))
                 player->setFlags("-" + toString() + "_delay_trick_cancel");
 
-        //QList<int> table_cardids = room->getCardIdsOnTable(this);
         CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString());
         room->moveCardTo(this, NULL, Player::DiscardPile, reason, true);
     }
