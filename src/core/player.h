@@ -271,8 +271,8 @@ public:
     QList<const Skill *> getSkillList(bool include_equip = false, bool visible_only = true) const;
     QList<const Skill *> getHeadSkillList(bool visible_only = true, bool include_acquired = false, bool include_equip = false) const;
     QList<const Skill *> getDeputySkillList(bool visible_only = true, bool include_acquired = false, bool include_equip = false) const;
-    QList<const Skill *> getHeadActivedSkills(bool include_acquired = true, bool shown = false) const;
-    QList<const Skill *> getDeputyActivedSkills(bool include_acquired = true, bool shown = false) const;
+    QList<const Skill *> getHeadActivedSkills(bool include_acquired = true, bool shown = false, bool ignore_preshow = true) const;
+    QList<const Skill *> getDeputyActivedSkills(bool include_acquired = true, bool shown = false, bool ignore_preshow = true) const;
     QSet<const Skill *> getVisibleSkills(bool include_equip = false) const;
     QList<const Skill *> getVisibleSkillList(bool include_equip = false) const;
     QSet<QString> getAcquiredSkills() const;
@@ -315,6 +315,12 @@ public:
     bool hasShownSkill(const Skill *skill) const;
     bool hasShownSkill(const QString &skill_name) const;
     bool hasShownSkills(const QString &skill_names) const;
+    inline bool hasShownSkill(const QString &skill_name, bool head) const
+    {
+        return head ? (head_acquired_skills.contains(skill_name) || (head_skills.keys().contains(skill_name) && hasShownGeneral1()))
+            : (deputy_acquired_skills.contains(skill_name) || (deputy_skills.keys().contains(skill_name) && hasShownGeneral2()));
+    }
+
     void preshowSkill(const QString &skill_name);
     bool inHeadSkills(const QString &skill_name) const;
     bool inHeadSkills(const Skill *skill) const;

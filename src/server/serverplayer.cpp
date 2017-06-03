@@ -2013,6 +2013,10 @@ void ServerPlayer::changeToLord()
             room->doNotify(client, S_COMMAND_SET_MARK, arg);
         }
     }
+
+    room->notifyProperty(getClient(), this, "flags", "AutoPreshowAvailable");
+    notifyPreshow("h");
+    room->notifyProperty(getClient(), this, "flags", "-AutoPreshowAvailable");
 }
 
 void ServerPlayer::slashSettlementFinished(const Card *slash)

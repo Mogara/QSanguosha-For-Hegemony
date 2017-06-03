@@ -854,12 +854,12 @@ public:
                         targets << to;
                 }
                 if (!targets.isEmpty()) {
-                    if (skill_owner->getHeadActivedSkills().contains(Sanguosha->getSkill(objectName())) && skill_owner->hasShownGeneral1()) {
+                    if (skill_owner->getHeadActivedSkills(true, true).contains(Sanguosha->getSkill(objectName()))) {
                         TriggerStruct trigger = TriggerStruct(objectName(), skill_owner, targets);
                         trigger.skill_position = "head";
                         skill_list << trigger;
                     }
-                    if (skill_owner->getDeputyActivedSkills().contains(Sanguosha->getSkill(objectName())) && skill_owner->hasShownGeneral2()) {
+                    if (skill_owner->getDeputyActivedSkills(true, true).contains(Sanguosha->getSkill(objectName()))) {
                         TriggerStruct trigger = TriggerStruct(objectName(), skill_owner, targets);
                         trigger.skill_position = "deputy";
                         skill_list << trigger;

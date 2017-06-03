@@ -1377,11 +1377,13 @@ QList<const Skill *> Player::getDeputySkillList(bool visible_only, bool include_
     return skillList;
 }
 
-QList<const Skill *> Player::getHeadActivedSkills(bool include_acquired, bool shown) const           //new function for checking skills can be actived. by weidouncle
+QList<const Skill *> Player::getHeadActivedSkills(bool include_acquired, bool shown, bool ignore_preshow) const           //new function for checking skills can be actived. by weidouncle
 {
     QList<const Skill *> skillList, skillList_copy;
     QList<QString> skills = include_acquired ? head_acquired_skills.toList() : QList<QString>();
-    if (hasShownGeneral1() || (!shown && canShowGeneral("h"))) skills << head_skills.keys();
+    foreach (const QString &skill_name, head_skills.keys())
+        if (hasShownGeneral1() || ((ignore_preshow || head_skills.value(skill_name, false)) && !shown && canShowGeneral("h")))
+            skills << skill_name;
     foreach (const QString &skill_name, skills) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
         if (skill != NULL) {
@@ -1419,11 +1421,13 @@ QList<const Skill *> Player::getHeadActivedSkills(bool include_acquired, bool sh
     return skillList;
 }
 
-QList<const Skill *> Player::getDeputyActivedSkills(bool include_acquired, bool shown) const
+QList<const Skill *> Player::getDeputyActivedSkills(bool include_acquired, bool shown, bool ignore_preshow) const
 {
     QList<const Skill *> skillList, skillList_copy;
     QList<QString> skills = include_acquired ? deputy_acquired_skills.toList() : QList<QString>();
-    if (hasShownGeneral2() || (!shown && canShowGeneral("d"))) skills << deputy_skills.keys();
+    foreach (const QString &skill_name, deputy_skills.keys())
+        if (hasShownGeneral2() || ((ignore_preshow || deputy_skills.value(skill_name, false)) && !shown && canShowGeneral("d")))
+            skills << skill_name;
     foreach (const QString &skill_name, skills) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
         if (skill != NULL) {

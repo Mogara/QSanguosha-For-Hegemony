@@ -1021,9 +1021,12 @@ QString SkillCard::toString(bool hidden) const
         str = QString("@%1[no_suit:-]=.&%2").arg(metaObject()->className()).arg(show_skill);
 
     if (!user_string.isEmpty())
-        return QString("%1:%2").arg(str).arg(user_string);
-    else
-        return str;
+        str = QString("%1:%2").arg(str).arg(user_string);
+
+    if (!m_skill_position.isEmpty())
+        str = QString("%1?%2").arg(str).arg(m_skill_position);
+
+    return str;
 }
 
 void SkillCard::extraCost(Room *room, const CardUseStruct &card_use) const

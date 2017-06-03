@@ -120,7 +120,10 @@ public:
     QString getPlayerName(const QString &str);
     QString getSkillNameToInvoke() const;
     QString getSkillToHighLight() const;
-    void setSkillPosition(const QString &positon);
+    inline void setSkillPosition(const QString &positon)
+    {
+        skill_position = positon;
+    }
 
     QTextDocument *getLinesDoc() const;
     QTextDocument *getPromptDoc() const;

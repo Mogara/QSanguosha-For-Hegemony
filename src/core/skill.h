@@ -118,7 +118,7 @@ public:
     virtual const Card *viewAs(const QList<const Card *> &cards) const = 0;
 
     QString getGuhuoBox() const;
-    bool isAvailable(const Player *invoker, CardUseStruct::CardUseReason reason, const QString &pattern) const;
+    virtual bool isAvailable(const Player *invoker, CardUseStruct::CardUseReason reason, const QString &pattern, const QString &position = QString()) const;
     virtual bool isEnabledAtPlay(const Player *player) const;
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const;
     virtual bool isEnabledAtNullification(const Player *player) const;

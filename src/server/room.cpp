@@ -2327,13 +2327,13 @@ TriggerStruct Room::askForSkillTrigger(ServerPlayer *player, const QString &reas
                     }
                 }
             } else {
-                if (skill_owner->getHeadActivedSkills().contains(real_skill) || skill_owner->getDeputyActivedSkills().contains(real_skill)) {
-                    if (skill_owner->getHeadActivedSkills().contains(real_skill)) {
+                if (skill_owner->getHeadActivedSkills(true, false, false).contains(real_skill) || skill_owner->getDeputyActivedSkills(true, false, false).contains(real_skill)) {
+                    if (skill_owner->getHeadActivedSkills(true, false, false).contains(real_skill)) {
                         TriggerStruct skill_copy = skill;
                         skill_copy.skill_position = "head";
                         all_skills << skill_copy;
                     }
-                    if (skill_owner->getDeputyActivedSkills().contains(real_skill)) {
+                    if (skill_owner->getDeputyActivedSkills(true, false, false).contains(real_skill)) {
                         TriggerStruct skill_copy = skill;
                         skill_copy.skill_position = "deputy";
                         all_skills << skill_copy;
@@ -2434,10 +2434,10 @@ QString Room::askForTriggerOrder(ServerPlayer *player, const QString &reason, SP
     foreach (const ServerPlayer *p, skills.keys()) {                            //if string doesnt contain the skill_postion info, then it will check for each general
         foreach (const QString &str, skills.value(p)) {                         //sample as: player_name?skill_position:skill_name(*skill_time or ->skill_target)
             const Skill *skill = Sanguosha->getSkill(str);
-            if (skill && (p->getHeadActivedSkills().contains(skill) || p->getDeputyActivedSkills().contains(skill))) {
-                if (p->getHeadActivedSkills().contains(skill))
+            if (skill && (p->getHeadActivedSkills(true, false, false).contains(skill) || p->getDeputyActivedSkills(true, false, false).contains(skill))) {
+                if (p->getHeadActivedSkills(true, false, false).contains(skill))
                     all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("head").arg(str);
-                if (p->getDeputyActivedSkills().contains(skill))
+                if (p->getDeputyActivedSkills(true, false, false).contains(skill))
                     all_pairs << QString("%1?%2:%3").arg(p->objectName()).arg("deputy").arg(str);
             } else {                                                        //it means str contains much infomation
                 if (str.contains("?"))

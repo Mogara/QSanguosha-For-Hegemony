@@ -189,7 +189,8 @@ void QSanButton::_onMouseClick(bool inside)
     bool changeState = true;
     if (inherits("QSanSkillButton")) {
         const Skill * skill = qobject_cast<const QSanSkillButton *>(this)->getSkill();
-        if (skill->canPreshow() && !Self->hasShownSkill(skill)) changeState = false;
+        if (skill->canPreshow() && !Self->hasShownSkill(skill->objectName(), objectName() == "head"))
+            changeState = false;
     }
     if (multi_state && inside)
         m_isFirstState = !m_isFirstState;
@@ -262,16 +263,14 @@ void QSanSkillButton::onMouseClick()
         setState(S_STATE_DISABLED);
         ClientInstance->preshow(Self, _m_skill->objectName(), true, head);
     } else if (Self->hasPreshowedSkill(_m_skill, head) && _m_state == QSanButton::S_STATE_DISABLED
-        && _m_skill->canPreshow() && !Self->hasShownSkill(_m_skill)) {
+        && _m_skill->canPreshow() && !Self->hasShownSkill(_m_skill->objectName(), head)) {
         setState(QSanButton::S_STATE_CANPRESHOW);
         ClientInstance->preshow(Self, _m_skill->objectName(), false, head);
     } else {
         if ((_m_style == S_STYLE_TOGGLE && isDown() && _m_emitActivateSignal) || _m_style == S_STYLE_PUSH) {
             emit skill_activated();
-            //emit skill_activated(_m_skill);
         } else if (!isDown() && _m_emitDeactivateSignal) {
             emit skill_deactivated();
-            //emit skill_deactivated(_m_skill);
         }
     }
 }
@@ -342,7 +341,7 @@ void QSanSkillButton::setSkill(const Skill *skill)
     desc = desc.simplified();
     setToolTip(desc);
 
-    if (!Self->hasShownSkill(skill) && skill->canPreshow())
+    if (!Self->hasShownSkill(skill->objectName(), objectName() == "head") && skill->canPreshow())
         setState(QSanButton::S_STATE_CANPRESHOW);
 
     Q_ASSERT((int)_m_skillType <= 5 && _m_state <= 4);
@@ -352,7 +351,7 @@ void QSanSkillButton::setSkill(const Skill *skill)
 void QSanSkillButton::setState(ButtonState state)
 {
     //refine state here for certain conditions
-    if (_m_skillType == S_SKILL_COMPULSORY && Self->hasShownSkill(_m_skill))
+    if (_m_skillType == S_SKILL_COMPULSORY && Self->hasShownSkill(_m_skill->objectName(), objectName() == "head"))
         state = S_STATE_DISABLED;
     //if (_m_skillType == S_SKILL_COMPULSORY && !(state == S_STATE_CANPRESHOW || state == S_STATE_UP))
     //    state = S_STATE_DISABLED;
@@ -374,7 +373,7 @@ void QSanSkillButton::setEnabled(bool enabled)
 {
     bool head = objectName() == "head";
     if (!enabled && _m_skill->canPreshow()
-        && (!Self->hasShownSkill(_m_skill) || Self->hasFlag("hiding"))) {
+        && (!Self->hasShownSkill(_m_skill->objectName(), head) || Self->hasFlag("hiding"))) {
         setState(Self->hasPreshowedSkill(_m_skill, head) ? S_STATE_DISABLED : S_STATE_CANPRESHOW);
     } else {
         QSanButton::setEnabled(enabled);
@@ -467,8 +466,8 @@ QSanSkillButton *QSanInvokeSkillDock::addSkillButtonByName(const QString &skillN
     QSanInvokeSkillButton *button = new QSanInvokeSkillButton(this);
 
     const Skill *skill = Sanguosha->getSkill(skillName);
+    button->setObjectName(objectName());
     button->setSkill(skill);
-    button->setObjectName(this->objectName());
     //connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_activated), this, &QSanInvokeSkillDock::skill_activated);
     //connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_deactivated), this, &QSanInvokeSkillDock::skill_deactivated);
     _m_buttons.append(button);

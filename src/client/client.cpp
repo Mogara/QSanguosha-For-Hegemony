@@ -1043,11 +1043,6 @@ QString Client::getSkillToHighLight() const
     return skill_position;
 }
 
-void Client::setSkillPosition(const QString &positon)
-{
-    skill_position = positon;
-}
-
 void Client::onPlayerInvokeSkill(bool invoke)
 {
     if (skill_name == "surrender")

@@ -353,9 +353,10 @@ public:
         response_or_use = true;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const
+    virtual bool isAvailable(const Player *player, CardUseStruct::CardUseReason reason, const QString &, const QString &position) const
     {
-        return player->getMark("shuangxiong") != 0 && !player->isKongcheng();
+        return reason == CardUseStruct::CARD_USE_REASON_PLAY && player->hasFlag("shuangxiong_" + position)
+                && player->getMark("shuangxiong") != 0 && !player->isKongcheng();
     }
 
     virtual bool viewFilter(const Card *card) const
@@ -1678,9 +1679,9 @@ public:
     {
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const
+    virtual bool isAvailable(const Player *player, CardUseStruct::CardUseReason reason, const QString &, const QString &position) const
     {
-        return !player->hasShownSkill(objectName());
+        return reason == CardUseStruct::CARD_USE_REASON_PLAY && !player->hasShownSkill(objectName(), position == "head");
     }
 
     virtual const Card *viewAs() const
@@ -1702,20 +1703,35 @@ public:
         skill_type = Wizzard;
     }
 
-    void doHuoshui(Room *room, ServerPlayer *zoushi, bool set) const
+    void doHuoshui(Room *room, ServerPlayer *zoushi, bool set, TriggerEvent triggerEvent) const
     {
         if (set && !zoushi->tag["huoshui"].toBool()) {
             room->broadcastSkillInvoke(objectName(), zoushi);
             room->notifySkillInvoked(zoushi, objectName());
-            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi))
-                room->setPlayerDisableShow(p, "hd", "huoshui");
-
+            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi)) {
+                if (zoushi->getHeadActivedSkills(true, true).contains(Sanguosha->getSkill(objectName())))
+                    room->setPlayerDisableShow(p, "hd", "huoshui_head");
+                if (zoushi->getDeputyActivedSkills(true, true).contains(Sanguosha->getSkill(objectName())))
+                    room->setPlayerDisableShow(p, "hd", "huoshui_deputy");
+            }
             zoushi->tag["huoshui"] = true;
         } else if (!set && zoushi->tag["huoshui"].toBool()) {
-            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi))
-                room->removePlayerDisableShow(p, "huoshui");
-
-            zoushi->tag["huoshui"] = false;
+            if (triggerEvent == Death || triggerEvent == EventPhaseStart) {
+                foreach(ServerPlayer *p, room->getOtherPlayers(zoushi)) {
+                    room->removePlayerDisableShow(p, "huoshui_head");
+                    room->removePlayerDisableShow(p, "huoshui_deputy");
+                }
+                zoushi->tag["huoshui"] = false;
+            } else {
+                foreach(ServerPlayer *p, room->getOtherPlayers(zoushi)) {
+                    if (!zoushi->getHeadActivedSkills(true, true).contains(Sanguosha->getSkill(objectName())))
+                        room->removePlayerDisableShow(p, "huoshui_head");
+                    if (!zoushi->getDeputyActivedSkills(true, true).contains(Sanguosha->getSkill(objectName())))
+                        room->removePlayerDisableShow(p, "huoshui_deputy");
+                }
+                if (!zoushi->hasShownSkill(objectName()))
+                    zoushi->tag["huoshui"] = false;
+            }
         }
     }
 
@@ -1731,30 +1747,18 @@ public:
 
         if ((triggerEvent == GeneralShown || triggerEvent == EventPhaseStart || triggerEvent == EventAcquireSkill) && !player->hasShownSkill(this))
             return;
-        if (triggerEvent == GeneralShown) {
-            bool show = data.toBool() ? player->inHeadSkills(this) : player->inDeputySkills(this);
-            if (!show) return;
-        }
         if (triggerEvent == EventPhaseStart && !(player->getPhase() == Player::RoundStart || player->getPhase() == Player::NotActive))
             return;
         if (triggerEvent == Death && !player->hasShownSkill(this))
             return;
         if ((triggerEvent == EventAcquireSkill || triggerEvent == EventLoseSkill) && data.value<InfoStruct>().info != objectName())
             return;
-        if (triggerEvent == EventLoseSkill) {
-            bool head = data.value<InfoStruct>().head;
-            bool show;
-            if (head)
-                show = player->getDeputyActivedSkills(false).contains(this) && player->hasShownGeneral2() || player->getAcquiredSkills("d").contains(objectName());
-            else
-                show = player->getHeadActivedSkills(false).contains(this) && player->hasShownGeneral1() || player->getAcquiredSkills("h").contains(objectName());
-            if (show) return;
-        }
+
         bool set = false;
         if (triggerEvent == GeneralShown || triggerEvent == EventAcquireSkill || (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart))
             set = true;
 
-        doHuoshui(room, player, set);
+        doHuoshui(room, player, set, triggerEvent);
     }
 
     virtual QList<TriggerStruct> triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &) const

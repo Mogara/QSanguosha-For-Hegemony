@@ -283,12 +283,10 @@ QString ViewAsSkill::getGuhuoBox() const
     return guhuo_type;
 }
 
-bool ViewAsSkill::isAvailable(const Player *invoker, CardUseStruct::CardUseReason reason, const QString &pattern) const
+bool ViewAsSkill::isAvailable(const Player *invoker, CardUseStruct::CardUseReason reason, const QString &pattern, const QString &) const
 {
-    if (!inherits("TransferSkill") && !invoker->hasSkill(objectName())
-            && !invoker->hasFlag(objectName() + "_head") && !invoker->hasFlag(objectName() + "_deputy")) { // For Shuangxiong
+    if (!inherits("TransferSkill") && !invoker->hasSkill(objectName()))
         return false;
-    }
 
     if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE && pattern == "nullification")
         return isEnabledAtNullification(invoker);

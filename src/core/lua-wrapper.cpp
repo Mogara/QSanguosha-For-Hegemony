@@ -242,9 +242,13 @@ LuaSkillCard *LuaSkillCard::Parse(const QString &str)
 QString LuaSkillCard::toString(bool hidden) const
 {
     Q_UNUSED(hidden);
-    return QString("#%1[%2:%3]:%4:%5&%6").arg(objectName())
+
+    QString str = QString("#%1[%2:%3]:%4:%5&%6").arg(objectName())
         .arg(getSuitString()).arg(getNumberString())
         .arg(subcardString()).arg(user_string).arg(show_skill);
+    if (!m_skill_position.isEmpty())
+        str = QString("%1?%2").arg(str).arg(m_skill_position);
+    return str;
 }
 
 LuaBasicCard::LuaBasicCard(Card::Suit suit, int number, const char *obj_name, const char *class_name, const char *subtype)

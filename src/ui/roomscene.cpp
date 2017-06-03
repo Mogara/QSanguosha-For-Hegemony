@@ -130,8 +130,6 @@ RoomScene::RoomScene(QMainWindow *main_window)
     addItem(m_tablePile);
     connect(ClientInstance, &Client::card_used, m_tablePile, (void (TablePile::*)())(&TablePile::clear));
 
-    //huashen = NULL;
-
     // create dashboard
     dashboard = new Dashboard(createDashboardButtons());
     dashboard->setObjectName("dashboard");
@@ -1426,7 +1424,6 @@ void RoomScene::enableTargets(const Card *card)
             QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();        //the card should match pattern
             if (!pattern.startsWith("@@") && !Sanguosha->matchExpPattern(pattern, current, card) && !card->getTypeId() == Card::TypeSkill)
                 enabled = false;
-
         }
         if (status == Client::RespondingForDiscard && current->isCardLimited(card, Card::MethodDiscard))
             enabled = false;
@@ -2731,7 +2728,7 @@ bool RoomScene::highlightSkillButton(const QString &skillName, const CardUseStru
             if (isViewAsSkill) {
                 const ViewAsSkill *vsSkill = button->getViewAsSkill();
                 if (vsSkill != NULL && vsSkill->objectName() == skillName
-                    && vsSkill->isAvailable(Self, reason, pattern)) {
+                    && vsSkill->isAvailable(Self, reason, pattern, head)) {
                     button->setEnabled(true);
                     button->setState(QSanButton::S_STATE_DOWN);
                     button->skill_activated();
@@ -2952,17 +2949,17 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                 }
                 if (!ClientInstance->getSkillToHighLight().isEmpty() && pattern.startsWith("@@")) {
                     if (ClientInstance->getSkillToHighLight() == button->objectName())
-                        button->setEnabled(vsSkill->isAvailable(Self, reason, pattern) && !pattern.endsWith("!"));
+                        button->setEnabled(vsSkill->isAvailable(Self, reason, pattern, button->objectName()) && !pattern.endsWith("!"));
                     else
                         button->setEnabled(false);
                 } else
-                    button->setEnabled(vsSkill->isAvailable(Self, reason, pattern) && !pattern.endsWith("!"));
+                    button->setEnabled(vsSkill->isAvailable(Self, reason, pattern, button->objectName()) && !pattern.endsWith("!"));
             } else {
                 const Skill *skill = button->getSkill();
                 if (skill->getFrequency() == Skill::Wake)
                     button->setEnabled(Self->getMark(skill->objectName()) > 0);
                 else if (QSanButton::S_STATE_CANPRESHOW != button->getState())
-                    button->setState(QSanButton::S_STATE_DISABLED);\
+                    button->setState(QSanButton::S_STATE_DISABLED);
             }
         }
     }
@@ -4283,6 +4280,13 @@ void RoomScene::detachSkill(const QString &skill_name, bool head)
     } else if (Self->hasFlag("shuangxiong_deputy") && !head
                && skill_name == "shuangxiong" && Self->getPhase() <= Player::Discard) {
         Self->setFlags("shuangxiong_deputy_postpone");
+    } else {
+        QSanSkillButton *btn = dashboard->removeSkillButton(skill_name, head);
+        if (btn == NULL) return;    //be care LordSkill and SPConvertSkill
+        m_skillButtons.removeAll(btn);
+        btn->deleteLater();
+        if (guhuo_items[skill_name + (head ? "head" : "deputy")] != NULL && !Self->hasSkill(skill_name))
+            guhuo_items[skill_name + (head ? "head" : "deputy")]->deleteLater(); //added by Xusine for GuhuoBox
     }
 }
 
