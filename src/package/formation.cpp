@@ -151,11 +151,16 @@ public:
     {
     }
 
-    virtual int getCorrect(const Player *from, const Player *) const
+    virtual int getCorrect(const Player *from, const Player *, const Card *card) const
     {
-        if (from->hasShownSkill("tuntian"))
-            return -from->getPile("field").length();
-        else
+        if (from->hasShownSkill("tuntian")) {
+            int correct = 0;
+            if (card)
+                foreach (int id, card->getSubcards())
+                    if (from->getPile("field").contains(id))
+                        correct += 1;
+            return -from->getPile("field").length() + correct;
+        } else
             return 0;
     }
 };
@@ -459,7 +464,7 @@ public:
     {
     }
 
-    virtual int getCorrect(const Player *, const Player *to) const
+    virtual int getCorrect(const Player *, const Player *to, const Card *) const
     {
         if (to->hasShownSkill(objectName()))
             return 1;

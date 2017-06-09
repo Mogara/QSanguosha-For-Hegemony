@@ -768,7 +768,7 @@ public:
     {
     }
 
-    virtual int getCorrect(const Player *from, const Player *to) const
+    virtual int getCorrect(const Player *from, const Player *to, const Card *) const
     {
         if (from->isFriendWith(to))
             return 0;
@@ -1051,7 +1051,7 @@ public:
     {
     }
 
-    virtual int getCorrect(const Player *from, const Player *to) const
+    virtual int getCorrect(const Player *from, const Player *to, const Card *) const
     {
         if (from->isFriendWith(to))
             return 0;

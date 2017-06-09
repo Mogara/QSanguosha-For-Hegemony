@@ -740,7 +740,7 @@ const ViewAsSkill *DistanceSkill::getViewAsSkill() const
     return view_as_skill;
 }
 
-int DistanceSkill::getCorrect(const Player *, const Player *) const
+int DistanceSkill::getCorrect(const Player *, const Player *, const Card *) const
 {
     return 0;
 }

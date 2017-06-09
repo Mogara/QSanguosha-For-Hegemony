@@ -1136,12 +1136,12 @@ QList<const ViewHasSkill *> Engine::ViewHasArmorEffect(const Player *player) con
     return skills;
 }
 
-int Engine::correctDistance(const Player *from, const Player *to) const
+int Engine::correctDistance(const Player *from, const Player *to, const Card *card) const
 {
     int correct = 0;
 
     foreach (const DistanceSkill *skill, distance_skills)
-        correct += skill->getCorrect(from, to);
+        correct += skill->getCorrect(from, to, card);
 
     return correct;
 }

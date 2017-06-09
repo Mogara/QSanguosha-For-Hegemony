@@ -330,18 +330,7 @@ bool LiuliCard::targetFilter(const QList<const Player *> &targets, const Player 
     if (from && !from->canSlash(to_select, slash, false))
         return false;
 
-    int card_id = subcards.first();
-    int range_fix = 0;
-    if (Self->getWeapon() && Self->getWeapon()->getId() == card_id) {
-        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
-        range_fix += weapon->getRange() - Self->getAttackRange(false);
-    } else if (Self->getOffensiveHorse() && Self->getOffensiveHorse()->getId() == card_id) {
-        range_fix += 1;
-    }
-    int distance = Self->distanceTo(to_select, range_fix);
-    if (distance == -1)
-        return false;
-    return distance <= Self->getAttackRange();
+    return Self->inMyAttackRange(to_select, this);
 }
 
 void LiuliCard::onEffect(const CardEffectStruct &effect) const

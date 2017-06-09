@@ -200,7 +200,7 @@ public:
     const FixCardSkill *isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const;
     QList<const ViewHasSkill *> ViewHas(const Player *player, const QString &skill_name, const QString &flag) const;
     QList<const ViewHasSkill *> ViewHasArmorEffect(const Player *player) const;
-    int correctDistance(const Player *from, const Player *to) const;
+    int correctDistance(const Player *from, const Player *to, const Card *card = NULL) const;
     int getFixedDistance(const Player *from, const Player *to) const;
     int correctMaxCards(const ServerPlayer *target, bool fixed = false, MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     int correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Card *card) const;

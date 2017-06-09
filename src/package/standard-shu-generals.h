@@ -30,7 +30,7 @@ class Mashu : public DistanceSkill
 public:
     explicit Mashu(const QString &);
 
-    virtual int getCorrect(const Player *from, const Player *) const;
+    virtual int getCorrect(const Player *from, const Player *, const Card *) const;
 };
 
 class RendeCard : public SkillCard

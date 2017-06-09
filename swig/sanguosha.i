@@ -175,7 +175,7 @@ public:
     void setPhase(Phase phase);
 
     int getAttackRange(bool include_weapon = true) const;
-    bool inMyAttackRange(const Player *other) const;
+    bool inMyAttackRange(const Player *other, const Card *card = NULL) const;
 
     bool isAlive() const;
     bool isDead() const;
@@ -191,9 +191,8 @@ public:
     void setFaceUp(bool face_up);
 
     virtual int aliveCount(bool includeRemoved = true) const = 0;
-    //void setFixedDistance(const Player *player, int distance);
     int originalRightDistanceTo(const Player *other) const;
-    int distanceTo(const Player *other, int distance_fix = 0) const;
+    int distanceTo(const Player *other, int distance_fix = 0, const Card *card = NULL) const;
     const General *getAvatarGeneral() const;
     const General *getGeneral() const;
 
@@ -291,8 +290,8 @@ public:
     QList<const Skill *> getSkillList(bool include_equip = false, bool visible_only = true) const;
     QList<const Skill *> getHeadSkillList(bool visible_only = true, bool include_acquired = false, bool include_equip = false) const;
     QList<const Skill *> getDeputySkillList(bool visible_only = true, bool include_acquired = false, bool include_equip = false) const;
-    QList<const Skill *> getHeadActivedSkills(bool include_acquired = true) const;
-    QList<const Skill *> getDeputyActivedSkills(bool include_acquired = true) const;
+    QList<const Skill *> getHeadActivedSkills(bool include_acquired = true, bool shown = false, bool ignore_preshow = true) const;
+    QList<const Skill *> getDeputyActivedSkills(bool include_acquired = true, bool shown = false, bool ignore_preshow = true) const;
     QList<const Skill *> getVisibleSkillList(bool include_equip = false) const;
     QString getSkillDescription(bool inToolTip = true) const;
     QString getHeadSkillDescription() const;
@@ -1265,7 +1264,7 @@ public:
     const FixCardSkill *isCardFixed(const Player *from, const Player *to, const char *flags, Card::HandlingMethod method) const;
     QList<const ViewHasSkill *> ViewHas(const Player *player, const char *skill_name, const char *flag) const;
     QList<const ViewHasSkill *> ViewHasArmorEffect(const Player *player) const;
-    int correctDistance(const Player *from, const Player *to) const;
+    int correctDistance(const Player *from, const Player *to, const Card *card = NULL) const;
     int correctMaxCards(const ServerPlayer *target, bool fixed = false, MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     int correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Card *card) const;
     bool correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Player *to, const Card *card) const;

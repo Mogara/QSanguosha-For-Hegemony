@@ -282,24 +282,21 @@ int Player::getAttackRange(bool include_weapon) const
     return real_range;
 }
 
-bool Player::inMyAttackRange(const Player *other) const
+bool Player::inMyAttackRange(const Player *other, const Card *card) const
 {
     if (distanceTo(other) == -1)
         return false;
     QStringList in_attack_range_players = property("in_my_attack_range").toString().split("+");
     if (in_attack_range_players.contains(other->objectName())) // for DIY Skills
         return true;
-    return distanceTo(other) <= getAttackRange();
+
+    bool weapon = true;
+    if (card && getWeapon())
+        if (card->getSubcards().contains(getWeapon()->getEffectiveId()))
+            weapon = false;
+    return distanceTo(other, 0, card) <= getAttackRange(weapon);
 }
-/*
-void Player::setFixedDistance(const Player *player, int distance)
-{
-    if (distance == -1)
-        fixed_distance.remove(player);
-    else
-        fixed_distance.insert(player, distance);
-}
-*/
+
 int Player::originalRightDistanceTo(const Player *other) const
 {
     int right = 0;
@@ -311,16 +308,13 @@ int Player::originalRightDistanceTo(const Player *other) const
     return right;
 }
 
-int Player::distanceTo(const Player *other, int distance_fix) const
+int Player::distanceTo(const Player *other, int distance_fix, const Card *card) const
 {
     if (this == other || isDead() || other->isDead())
         return 0;
 
     if (isRemoved() || other->isRemoved())
         return -1;
-
-    //if (fixed_distance.contains(other))
-    //    return fixed_distance.value(other);
 
     int fixed = Sanguosha->getFixedDistance(this, other);
     if (fixed > 0) return fixed;
@@ -329,7 +323,7 @@ int Player::distanceTo(const Player *other, int distance_fix) const
     int left = aliveCount(false) - right;
     int distance = qMin(left, right);
 
-    distance += Sanguosha->correctDistance(this, other);
+    distance += Sanguosha->correctDistance(this, other, card);
     distance += distance_fix;
 
     // keep the distance >=1
@@ -1140,14 +1134,12 @@ bool Player::canSlash(const Player *other, const Card *slash, bool distance_limi
     if (isProhibited(other, slash == NULL ? newslash : slash, others))
         return false;
 
-    int distance = distanceTo(other, rangefix);
-    if (distance == -1)
-        return false;
+    if (distanceTo(other, rangefix, slash) == -1) return false;
 
 	if (Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, other, slash == NULL ? newslash : slash)) return true;
 
     if (distance_limit)
-        return distance <= getAttackRange();
+        return inMyAttackRange(other, slash);
     else
         return true;
 }

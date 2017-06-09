@@ -493,7 +493,7 @@ Mashu::Mashu(const QString &owner) : DistanceSkill("mashu_" + owner)
 {
 }
 
-int Mashu::getCorrect(const Player *from, const Player *) const
+int Mashu::getCorrect(const Player *from, const Player *, const Card *) const
 {
     if (from->hasSkill(objectName()) && from->hasShownSkill(this))
         return -1;

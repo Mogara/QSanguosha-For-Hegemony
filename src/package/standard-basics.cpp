@@ -488,15 +488,6 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
     if (Self->hasFlag("slashNoDistanceLimit"))
         distance_limit = false;
 
-    int rangefix = 0;
-    if (Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())) {
-        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
-        rangefix += weapon->getRange() - Self->getAttackRange(false);
-    }
-
-    if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
-        ++rangefix;
-
     bool has_specific_assignee = false;
     foreach (const Player *p, Self->getAliveSiblings()) {
         if (Slash::IsSpecificAssignee(p, Self, this)) {
@@ -507,7 +498,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
 
     if (has_specific_assignee) {
         if (targets.isEmpty())
-            return Slash::IsSpecificAssignee(to_select, Self, this) && Self->canSlash(to_select, this, distance_limit, rangefix);
+            return Slash::IsSpecificAssignee(to_select, Self, this) && Self->canSlash(to_select, this, distance_limit);
         else {
             if (Self->hasFlag("slashDisableExtraTarget")) return false;
             bool canSelect = false;
@@ -521,7 +512,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         }
     }
 
-    if (!Self->canSlash(to_select, this, distance_limit, rangefix, targets)) return false;
+    if (!Self->canSlash(to_select, this, distance_limit, 0, targets)) return false;
 
     if (Self->hasFlag("HalberdSlashFilter")) {
         QSet<QString> kingdoms;
@@ -550,16 +541,7 @@ bool Slash::secondFilter(const QList<const Player *> &targets, const Player *to_
     if (Self->hasFlag("slashNoDistanceLimit"))
         distance_limit = false;
 
-    int rangefix = 0;
-    if (Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())) {
-        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
-        rangefix += weapon->getRange() - Self->getAttackRange(false);
-    }
-
-    if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
-        ++rangefix;
-
-    if (!Self->canSlash(to_select, this, distance_limit, rangefix, targets)) return false;
+    if (!Self->canSlash(to_select, this, distance_limit, 0, targets)) return false;
     if (targets.length() >= slash_targets) return false;
 
     return true;
@@ -572,16 +554,7 @@ bool Slash::extratargetFilter(const QList<const Player *> &targets, const Player
     if (Self->hasFlag("slashNoDistanceLimit"))
         distance_limit = false;
 
-    int rangefix = 0;
-    if (Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())) {
-        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
-        rangefix += weapon->getRange() - Self->getAttackRange(false);
-    }
-
-    if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
-        ++rangefix;
-
-    if (!Self->canSlash(to_select, this, distance_limit, rangefix, targets)) return false;
+    if (!Self->canSlash(to_select, this, distance_limit, 0, targets)) return false;
 
     return true;
 }

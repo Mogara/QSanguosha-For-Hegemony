@@ -735,15 +735,17 @@ public:
     {
     }
 
-    virtual int getCorrect(const Player *from, const Player *to) const
+    virtual int getCorrect(const Player *from, const Player *to, const Card *card) const
     {
         int correct = 0;
         const Horse *horse = NULL;
-        if (from->getOffensiveHorse() && from->getMark("Equips_Nullified_to_Yourself") == 0) {
+        if (from->getOffensiveHorse() && from->getMark("Equips_Nullified_to_Yourself") == 0
+                && (!card || !card->getSubcards().contains(from->getOffensiveHorse()->getEffectiveId()))) {
             horse = qobject_cast<const Horse *>(from->getOffensiveHorse()->getRealCard());
             if (horse) correct += horse->getCorrect();
         }
-        if (to->getDefensiveHorse() && to->getMark("Equips_Nullified_to_Yourself") == 0) {
+        if (to->getDefensiveHorse() && to->getMark("Equips_Nullified_to_Yourself") == 0
+                && (!card || !card->getSubcards().contains(to->getDefensiveHorse()->getEffectiveId()))) {
             horse = qobject_cast<const Horse *>(to->getDefensiveHorse()->getRealCard());
             if (horse) correct += horse->getCorrect();
         }

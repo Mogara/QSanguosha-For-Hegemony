@@ -512,15 +512,8 @@ bool Snatch::targetFilter(const QList<const Player *> &targets, const Player *to
 
 	bool correct_target = Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, to_select, this);
 
-    int distance_limit = 1;
-    int rangefix = 0;
-    if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
-        ++rangefix;
-    if (m_skillName == "jixi")
-        ++rangefix;
-
-    int distance = Self->distanceTo(to_select, rangefix);
-    if (distance == -1 || (!correct_target && distance > distance_limit))
+    int distance = Self->distanceTo(to_select, 0, this);
+    if (distance == -1 || (!correct_target && distance > 1))
         return false;
 
     if (!Self->canGetCard(to_select, "hej"))
@@ -658,13 +651,9 @@ void Snatch::checkTargetModSkillShow(const CardUseStruct &use) const
     ServerPlayer *player = use.from;
     Room *room = player->getRoom();
     QList<ServerPlayer *> correct_targets;
-    int distance_max = 0;
-    if (use.card->getSkillName() == "jixi") //dirty but important hack!!!!!!!!!!!!
-        ++distance_max;
-    if (player && player->getOffensiveHorse() && use.card->getSubcards().contains(player->getOffensiveHorse()->getId()))
-        ++distance_max;
+
     foreach (ServerPlayer *p, use.to)
-        if (player->distanceTo(p, distance_max) > 1)
+        if (player->distanceTo(p, 0, use.card) > 1)
             correct_targets << p;
 
     if (!correct_targets.isEmpty()) {
@@ -1984,13 +1973,9 @@ bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Pl
         return false;
 
 	bool correct_target = Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, to_select, this);
-    int distance_limit = 1;
-    int rangefix = 0;
-    if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
-        ++rangefix;
 
-    int distance = Self->distanceTo(to_select, rangefix);
-    if (distance == -1 || (!correct_target && distance > distance_limit))
+    int distance = Self->distanceTo(to_select, 0, this);
+    if (distance == -1 || (!correct_target && distance > 1))
         return false;
 
     return true;
@@ -2011,9 +1996,8 @@ void SupplyShortage::checkTargetModSkillShow(const CardUseStruct &use) const    
 
     ServerPlayer *player = use.from;
     Room *room = player->getRoom();
-    int n = (player && player->getOffensiveHorse() && use.card->getSubcards().contains(player->getOffensiveHorse()->getId())) ? 1 : 0;
 
-    if (player->distanceTo(use.to.first(), n) > 1) {
+    if (player->distanceTo(use.to.first(), 0, use.card) > 1) {
         QStringList tarmods;
         foreach (QString name, Sanguosha->getSkillNames()) {
             if (Sanguosha->getSkill(name)->inherits("TargetModSkill")) {

@@ -1024,8 +1024,7 @@ public:
         if (!Sanguosha->matchExpPattern(pattern, from, card) || !to)
             return false;
 
-        int n = (from && from->getOffensiveHorse() && card->getSubcards().contains(from->getOffensiveHorse()->getId())) ? 1 : 0;
-        if (from->hasSkill("duanliang") && from->distanceTo(to, n) == 2)
+        if (from->hasSkill("duanliang") && from->distanceTo(to, 0, card) == 2)
             return true;
         else
             return false;
@@ -1072,15 +1071,7 @@ bool QiangxiCard::targetFilter(const QList<const Player *> &targets, const Playe
     if (!targets.isEmpty() || to_select == Self)
         return false;
 
-    int rangefix = 0;
-    if (!subcards.isEmpty() && Self->getWeapon() && Self->getWeapon()->getId() == subcards.first()) {
-        const Weapon *card = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
-        rangefix += card->getRange() - 1;
-    }
-    int distance = Self->distanceTo(to_select, rangefix);
-    if (distance == -1)
-        return false;
-    return distance <= Self->getAttackRange();
+    return Self->inMyAttackRange(to_select, this);
 }
 
 void QiangxiCard::extraCost(Room *room, const CardUseStruct &card_use) const

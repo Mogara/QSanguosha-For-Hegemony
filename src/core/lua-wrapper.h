@@ -219,7 +219,7 @@ class LuaDistanceSkill : public DistanceSkill
 public:
     LuaDistanceSkill(const char *name);
 
-    virtual int getCorrect(const Player *from, const Player *to) const;
+    virtual int getCorrect(const Player *from, const Player *to, const Card *card = NULL) const;
     virtual int getFixed(const Player *from, const Player *to) const;
 
     LuaFunction correct_func;

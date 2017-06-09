@@ -398,7 +398,6 @@ private:
     void chooseSkillButton();
 
     void selectTarget(int order, bool multiple);
-    void selectNextTarget(bool multiple);
     void unselectAllTargets(const QGraphicsItem *except = NULL);
     void updateTargetsEnablity(const Card *card = NULL);
 

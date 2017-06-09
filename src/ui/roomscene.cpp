@@ -1495,31 +1495,6 @@ void RoomScene::enableTargets(const Card *card)
         return;
     }
 
-    if (selected_targets.isEmpty() && previous_targets.isEmpty()) {
-        if (card->isKindOf("Slash") && current->hasFlag("slashTargetFixToOne")) {
-            unselectAllTargets();
-            foreach (Photo *photo, photos) {
-                if (photo->flags() & QGraphicsItem::ItemIsSelectable) {
-                    if (!photo->isSelected()) {
-                        photo->setSelected(true);
-                        break;
-                    }
-                }
-            }
-        } else if (Config.EnableAutoTarget) {
-            if (!card->targetsFeasible(selected_targets, current)) {
-                unselectAllTargets();
-                int count = 0;
-                foreach(Photo *photo, photos)
-                    if (photo->flags() & QGraphicsItem::ItemIsSelectable)
-                        count++;
-                if (dashboard->flags() & QGraphicsItem::ItemIsSelectable)
-                    count++;
-                if (count == 1)
-                    selectNextTarget(false);
-            }
-        }
-    }
 #ifndef Q_OS_ANDROID
     bool playchainanimation = false;
     if (status == Client::RespondingUse || status == Client::Playing) {
@@ -1554,6 +1529,34 @@ void RoomScene::enableTargets(const Card *card)
 #endif
 
     updateTargetsEnablity(card);
+
+    if (selected_targets.isEmpty() && previous_targets.isEmpty()) {
+        if (card->isKindOf("Slash") && current->hasFlag("slashTargetFixToOne")) {
+            foreach (Photo *photo, photos) {
+                if (!photo->isSelected() && card->targetFilter(selected_targets, photo->getPlayer(), current)) {
+                    photo->setSelected(true);
+                    break;
+                }
+            }
+        } else if (Config.EnableAutoTarget) {
+            if (!card->targetsFeasible(selected_targets, current)) {
+                PlayerCardContainer *default_item = NULL;
+                foreach(PlayerCardContainer *item, item2player.keys()) {
+                    if (card->targetFilter(selected_targets, item->getPlayer(), current) && card->targetsFeasible(QList<const Player *>() << item->getPlayer(), current)) {
+                        if (!default_item) {
+                            default_item = item;
+                        } else {
+                            default_item = NULL;
+                            break;
+                        }
+                    }
+                }
+
+                if (default_item) default_item->setSelected(true);
+            }
+        }
+    }
+
     ok_button->setEnabled(card->targetsFeasible(selected_targets, current));
 }
 
@@ -2763,39 +2766,6 @@ void RoomScene::selectTarget(int order, bool multiple)
         return;
 
     to_select->setSelected(!to_select->isSelected());
-}
-
-void RoomScene::selectNextTarget(bool multiple)
-{
-    if (!multiple)
-        unselectAllTargets();
-
-    QList<QGraphicsItem *> targets;
-    foreach (Photo *photo, photos) {
-        if (photo->flags() & QGraphicsItem::ItemIsSelectable)
-            targets << photo;
-    }
-
-    if (dashboard->flags() & QGraphicsItem::ItemIsSelectable)
-        targets << dashboard;
-
-    for (int i = 0; i < targets.length(); i++) {
-        if (targets.at(i)->isSelected()) {
-            for (int j = i + 1; j < targets.length(); j++) {
-                if (!targets.at(j)->isSelected()) {
-                    targets.at(j)->setSelected(true);
-                    return;
-                }
-            }
-        }
-    }
-
-    foreach (QGraphicsItem *target, targets) {
-        if (!target->isSelected()) {
-            target->setSelected(true);
-            break;
-        }
-    }
 }
 
 void RoomScene::unselectAllTargets(const QGraphicsItem *except)

@@ -96,7 +96,7 @@ class DistanceSkill: public Skill {
 public:
     DistanceSkill(const QString &name);
 
-    virtual int getCorrect(const Player *from, const Player *to) const = 0;
+    virtual int getCorrect(const Player *from, const Player *to, const Card *card = NULL) const;
     virtual int getFixed(const Player *from, const Player *to) const = 0;
 };
 
@@ -235,7 +235,7 @@ public:
 class LuaDistanceSkill: public DistanceSkill {
 public:
     LuaDistanceSkill(const char *name);
-    virtual int getCorrect(const Player *from, const Player *to) const;
+    virtual int getCorrect(const Player *from, const Player *to, const Card *card = NULL) const;
     virtual int getFixed(const Player *from, const Player *to) const;
 
     LuaFunction correct_func;
@@ -1078,7 +1078,7 @@ bool LuaViewHasSkill::ViewHas(const Player *player, const QString &skill_name) c
     }
 }
 
-int LuaDistanceSkill::getCorrect(const Player *from, const Player *to) const
+int LuaDistanceSkill::getCorrect(const Player *from, const Player *to, const Card *card) const
 {
     if (correct_func == 0)
         return 0;
@@ -1090,8 +1090,9 @@ int LuaDistanceSkill::getCorrect(const Player *from, const Player *to) const
     SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaDistanceSkill, 0);
     SWIG_NewPointerObj(L, from, SWIGTYPE_p_Player, 0);
     SWIG_NewPointerObj(L, to, SWIGTYPE_p_Player, 0);
+    SWIG_NewPointerObj(L, card, SWIGTYPE_p_Card, 0);
 
-    int error = lua_pcall(L, 3, 1, 0);
+    int error = lua_pcall(L, 4, 1, 0);
     if (error) {
         Error(L);
         return 0;
