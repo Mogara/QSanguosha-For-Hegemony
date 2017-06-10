@@ -560,33 +560,13 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         DyingStruct dying = data.value<DyingStruct>();
         const Card *peach = NULL;
 
-        try {
-            ServerPlayer *jiayu = room->getCurrent();
-            if (jiayu->hasShownSkill("wansha") && jiayu->isAlive() && jiayu->getPhase() != Player::NotActive && player != jiayu)
-                    room->setPlayerFlag(player, "Global_PreventPeach");
-
-            //if (!player->hasFlag("Global_PreventPeach") && dying.who->isRemoved())
-            //    room->setPlayerFlag(player, "Global_PreventPeach");
-
-            while (dying.who->getHp() <= 0) {
-                peach = NULL;
-                if (dying.who->isAlive() && !dying.who->isRemoved() && !player->isRemoved())
-                    peach = room->askForSinglePeach(player, dying.who);
-                if (peach == NULL)
-                    break;
-                room->useCard(CardUseStruct(peach, player, dying.who), false);
-            }
-            //if (player->hasFlag("Global_PreventPeach"))
-            //    room->setPlayerFlag(player, "-Global_PreventPeach");
-        }
-        catch (TriggerEvent triggerEvent) {
-        /*
-            if (triggerEvent == TurnBroken || triggerEvent == StageChange) {
-                if (player->hasFlag("Global_PreventPeach"))
-                    room->setPlayerFlag(player, "-Global_PreventPeach");
-            }
-        */
-            throw triggerEvent;
+        while (dying.who->getHp() <= 0) {
+            peach = NULL;
+            if (dying.who->isAlive())
+                peach = room->askForSinglePeach(player, dying.who);
+            if (peach == NULL)
+                break;
+            room->useCard(CardUseStruct(peach, player, dying.who), false);
         }
 
         break;

@@ -224,14 +224,6 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
     return checkpoint;
 }
 
-bool ExpPattern::match(const Card *card) const
-{
-    foreach (const QString &one_exp, this->exp.split("#"))
-        if (this->matchType(card, one_exp)) return true;
-
-    return false;
-}
-
 bool ExpPattern::matchType(const Card *card, QString exp) const
 {
     QStringList factors = exp.split('|');

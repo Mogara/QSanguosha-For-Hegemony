@@ -398,17 +398,6 @@ bool Engine::matchExpPattern(const QString &pattern, const Player *player, const
     }
 }
 
-bool Engine::matchExpPatternType(const QString &pattern, const Card *card) const
-{
-    ExpPattern p(pattern);
-    if (p.match(card))
-        return true;
-    else {
-        ExpPattern p(getPattern(pattern)->getPatternString());
-        return p.match(card);
-    }
-}
-
 Card::HandlingMethod Engine::getCardHandlingMethod(const QString &method_name) const
 {
     if (method_name == "use")

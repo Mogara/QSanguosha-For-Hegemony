@@ -82,12 +82,12 @@ public:
         return to_select->isBlack();
     }
 
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
         if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
             Card *card = Sanguosha->cloneCard("dismantlement");
             card->deleteLater();
-            if (Sanguosha->matchExpPatternType(pattern, card)) return true;
+            if (Sanguosha->matchExpPattern(pattern, player, card)) return true;
         }
         return false;
     }
@@ -285,12 +285,12 @@ public:
         skill_type = Alter;
     }
 
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
         if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
             Card *card = Sanguosha->cloneCard("indulgence");
             card->deleteLater();
-            if (Sanguosha->matchExpPatternType(pattern, card)) return true;
+            if (Sanguosha->matchExpPattern(pattern, player, card)) return true;
         }
         return false;
     }
@@ -1654,11 +1654,7 @@ public:
         if (!Sanguosha->matchExpPattern(pattern, from, card) || !from->hasSkill(this))
             return false;
 
-        int rangefix = 0;
-        if (from->getOffensiveHorse() && card->getSubcards().contains(from->getOffensiveHorse()->getId()))
-            ++rangefix;
-
-        if (selected_targets.isEmpty() && !previous_targets.contains(to) && from->distanceTo(to, rangefix) == 1) return true;
+        if (selected_targets.isEmpty() && !previous_targets.contains(to) && from->distanceTo(to, 0, card) == 1) return true;
         return false;
     }
 };

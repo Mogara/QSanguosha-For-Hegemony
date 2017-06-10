@@ -601,7 +601,7 @@ QString Jink::getSubtype() const
 bool Jink::isAvailable(const Player *player) const
 {
     if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
-        return Sanguosha->getCurrentCardUsePattern().contains("jink") && !player->isProhibited(player, this);
+        return Sanguosha->getCurrentCardUsePattern() == "jink" && !player->isProhibited(player, this);
 
     return false;
 }

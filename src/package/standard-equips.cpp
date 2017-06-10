@@ -297,8 +297,13 @@ public:
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
 		if (!ArmorSkill::triggerable(player)) return TriggerStruct();
-        QString asked = data.toStringList().first();
-        if (asked == "jink") return TriggerStruct(objectName(), player);
+        QString pattern = data.toStringList().first();
+        Card *jink = Sanguosha->cloneCard("jink");
+        jink->deleteLater();
+        if (Sanguosha->matchExpPattern(pattern, player, jink))
+            if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE && jink->isAvailable(player)
+                    || Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+                return TriggerStruct(objectName(), player);
 
         return TriggerStruct();
     }
