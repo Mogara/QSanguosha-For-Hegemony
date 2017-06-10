@@ -17,7 +17,6 @@
 
     Mogara
     *********************************************************************/
-
 {
 "common":
 {
@@ -159,7 +158,7 @@
     "actionedIconRegion": [100, 78, 52, 21],
     "saveMeIconRegion": [25, 46, 122, 50],
     "votesIconRegion": [53, 66, 50, 50],
-    "chainedIconRegion": [0, 85, 156, 19],
+    "chainedIconRegion": [0, 63, 159, 64],
     "duanchangMaskRegion": [1, 1, 77, 179],
     "duanchangMaskRegion2": [78, 1, 77, 179],
     "deathIconRegion": [0, 50, 157, 102],
@@ -242,7 +241,7 @@
     "actionedIconRegion": [80, 37, 52, 21],
     "saveMeIconRegion": [5, 15, 122, 50],
     "votesIconRegion": [50, 52, 50, 50],
-    "chainedIconRegion": [119, 77, 138, 19],
+    "chainedIconRegion": [105, 55, 159, 64],
     "deathIconRegion": ["center", "center", [0, 0], [157, 102]],
     "drankMaskColor": [250, 0, 0, 115],
     "duanchangMaskColor": [255, 255, 255, 128],

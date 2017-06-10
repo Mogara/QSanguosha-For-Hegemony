@@ -49,7 +49,7 @@ public:
         peach->deleteLater();
         if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE && player->getPhase() == Player::NotActive
                 && peach->isAvailable(player)) {
-            return Sanguosha->matchExpPattern(pattern, player, peach);
+            return Sanguosha->matchExpPatternType(pattern, peach);
         }
 
         return false;

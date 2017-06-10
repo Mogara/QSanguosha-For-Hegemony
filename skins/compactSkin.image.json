@@ -17,11 +17,11 @@
 
     Mogara
     *********************************************************************/
-
+    
 {
 "photoMainFrame": "image/fullskin/compact/photo-back.png",
 "photoFaceTurnedMask": "image/fullskin/generals/faceturned.png",
-"photoChain": ["image/system/chain.png", [0, 0, 131, 19]],
+"photoChain": ["image/system/chain.png", [0, 0, 159, 64]],
 "photoPhase0": "image/system/phase/round_start.png",
 "photoPhase1": "image/system/phase/start.png",
 "photoPhase2": "image/system/phase/judge.png",

@@ -82,12 +82,12 @@ public:
         return to_select->isBlack();
     }
 
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
     {
         if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
             Card *card = Sanguosha->cloneCard("dismantlement");
             card->deleteLater();
-            if (Sanguosha->matchExpPattern(pattern, player, card)) return true;
+            if (Sanguosha->matchExpPatternType(pattern, card)) return true;
         }
         return false;
     }
@@ -285,12 +285,12 @@ public:
         skill_type = Alter;
     }
 
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
     {
         if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
             Card *card = Sanguosha->cloneCard("indulgence");
             card->deleteLater();
-            if (Sanguosha->matchExpPattern(pattern, player, card)) return true;
+            if (Sanguosha->matchExpPatternType(pattern, card)) return true;
         }
         return false;
     }

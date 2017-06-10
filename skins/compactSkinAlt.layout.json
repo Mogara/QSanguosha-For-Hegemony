@@ -17,7 +17,6 @@
 
     Mogara
     *********************************************************************/
-
 {
 "common":
 {
@@ -91,8 +90,8 @@
     "onlineStatusArea": [93, 20, 30, 25],
     "onlineStatusBgColor": [0, 0, 0, 0],
     "onlineStatusFont": ["DroidSansFallback",12, 0, [255, 255, 255, 255], 3, 10, [0, 0], [20, 20, 20, 155]],
-    "skillNameArea": [25, 40, 300, 80],
-    "skillNameFont": ["SimLi", 40, 0, [255, 255, 255, 255], 2, 20, [0, 0], [255, 20, 255, 128]],
+    "skillNameArea": [0, 50, 300, 50],
+    "skillNameFont": ["simli", 40, 0, [255, 255, 255, 255], 2, 20, [0, 0], [255, 20, 255, 128]],
     "progressBarArea": ["topLeft", "bottomLeft", [0, 8], [133, 10]],
     "progressBarHorizontal": true,
     "privatePileStartPos": [24, 15],
@@ -101,7 +100,7 @@
     "actionedIconRegion": [72, 45, 52, 21],
     "saveMeIconRegion": [16, 24, 122, 50],
     "votesIconRegion": [41, 51, 50, 50],
-    "chainedIconRegion": [0, 66, 131, 19],
+    "chainedIconRegion": [0, 44, 159, 64],
     "deathIconRegion": [0, 34, 131, 85],
     "drankMaskColor": [250, 0, 0, 115],
     "deathEffectColor": [50, 50, 50, 255],

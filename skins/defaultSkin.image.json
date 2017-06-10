@@ -17,7 +17,6 @@
 
     Mogara
     *********************************************************************/
-
 {
 "progressBar": [[0, "image/system/controls/progress-0.png"], [100, "image/system/controls/progress-100.png"]],
 "votesNum-default": "image/system/number/%1.png",
@@ -50,7 +49,7 @@
 "dashboardHandCardNum-default2": "image/fullskin/system/handcard/qun.png",
 "dashboardFaceTurnedMask": "image/generals/big/faceturned.png",
 "dashboardBlankGeneral": "image/fullskin/generals/blank.png",
-"dashboardChain": ["image/system/chain.png", [0, 0, 134, 19]],
+"dashboardChain": ["image/system/chain.png", [0, 0, 159, 64]],
 "dashboardDuanchang": "image/system/duanchang.png",
 "dashboardPhase0": "image/system/phase/round_start.png",
 "dashboardPhase1": "image/system/phase/start.png",

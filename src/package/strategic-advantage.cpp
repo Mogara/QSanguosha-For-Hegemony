@@ -178,7 +178,7 @@ public:
     {
         Card *slash = Sanguosha->cloneCard("slash");
         slash->deleteLater();
-        bool match = Sanguosha->matchExpPattern(pattern, player, slash);
+        bool match = Sanguosha->matchExpPatternType(pattern, slash);
         return !player->hasFlag("Global_HalberdFailed") && !player->hasFlag("slashDisableExtraTarget")
             && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
             && match && player->getMark("Equips_Nullified_to_Yourself") == 0 && !player->hasFlag("HalberdUse");
