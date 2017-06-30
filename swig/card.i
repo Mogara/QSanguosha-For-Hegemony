@@ -149,9 +149,14 @@ public:
     static bool IsAvailable(const Player *player, const Card *slash = NULL, bool considerSpecificAssignee = true);
     static bool IsSpecificAssignee(const Player *player, const Player *from, const Card *slash);
 
+    void setDistanceLimit(bool limit);
+    void setExtraTargetEnable(bool enable);
+
 protected:
     DamageStruct::Nature nature;
     mutable int drank;
+    bool extra_target;
+    bool distance_limit;
 };
 
 class Analeptic: public BasicCard {

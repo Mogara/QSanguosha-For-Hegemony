@@ -64,7 +64,7 @@ public:
         log.arg = "4";
         room->sendLog(log, QList<ServerPlayer *>() << lidian);
 
-        if (Config.SkillModify.contains(objectName())) {
+        if (ServerInfo.SkillModify.contains(objectName())) {
             AskForMoveCardsStruct result = room->askForMoveCards(lidian, card_ids, QList<int>(), true, "xunxun-convert", "",
                                                                  2, 2, false, false, QList<int>() << -1);
 
@@ -828,7 +828,7 @@ public:
     virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         if (!TriggerSkill::triggerable(player)) return TriggerStruct();
-        bool invoke = (Config.SkillModify.contains(objectName()) ? player->getHp() <= 1 : player->getHp() == 1);
+        bool invoke = (ServerInfo.SkillModify.contains(objectName()) ? player->getHp() <= 1 : player->getHp() == 1);
 
         return (player->getPhase() == Player::Start && invoke) ? TriggerStruct(objectName(), player) : TriggerStruct();
     }

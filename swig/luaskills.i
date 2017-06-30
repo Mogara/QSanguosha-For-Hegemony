@@ -116,6 +116,7 @@ public:
         ExtraMaxTarget,
         ExtraTarget,
         SpecificAssignee,
+		History,
     };
 
     TargetModSkill(const QString &name);
@@ -125,6 +126,7 @@ public:
     virtual int getExtraTargetNum(const Player *from, const Card *card) const;
     virtual bool getDistanceLimit(const Player *from, const Player *to, const Card *card) const;
     virtual bool checkSpecificAssignee(const Player *from, const Player *to, const Card *card) const;
+    virtual bool IgnoreCount(const Player *from, const Card *card) const;
     virtual bool checkExtraTargets(const Player *from, const Player *to, const Card *card,
                                   const QList<const Player *> &previous_targets, const QList<const Player *> &targets = QList<const Player *>()) const;
     virtual int getEffectIndex(const ServerPlayer *player, const Card *card, const TargetModSkill::ModType type) const;
@@ -278,6 +280,7 @@ public:
     virtual int getResidueNum(const Player *from, const Card *card) const;
     virtual int getExtraTargetNum(const Player *from, const Card *card) const;
     virtual bool checkSpecificAssignee(const Player *from, const Player *to, const Card *card) const;
+    virtual bool IgnoreCount(const Player *from, const Card *card) const;
     virtual bool checkExtraTargets(const Player *from, const Player *to, const Card *card,
             const QList<const Player *> &previous_targets, const QList<const Player *> &targets = QList<const Player *>()) const;
     virtual bool getDistanceLimit(const Player *from, const Player *to, const Card *card) const;
@@ -286,6 +289,7 @@ public:
     LuaFunction residue_func;
     LuaFunction distance_limit_func;
     LuaFunction check_specific_func;
+    LuaFunction ignore_count_func;
     LuaFunction extra_target_func;
     LuaFunction check_extra_func;
     LuaFunction audio_index_func;
@@ -1258,6 +1262,30 @@ int LuaTargetModSkill::getExtraTargetNum(const Player *from, const Card *card) c
     return extra_target;
 }
 
+bool LuaTargetModSkill::IgnoreCount(const Player *from, const Card *card) const
+{
+    if (ignore_count_func == 0)
+        return false;
+
+    lua_State *L = Sanguosha->getLuaState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ignore_count_func);
+
+    SWIG_NewPointerObj(L, this, SWIGTYPE_p_LuaTargetModSkill, 0);
+    SWIG_NewPointerObj(L, from, SWIGTYPE_p_Player, 0);
+    SWIG_NewPointerObj(L, card, SWIGTYPE_p_Card, 0);
+
+    int error = lua_pcall(L, 3, 1, 0);
+    if (error) {
+        Error(L);
+        return false;
+    }
+
+    bool result = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return result;
+}
+
 bool LuaTargetModSkill::checkSpecificAssignee(const Player *from, const Player *to, const Card *card) const
 {
     if (check_specific_func == 0)
@@ -1615,7 +1643,7 @@ QString LuaViewAsSkill::getExpandPile() const
     int error = lua_pcall(L, 1, 1, 0);
     if (error) {
         Error(L);
-        return false;
+        return QString();
     } else {
         const char *result = lua_tostring(L, -1);
         lua_pop(L, 1);

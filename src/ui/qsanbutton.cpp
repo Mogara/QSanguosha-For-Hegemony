@@ -98,15 +98,16 @@ void QSanButton::setStyle(ButtonStyle style)
 void QSanButton::setEnabled(bool enabled)
 {
     bool changed = (enabled != isEnabled());
-    if (!changed) return;
     if (enabled) {
         setState(S_STATE_UP);
         _m_mouseEntered = false;
-    }
-    QGraphicsObject::setEnabled(enabled);
-    if (!enabled) setState(S_STATE_DISABLED);
+    } else
+        setState(S_STATE_DISABLED);
     update();
-    emit enable_changed();
+    if (changed) {
+        QGraphicsObject::setEnabled(enabled);
+        emit enable_changed();
+    }
 }
 
 void QSanButton::setState(QSanButton::ButtonState state)

@@ -318,7 +318,7 @@ int ServerPlayer::getPlayerNumWithSameKingdom(const QString &reason, const QStri
             ++num;
     }
 
-    if (reason != "AI") {
+    if (reason != "AI" && type == MaxCardsType::Normal) {
         QVariant data = QVariant::fromValue(PlayerNumStruct(num, to_calculate, type, reason));
         room->getThread()->trigger(ConfirmPlayerNum, room, this_player, data);
         PlayerNumStruct playerNumStruct = data.value<PlayerNumStruct>();
@@ -772,8 +772,13 @@ bool ServerPlayer::changePhase(Player::Phase from, Player::Phase to)
         phases.removeFirst();
 
     if (!thread->trigger(EventPhaseStart, room, this)) {
-        if (getPhase() != NotActive)
-            thread->trigger(EventPhaseProceeding, room, this);
+        if (getPhase() != NotActive) {
+            if (getPhase() == Draw) {
+                QVariant data = 2;
+                thread->trigger(EventPhaseProceeding, room, this, data);
+            } else
+                thread->trigger(EventPhaseProceeding, room, this);
+        }
     }
     if (getPhase() != NotActive)
         thread->trigger(EventPhaseEnd, room, this);
@@ -826,8 +831,13 @@ void ServerPlayer::play(QList<Player::Phase> set_phases)
             continue;
 
         if (!thread->trigger(EventPhaseStart, room, this)) {
-            if (getPhase() != NotActive)
-                thread->trigger(EventPhaseProceeding, room, this);
+            if (getPhase() != NotActive) {
+                if (getPhase() == Draw) {
+                    QVariant data = 2;
+                    thread->trigger(EventPhaseProceeding, room, this, data);
+                } else
+                    thread->trigger(EventPhaseProceeding, room, this);
+            }
         }
         if (getPhase() != NotActive)
             thread->trigger(EventPhaseEnd, room, this);

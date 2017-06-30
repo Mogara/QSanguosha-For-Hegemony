@@ -154,6 +154,7 @@ private:
     QCheckBox *convert_shengxi;
     QCheckBox *convert_qianhuan;
     QCheckBox *convert_hunshang;
+    QCheckBox *convert_fan;
 
     //QCheckBox *add_peace_spell;
     //QCheckBox *convert_zhangjiao_to_lord;

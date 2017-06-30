@@ -191,11 +191,12 @@ public:
     }
 };
 
-class Tuxi : public PhaseChangeSkill
+class Tuxi : public TriggerSkill
 {
 public:
-    Tuxi() : PhaseChangeSkill("tuxi")
+    Tuxi() : TriggerSkill("tuxi")
     {
+        events << EventPhaseStart << EventPhaseProceeding;
         skill_type = Attack;
     }
 
@@ -204,9 +205,15 @@ public:
         return true;
     }
 
-    virtual TriggerStruct triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual void record(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data) const
     {
-        if (!PhaseChangeSkill::triggerable(player))
+        if (triggerEvent == EventPhaseProceeding && player->getPhase() == Player::Draw && player->hasFlag(objectName()))
+            data = -1;
+    }
+
+    virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (!TriggerSkill::triggerable(player) || triggerEvent != EventPhaseStart)
             return TriggerStruct();
 
         if (player->getPhase() == Player::Draw) {
@@ -219,7 +226,8 @@ public:
                 }
             }
 
-			return can_invoke ? TriggerStruct(objectName(), player) : TriggerStruct();
+            if (can_invoke)
+                return TriggerStruct(objectName(), player);
         }
         return TriggerStruct();
     }
@@ -243,12 +251,10 @@ public:
         return TriggerStruct();
     }
 
-    virtual bool onPhaseChange(ServerPlayer *source, const TriggerStruct &) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *source, QVariant &, ServerPlayer *, const TriggerStruct &) const
     {
         QList<ServerPlayer *> targets = source->tag["tuxi_invoke"].value<QList<ServerPlayer *> >();
         source->tag.remove("tuxi_invoke");
-
-        Room *room = source->getRoom();
 
         QList<CardsMoveStruct> moves;
         CardsMoveStruct move1;
@@ -265,7 +271,11 @@ public:
         }
         room->moveCardsAtomic(moves, false);
 
-        return true;
+        if (ServerInfo.SkillModify.contains("xunxun")) {
+            source->setFlags(objectName());
+            return false;
+        } else
+            return true;
     }
 };
 
@@ -274,14 +284,14 @@ class Luoyi : public TriggerSkill
 public:
     Luoyi() : TriggerSkill("luoyi")
     {
-        events << DrawNCards << PreCardUsed;
+        events << EventPhaseProceeding << PreCardUsed;
         skill_type = Attack;
     }
 
     virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (triggerEvent == DrawNCards) {
-            if (TriggerSkill::triggerable(player))
+        if (triggerEvent == EventPhaseProceeding) {
+            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Draw && data.toInt() > 0)
                 return TriggerStruct(objectName(), player);
         } else {
             if (player != NULL && player->isAlive() && player->hasFlag("luoyi")) {
@@ -600,16 +610,20 @@ bool ShensuCard::targetFilter(const QList<const Player *> &targets, const Player
 {
     Slash *slash = new Slash(NoSuit, 0);
     slash->setSkillName("shensu");
+    slash->setDistanceLimit(false);
     slash->deleteLater();
     return slash->targetFilter(targets, to_select, Self);
 }
 
 void ShensuCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
-    foreach (ServerPlayer *target, targets) {
-        if (!source->canSlash(target, NULL, false))
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->setSkillName("shensu");
+    slash->setDistanceLimit(false);
+    slash->deleteLater();
+    foreach (ServerPlayer *target, targets)
+        if (!source->canSlash(target, slash))
             targets.removeOne(target);
-    }
 
     if (targets.length() > 0) {
         QString index = "2";
@@ -732,11 +746,11 @@ public:
         }
 
         Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setDistanceLimit(false);
         slash->setSkillName("_shensu");
         QList<ServerPlayer *> targets;
-        foreach (QVariant x, target_list) {
+        foreach (QVariant x, target_list)
             targets << x.value<ServerPlayer *>();
-        }
 
         room->useCard(CardUseStruct(slash, player, targets));
         return false;
@@ -1432,8 +1446,6 @@ void StandardPackage::addWeiGenerals()
 
     General *xiahouyuan = new General(this, "xiahouyuan", "wei"); // WEI 008
     xiahouyuan->addSkill(new Shensu);
-    xiahouyuan->addSkill(new SlashNoDistanceLimitSkill("shensu"));
-    insertRelatedSkills("shensu", "#shensu-slash-ndl");
 
     General *zhanghe = new General(this, "zhanghe", "wei"); // WEI 009
     zhanghe->addSkill(new Qiaobian);

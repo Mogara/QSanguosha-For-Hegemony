@@ -539,7 +539,6 @@ enum TriggerEvent
 
     ConfirmPlayerNum, // hongfa only
 
-    DrawNCards,
     AfterDrawNCards,
     DrawPileChanged,
 

@@ -265,8 +265,8 @@ public:
 
     bool isDuanchang(const bool head = true) const;
 
-    bool canSlash(const Player *other, const Card *slash, bool distance_limit = true, int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
-    bool canSlash(const Player *other, bool distance_limit = true, int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
+    bool canSlash(const Player *other, const Card *slash, int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
+    bool canSlash(const Player *other, int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
     int getCardCount(bool include_equip) const;
 
     QList<int> getPile(const char *pile_name) const;
@@ -857,7 +857,6 @@ enum TriggerEvent
 
     ConfirmPlayerNum, // hongfa only
 
-    DrawNCards,
     AfterDrawNCards,
     DrawPileChanged,
 
@@ -1031,7 +1030,7 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 
-    virtual void doPreAction(Room *room, const CardUseStruct &card_use) const;
+    virtual void doPreAction(Room *room, CardUseStruct &card_use) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
@@ -1074,6 +1073,10 @@ public:
 %extend Card {
     EquipCard *toEquipCard() {
         return qobject_cast<EquipCard *>($self);
+    }
+
+	Slash *toSlash() {
+        return qobject_cast<Slash *>($self);
     }
 
     Weapon *toWeapon() {
@@ -1148,7 +1151,7 @@ public:
     virtual bool isAvailable(const Player *player) const;
     virtual const Card *validate(CardUseStruct &cardUse) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
-    virtual void doPreAction(Room *room, const CardUseStruct &cardUse) const;
+    virtual void doPreAction(Room *room, CardUseStruct &cardUse) const;
     virtual void onUse(Room *room, const CardUseStruct &cardUse) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
@@ -1650,10 +1653,8 @@ public:
         const char *skill_name = NULL, bool isProvision = false);
     const Card *askForUseCard(ServerPlayer *player, const char *pattern, const char *prompt, int notice_index = -1,
         Card::HandlingMethod method = Card::MethodUse, bool addHistory = true, const char *position = NULL);
-    const Card *askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const char *prompt,
-        bool distance_limit = true, bool disable_extra = false, bool addHistory = false);
-    const Card *askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const char *prompt,
-        bool distance_limit = true, bool disable_extra = false, bool addHistory = false);
+    const Card *askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const char *prompt, bool addHistory = false);
+    const Card *askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const char *prompt, bool addHistory = false);
     QList<int> GlobalCardChosen(ServerPlayer *player, QList<ServerPlayer *> targets, const char *flags, const char *skillName, const char *prompt, int min = 0, int max = 0,
         ChoosingType type = OnebyOne, bool handcard_visible = false, Card::HandlingMethod method = Card::MethodNone, const QList<int> &disabled_ids = QList<int>(), bool notify_skill = false);
     int askForAG(ServerPlayer *player, const QList<int> &card_ids, bool refusable, const char *reason);

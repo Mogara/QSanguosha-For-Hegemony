@@ -376,8 +376,9 @@ QString Card::getSkillPosition() const
 
 QString Card::getDescription(bool yellow) const
 {
-    QString desc = Sanguosha->translate(":" + objectName());
-    if (desc == ":" + objectName())
+    QString desc = ServerInfo.SkillModify.contains(objectName())
+            ? Sanguosha->translate("&" + objectName()) : Sanguosha->translate(":" + objectName());
+    if (desc == ":" + objectName() || desc == "&" + objectName())
         return desc;
     foreach (const QString &skill_type, Sanguosha->getSkillColorMap().keys()) {
         QString to_replace = Sanguosha->translate(skill_type);
@@ -720,11 +721,6 @@ bool Card::targetsFeasible(const QList<const Player *> &targets, const Player *)
         return !targets.isEmpty();
 }
 
-bool Card::secondFilter(const QList<const Player *> &, const Player *, const Player *) const
-{
-    return false;
-}
-
 bool Card::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
     return targets.isEmpty() && to_select != Self;
@@ -735,8 +731,66 @@ bool Card::extratargetFilter(const QList<const Player *> &, const Player *to_sel
     return targetFilter(QList<const Player *>(), to_select, Self);
 }
 
-void Card::doPreAction(Room *, const CardUseStruct &) const
+void Card::doPreAction(Room *room, CardUseStruct &use) const
 {
+    if (use.to.isEmpty() || !use.from) return;
+
+    ServerPlayer *player = use.from;
+    QList<const TargetModSkill *> targetModSkills, choose_skill;
+    QList<const Player *> targets_const;
+    foreach (ServerPlayer *p, use.to)
+        targets_const << qobject_cast<const Player *>(p);
+
+    foreach (QString name, Sanguosha->getSkillNames()) {
+        if (Sanguosha->getSkill(name)->inherits("TargetModSkill")) {
+            const TargetModSkill *skill = qobject_cast<const TargetModSkill *>(Sanguosha->getSkill(name));
+            choose_skill << skill;
+        }
+    }
+
+    while (!choose_skill.isEmpty()) {           //for choosing skill contains "extra/more" in description
+        targetModSkills = choose_skill;
+        QStringList q;
+        foreach (const TargetModSkill *skill, targetModSkills) {
+            bool check = false;
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (!use.to.contains(p) && skill->checkExtraTargets(player, p, use.card, targets_const) && use.card->extratargetFilter(targets_const, p, player))
+                    check = true;
+            }
+            if (!check)
+                choose_skill.removeOne(skill);
+            else
+                q << skill->objectName();
+        }
+        if (q.isEmpty()) break;
+        SPlayerDataMap m;
+        m.insert(player, q);
+        QString r = room->askForTriggerOrder(player, "extra_target_skill", m, true);
+        if (r == "cancel") {
+            break;
+        } else {
+            QString skill_name = r.split(":").last();
+            QString position = r.split(":").first().split("?").last();
+            if (position == player->objectName()) position = QString();
+            const TargetModSkill *result_skill = qobject_cast<const TargetModSkill *>(Sanguosha->getSkill(skill_name));
+
+            QVariant data = QVariant::fromValue(use);       //for AI
+            player->tag["extra_target_skill"] = data;
+            QList<ServerPlayer *> targets = room->askForExtraTargets(player, use.to, use.card, skill_name, "@extra_targets1:" + use.card->getLogName(), true, position);
+            player->tag.remove("extra_target_skill");
+            use.to << targets;
+            choose_skill.removeOne(result_skill);
+            targets_const.clear();
+            foreach (ServerPlayer *p, use.to)
+                targets_const << qobject_cast<const Player *>(p);
+
+            if (!targets.isEmpty() && player->hasWeapon(Sanguosha->getMainSkill(skill_name)->objectName())) {
+                room->setEmotion(player, "weapon/" + player->getWeapon()->objectName());
+                use.card->setFlags(player->getWeapon()->objectName());
+            }
+        }
+    }
+    room->sortByActionOrder(use.to);
 }
 
 void Card::onUse(Room *room, const CardUseStruct &use) const
@@ -941,6 +995,11 @@ bool Card::canRecast() const
 bool Card::hasPreAction() const
 {
     return has_preact;
+}
+
+bool Card::getDistanceLimit() const
+{
+    return true;
 }
 
 Card::HandlingMethod Card::getHandlingMethod() const

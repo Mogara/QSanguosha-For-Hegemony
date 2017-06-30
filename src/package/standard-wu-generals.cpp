@@ -327,7 +327,7 @@ bool LiuliCard::targetFilter(const QList<const Player *> &targets, const Player 
     }
 
     const Card *slash = Card::Parse(Self->property("liuli").toString());
-    if (from && !from->canSlash(to_select, slash, false))
+    if (from && from->isProhibited(to_select, slash))
         return false;
 
     return Self->inMyAttackRange(to_select, this);
@@ -383,7 +383,7 @@ public:
 
             bool can_invoke = false;
             foreach (ServerPlayer *p, players) {
-                if (use.from->canSlash(p, use.card, false) && daqiao->inMyAttackRange(p)) {
+                if (!use.from->isProhibited(p, use.card) && daqiao->inMyAttackRange(p)) {
                     can_invoke = true;
                     break;
                 }
@@ -956,18 +956,7 @@ public:
 
         return selected_targets.isEmpty() && !old.contains(to);
     }
-/*
-    virtual int getExtraTargetNum(const Player *from, const Card *card) const
-    {
-        if (!Sanguosha->matchExpPattern(pattern, from, card))
-            return 0;
 
-        if (from->hasFlag("TianyiSuccess"))
-            return 1;
-        else
-            return 0;
-    }
-*/
     virtual int getEffectIndex(const ServerPlayer *, const Card *, const TargetModSkill::ModType) const
     {
         return 1;
@@ -1640,12 +1629,25 @@ public:
     }
 };
 
-class Duanbing : public TargetModSkill
+class Duanbing : public TriggerSkill
 {
 public:
-    Duanbing() : TargetModSkill("duanbing")
+    Duanbing() : TriggerSkill("duanbing")
     {
         skill_type = Attack;
+    }
+
+    virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
+        return TriggerStruct();
+    }
+};
+
+class DuanbingTar : public TargetModSkill
+{
+public:
+    DuanbingTar() : TargetModSkill("#duanbing")
+    {
     }
 
     virtual bool checkExtraTargets(const Player *from, const Player *to, const Card *card, const QList<const Player *> &previous_targets,
@@ -1779,6 +1781,8 @@ void StandardPackage::addWuGenerals()
 
     General *dingfeng = new General(this, "dingfeng", "wu"); // WU 016
     dingfeng->addSkill(new Duanbing);
+    dingfeng->addSkill(new DuanbingTar);
+    insertRelatedSkills("duanbing", "#duanbing");
     dingfeng->addSkill(new Fenxun);
 
     addMetaObject<ZhihengCard>();

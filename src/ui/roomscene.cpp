@@ -2174,12 +2174,18 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
                 if (target) {
                     if (!reason.m_position.isEmpty() && (reason.m_position == "head" || reason.m_position == "deputy")) {
                         card->showAvatar(reason.m_position == "head" ? target->getActualGeneral1() : target->getActualGeneral2(), reason.m_skillName);
-                    } else if (target->hasShownSkill(reason.m_skillName) && !target->getHeadActivedSkills(true, true).contains(Sanguosha->getSkill(reason.m_skillName))
-                               && (!target->getGeneral2() || !target->getDeputyActivedSkills(true, true).contains(Sanguosha->getSkill(reason.m_skillName)))) {
-                        if (target->getGeneral2() && target->hasShownOneGeneral())
-                            card->showAvatar(target->hasShownGeneral1() ? target->getGeneral() : target->getGeneral2(), reason.m_skillName);
-                        else
-                            card->showAvatar(target->getGeneral(), reason.m_skillName);
+                    } else if (target->hasShownSkill(reason.m_skillName)) {
+                        if (!target->getHeadActivedSkills(true, true).contains(Sanguosha->getSkill(reason.m_skillName))
+                                   && (!target->getGeneral2() || !target->getDeputyActivedSkills(true, true).contains(Sanguosha->getSkill(reason.m_skillName)))) {
+                            if (target->getGeneral2() && target->hasShownOneGeneral()) {
+                                card->showAvatar(target->hasShownGeneral1() ? target->getGeneral() : target->getGeneral2(), reason.m_skillName);
+                            } else {
+                                card->showAvatar(target->getGeneral(), reason.m_skillName);
+                            }
+                        } else {
+                            card->showAvatar(target->getHeadActivedSkills(true, true).contains(Sanguosha->getSkill(reason.m_skillName)) ?
+                                                                                                   target->getGeneral() : target->getGeneral2(), reason.m_skillName);
+                        }
                     } else if (target->getActualGeneral1() && target->getHeadActivedSkills().contains(Sanguosha->getSkill(reason.m_skillName))
                              || (!target->hasShownGeneral1() && target->getActualGeneral1()->hasSkill(reason.m_skillName))) {
                         card->showAvatar(target->getActualGeneral1(), reason.m_skillName);
@@ -2597,24 +2603,24 @@ void RoomScene::useSelectedCard()
         }
         case Client::AskForShowOrPindian: {
             const Card *card = dashboard->getSelected();
+            dashboard->unselectAll(0, false);
             if (card)
                 ClientInstance->onPlayerResponseCard(dashboard->getSelectedCardOwner(), card);
 
-            dashboard->unselectAll(0, false);
             break;
         }
         case Client::Discarding:{
             const Card *card = dashboard->getPendingCard();
-            if (card) {
+            if (card)
                 ClientInstance->onPlayerDiscardCards(card);
-            }
+
             break;
         }
         case Client::Exchanging: {
             const Card *card = dashboard->getPendingCard();
-            if (card) {
+            if (card)
                 ClientInstance->onPlayerDiscardCards(card);
-            }
+
             break;
         }
         case Client::NotActive: {
@@ -2638,12 +2644,16 @@ void RoomScene::useSelectedCard()
             break;
         }
         case Client::AskForPlayerChoose: {
+            QString skill_name = ClientInstance->getSkillNameToInvoke();
+            dashboard->highlightEquip(skill_name, false);
             ClientInstance->onPlayerChoosePlayer(selected_targets);
             break;
         }
         case Client::AskForExtraTargets: {
+            QString skill_name = ClientInstance->getSkillNameToInvoke();
+            QString main = Sanguosha->getMainSkill(skill_name)->objectName();
+            dashboard->highlightEquip(main, false);
             ClientInstance->onPlayerChooseExtraTargets(selected_targets);
-            enableTargets(NULL);
             break;
         }
         case Client::GlobalCardChosen: {
@@ -2732,15 +2742,16 @@ bool RoomScene::highlightSkillButton(const QString &skillName, const CardUseStru
                 const ViewAsSkill *vsSkill = button->getViewAsSkill();
                 if (vsSkill != NULL && vsSkill->objectName() == skillName
                     && vsSkill->isAvailable(Self, reason, pattern, head)) {
-                    button->setEnabled(true);
+                    button->setEnabled(!pattern.endsWith("!"));
                     button->setState(QSanButton::S_STATE_DOWN);
+                    if (Self->hasEquipSkill(skillName))
+                        dashboard->highlightEquip(skillName, true);
                     button->skill_activated();
                     return true;
                 }
             } else {
                 const Skill *skill = button->getSkill();
                 if (skill != NULL && skill->objectName() == skillName) {
-                    button->setEnabled(true);
                     button->setState(QSanButton::S_STATE_DOWN);
                     return true;
                 }
@@ -2794,22 +2805,22 @@ void RoomScene::doTimeout()
             break;
         }
         case Client::AskForPlayerChoose: {
-            QList<const Player*> null;
-            ClientInstance->onPlayerChoosePlayer(null);
             dashboard->highlightEquip(ClientInstance->skill_name, false);
+            ClientInstance->onPlayerChoosePlayer(QList<const Player*>());
             break;
         }
         case Client::AskForExtraTargets: {
             QList<const Player*> null;
             enableTargets(NULL);
-            ClientInstance->onPlayerChooseExtraTargets(null);
             QString skill_name = ClientInstance->getSkillNameToInvoke();
             QString main = Sanguosha->getMainSkill(skill_name)->objectName();
             dashboard->highlightEquip(main, false);
+            ClientInstance->onPlayerChooseExtraTargets(null);
             break;
         }
         case Client::GlobalCardChosen: {
             enableTargets(NULL);
+            dashboard->highlightEquip(ClientInstance->skill_name, false);
             foreach (const ClientPlayer *p, card_boxes.keys())
                 card_boxes[p]->clear();
             if (ok_button->isEnabled())
@@ -2817,7 +2828,6 @@ void RoomScene::doTimeout()
             else
                 ClientInstance->onPlayerChooseCards(QList<int>());
 
-            dashboard->highlightEquip(ClientInstance->skill_name, false);
             break;
         }
         case Client::AskForAG: {
@@ -2917,13 +2927,10 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                 } else if (newStatus == Client::Playing) {
                     reason = CardUseStruct::CARD_USE_REASON_PLAY;
                 }
-                if (!ClientInstance->getSkillToHighLight().isEmpty() && pattern.startsWith("@@")) {
-                    if (ClientInstance->getSkillToHighLight() == button->objectName())
-                        button->setEnabled(vsSkill->isAvailable(Self, reason, pattern, button->objectName()) && !pattern.endsWith("!"));
-                    else
-                        button->setEnabled(false);
-                } else
-                    button->setEnabled(vsSkill->isAvailable(Self, reason, pattern, button->objectName()) && !pattern.endsWith("!"));
+                if (pattern.startsWith("@@"))
+                    button->setEnabled(false);
+                else
+                    button->setEnabled(vsSkill->isAvailable(Self, reason, pattern, button->objectName()));
             } else {
                 const Skill *skill = button->getSkill();
                 if (skill->getFrequency() == Skill::Wake)
@@ -3462,8 +3469,7 @@ void RoomScene::doCancelButton()
             enableTargets(NULL);
             QString main = Sanguosha->getMainSkill(ClientInstance->getSkillNameToInvoke())->objectName();
             dashboard->highlightEquip(main, false);
-            QList<const Player *> null;
-            ClientInstance->onPlayerChooseExtraTargets(null);
+            ClientInstance->onPlayerChooseExtraTargets(QList<const Player *>());
             break;
         }
         case Client::GlobalCardChosen: {

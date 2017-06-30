@@ -257,7 +257,7 @@ public:
         return m_card->validateInResponse(user);
     }
 
-    inline virtual void doPreAction(Room *room, const CardUseStruct &cardUse) const
+    inline virtual void doPreAction(Room *room, CardUseStruct &cardUse) const
     {
         Q_ASSERT(m_card != NULL);
         m_card->doPreAction(room, cardUse);

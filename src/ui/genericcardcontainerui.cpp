@@ -651,6 +651,8 @@ void PlayerCardContainer::repaintAll()
     _m_chainIcon->setSize(_m_layout->m_chainedIconRegion.size());
     _m_chainIcon->setPos(_m_layout->m_chainedIconRegion.x(), _m_layout->m_chainedIconRegion.y());
 #endif
+    if (inherits("Photo")) _m_chainIcon->setX((boundingRect().width() - _m_chainIcon->boundingRect().width()) / 2);
+
     _paintPixmap(_m_duanchangMask, _m_layout->m_duanchangMaskRegion, QSanRoomSkin::S_SKIN_KEY_DUANCHANG,
         _getAvatarParent());
     _paintPixmap(_m_duanchangMask2, _m_layout->m_duanchangMaskRegion2, QSanRoomSkin::S_SKIN_KEY_DUANCHANG,

@@ -486,7 +486,7 @@ void TiaoxinCard::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
     bool use_slash = false;
-    if (effect.to->canSlash(effect.from, NULL, false))
+    if (effect.to->canSlash(effect.from))
         use_slash = room->askForUseSlashTo(effect.to, effect.from, "@tiaoxin-slash:" + effect.from->objectName());
     if (!use_slash && effect.from->canDiscard(effect.to, "he"))
         room->throwCard(room->askForCardChosen(effect.from, effect.to, "he", "tiaoxin", false, Card::MethodDiscard), effect.to, effect.from);
@@ -622,7 +622,7 @@ public:
 
     virtual TriggerStruct triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        bool convert = Config.SkillModify.contains(objectName());
+        bool convert = ServerInfo.SkillModify.contains(objectName());
         if (triggerEvent == EventPhaseEnd && !convert) {
             if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play && !player->hasFlag("ShengxiDamageInPlayPhase"))
                 return TriggerStruct(objectName(), player);
@@ -674,7 +674,7 @@ public:
 
     virtual TriggerStruct triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        bool convert = Config.SkillModify.contains("shengxi");
+        bool convert = ServerInfo.SkillModify.contains("shengxi");
         if (!convert && event == EventPhaseEnd && player->getPhase() == Player::Play && player->hasFlag("ShengxiDamageInPlayPhase"))
             player->setFlags("-ShengxiDamageInPlayPhase");
         else if (convert && event == EventPhaseStart && player->getPhase() == Player::Discard && player->hasFlag("ShengxiDamageInPlayPhase"))
@@ -1025,7 +1025,7 @@ public:
         bool invoke = false;
 
         if (triggerEvent == Damaged) {
-            bool convert = Config.SkillModify.contains(objectName());
+            bool convert = ServerInfo.SkillModify.contains(objectName());
             if (convert) {
                 QStringList patterns = (QStringList() <<  "spade" << "heart" << "club" << "diamond");
                 foreach (int id, yuji->getPile("sorcery"))
@@ -1067,7 +1067,7 @@ public:
         ServerPlayer *yuji = ask_who;
         if (!yuji) return false;
         if (triggerEvent == Damaged) {
-            if (Config.SkillModify.contains(objectName())) return false;
+            if (ServerInfo.SkillModify.contains(objectName())) return false;
 
             int id = room->getNCards(1).first();
             Card::Suit suit = Sanguosha->getCard(id)->getSuit();

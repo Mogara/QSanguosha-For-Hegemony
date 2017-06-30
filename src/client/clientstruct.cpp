@@ -52,7 +52,7 @@ time_t ServerInfoStruct::getCommandTimeout(QSanProtocol::CommandType command, QS
 
 bool ServerInfoStruct::parse(const QString &str)
 {
-    QRegExp rx("(.*):(@?\\w+):(\\d+):(\\d+):([\\w-]+(?:\\+[\\w-]+)*)?:([RCFAMS]*)");
+    QRegExp rx("(.*):(@?\\w+):(\\d+):(\\d+):([\\w-]+(?:\\+[\\w-]+)*)?:([RCFAMS]*):([\\w-]+(?:\\+[\\w-]+)*)?");
     if (!rx.exactMatch(str)) {
         // older version, just take the player count
         int count = str.split(":").at(1).toInt();
@@ -83,16 +83,15 @@ bool ServerInfoStruct::parse(const QString &str)
             Extensions << package_name;
         }
 
-        SkillModify = Config.SkillModify;
-
         QString flags = texts.at(6);
-
         RandomSeat = flags.contains("R");
         EnableCheat = flags.contains("C");
         FreeChoose = EnableCheat && flags.contains("F");
         ForbidAddingRobot = flags.contains("A");
         DisableChat = flags.contains("M");
         FirstShowingReward = flags.contains("S");
+
+        SkillModify = texts.at(7).split("+");
     }
 
     return true;

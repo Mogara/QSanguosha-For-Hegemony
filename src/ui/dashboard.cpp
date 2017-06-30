@@ -35,7 +35,6 @@
 #include <QMenu>
 #include <QPixmapCache>
 #include <QParallelAnimationGroup>
-#include <QMessageBox>
 
 using namespace QSanProtocol;
 
@@ -971,9 +970,9 @@ void Dashboard::skillButtonDeactivated()
 
     for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
         if (_m_equipSkillBtns[i] != NULL) {
-            _m_equipSkillBtns[i]->setEnabled(true);
             if (_m_equipSkillBtns[i]->isDown())
                 _m_equipSkillBtns[i]->click();
+            //_m_equipSkillBtns[i]->setEnabled(true);
         }
     }
 

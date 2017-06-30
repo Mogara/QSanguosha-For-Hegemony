@@ -116,10 +116,9 @@ public:
         return TriggerStruct();
     }
 
-    virtual TriggerStruct cost(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who, const TriggerStruct &info) const
+    virtual TriggerStruct cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who, const TriggerStruct &info) const
     {
-        if (target->hasShownArmorEffect())
-            room->setEmotion(ask_who, "weapon/qinggang_sword");
+        room->setEmotion(ask_who, "weapon/qinggang_sword");
         return info;
     }
 
@@ -185,7 +184,7 @@ class AxeViewAsSkill : public ViewAsSkill
 public:
     AxeViewAsSkill() : ViewAsSkill("Axe")
     {
-        response_pattern = "@Axe";
+        response_pattern = "@@Axe";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
@@ -223,7 +222,7 @@ public:
 
         const Card *card = NULL;
         if (player->getCardCount(true) >= 3) // Need 2 more cards except from the weapon itself
-            card = room->askForCard(player, "@Axe", "@Axe:" + effect.to->objectName(), data, objectName());
+            card = room->askForCard(player, "@@Axe", "@Axe:" + effect.to->objectName(), data, objectName());
         if (card) {
             room->setEmotion(player, "weapon/axe");
             room->slashResult(effect, NULL);
@@ -432,10 +431,10 @@ RenwangShield::RenwangShield(Suit suit, int number)
     setObjectName("RenwangShield");
 }
 
-class FanSkill : public OneCardViewAsSkill
+class FanViewAsSkill : public OneCardViewAsSkill
 {
 public:
-    FanSkill() : OneCardViewAsSkill("Fan")
+    FanViewAsSkill() : OneCardViewAsSkill("Fan")
     {
         filter_pattern = "%slash";
         response_or_use = true;
@@ -443,13 +442,14 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return Slash::IsAvailable(player) && player->getMark("Equips_Nullified_to_Yourself") == 0;
+        return Slash::IsAvailable(player) && player->getMark("Equips_Nullified_to_Yourself") == 0
+            && !ServerInfo.SkillModify.contains(objectName());
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
-        return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
-            && pattern == "slash" && player->getMark("Equips_Nullified_to_Yourself") == 0;
+        return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE && pattern == "slash"
+            && player->getMark("Equips_Nullified_to_Yourself") == 0 && !ServerInfo.SkillModify.contains(objectName());
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -458,6 +458,54 @@ public:
         acard->addSubcard(originalCard->getId());
         acard->setSkillName(objectName());
         return acard;
+    }
+};
+
+class FanSkill : public WeaponSkill
+{
+public:
+    FanSkill() : WeaponSkill("Fan")
+    {
+        view_as_skill = new FanViewAsSkill;
+        events << CardUsed;
+    }
+
+    virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (WeaponSkill::triggerable(player) && ServerInfo.SkillModify.contains(objectName())) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->objectName() == "slash") return TriggerStruct(objectName(), player);
+        }
+
+        return TriggerStruct();
+    }
+
+    virtual TriggerStruct cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *, const TriggerStruct &info) const
+    {
+        if (room->askForSkillInvoke(player, objectName(), data))
+            return info;
+
+        return TriggerStruct();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *, const TriggerStruct &) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        LogMessage log;
+        log.type = "$Fan";
+        log.from = use.from;
+        log.arg = use.card->getLogName();
+
+        FireSlash *fire_slash = new FireSlash(use.card->getSuit(), use.card->getNumber());
+        fire_slash->addSubcard(use.card);
+        use.card = fire_slash;
+        data = QVariant::fromValue(use);
+        room->setEmotion(player, "weapon/Fan");
+
+        log.card_str = use.card->toString();
+        room->sendLog(log);
+
+        return false;
     }
 };
 

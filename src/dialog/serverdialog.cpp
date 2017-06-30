@@ -342,11 +342,14 @@ QWidget *ServerDialog::createConversionTab()
     convert_qianhuan->setChecked(Config.value("SkillModify").toStringList().contains("qianhuan"));
     convert_hunshang = new QCheckBox(tr("Hunshang: HP less than or equal to 1"));
     convert_hunshang->setChecked(Config.value("SkillModify").toStringList().contains("hunshang"));
+    convert_fan = new QCheckBox(tr("Fan: triggered when use card 'Slash'"));
+    convert_fan->setChecked(Config.value("SkillModify").toStringList().contains("Fan"));
 
     conver_layout->addWidget(convert_xunxun);
     conver_layout->addWidget(convert_shengxi);
     conver_layout->addWidget(convert_qianhuan);
     conver_layout->addWidget(convert_hunshang);
+    conver_layout->addWidget(convert_fan);
 
     conver_layout->addStretch();
 
@@ -728,6 +731,7 @@ bool ServerDialog::config()
     if (convert_shengxi->isChecked()) skill_conversions << "shengxi";
     if (convert_qianhuan->isChecked()) skill_conversions << "qianhuan";
     if (convert_hunshang->isChecked()) skill_conversions << "hunshang";
+    if (convert_fan->isChecked()) skill_conversions << "Fan";
     Config.SkillModify = skill_conversions;
     Config.setValue("SkillModify", skill_conversions);
 

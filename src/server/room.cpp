@@ -1941,17 +1941,12 @@ const Card *Room::askForUseCard(ServerPlayer *player, const QString &pattern, co
     return NULL;
 }
 
-const Card *Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const QString &prompt,
-    bool distance_limit, bool disable_extra, bool addHistory)
+const Card *Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const QString &prompt, bool addHistory)
 {
     Q_ASSERT(!victims.isEmpty());
 
     // The realization of this function in the Slash::onUse and Slash::targetFilter.
     setPlayerFlag(slasher, "slashTargetFix");
-    if (!distance_limit)
-        setPlayerFlag(slasher, "slashNoDistanceLimit");
-    if (disable_extra)
-        setPlayerFlag(slasher, "slashDisableExtraTarget");
     if (victims.length() == 1)
         setPlayerFlag(slasher, "slashTargetFixToOne");
     foreach (ServerPlayer *victim, victims)
@@ -1963,22 +1958,17 @@ const Card *Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> 
         setPlayerFlag(slasher, "-slashTargetFixToOne");
         foreach (ServerPlayer *victim, victims)
             setPlayerFlag(victim, "-SlashAssignee");
-        if (slasher->hasFlag("slashNoDistanceLimit"))
-            setPlayerFlag(slasher, "-slashNoDistanceLimit");
-        if (slasher->hasFlag("slashDisableExtraTarget"))
-            setPlayerFlag(slasher, "-slashDisableExtraTarget");
     }
 
     return slash;
 }
 
-const Card *Room::askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const QString &prompt,
-    bool distance_limit, bool disable_extra, bool addHistory)
+const Card *Room::askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const QString &prompt, bool addHistory)
 {
     Q_ASSERT(victim != NULL);
     QList<ServerPlayer *> victims;
     victims << victim;
-    return askForUseSlashTo(slasher, victims, prompt, distance_limit, disable_extra, addHistory);
+    return askForUseSlashTo(slasher, victims, prompt, addHistory);
 }
 
 QList<int> Room::GlobalCardChosen(ServerPlayer *player, QList<ServerPlayer *> targets, const QString &flags, const QString &skillName, const QString &prompt,
@@ -4268,7 +4258,7 @@ bool Room::useCard(const CardUseStruct &use, bool add_history, bool ignore_rule)
     if (card == NULL)
         return false;
 
-    if (card_use.from->getPhase() == Player::Play && add_history) {
+    if (card_use.from->getPhase() == Player::Play && add_history && !Sanguosha->correctCardTarget(TargetModSkill::History, card_use.from, NULL, card_use.card)) {
         card_use.m_addHistory = true;
         addPlayerHistory(card_use.from, key);
         if (!card->getSkillName().isEmpty()) {
@@ -7281,6 +7271,9 @@ QList<ServerPlayer *> Room::askForExtraTargets(ServerPlayer *player, const QList
     }
 
     if (!result.isEmpty() && notify_skill) {
+        foreach (ServerPlayer *p, result)
+            doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
+
         QString main = Sanguosha->getMainSkill(skillName)->objectName();
         notifySkillInvoked(player, main);
         LogMessage log;

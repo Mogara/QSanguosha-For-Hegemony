@@ -202,7 +202,7 @@ int GameRule::getPriority() const
     return 0;
 }
 
-void GameRule::onPhaseProceed(ServerPlayer *player) const
+void GameRule::onPhaseProceed(ServerPlayer *player, QVariant &data) const
 {
     Room *room = player->getRoom();
     switch (player->getPhase()) {
@@ -226,20 +226,15 @@ void GameRule::onPhaseProceed(ServerPlayer *player) const
         break;
     }
     case Player::Draw: {
-        QVariant qnum;
         int num = 2;
         if (player->hasFlag("Global_FirstRound")) {
             room->setPlayerFlag(player, "-Global_FirstRound");
         }
 
-        qnum = num;
-        Q_ASSERT(room->getThread() != NULL);
-        room->getThread()->trigger(DrawNCards, room, player, qnum);
-        num = qnum.toInt();
+        num = data.toInt();
         if (num > 0)
             player->drawCards(num);
-        qnum = num;
-        room->getThread()->trigger(AfterDrawNCards, room, player, qnum);
+        room->getThread()->trigger(AfterDrawNCards, room, player, data);
         break;
     }
     case Player::Play: {
@@ -351,7 +346,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         break;
     }
     case EventPhaseProceeding: {
-        onPhaseProceed(player);
+        onPhaseProceed(player, data);
         break;
     }
     case EventPhaseEnd: {
@@ -431,8 +426,10 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             CardUseStruct card_use = data.value<CardUseStruct>();
             RoomThread *thread = room->getThread();
 
-            if (card_use.card->hasPreAction())
+            if (card_use.card->hasPreAction()) {
                 card_use.card->doPreAction(room, card_use);
+                data = QVariant::fromValue(card_use);
+            }
 
             QList<ServerPlayer *> targets = card_use.to;
 
@@ -482,25 +479,15 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                 }
                 card_use = data.value<CardUseStruct>();
 
-                bool history_backup = false;
-                if (card_use.from->getPhase() == Player::Play) {
-                    history_backup = card_use.from->tag["history_" + card_use.card->toString()].toBool();
-                    QVariant history = card_use.m_addHistory;
-                    card_use.from->tag["history_" + card_use.card->toString()] = history;
-                }
-
                 room->setTag("CardUseNullifiedList", QVariant::fromValue(card_use.nullified_list));
                 card_use.card->use(room, card_use.from, card_use.to);
                 if (!jink_list_backup.isEmpty())
                     card_use.from->tag["Jink_" + card_use.card->toString()] = QVariant::fromValue(jink_list_backup);
-                if (card_use.from->getPhase() == Player::Play)
-                    card_use.from->tag["history_" + card_use.card->toString()] = history_backup;
             }
             catch (TriggerEvent triggerEvent) {
-                if (triggerEvent == TurnBroken || triggerEvent == StageChange) {
+                if (triggerEvent == TurnBroken || triggerEvent == StageChange)
                     card_use.from->tag.remove("Jink_" + card_use.card->toString());
-                    card_use.from->tag.remove("history_" + card_use.card->toString());
-                }
+
                 throw triggerEvent;
             }
         }

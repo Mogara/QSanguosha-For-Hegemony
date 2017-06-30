@@ -608,7 +608,16 @@ bool PhaseChangeSkill::effect(TriggerEvent, Room *, ServerPlayer *player, QVaria
 DrawCardsSkill::DrawCardsSkill(const QString &name)
     : TriggerSkill(name)
 {
-    events << DrawNCards;
+    events << EventPhaseProceeding;
+    skill_type = Replenish;
+}
+
+TriggerStruct DrawCardsSkill::triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+{
+    if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Draw && data.toInt() >= 0)
+        return TriggerStruct(objectName(), player);
+
+    return TriggerStruct();
 }
 
 bool DrawCardsSkill::effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *, const TriggerStruct &) const
@@ -807,6 +816,11 @@ bool TargetModSkill::checkSpecificAssignee(const Player *, const Player *, const
     return false;
 }
 
+bool TargetModSkill::IgnoreCount(const Player *, const Card *) const
+{
+    return false;
+}
+
 bool TargetModSkill::checkExtraTargets(const Player *, const Player *, const Card *, const QList<const Player *> &, const QList<const Player *> &) const
 {
     return false;
@@ -815,19 +829,6 @@ bool TargetModSkill::checkExtraTargets(const Player *, const Player *, const Car
 int TargetModSkill::getEffectIndex(const ServerPlayer *, const Card *, const TargetModSkill::ModType) const
 {
     return -1;
-}
-
-SlashNoDistanceLimitSkill::SlashNoDistanceLimitSkill(const QString &skill_name)
-    : TargetModSkill(QString("#%1-slash-ndl").arg(skill_name)), name(skill_name)
-{
-}
-
-int SlashNoDistanceLimitSkill::getDistanceLimit(const Player *from, const Card *card) const
-{
-    if (from->hasSkill(name) && card->getSkillName() == name)
-        return 1000;
-    else
-        return 0;
 }
 
 AttackRangeSkill::AttackRangeSkill(const QString &name) : Skill(name, Skill::Compulsory)

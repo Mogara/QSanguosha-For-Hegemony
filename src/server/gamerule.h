@@ -35,7 +35,7 @@ public:
     QString getWinner(ServerPlayer *victim) const;
 
 private:
-    void onPhaseProceed(ServerPlayer *player) const;
+    void onPhaseProceed(ServerPlayer *player, QVariant &data) const;
     void rewardAndPunish(ServerPlayer *killer, ServerPlayer *victim) const;
 };
 

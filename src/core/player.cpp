@@ -1122,8 +1122,7 @@ int Player::getMark(const QString &mark) const
     return marks.value(mark, 0);
 }
 
-bool Player::canSlash(const Player *other, const Card *slash, bool distance_limit,
-    int rangefix, const QList<const Player *> &others) const
+bool Player::canSlash(const Player *other, const Card *slash, int rangefix, const QList<const Player *> &others) const
 {
     if (other == this || !other->isAlive())
         return false;
@@ -1138,15 +1137,17 @@ bool Player::canSlash(const Player *other, const Card *slash, bool distance_limi
 
 	if (Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, other, slash == NULL ? newslash : slash)) return true;
 
-    if (distance_limit)
+    bool limit = true;
+    if (slash) limit = slash->getDistanceLimit();
+    if (limit)
         return inMyAttackRange(other, slash);
     else
         return true;
 }
 
-bool Player::canSlash(const Player *other, bool distance_limit, int rangefix, const QList<const Player *> &others) const
+bool Player::canSlash(const Player *other, int rangefix, const QList<const Player *> &others) const
 {
-    return canSlash(other, NULL, distance_limit, rangefix, others);
+    return canSlash(other, NULL, rangefix, others);
 }
 
 int Player::getCardCount(bool include_equip) const

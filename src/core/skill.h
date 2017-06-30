@@ -276,6 +276,7 @@ class DrawCardsSkill : public TriggerSkill
 public:
     DrawCardsSkill(const QString &name);
 
+    virtual TriggerStruct triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who, const TriggerStruct &position) const;
     virtual int getDrawNum(ServerPlayer *player, int n) const = 0;
 };
@@ -383,6 +384,7 @@ public:
         ExtraMaxTarget,
         ExtraTarget,
         SpecificAssignee,
+        History,
     };
 
     TargetModSkill(const QString &name);
@@ -392,25 +394,13 @@ public:
     virtual int getExtraTargetNum(const Player *from, const Card *card) const;
     virtual bool getDistanceLimit(const Player *from, const Player *to, const Card *card) const;
     virtual bool checkSpecificAssignee(const Player *from, const Player *to, const Card *card) const;
+    virtual bool IgnoreCount(const Player *from, const Card *card) const;
     virtual bool checkExtraTargets(const Player *from, const Player *to, const Card *card,
                                   const QList<const Player *> &previous_targets, const QList<const Player *> &targets = QList<const Player *>()) const;
     virtual int getEffectIndex(const ServerPlayer *player, const Card *card, const TargetModSkill::ModType type) const;
 
 protected:
     QString pattern;
-};
-
-class SlashNoDistanceLimitSkill : public TargetModSkill
-{
-    Q_OBJECT
-
-public:
-    SlashNoDistanceLimitSkill(const QString &skill_name);
-
-    virtual int getDistanceLimit(const Player *from, const Card *card) const;
-
-protected:
-    QString name;
 };
 
 class AttackRangeSkill : public Skill

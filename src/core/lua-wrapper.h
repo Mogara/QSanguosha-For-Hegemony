@@ -251,6 +251,7 @@ public:
     virtual int getExtraTargetNum(const Player *from, const Card *card) const;
     virtual bool getDistanceLimit(const Player *from, const Player *to, const Card *card) const;
     virtual bool checkSpecificAssignee(const Player *from, const Player *to, const Card *card) const;
+    virtual bool IgnoreCount(const Player *from, const Card *card) const;
     virtual bool checkExtraTargets(const Player *from, const Player *to, const Card *card,
                                    const QList<const Player *> &previous_targets, const QList<const Player *> &targets = QList<const Player *>()) const;
     virtual int getEffectIndex(const ServerPlayer *player, const Card *card, const TargetModSkill::ModType type) const;
@@ -259,6 +260,7 @@ public:
     LuaFunction distance_limit_func;
     LuaFunction extra_target_func;
     LuaFunction check_specific_func;
+    LuaFunction ignore_count_func;
     LuaFunction check_extra_func;
     LuaFunction audio_index_func;
 };

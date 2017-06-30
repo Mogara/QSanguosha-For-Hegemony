@@ -622,7 +622,7 @@ void LuanwuCard::onEffect(const CardEffectStruct &effect) const
 
     QList<ServerPlayer *> luanwu_targets;
     for (int i = 0; i < distance_list.length(); i++) {
-        if (distance_list[i] == nearest && effect.to->canSlash(players[i], NULL, false))
+        if (distance_list[i] == nearest && effect.to->canSlash(players[i]))
             luanwu_targets << players[i];
     }
 
@@ -1444,17 +1444,20 @@ public:
             pd = NULL;
             Room *room = jiling->getRoom();
             if (success) {
+                Slash *slash = new Slash(Card::NoSuit, 0);
+                slash->setDistanceLimit(false);
+                slash->setSkillName("_shuangren");
                 QList<ServerPlayer *> targets;
                 foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                    if (jiling->canSlash(p, NULL, false) && (p->isFriendWith(target) || target == p))
+                    if (jiling->canSlash(p, slash) && (p->isFriendWith(target) || target == p))
                         targets << p;
                 }
-                if (targets.isEmpty())
+                if (targets.isEmpty()) {
+                    slash->deleteLater();
                     return false;
+                }
 
                 ServerPlayer *slasher = room->askForPlayerChosen(jiling, targets, "shuangren-slash", "@dummy-slash");
-                Slash *slash = new Slash(Card::NoSuit, 0);
-                slash->setSkillName("_shuangren");
                 room->useCard(CardUseStruct(slash, jiling, slasher), false);
             } else {
                 room->broadcastSkillInvoke("shuangren", "male", 3, jiling, info.skill_position);
@@ -1875,8 +1878,6 @@ void StandardPackage::addQunGenerals()
 
     General *jiling = new General(this, "jiling", "qun"); // QUN 015
     jiling->addSkill(new Shuangren);
-    jiling->addSkill(new SlashNoDistanceLimitSkill("shuangren"));
-    insertRelatedSkills("shuangren", "#shuangren-slash-ndl");
 
     General *tianfeng = new General(this, "tianfeng", "qun", 3); // QUN 016
     tianfeng->addSkill(new Sijian);

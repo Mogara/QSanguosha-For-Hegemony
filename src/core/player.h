@@ -242,10 +242,8 @@ public:
 
     bool isDuanchang(const bool head = true) const;
 
-    bool canSlash(const Player *other, const Card *slash, bool distance_limit = true,
-        int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
-    bool canSlash(const Player *other, bool distance_limit = true,
-        int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
+    bool canSlash(const Player *other, const Card *slash, int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
+    bool canSlash(const Player *other, int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
     int getCardCount(bool include_equip) const;
 
     QList<int> getPile(const QString &pile_name) const;

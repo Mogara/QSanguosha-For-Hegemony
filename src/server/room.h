@@ -394,10 +394,8 @@ public:
         const QString &skill_name = QString(), bool isProvision = false);
     const Card *askForUseCard(ServerPlayer *player, const QString &pattern, const QString &prompt, int notice_index = -1,
         Card::HandlingMethod method = Card::MethodUse, bool addHistory = true, const QString &position = QString());
-    const Card *askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const QString &prompt,
-        bool distance_limit = true, bool disable_extra = false, bool addHistory = false);
-    const Card *askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const QString &prompt,
-        bool distance_limit = true, bool disable_extra = false, bool addHistory = false);
+    const Card *askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const QString &prompt, bool addHistory = false);
+    const Card *askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const QString &prompt, bool addHistory = false);
     QList<int> GlobalCardChosen(ServerPlayer *player, QList<ServerPlayer *> targets, const QString &flags, const QString &skillName,
         const QString &prompt, int min = 0, int max = 0, ChoosingType type = OnebyOne, bool handcard_visible = false, Card::HandlingMethod method = Card::MethodNone,
         const QList<int> &disabled_ids = QList<int>(), bool notify_skill = false, const QString &skill_position = QString());

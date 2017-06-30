@@ -105,7 +105,8 @@ LuaMaxCardsSkill::LuaMaxCardsSkill(const char *name)
 }
 
 LuaTargetModSkill::LuaTargetModSkill(const char *name, const char *pattern)
-    : TargetModSkill(name), residue_func(0), distance_limit_func(0), extra_target_func(0), check_specific_func(0), check_extra_func(0), audio_index_func(0)
+    : TargetModSkill(name), residue_func(0), distance_limit_func(0), extra_target_func(0), check_specific_func(0),
+      check_extra_func(0), audio_index_func(0), ignore_count_func(0)
 {
     this->pattern = pattern;
 }

@@ -1476,7 +1476,7 @@ class JGJueji : public TriggerSkill
 public:
     JGJueji() : TriggerSkill("jgjueji")
     {
-        events << DrawNCards;
+        events << EventPhaseStart;
     }
 
     virtual bool canPreshow() const
@@ -1488,7 +1488,8 @@ public:
     {
         QList<TriggerStruct> m;
         ServerPlayer *zhanghe = room->findPlayerBySkillName(objectName());
-        if (zhanghe != NULL && zhanghe->isAlive() && !player->isFriendWith(zhanghe) && player->isWounded() && data.toInt() > 0)
+        if (zhanghe != NULL && zhanghe->isAlive() && !player->isFriendWith(zhanghe)
+                && player->isWounded() && player->getPhase() == Player::Draw && data.toInt() > 0)
             m << TriggerStruct(objectName(), zhanghe);
 
         return m;

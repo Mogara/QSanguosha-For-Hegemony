@@ -109,6 +109,7 @@ public:
     virtual bool willThrow() const;
     virtual bool canRecast() const;
     virtual bool hasPreAction() const;
+    virtual bool getDistanceLimit() const;
     virtual Card::HandlingMethod getHandlingMethod() const;
     void setCanRecast(bool can);
 
@@ -149,7 +150,6 @@ public:
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     // @todo: the following two functions should be merged into one.
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual bool secondFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool extratargetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool isAvailable(const Player *player) const;
 
@@ -160,7 +160,7 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 
-    virtual void doPreAction(Room *room, const CardUseStruct &card_use) const;
+    virtual void doPreAction(Room *room, CardUseStruct &use) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;

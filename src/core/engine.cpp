@@ -69,7 +69,7 @@ void Engine::_loadModScenarios()
 {
     //wait for a new scenario
     addScenario(new JiangeDefenseScenario());
-    //addScenario(new OneOnOneScenario());      //for test only
+    //addScenario(new OneOnOneScenario());
 }
 
 void Engine::addPackage(const QString &name)
@@ -829,7 +829,8 @@ QString Engine::getSetupString() const
         << QString::number(timeout)
         << QString::number(Config.NullificationCountDown)
         << Sanguosha->getBanPackages().join("+")
-        << flags;
+        << flags
+        << Config.SkillModify.join("+");
 
     return setup_items.join(":");
 }
@@ -1202,18 +1203,17 @@ bool Engine::correctCardTarget(const TargetModSkill::ModType type, const Player 
     if (type == TargetModSkill::DistanceLimit) {
         foreach (const TargetModSkill *skill, targetmod_skills) {
             ExpPattern p(skill->getPattern());
-            if (p.match(from, card)) {
-                bool distance_limit = skill->getDistanceLimit(from, to, card);
-                if (distance_limit) return true;
-            }
+            if (p.match(from, card) && skill->getDistanceLimit(from, to, card)) return true;
         }
     } else if (type == TargetModSkill::SpecificAssignee) {
         foreach (const TargetModSkill *skill, targetmod_skills) {
             ExpPattern p(skill->getPattern());
-            if (p.match(from, card)) {
-                bool can_slash = skill->checkSpecificAssignee(from, to, card);
-                if (can_slash) return true;
-            }
+            if (p.match(from, card) && skill->checkSpecificAssignee(from, to, card)) return true;
+        }
+    } else if (type == TargetModSkill::History) {
+        foreach (const TargetModSkill *skill, targetmod_skills) {
+            ExpPattern p(skill->getPattern());
+            if (p.match(from, card) && skill->IgnoreCount(from, card)) return true;
         }
     }
 

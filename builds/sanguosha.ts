@@ -3800,6 +3800,11 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>魂殇：体力值小于等于1</translation>
     </message>
     <message>
+        <location filename="../src/dialog/serverdialog.cpp" line="352"/>
+        <source>Fan: triggered when use card 'Slash'</source>
+        <translation>朱雀羽扇：使用“杀”时触发</translation>
+    </message>
+    <message>
         <location filename="../src/dialog/serverdialog.cpp" line="331"/>
         <source>The first player to show general can draw 2 cards</source>
         <translation>首亮摸2张牌作为奖励</translation>
