@@ -4051,7 +4051,7 @@ void Room::speakCommand(ServerClient *player, const QVariant &message)
     }
 
     JsonArray body;
-    body << player->objectName();
+    body << player->getPlayers().first()->objectName();
     body << message;
 
     Packet packet(S_SRC_CLIENT | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_SPEAK);
